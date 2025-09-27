@@ -1,2 +1,1 @@
-# qurseAI
-TO BE OPEN SOURCED SOON
+hi
