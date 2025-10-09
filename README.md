@@ -1,4 +1,14 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# qurseAI
+
+A modern AI-powered search and chat application built with Next.js.
+
+## Features
+
+- Modern, responsive UI with dark/light theme support
+- AI model selection and configuration
+- Web search integration
+- User authentication system
+- Clean, component-based architecture
 
 ## Getting Started
 
