@@ -7,8 +7,21 @@ import { getIconPath, getInvertedIconPath } from '@/lib/icon-utils';
 
 export default function MainInput() {
   const [inputValue, setInputValue] = useState('');
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [isMultiline, setIsMultiline] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const { resolvedTheme, mounted } = useTheme();
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Auto-focus input when user starts typing
   useEffect(() => {
@@ -37,14 +50,34 @@ export default function MainInput() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Auto-resize textarea and check if multiline
+  useEffect(() => {
+    if (inputRef.current) {
+      const textarea = inputRef.current;
+      textarea.style.height = 'auto';
+      const scrollHeight = textarea.scrollHeight;
+      const newHeight = Math.min(scrollHeight, 200);
+      textarea.style.height = newHeight + 'px';
+      
+      // Switch to multiline layout if content exceeds ~2 lines (60px) OR if on mobile
+      setIsMultiline(scrollHeight > 60 || isMobile);
+      
+      // If content exceeds max height, scroll to bottom to keep cursor visible
+      if (scrollHeight > 200) {
+        textarea.scrollTop = textarea.scrollHeight;
+      }
+    }
+  }, [inputValue, isMobile]);
+
   const handleSend = () => {
     if (inputValue.trim()) {
       console.log('Sending:', inputValue);
       // TODO: Send message logic
+      setInputValue('');
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -54,84 +87,195 @@ export default function MainInput() {
   return (
     <div className="w-full max-w-[800px] relative mx-auto mb-2">
       <style jsx>{`
-        .main-input:focus {
-          border: 1px solid var(--color-primary) !important;
-          box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1), 0 2px 8px var(--color-shadow) !important;
+        // .main-input:focus {
+        //   border: 0px solid var(--color-primary) !important;
+        //   box-shadow: 0 2px 80px var(--color-shadow) !important;
+        // }
+        .homepage-input-container {
+          position: relative;
+          border: 1px solid var(--color-border-hover);
+          border-radius: 20px;
+          background: var(--color-bg-input);
+          box-shadow: 0 2px 8px var(--color-shadow);
+          transition: border 0.2s, box-shadow 0.2s;
+        }
+        .homepage-input-container:focus-within {
+          border: 1px solid var(--color-primary);
+          box-shadow: 0 2px 8px var(--color-shadow);
+        }
+        .homepage-buttons-background {
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          height: 50px;
+          background: var(--color-bg-input);
+          border-radius: 0 0 20px 20px;
+          z-index: 1;
+          pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.2s;
+        }
+        .homepage-buttons-background.show {
+          opacity: 1;
+        }
+        .main-input::-webkit-scrollbar {
+          display: none;
         }
       `}</style>
-      <input
-        ref={inputRef}
-        type="text"
-        className="w-full pr-24 pl-4 text-base main-input"
-        placeholder="Message Qurse..."
-        value={inputValue}
-        onChange={(e) => setInputValue(e.target.value)}
-        onKeyPress={handleKeyPress}
-        style={{
-          padding: '12px 96px 12px 16px',
-          borderRadius: '20px',
-          border: `1px solid var(--color-border-hover)`,
-          fontSize: '16px',
-          outline: 'none',
-          background: 'var(--color-bg-input)',
-          color: 'var(--color-text)',
-          boxShadow: '0 2px 8px var(--color-shadow)',
-          fontFamily: 'inherit',
-          transition: 'border 0.2s, box-shadow 0.2s',
-        }}
-      />
       
-      <div 
-        className="absolute right-3 top-1/2 flex items-center gap-2"
-        style={{ transform: 'translateY(-50%)' }}
-      >
-        {/* Attach Button */}
-        <button
-          type="button"
-          className="flex items-center justify-center transition-all"
-          aria-label="Attach file"
+      <div className="homepage-input-container">
+        <textarea
+          ref={inputRef}
+          rows={1}
+          className={`w-full text-base main-input ${(isMultiline || isMobile) ? 'multiline' : ''}`}
+          placeholder="Message Qurse..."
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyPress={handleKeyPress}
           style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            background: 'var(--color-bg-secondary)',
-            border: '1px solid var(--color-border)',
-            padding: '0',
+            padding: (isMultiline || isMobile) ? '12px 15px 50px 15px' : '12px 96px 12px 16px',
+            borderRadius: '20px',
+            border: 'none',
+            fontSize: '16px',
+            outline: 'none',
+            background: 'transparent',
+            color: 'var(--color-text)',
+            fontFamily: 'inherit',
+            resize: 'none',
+            minHeight: isMobile ? '85px' : '48px',
+            maxHeight: '200px',
+            overflowY: (isMultiline || isMobile) ? 'auto' : 'hidden',
+            overflowX: 'hidden',
+            transition: 'padding 0.2s',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            zIndex: 3, // Ensure text is above background strip and buttons
           }}
-        >
-          <Image
-            src={getIconPath('attach', resolvedTheme, false, mounted)}
-            alt="Attach"
-            width={16}
-            height={16}
-          />
-        </button>
+        />
+        
+        {/* Background strip for multiline mode */}
+        {(isMultiline || isMobile) && (
+          <div className="homepage-buttons-background show"></div>
+        )}
+        
+        {/* Buttons - position changes based on mode */}
+        {!(isMultiline || isMobile) ? (
+          // Single-line mode: buttons on the right
+          <div 
+            className="absolute right-3 top-1/2 flex items-center gap-2"
+            style={{ transform: 'translateY(-50%)', transition: 'all 0.2s' }}
+          >
+            {/* Attach Button */}
+            <button
+              type="button"
+              className="flex items-center justify-center transition-all"
+              aria-label="Attach file"
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: 'var(--color-bg-secondary)',
+                border: '1px solid var(--color-border)',
+                padding: '0',
+              }}
+            >
+              <Image
+                src={getIconPath('attach', resolvedTheme, false, mounted)}
+                alt="Attach"
+                width={16}
+                height={16}
+              />
+            </button>
 
-        {/* Send Button */}
-        <button
-          type="button"
-          disabled={!inputValue.trim()}
-          className="flex items-center justify-center transition-all"
-          aria-label="Send message"
-          onClick={handleSend}
-          style={{
-            width: '36px',
-            height: '36px',
-            borderRadius: '50%',
-            background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-            border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
-            padding: '0',
-            opacity: inputValue.trim() ? 1 : 0.5,
-            cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
-          }}
-        >
-          <Image
-            src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-            alt="Send"
-            width={16}
-            height={16}
-          />
-        </button>
+            {/* Send Button */}
+            <button
+              type="button"
+              disabled={!inputValue.trim()}
+              className="flex items-center justify-center transition-all"
+              aria-label="Send message"
+              onClick={handleSend}
+              style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                padding: '0',
+                opacity: inputValue.trim() ? 1 : 0.5,
+                cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
+              }}
+            >
+              <Image
+                src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
+                alt="Send"
+                width={16}
+                height={16}
+              />
+            </button>
+          </div>
+        ) : (
+          // Multiline mode: buttons at bottom
+          <>
+            <div 
+              className="absolute left-3 bottom-2 flex items-center gap-2"
+              style={{ zIndex: 2, transition: 'all 0.2s' }}
+            >
+              {/* Attach Button */}
+              <button
+                type="button"
+                className="flex items-center justify-center transition-all"
+                aria-label="Attach file"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'var(--color-bg-secondary)',
+                  border: '1px solid var(--color-border)',
+                  padding: '0',
+                }}
+              >
+                <Image
+                  src={getIconPath('attach', resolvedTheme, false, mounted)}
+                  alt="Attach"
+                  width={16}
+                  height={16}
+                />
+              </button>
+            </div>
+            
+            <div 
+              className="absolute right-3 bottom-2 flex items-center gap-2"
+              style={{ zIndex: 2, transition: 'all 0.2s' }}
+            >
+              {/* Send Button */}
+              <button
+                type="button"
+                disabled={!inputValue.trim()}
+                className="flex items-center justify-center transition-all"
+                aria-label="Send message"
+                onClick={handleSend}
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                  border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                  padding: '0',
+                  opacity: inputValue.trim() ? 1 : 0.5,
+                  cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
+                }}
+              >
+                <Image
+                  src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
+                  alt="Send"
+                  width={16}
+                  height={16}
+                />
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

@@ -29,7 +29,7 @@ export default function DeepSearchButton() {
         transition: 'all 0.2s',
         whiteSpace: 'nowrap',
       }}
-      className="hover:bg-bg-hover hover:border-border-hover"
+      className="hover:bg-bg-hover hover:border-border-hover deep-search-mobile"
     >
       <Image
         src={getIconPath('deep_search', resolvedTheme, false, mounted)}
@@ -37,7 +37,7 @@ export default function DeepSearchButton() {
         width={14}
         height={14}
       />
-      <span>Deep Search</span>
+      <span className="deep-search-text">Deep Search</span>
     </button>
   );
 }

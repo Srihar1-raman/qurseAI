@@ -8,14 +8,27 @@ import ModelSelector from '@/components/homepage/ModelSelector';
 import DeepSearchButton from '@/components/homepage/DeepSearchButton';
 import WebSearchSelector from '@/components/homepage/WebSearchSelector';
 import MainInput from '@/components/homepage/MainInput';
+import HistorySidebar from '@/components/layout/history/HistorySidebar';
 
 export default function HomePage() {
   const [selectedModel, setSelectedModel] = useState('GPT-OSS 120B');
   const [selectedSearchOption, setSelectedSearchOption] = useState('Chat');
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+
+  // Mock user for testing logged-in state (will come from auth later)
+  const mockUser = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    avatar_url: undefined
+  };
 
   return (
-    <div className="flex flex-col" style={{ minHeight: '100vh', minHeight: '100dvh', height: '100vh', height: '100dvh' }}>
-      <Header />
+    <div className="homepage-container">
+      <Header 
+        user={mockUser}
+        showHistoryButton={true}
+        onHistoryClick={() => setIsHistoryOpen(true)}
+      />
       
       {/* Main Content */}
       <main 
@@ -52,6 +65,12 @@ export default function HomePage() {
       </main>
 
       <Footer />
+      
+      {/* History Sidebar */}
+      <HistorySidebar 
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
     </div>
   );
 }

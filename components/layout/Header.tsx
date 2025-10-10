@@ -8,14 +8,46 @@ import { useTheme } from '@/lib/theme-provider';
 import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropdown';
 import { getIconPath, getInvertedIconPath } from '@/lib/icon-utils';
 
-export default function Header() {
+interface HeaderProps {
+  showNewChatButton?: boolean;
+  onNewChatClick?: () => void;
+  showHistoryButton?: boolean;
+  onHistoryClick?: () => void;
+  user?: {
+    name?: string;
+    email?: string;
+    avatar_url?: string;
+  } | null;
+}
+
+export default function Header({
+  showNewChatButton = false,
+  onNewChatClick,
+  showHistoryButton = false,
+  onHistoryClick,
+  user = null
+}: HeaderProps = {}) {
   const router = useRouter();
   const { theme, setTheme, resolvedTheme, mounted } = useTheme();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // For now, simulate no user (will add auth later)
-  const user = null;
+  // Get user's first initial
+  const getUserInitial = () => {
+    if (user?.name) {
+      return user.name.charAt(0).toUpperCase();
+    }
+    if (user?.email) {
+      return user.email.charAt(0).toUpperCase();
+    }
+    return 'U';
+  };
+
+  const handleSignOut = async () => {
+    // TODO: Implement sign out logic
+    console.log('Sign out');
+    setIsDropdownOpen(false);
+  };
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -110,6 +142,60 @@ export default function Header() {
           </>
         )}
 
+        {/* New Chat Button */}
+        {showNewChatButton && (
+          <button
+            onClick={onNewChatClick}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'var(--color-bg-secondary)',
+              border: '1px solid var(--color-border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            title="New Chat"
+          >
+            <Image 
+              src={getIconPath("plus", resolvedTheme, false, mounted)} 
+              alt="New Chat" 
+              width={16} 
+              height={16} 
+            />
+          </button>
+        )}
+        
+        {/* History Button */}
+        {showHistoryButton && (
+          <button
+            onClick={onHistoryClick}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'var(--color-bg-secondary)',
+              border: '1px solid var(--color-border)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease',
+            }}
+            title="Chat History"
+          >
+            <Image 
+              src={getIconPath("history", resolvedTheme, false, mounted)} 
+              alt="History" 
+              width={16} 
+              height={16} 
+            />
+          </button>
+        )}
+
         {/* Settings Dropdown */}
         <div className="relative inline-block" ref={dropdownRef}>
           <Dropdown
@@ -128,15 +214,23 @@ export default function Header() {
                   transition: 'all 0.2s',
                   border: 'none',
                   padding: 0,
+                  fontSize: '14px',
+                  fontWeight: 600,
                 }}
-                aria-label="Settings"
+                aria-label={user ? 'Profile' : 'Settings'}
               >
-                <Image
-                  src={getInvertedIconPath('profile', resolvedTheme, mounted)}
-                  alt="Settings"
-                  width={16}
-                  height={16}
-                />
+                {user ? (
+                  <span style={{ color: 'var(--color-bg)' }}>
+                    {getUserInitial()}
+                  </span>
+                ) : (
+                  <Image
+                    src={getInvertedIconPath('profile', resolvedTheme, mounted)}
+                    alt="Settings"
+                    width={16}
+                    height={16}
+                  />
+                )}
               </button>
             }
             open={isDropdownOpen}
@@ -144,8 +238,37 @@ export default function Header() {
             align="end"
             className="min-w-[240px]"
           >
+            {/* User Profile Section - Only show when authenticated */}
+            {user && (
+              <>
+                <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
+                  {user.avatar_url && (
+                    <Image
+                      src={user.avatar_url}
+                      alt={user.name || 'User'}
+                      width={32}
+                      height={32}
+                      style={{ borderRadius: '50%' }}
+                    />
+                  )}
+                  <div className="flex flex-col overflow-hidden">
+                    {user.name && (
+                      <div className="text-sm font-medium truncate" style={{ color: 'var(--color-text)' }}>
+                        {user.name}
+                      </div>
+                    )}
+                    {user.email && (
+                      <div className="text-xs truncate" style={{ color: 'var(--color-text-muted)' }}>
+                        {user.email}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
+
             {/* Theme Selector */}
-            <div className="flex items-center justify-between px-4 py-3 border-b" style={{ borderColor: 'var(--color-border)' }}>
+            <div className="flex items-center justify-between px-4 py-2.5">
               <div className="flex items-center gap-3">
                 <Image
                   src={getIconPath('theme', resolvedTheme, false, mounted)}
@@ -207,9 +330,27 @@ export default function Header() {
               </div>
             </div>
 
+            {/* Settings Section - Only show when authenticated */}
+            {user && (
+              <>
+                <DropdownSeparator />
+                <DropdownItem onClick={() => router.push('/settings')}>
+                  <div className="flex items-center gap-3">
+                    <Image
+                      src={getIconPath('settings', resolvedTheme, false, mounted)}
+                      alt="Settings"
+                      width={16}
+                      height={16}
+                    />
+                    <span>Settings</span>
+                  </div>
+                </DropdownItem>
+              </>
+            )}
+
             <DropdownSeparator />
 
-            <DropdownItem onClick={() => console.log('About')}>
+            <DropdownItem onClick={() => router.push('/info?section=about')}>
               <div className="flex items-center gap-3">
                 <Image
                   src={getIconPath('about', resolvedTheme, false, mounted)}
@@ -274,7 +415,7 @@ export default function Header() {
             <DropdownSeparator />
 
             {user ? (
-              <DropdownItem onClick={() => console.log('Sign out')}>
+              <DropdownItem onClick={handleSignOut}>
                 <div className="flex items-center gap-3">
                   <Image
                     src={getIconPath('signout', resolvedTheme, false, mounted)}

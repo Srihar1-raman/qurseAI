@@ -159,16 +159,22 @@ export const WEB_SEARCH_OPTIONS: SearchOption[] = [
   { name: 'arXiv', enabled: false, icon: 'arxiv-logo' }
 ];
 
+// Export short names for convenience
+export const searchOptions = WEB_SEARCH_OPTIONS;
+
 // Helper functions
 export function getAllModels(): Model[] {
-  const models: Model[] = [];
+  const modelsList: Model[] = [];
   Object.values(MODEL_GROUPS).forEach(group => {
     if (group.enabled) {
-      models.push(...group.models);
+      modelsList.push(...group.models);
     }
   });
-  return models;
+  return modelsList;
 }
+
+// Export models array for convenience
+export const models = getAllModels();
 
 export function getModelByName(name: string): Model | undefined {
   return getAllModels().find(model => model.name === name);

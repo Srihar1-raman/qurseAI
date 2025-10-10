@@ -77,7 +77,11 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     
     document.documentElement.setAttribute('data-theme', themeMode);
     setResolvedTheme(resolved);
-    updateFavicons(resolved === 'dark');
+    
+    // Only update favicon for auto mode (system responsive)
+    if (themeMode === 'auto') {
+      updateFavicons(resolved === 'dark');
+    }
   }, [updateFavicons]);
 
   // Public setTheme function
@@ -114,6 +118,18 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
   }, [resolveTheme, applyTheme]);
+
+  // Set initial favicon based on system theme
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const getSystemTheme = (): 'light' | 'dark' => {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    };
+    
+    const systemTheme = getSystemTheme();
+    updateFavicons(systemTheme === 'dark');
+  }, [updateFavicons]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme, mounted }}>
