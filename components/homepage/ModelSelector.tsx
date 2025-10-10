@@ -78,7 +78,7 @@ export default function ModelSelector({ selectedModel, onSelectModel, selectedWe
       <Button
         variant="secondary"
         className={cn(
-          "min-w-[160px] justify-between rounded-md border px-2.5 py-1.5 h-auto text-sm font-normal",
+          "min-w-[160px] justify-between rounded-md border px-2.5 py-1.5 h-auto text-sm font-normal model-selector-mobile",
           isOpen && "border-primary"
         )}
         onClick={() => setIsOpen(!isOpen)}
@@ -90,7 +90,7 @@ export default function ModelSelector({ selectedModel, onSelectModel, selectedWe
             width={16}
             height={16}
           />
-          <span>{selectedModel}</span>
+          <span className="model-selector-text">{selectedModel}</span>
         </div>
         <Image
           src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}

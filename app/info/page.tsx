@@ -1,13 +1,23 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import HistorySidebar from '@/components/layout/history/HistorySidebar';
 
 function InfoPageContent() {
   const [activeSection, setActiveSection] = useState('about');
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Mock user for testing logged-in state (will come from auth later)
+  const mockUser = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    avatar_url: undefined
+  };
 
   // Handle URL parameters for section
   useEffect(() => {
@@ -24,9 +34,23 @@ function InfoPageContent() {
     { id: 'cookies', label: 'Cookies' }
   ];
 
+  const handleNewChatClick = () => {
+    router.push('/');
+  };
+
+  const handleHistoryClick = () => {
+    setIsHistoryOpen(true);
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header />
+      <Header 
+        user={mockUser}
+        showNewChatButton={true}
+        onNewChatClick={handleNewChatClick}
+        showHistoryButton={true}
+        onHistoryClick={handleHistoryClick}
+      />
       
       {/* Info Tabs - Center aligned below header */}
       <div className="info-tabs-container">
@@ -161,6 +185,12 @@ function InfoPageContent() {
       </main>
 
       <Footer />
+      
+      {/* History Sidebar */}
+      <HistorySidebar 
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
     </div>
   );
 }
@@ -172,4 +202,5 @@ export default function InfoPage() {
     </Suspense>
   );
 }
+
 

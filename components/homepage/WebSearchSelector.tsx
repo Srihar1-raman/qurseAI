@@ -51,7 +51,7 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
       <Button
         variant="secondary"
         className={cn(
-          "justify-center rounded-md border px-2.5 py-1.5 h-auto text-sm font-normal",
+          "justify-center rounded-md border px-2.5 py-1.5 h-auto text-sm font-normal web-search-mobile",
           isOpen && "border-primary"
         )}
         onClick={() => setIsOpen(!isOpen)}
@@ -67,8 +67,9 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
             alt={selectedOption}
             width={16}
             height={16}
+            className={selectedOptionData?.icon === 'arxiv-logo' ? 'arxiv-icon' : ''}
           />
-          <span>{selectedOption}</span>
+          <span className="web-search-text">{selectedOption}</span>
           <Image
             src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
             alt="Dropdown"
@@ -107,7 +108,7 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
               >
                 <span>{option.name}</span>
                 <div className={cn(
-                  "w-[16px] h-[16px] rounded flex items-center justify-center flex-shrink-0",
+                  "w-[9px] h-[9px] rounded flex items-center justify-center flex-shrink-0",
                   isSelected
                     ? "bg-white/10 border border-white/20 opacity-100"
                     : "bg-muted/50 border border-border/50 opacity-70"
@@ -117,6 +118,7 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
                     alt={option.name}
                     width={9}
                     height={9}
+                    className={option.icon === 'arxiv-logo' ? 'arxiv-icon-sm' : ''}
                   />
                 </div>
               </div>

@@ -127,7 +127,7 @@ export default function SignupPage() {
             color: 'var(--color-text-muted)',
             lineHeight: 1.4,
           }}>
-            By creating an account, you agree to our{' '}
+            By continuing, you agree to our{' '}
             <a 
               href="/info?section=terms"
               style={{
@@ -165,4 +165,3 @@ export default function SignupPage() {
     </div>
   );
 }
-
