@@ -108,7 +108,7 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
               >
                 <span>{option.name}</span>
                 <div className={cn(
-                  "w-[9px] h-[9px] rounded flex items-center justify-center flex-shrink-0",
+                  "w-[16px] h-[16px] rounded flex items-center justify-center flex-shrink-0",
                   isSelected
                     ? "bg-white/10 border border-white/20 opacity-100"
                     : "bg-muted/50 border border-border/50 opacity-70"
