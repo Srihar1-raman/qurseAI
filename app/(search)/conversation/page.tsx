@@ -9,14 +9,8 @@ import HistorySidebar from '@/components/layout/history/HistorySidebar';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { MODEL_GROUPS, WEB_SEARCH_OPTIONS, isModelCompatibleWithArxiv } from '@/lib/constants';
-
-interface Message {
-  id: string;
-  text: string;
-  isUser: boolean;
-  timestamp: string;
-  model?: string;
-}
+import type { Message } from '@/lib/types';
+import { useAuth } from '@/lib/contexts/AuthContext';
 
 export default function ConversationPage() {
   const router = useRouter();
@@ -34,13 +28,7 @@ export default function ConversationPage() {
   const modelDropdownRef = useRef<HTMLDivElement>(null);
   const webSearchDropdownRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme, mounted } = useTheme();
-
-  // Mock user for testing logged-in state (will come from auth later)
-  const mockUser = {
-    name: 'John Doe',
-    email: 'john@example.com',
-    avatar_url: undefined
-  };
+  const { user } = useAuth();
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
@@ -167,7 +155,7 @@ export default function ConversationPage() {
   return (
     <div className="homepage-container">
       <Header 
-        user={mockUser}
+        user={user}
         showNewChatButton={true}
         onNewChatClick={handleNewChatClick}
         showHistoryButton={true}

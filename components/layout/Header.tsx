@@ -7,18 +7,7 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropdown';
 import { getIconPath, getInvertedIconPath } from '@/lib/icon-utils';
-
-interface HeaderProps {
-  showNewChatButton?: boolean;
-  onNewChatClick?: () => void;
-  showHistoryButton?: boolean;
-  onHistoryClick?: () => void;
-  user?: {
-    name?: string;
-    email?: string;
-    avatar_url?: string;
-  } | null;
-}
+import type { HeaderProps } from '@/lib/types';
 
 export default function Header({
   showNewChatButton = false,

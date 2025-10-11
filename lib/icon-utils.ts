@@ -1,6 +1,5 @@
 // Icon utility functions for theme-aware icon loading
-
-type ResolvedTheme = 'light' | 'dark';
+import type { ResolvedTheme } from './types';
 
 /**
  * Get the correct icon path based on theme and active state
@@ -35,20 +34,26 @@ export function getIconPath(
  * Get icon path for inverted backgrounds (like header buttons with dark/light backgrounds)
  * @param iconName - Name of the icon (without extension)
  * @param resolvedTheme - Current resolved theme ('light' or 'dark')
+ * @param isActive - Whether the icon is in an active/selected state (optional)
  * @param mounted - Whether the component is mounted
  * @returns Path to the icon
  */
 export function getInvertedIconPath(
   iconName: string,
   resolvedTheme: ResolvedTheme,
+  isActive: boolean = false,
   mounted: boolean = true
 ): string {
   if (!mounted) {
-    return `/icon/${iconName}.svg`;
+    return `/icon_light/${iconName}.svg`;
+  }
+  
+  // If active, always use light icons (white on colored background)
+  if (isActive) {
+    return `/icon_light/${iconName}.svg`;
   }
   
   // Inverted: dark theme uses dark icons, light theme uses light icons
   const iconFolder = resolvedTheme === 'dark' ? 'icon' : 'icon_light';
   return `/${iconFolder}/${iconName}.svg`;
 }
-

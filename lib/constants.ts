@@ -1,25 +1,5 @@
 // Model and search configuration constants
-
-export interface Model {
-  id: string;
-  name: string;
-  provider: string;
-  imageSupport?: boolean;
-  reasoningModel?: boolean;
-  disabled?: boolean;
-}
-
-export interface ModelGroup {
-  provider: string;
-  enabled: boolean;
-  models: Model[];
-}
-
-export interface SearchOption {
-  name: string;
-  enabled: boolean;
-  icon: string;
-}
+import type { Model, ModelGroup, SearchOption } from './types';
 
 // Model groups configuration
 export const MODEL_GROUPS: Record<string, ModelGroup> = {

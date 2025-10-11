@@ -4,15 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
-import { MODEL_GROUPS, isModelCompatibleWithArxiv, type ModelGroup } from '@/lib/constants';
+import { MODEL_GROUPS, isModelCompatibleWithArxiv } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-interface ModelSelectorProps {
-  selectedModel: string;
-  onSelectModel: (model: string) => void;
-  selectedWebSearchOption: string;
-}
+import type { ModelSelectorProps, ModelGroup } from '@/lib/types';
 
 export default function ModelSelector({ selectedModel, onSelectModel, selectedWebSearchOption }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);

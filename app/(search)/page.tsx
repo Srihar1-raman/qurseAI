@@ -9,23 +9,18 @@ import DeepSearchButton from '@/components/homepage/DeepSearchButton';
 import WebSearchSelector from '@/components/homepage/WebSearchSelector';
 import MainInput from '@/components/homepage/MainInput';
 import HistorySidebar from '@/components/layout/history/HistorySidebar';
+import { useAuth } from '@/lib/contexts/AuthContext';
 
 export default function HomePage() {
   const [selectedModel, setSelectedModel] = useState('GPT-OSS 120B');
   const [selectedSearchOption, setSelectedSearchOption] = useState('Chat');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-
-  // Mock user for testing logged-in state (will come from auth later)
-  const mockUser = {
-    name: 'John Doe',
-    email: 'john@example.com',
-    avatar_url: undefined
-  };
+  const { user } = useAuth();
 
   return (
     <div className="homepage-container">
       <Header 
-        user={mockUser}
+        user={user}
         showHistoryButton={true}
         onHistoryClick={() => setIsHistoryOpen(true)}
       />
