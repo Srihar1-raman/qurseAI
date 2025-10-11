@@ -1,0 +1,16 @@
+/* ===================================
+   LAYOUT STYLES
+   Page containers and main layouts
+   =================================== */
+
+/* Homepage Container */
+.homepage-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  height: 100vh;
+  height: 100dvh;
+}
+
+

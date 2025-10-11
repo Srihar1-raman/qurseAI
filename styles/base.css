@@ -1,0 +1,88 @@
+/* ===================================
+   BASE STYLES
+   Variables, reset, and global styles
+   =================================== */
+
+/* CSS Variables */
+:root {
+  --color-primary: #10a37f;
+  --color-primary-hover: #0d8a6a;
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f7f7f7;
+  --color-bg-hover: #f8f8f8;
+  --color-bg-input: #ffffff;
+  --color-border: #e5e5e5;
+  --color-border-hover: #d1d1d1;
+  --color-border-focus: #10a37f;
+  --color-text: #333333;
+  --color-text-secondary: #666666;
+  --color-text-muted: #888888;
+  --color-shadow: rgba(0, 0, 0, 0.1);
+  --color-shadow-lg: rgba(0, 0, 0, 0.15);
+  --font-reenie: 'Reenie Beanie', cursive;
+}
+
+[data-theme='dark'] {
+  --color-primary: #10a37f;
+  --color-primary-hover: #13b584;
+  --color-bg: #1a1a1a;
+  --color-bg-secondary: #2d2d2d;
+  --color-bg-hover: #333333;
+  --color-bg-input: #2d2d2d;
+  --color-border: #404040;
+  --color-border-hover: #555555;
+  --color-border-focus: #10a37f;
+  --color-text: #ffffff;
+  --color-text-secondary: #cccccc;
+  --color-text-muted: #999999;
+  --color-shadow: rgba(0, 0, 0, 0.3);
+  --color-shadow-lg: rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+  [data-theme='auto'] {
+    --color-primary: #10a37f;
+    --color-primary-hover: #13b584;
+    --color-bg: #1a1a1a;
+    --color-bg-secondary: #2d2d2d;
+    --color-bg-hover: #333333;
+    --color-bg-input: #2d2d2d;
+    --color-border: #404040;
+    --color-border-hover: #555555;
+    --color-border-focus: #10a37f;
+    --color-text: #ffffff;
+    --color-text-secondary: #cccccc;
+    --color-text-muted: #999999;
+    --color-shadow: rgba(0, 0, 0, 0.3);
+    --color-shadow-lg: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* Base reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  /* Hide scrollbars but keep functionality */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
+
+html {
+  height: 100%;
+  height: 100dvh;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-inter), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+

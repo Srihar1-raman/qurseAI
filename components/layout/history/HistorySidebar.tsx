@@ -8,23 +8,7 @@ import HistoryHeader from './HistoryHeader';
 import HistorySearch from './HistorySearch';
 import ConversationList from './ConversationList';
 import ClearHistoryModal from './ClearHistoryModal';
-
-interface HistorySidebarProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-interface Conversation {
-  id: string;
-  title: string;
-  updated_at: string;
-  message_count?: number;
-}
-
-interface ConversationGroup {
-  label: string;
-  conversations: Conversation[];
-}
+import type { Conversation, ConversationGroup, HistorySidebarProps } from '@/lib/types';
 
 export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
   const { resolvedTheme, mounted } = useTheme();

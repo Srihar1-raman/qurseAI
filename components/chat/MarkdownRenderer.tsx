@@ -162,11 +162,10 @@ interface MarkdownRendererProps {
 }
 
 export default function MarkdownRenderer({ content, className = '' }: MarkdownRendererProps) {
-  const { resolvedTheme } = useTheme();
+  // const { resolvedTheme } = useTheme(); // Reserved for future use
 
   // Scira's LaTeX extraction approach
   const { processedContent, latexBlocks } = useMemo(() => {
-    const citations: any[] = [];
     const latexBlocks: Array<{ id: string; content: string; isBlock: boolean }> = [];
     let modifiedContent = content;
 
@@ -247,7 +246,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       inlinePattern.lastIndex = 0;
 
       // Process the text to replace placeholders with LaTeX components
-      const components: any[] = [];
+      const components: React.ReactNode[] = [];
       let lastEnd = 0;
 
       // Collect all matches (both block and inline)
@@ -454,6 +453,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
     },
     image(href, text) {
       return (
+        // eslint-disable-next-line @next/next/no-img-element
         <img 
           key={generateKey()}
           src={href || ''} 

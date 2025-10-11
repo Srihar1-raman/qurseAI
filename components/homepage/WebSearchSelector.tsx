@@ -7,11 +7,7 @@ import { getIconPath } from '@/lib/icon-utils';
 import { WEB_SEARCH_OPTIONS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-
-interface WebSearchSelectorProps {
-  selectedOption: string;
-  onSelectOption: (option: string) => void;
-}
+import type { WebSearchSelectorProps } from '@/lib/types';
 
 export default function WebSearchSelector({ selectedOption, onSelectOption }: WebSearchSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -35,7 +31,7 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
     };
   }, [isOpen]);
 
-  const handleSelectOption = (optionName: string, enabled: boolean) => {
+  const handleSelectOption = (optionName: string) => {
     // Always allow selection, just show disabled state visually
     onSelectOption(optionName);
     setIsOpen(false);
@@ -93,7 +89,7 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
             return (
               <div
                 key={option.name}
-                onClick={() => handleSelectOption(option.name, option.enabled)}
+                onClick={() => handleSelectOption(option.name)}
                 className={cn(
                   "flex items-center justify-between gap-2 cursor-pointer transition-colors",
                   isSelected && "bg-primary text-white hover:bg-primary/90",

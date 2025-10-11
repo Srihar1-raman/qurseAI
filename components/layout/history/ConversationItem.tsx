@@ -5,20 +5,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
-
-interface Conversation {
-  id: string;
-  title: string;
-  updated_at: string;
-  message_count?: number;
-}
-
-interface ConversationItemProps {
-  conversation: Conversation;
-  onRename: (id: string, newTitle: string) => void;
-  onDelete: (id: string) => void;
-  onClose: () => void;
-}
+import type { ConversationItemProps } from '@/lib/types';
 
 export default function ConversationItem({ 
   conversation, 

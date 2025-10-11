@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath, getInvertedIconPath } from '@/lib/icon-utils';
+import { getIconPath } from '@/lib/icon-utils';
 
 export default function MainInput() {
   const [inputValue, setInputValue] = useState('');

@@ -5,19 +5,14 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import HistorySidebar from '@/components/layout/history/HistorySidebar';
+import { useAuth } from '@/lib/contexts/AuthContext';
 
 function InfoPageContent() {
   const [activeSection, setActiveSection] = useState('about');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
-
-  // Mock user for testing logged-in state (will come from auth later)
-  const mockUser = {
-    name: 'John Doe',
-    email: 'john@example.com',
-    avatar_url: undefined
-  };
+  const { user } = useAuth();
 
   // Handle URL parameters for section
   useEffect(() => {
@@ -45,7 +40,7 @@ function InfoPageContent() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header 
-        user={mockUser}
+        user={user}
         showNewChatButton={true}
         onNewChatClick={handleNewChatClick}
         showHistoryButton={true}

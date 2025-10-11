@@ -1,19 +1,12 @@
 'use client';
 
-import { useState } from 'react';
 import { useTheme } from '@/lib/theme-provider';
 import Image from 'next/image';
 import MarkdownRenderer from './MarkdownRenderer';
 import { getIconPath } from '@/lib/icon-utils';
+import type { ChatMessageProps } from '@/lib/types';
 
-interface ChatMessageProps {
-  content: string;
-  isUser: boolean;
-  model?: string;
-  onRedo?: () => void | Promise<void>;
-}
-
-export default function ChatMessage({ content, isUser, model, onRedo }: ChatMessageProps) {
+export default function ChatMessage({ content, isUser, onRedo }: ChatMessageProps) {
   const { resolvedTheme, mounted } = useTheme();
 
   const copyToClipboard = () => {
@@ -42,7 +35,7 @@ export default function ChatMessage({ content, isUser, model, onRedo }: ChatMess
                 onClick={async () => {
                   try {
                     await onRedo();
-                  } catch (error) {
+                  } catch {
                     // Silently handle error
                   }
                 }} 

@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter, Reenie_Beanie } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
+import { AuthProvider } from "@/lib/contexts/AuthContext";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -75,7 +76,9 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${reenieBeanie.variable} antialiased`} suppressHydrationWarning>
         <ThemeProvider>
-          {children}
+          <AuthProvider>
+            {children}
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

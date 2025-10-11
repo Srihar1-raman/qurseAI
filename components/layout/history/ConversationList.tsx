@@ -2,25 +2,7 @@
 
 import { useState } from 'react';
 import ConversationItem from './ConversationItem';
-
-interface Conversation {
-  id: string;
-  title: string;
-  updated_at: string;
-  message_count?: number;
-}
-
-interface ConversationGroup {
-  label: string;
-  conversations: Conversation[];
-}
-
-interface ConversationListProps {
-  groupedConversations: ConversationGroup[];
-  onRename: (id: string, newTitle: string) => void;
-  onDelete: (id: string) => void;
-  onClose: () => void;
-}
+import type { ConversationListProps } from '@/lib/types';
 
 export default function ConversationList({ 
   groupedConversations, 
