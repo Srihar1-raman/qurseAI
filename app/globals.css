@@ -893,7 +893,7 @@ body {
   }
 
   .main-input {
-    padding: 12px 100px 12px 12px !important;
+    padding: 12px 15px 50px 15px !important;
     font-size: 16px !important;
   }
 
@@ -973,11 +973,11 @@ body {
   transition: right 0.3s ease;
   display: flex;
   flex-direction: column;
-  box-shadow: -4px 0 20px var(--color-shadow-lg);
 }
 
 .history-sidebar.open {
   right: 0;
+  box-shadow: -4px 0 20px var(--color-shadow-lg);
 }
 
 .history-header {
@@ -1438,6 +1438,7 @@ body {
   font-size: 12px;
   color: var(--color-text-muted);
   margin-top: 4px;
+  margin-bottom: 12px;
   line-height: 1.4;
 }
 
@@ -1844,6 +1845,24 @@ body {
   margin: 0 0 20px 0;
 }
 
+/* ArXiv icon size fix */
+.arxiv-icon {
+  width: 16px !important;
+  height: 16px !important;
+  max-width: 16px !important;
+  max-height: 16px !important;
+  object-fit: contain !important;
+}
+
+/* ArXiv icon size fix for smaller icons */
+.arxiv-icon-sm {
+  width: 14px !important;
+  height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+  object-fit: contain !important;
+}
+
 /* Mobile responsive for settings */
 @media (max-width: 768px) {
   .settings-section h2 {
@@ -1851,19 +1870,29 @@ body {
   }
   
   .account-info {
-    flex-direction: column;
-    text-align: center;
-    padding: 16px;
+    flex-direction: row;
+    text-align: left;
+    padding: 20px;
   }
   
   .settings-item {
-    flex-direction: column;
-    align-items: flex-start;
+    flex-direction: row;
+    align-items: center;
     gap: 12px;
   }
   
   .settings-textarea-actions {
-    flex-direction: column;
+    flex-direction: row;
+    justify-content: flex-end;
+  }
+  
+  /* Hide icons in tabs on mobile and center text */
+  .info-tab .icon {
+    display: none;
+  }
+  
+  .info-tab {
+    justify-content: center;
   }
   
   .theme-options {

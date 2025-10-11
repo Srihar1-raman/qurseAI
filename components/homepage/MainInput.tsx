@@ -134,7 +134,7 @@ export default function MainInput() {
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
           style={{
-            padding: (isMultiline || isMobile) ? '12px 15px 50px 15px' : '12px 96px 12px 16px',
+            padding: (isMultiline || isMobile) ? '12px 15px 60px 15px' : '12px 96px 12px 16px',
             borderRadius: '20px',
             border: 'none',
             fontSize: '16px',
@@ -153,11 +153,6 @@ export default function MainInput() {
             zIndex: 3, // Ensure text is above background strip and buttons
           }}
         />
-        
-        {/* Background strip for multiline mode */}
-        {(isMultiline || isMobile) && (
-          <div className="homepage-buttons-background show"></div>
-        )}
         
         {/* Buttons - position changes based on mode */}
         {!(isMultiline || isMobile) ? (
