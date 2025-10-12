@@ -1,8 +1,10 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
+import { getUserLinkedProviders } from '@/lib/db/queries';
 import type { AccountSectionProps } from '@/lib/types';
 
 export default function AccountSection({ 
@@ -13,11 +15,37 @@ export default function AccountSection({
   onDeleteAccount 
 }: AccountSectionProps) {
   const { resolvedTheme, mounted } = useTheme();
+  const [linkedProviders, setLinkedProviders] = useState<string[]>([]);
+  const [isLoadingProviders, setIsLoadingProviders] = useState(true);
 
-  const getConnectedProvider = (email?: string) => {
-    if (email?.includes('@gmail.com')) return 'google';
-    if (email?.includes('@github.com')) return 'github';
-    return 'email';
+  // Fetch linked providers from Supabase on mount
+  useEffect(() => {
+    if (user) {
+      getUserLinkedProviders()
+        .then(providers => {
+          setLinkedProviders(providers);
+          setIsLoadingProviders(false);
+        })
+        .catch(error => {
+          console.error('Failed to load linked providers:', error);
+          setIsLoadingProviders(false);
+        });
+    }
+  }, [user]);
+
+  // Get primary provider (first one) for "Connected via..." text
+  const getPrimaryProvider = (): string => {
+    if (linkedProviders.length === 0) return 'Email';
+    
+    // Capitalize first letter
+    const provider = linkedProviders[0];
+    if (provider === 'twitter') return 'X (Twitter)';
+    return provider.charAt(0).toUpperCase() + provider.slice(1);
+  };
+
+  // Check if a specific provider is connected
+  const isProviderConnected = (provider: string): boolean => {
+    return linkedProviders.includes(provider);
   };
 
   if (!user) {
@@ -59,7 +87,13 @@ export default function AccountSection({
             <h4>{user.name || 'User'}</h4>
             <p>{user.email}</p>
             <p className="auth-provider-info">
-              Connected via {getConnectedProvider(user.email) === 'google' ? 'Google' : 'Email'}
+              {isLoadingProviders ? (
+                'Loading providers...'
+              ) : linkedProviders.length > 1 ? (
+                `Connected via ${linkedProviders.length} providers (${getPrimaryProvider()} + ${linkedProviders.length - 1} more)`
+              ) : (
+                `Connected via ${getPrimaryProvider()}`
+              )}
             </p>
           </div>
         </div>
@@ -68,34 +102,53 @@ export default function AccountSection({
       {/* Linked Providers */}
       <div className="settings-group">
         <label className="settings-label">Linked Accounts</label>
-        <div className="linked-providers-list">
-          <div className="provider-item">
-            <Image 
-              src={getIconPath('google', resolvedTheme, false, mounted)} 
-              alt="Google" 
-              width={20} 
-              height={20} 
-              className="provider-icon" 
-            />
-            <span className="provider-name">Google</span>
-            <span className={`provider-status ${getConnectedProvider(user.email) === 'google' ? 'connected' : 'not-connected'}`}>
-              {getConnectedProvider(user.email) === 'google' ? 'Connected' : 'Not Connected'}
-            </span>
+        {isLoadingProviders ? (
+          <div className="linked-providers-list">
+            <p style={{ color: 'var(--color-text-muted)', padding: '12px 0' }}>Loading linked accounts...</p>
           </div>
-          <div className="provider-item">
-            <Image 
-              src={getIconPath('github', resolvedTheme, false, mounted)} 
-              alt="GitHub" 
-              width={20} 
-              height={20} 
-              className="provider-icon" 
-            />
-            <span className="provider-name">GitHub</span>
-            <span className={`provider-status ${getConnectedProvider(user.email) === 'github' ? 'connected' : 'not-connected'}`}>
-              {getConnectedProvider(user.email) === 'github' ? 'Connected' : 'Not Connected'}
-            </span>
+        ) : (
+          <div className="linked-providers-list">
+            <div className="provider-item">
+              <Image 
+                src={getIconPath('google', resolvedTheme, false, mounted)} 
+                alt="Google" 
+                width={20} 
+                height={20} 
+                className="provider-icon" 
+              />
+              <span className="provider-name">Google</span>
+              <span className={`provider-status ${isProviderConnected('google') ? 'connected' : 'not-connected'}`}>
+                {isProviderConnected('google') ? 'Connected' : 'Not Connected'}
+              </span>
+            </div>
+            <div className="provider-item">
+              <Image 
+                src={getIconPath('github', resolvedTheme, false, mounted)} 
+                alt="GitHub" 
+                width={20} 
+                height={20} 
+                className="provider-icon" 
+              />
+              <span className="provider-name">GitHub</span>
+              <span className={`provider-status ${isProviderConnected('github') ? 'connected' : 'not-connected'}`}>
+                {isProviderConnected('github') ? 'Connected' : 'Not Connected'}
+              </span>
+            </div>
+            <div className="provider-item">
+              <Image 
+                src={getIconPath('x-twitter', resolvedTheme, false, mounted)} 
+                alt="X (Twitter)" 
+                width={20} 
+                height={20} 
+                className="provider-icon" 
+              />
+              <span className="provider-name">X (Twitter)</span>
+              <span className={`provider-status ${isProviderConnected('twitter') ? 'connected' : 'not-connected'}`}>
+                {isProviderConnected('twitter') ? 'Connected' : 'Not Connected'}
+              </span>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Account Activity */}

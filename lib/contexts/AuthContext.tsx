@@ -1,35 +1,147 @@
 'use client';
 
-import { createContext, useContext, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createClient } from '@/lib/supabase/client';
 import type { User } from '@/lib/types';
+import type { Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
+  isLoading: boolean;
   isAuthenticated: boolean;
-  signOut: () => void;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // Mock user for UI testing (will be replaced with real auth later)
-  const mockUser: User = {
-    name: 'John Doe',
-    email: 'john@example.com',
-    avatar_url: undefined,
-  };
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleSignOut = () => {
-    // Will implement real sign out logic when auth is added
-    console.log('Sign out clicked');
+  // Check if Supabase env vars are available
+  const hasSupabaseConfig = 
+    typeof window !== 'undefined' && 
+    process.env.NEXT_PUBLIC_SUPABASE_URL && 
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  const supabase = hasSupabaseConfig ? createClient() : null;
+
+  useEffect(() => {
+    // Skip auth if Supabase is not configured
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Initialize auth state
+    const initializeAuth = async () => {
+      try {
+        // Get initial session
+        const { data: { session: initialSession } } = await supabase.auth.getSession();
+        setSession(initialSession);
+
+        if (initialSession?.user) {
+          // Fetch full user data from users table
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', initialSession.user.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching user data:', error);
+            // Fall back to auth user metadata if users table query fails
+            setUser({
+              id: initialSession.user.id,
+              email: initialSession.user.email!,
+              name: initialSession.user.user_metadata?.full_name || initialSession.user.user_metadata?.name,
+              avatar_url: initialSession.user.user_metadata?.avatar_url,
+            });
+          } else {
+            setUser({
+              id: userData.id,
+              email: userData.email,
+              name: userData.name,
+              avatar_url: userData.avatar_url,
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+
+    // Listen to auth state changes (prevents race conditions)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, newSession) => {
+        console.log('Auth state changed:', event);
+        setSession(newSession);
+
+        if (newSession?.user) {
+          // Fetch updated user data
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('*')
+            .eq('id', newSession.user.id)
+            .single();
+
+          if (error) {
+            console.error('Error fetching user data on auth change:', error);
+            // Fall back to auth user metadata
+            setUser({
+              id: newSession.user.id,
+              email: newSession.user.email!,
+              name: newSession.user.user_metadata?.full_name || newSession.user.user_metadata?.name,
+              avatar_url: newSession.user.user_metadata?.avatar_url,
+            });
+          } else {
+            setUser({
+              id: userData.id,
+              email: userData.email,
+              name: userData.name,
+              avatar_url: userData.avatar_url,
+            });
+          }
+        } else {
+          setUser(null);
+        }
+
+        // Set loading to false after auth state change is processed
+        setIsLoading(false);
+      }
+    );
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase]);
+
+  const signOut = async () => {
+    if (!supabase) return;
+    
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      setSession(null);
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
     <AuthContext.Provider 
       value={{ 
-        user: mockUser, 
-        isAuthenticated: true,
-        signOut: handleSignOut
+        user, 
+        session,
+        isLoading,
+        isAuthenticated: !!user,
+        signOut
       }}
     >
       {children}

@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
+import { useAuth } from '@/lib/contexts/AuthContext';
 import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropdown';
 import { getIconPath, getInvertedIconPath } from '@/lib/icon-utils';
 import type { HeaderProps } from '@/lib/types';
@@ -14,12 +15,16 @@ export default function Header({
   onNewChatClick,
   showHistoryButton = false,
   onHistoryClick,
-  user = null
+  user: propUser = null
 }: HeaderProps = {}) {
   const router = useRouter();
   const { theme, setTheme, resolvedTheme, mounted } = useTheme();
+  const { user: authUser, isLoading, signOut } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Use auth user if available, otherwise fall back to prop user
+  const user = authUser || propUser;
 
   // Get user's first initial
   const getUserInitial = () => {
@@ -32,10 +37,10 @@ export default function Header({
     return 'U';
   };
 
-  const handleSignOut = async () => {
-    // TODO: Implement sign out logic
-    console.log('Sign out');
+  const handleSignOut = () => {
+    signOut(); // Don't await - let auth state change naturally
     setIsDropdownOpen(false);
+    router.push('/');
   };
 
   // Close dropdown when clicking outside
@@ -54,6 +59,59 @@ export default function Header({
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, [isDropdownOpen]);
+
+  // Show loading skeleton while auth is initializing
+  if (isLoading) {
+    return (
+      <header 
+        style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          height: '60px',
+          background: 'var(--color-bg)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0 10px',
+          zIndex: 50,
+        }}
+      >
+        {/* Left side - Logo */}
+        <div>
+          <Link 
+            href="/"
+            className="font-reenie font-medium hover:opacity-80 transition-opacity"
+            style={{
+              fontSize: '28px',
+              letterSpacing: '-0.5px',
+              color: 'var(--color-text)',
+              textDecoration: 'none',
+            }}
+          >
+            {'{Qurse}'}
+          </Link>
+        </div>
+
+        {/* Right side - Loading skeleton */}
+        <div className="flex items-center gap-2">
+          {/* Skeleton circle for profile/settings button */}
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'var(--color-bg-secondary)',
+              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            }}
+          />
+        </div>
+      </header>
+    );
+  }
 
   return (
     <header 
