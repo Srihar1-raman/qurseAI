@@ -15,8 +15,8 @@ An AI-powered search and chat application, rebuilt from scratch with professiona
 - **Language:** TypeScript
 - **Styling:** TailwindCSS 4 + Modular CSS
 - **AI SDK:** Vercel AI SDK (to be integrated)
-- **Auth:** TBD (Better-auth or Supabase)
-- **Database:** TBD (Drizzle + PostgreSQL or Supabase)
+- **Auth:** Supabase
+- **Database:** Supabase
 
 ### Reference Projects
 - **qurse-old** (`/Users/sri/Desktop/qurse-old/`) - Original messy codebase with Supabase
@@ -59,14 +59,7 @@ An AI-powered search and chat application, rebuilt from scratch with professiona
 
 ## 🏗️ ARCHITECTURAL IMPROVEMENTS
 
-### 1. CSS Refactoring ✅
-
-**Before:**
-```
-app/globals.css (1907 lines) ❌
-```
-
-**After:**
+### 1. CSS
 ```
 app/globals.css (24 lines - imports only) ✅
 styles/
@@ -85,32 +78,9 @@ styles/
 
 ---
 
-### 2. Component Breakdown ✅
 
-**Before:**
-```
-app/settings/page.tsx (757 lines) ❌
-```
+### 2. Type System ✅
 
-**After:**
-```
-app/settings/page.tsx (241 lines - orchestrator) ✅
-components/settings/
-  ├── AccountSection.tsx (159 lines)
-  ├── GeneralSection.tsx (133 lines)
-  ├── PaymentSection.tsx (43 lines)
-  ├── SystemSection.tsx (33 lines)
-  ├── DeleteAccountModal.tsx (81 lines)
-  └── ClearChatsModal.tsx (63 lines)
-```
-
-**Result:** Small, focused components (<250 lines each).
-
----
-
-### 3. Type System ✅
-
-**Created:** `/lib/types.ts` (190 lines)
 
 **Centralized Types:**
 - User & Authentication (`User`, `UserPreferences`, `UserStats`)
@@ -125,19 +95,8 @@ components/settings/
 
 ---
 
-### 4. Route Organization ✅
+### 3. Route Organization ✅
 
-**Before:**
-```
-app/
-├── page.tsx
-├── conversation/
-├── login/
-├── signup/
-└── settings/
-```
-
-**After:**
 ```
 app/
 ├── (auth)/              ← Auth route group
@@ -159,14 +118,6 @@ app/
 ### 5. State Management ✅
 
 **Created:** `/lib/contexts/AuthContext.tsx`
-
-**Before:**
-```typescript
-// Duplicated in 4 files ❌
-const mockUser = { name: 'John Doe', email: 'john@example.com' };
-```
-
-**After:**
 ```typescript
 // One place, used everywhere ✅
 const { user, isAuthenticated, signOut } = useAuth();
@@ -175,30 +126,18 @@ const { user, isAuthenticated, signOut } = useAuth();
 **Benefits:**
 - Single source of truth
 - Type-safe context
-- Easy to swap with real auth (Better-auth/Supabase)
+- Easy to swap with real auth Supabase
 - No refactoring needed when adding real auth
 
 ---
 
 ### 6. Code Quality ✅
 
-**Removed ALL Inline Styles:**
-- ✅ Settings page & components
-- ✅ Auth pages (login/signup)  
-- ✅ Modals
-
 **Eliminated Duplication:**
 - ✅ Mock user data (now in AuthContext)
 - ✅ Icon utility functions (consolidated in `icon-utils.ts`)
 - ✅ Type definitions (centralized in `types.ts`)
 
-**Build Optimization:**
-- Homepage: 7.96 kB → 7.94 kB
-- Login: 2.31 kB → 1.93 kB (-16%)
-- Signup: 2.32 kB → 1.93 kB (-17%)
-- Settings: 4.67 kB → 4.19 kB (-10%)
-
----
 
 ## 📁 CURRENT FOLDER STRUCTURE
 
@@ -546,12 +485,13 @@ Route (app)                                 Size  First Load JS
 
 When starting a new chat session, you should know:
 
-1. **Project is ready for backend** - UI complete, structure solid
-2. **Next step is auth** - Choose Better-auth or Supabase
-3. **Reference projects available** - Scira and qurse-old in Desktop folder
-4. **All types centralized** - Import from `/lib/types.ts`
-5. **Auth context ready** - Just swap mock user with real auth
-6. **No major refactoring needed** - Foundation is solid
+1. **✅ UI Complete** - Modern, responsive, professional
+2. **✅ Auth Complete** - Supabase OAuth (GitHub, Google, Twitter) fully implemented
+3. **✅ Database Ready** - Minimal schema (users, conversations, messages) with RLS
+4. **🎯 Next Step: AI Integration** - Connect Vercel AI SDK, implement chat functionality
+5. **Reference projects available** - Scira and qurse-old in Desktop folder
+6. **All types centralized** - Import from `/lib/types.ts`
+7. **Auth is real** - No more mock data, AuthContext manages sessions
 
 **Commands to run:**
 ```bash
@@ -560,7 +500,326 @@ pnpm run dev          # Start dev server
 pnpm run build        # Test build
 ```
 
-**Dev server runs on:** `http://localhost:3000` (or 3004, 3005, 3006 if port in use)
+**Important Files:**
+- `lib/supabase/schema.sql` - Database schema
+- `lib/contexts/AuthContext.tsx` - Auth state management
+- `lib/db/queries.ts` - Database helpers
+- `SUPABASE_SETUP.md` - Setup guide
+
+---
+
+## 🔐 PHASE 2: AUTHENTICATION & DATABASE ✅ COMPLETE
+
+### Implementation Date: October 12, 2025
+
+### Overview
+Implemented professional Supabase authentication with minimal, scalable database schema. Follows Scira's lean architecture pattern - no over-engineering, just core functionality.
+
+### Database Schema (Minimal - 3 Tables)
+
+```sql
+users (
+  id UUID PRIMARY KEY,
+  email TEXT UNIQUE NOT NULL,
+  name TEXT,
+  avatar_url TEXT,
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
+)
+
+conversations (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  title TEXT DEFAULT 'New Chat',
+  created_at TIMESTAMPTZ,
+  updated_at TIMESTAMPTZ
+)
+
+messages (
+  id UUID PRIMARY KEY,
+  conversation_id UUID REFERENCES conversations(id),
+  role TEXT CHECK (role IN ('user', 'assistant', 'system')),
+  content TEXT NOT NULL,
+  created_at TIMESTAMPTZ
+)
+```
+
+**Key Features:**
+- ✅ Row Level Security (RLS) enabled
+- ✅ Automatic timestamp updates via triggers
+- ✅ Cascade deletes (deleting conversation deletes messages)
+- ✅ Helper functions (get_conversations_with_message_count)
+- ✅ Indexed for performance
+
+**What We Didn't Include (Yet):**
+- ⏸️ Files table (add when implementing file uploads)
+- ⏸️ Usage tracking (add when implementing rate limits)
+- ⏸️ Organizations/teams (add when needed)
+- ⏸️ API keys, audit logs, etc. (enterprise features for later)
+
+### Auth Architecture
+
+**File Structure:**
+```
+lib/
+├── supabase/
+│   ├── schema.sql          # Database schema (180 lines)
+│   ├── client.ts           # Browser Supabase client
+│   └── server.ts           # Server Supabase client (SSR)
+├── contexts/
+│   └── AuthContext.tsx     # Auth state management (145 lines)
+└── db/
+    └── queries.ts          # Database query helpers (173 lines)
+
+app/
+└── auth/
+    └── callback/
+        └── route.ts        # OAuth callback handler
+
+middleware.ts               # Session refresh middleware
+```
+
+**How It Works:**
+
+1. **Browser Client** (`lib/supabase/client.ts`)
+   - Used in Client Components
+   - Handles client-side auth operations
+   - Uses `@supabase/ssr` for cookie management
+
+2. **Server Client** (`lib/supabase/server.ts`)
+   - Used in Server Components, Server Actions, Route Handlers
+   - Properly handles SSR with Next.js cookies
+   - Prevents auth state mismatches
+
+3. **Auth Context** (`lib/contexts/AuthContext.tsx`)
+   - Single source of truth for auth state
+   - Initializes session on mount
+   - Listens to auth state changes (prevents race conditions)
+   - Provides user data globally via React Context
+   - Includes loading states for better UX
+
+4. **OAuth Flow:**
+   ```
+   User clicks "Sign in" 
+   → Redirected to provider (GitHub/Google/Twitter)
+   → Provider redirects to /auth/callback
+   → Callback exchanges code for session
+   → User profile created in database
+   → Redirected to homepage
+   → AuthContext updates with user data
+   ```
+
+5. **Middleware** (`middleware.ts`)
+   - Runs on every request
+   - Refreshes expired sessions automatically
+   - Ensures Server Components have fresh auth state
+   - Optional: Can protect routes (commented out for now)
+
+### Database Query Helpers
+
+Created clean abstraction layer in `lib/db/queries.ts`:
+
+```typescript
+// Conversations
+getConversations(userId)
+createConversation(userId, title)
+updateConversation(conversationId, updates)
+deleteConversation(conversationId)
+deleteAllConversations(userId)
+
+// Messages
+getMessages(conversationId)
+createMessage(conversationId, content, role)
+```
+
+**Benefits:**
+- Cleaner component code
+- Consistent error handling
+- Easy to mock for testing
+- Centralized query logic
+
+### OAuth Providers Configured
+
+- ✅ GitHub (Primary)
+- ✅ Google
+- ✅ Twitter/X
+
+All providers redirect to `/auth/callback` which handles user creation and session setup.
+
+### Key Improvements Over qurse-old
+
+**qurse-old Problems:**
+- ❌ Multiple auth state sources (race conditions)
+- ❌ No session caching (slow loading)
+- ❌ Mixed client/server auth logic
+- ❌ Over-engineered schema (12+ tables)
+- ❌ No proper error handling
+- ❌ Session sync issues
+
+**New Implementation:**
+- ✅ Single auth state source (AuthContext)
+- ✅ Proper session management with middleware
+- ✅ Clean client/server separation
+- ✅ Minimal schema (3 tables, extensible)
+- ✅ Comprehensive error handling
+- ✅ No race conditions
+
+### Environment Variables
+
+Required in `.env.local`:
+```bash
+NEXT_PUBLIC_SUPABASE_URL=your-project-url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Optional (for AI integration later):
+```bash
+OPENAI_API_KEY=your-key
+ANTHROPIC_API_KEY=your-key
+GOOGLE_GENERATIVE_AI_API_KEY=your-key
+GROQ_API_KEY=your-key
+```
+
+### Testing Checklist
+
+Before moving to AI integration:
+- ✅ OAuth login works for all providers
+- ✅ User profile created in database
+- ✅ Session persists across page refreshes
+- ✅ Sign out clears session properly
+- ✅ Auth state updates in real-time
+- ✅ No race conditions or sync issues
+- ✅ RLS policies protect user data
+- ✅ Middleware refreshes sessions
+
+### Documentation
+
+Created comprehensive setup guide: `SUPABASE_SETUP.md`
+- Step-by-step Supabase project setup
+- OAuth provider configuration
+- Environment variable setup
+- Testing procedures
+- Troubleshooting guide
+
+---
+
+## 🧪 POST-IMPLEMENTATION TESTING & OBSERVATIONS
+
+### Testing Date: October 12, 2025
+
+### What Works ✅
+1. **GitHub OAuth** - Flawless authentication flow
+2. **Google OAuth** - Works perfectly
+3. **Twitter OAuth** - Authentication works, user saved in database
+4. **Session Persistence** - Sessions persist across page refreshes
+5. **Sign Out** - Properly clears session and redirects
+
+### Issues Found & Fixed ✅
+
+#### 1. Twitter Avatar Image Error (FIXED)
+**Problem:** Next.js `Image` component blocked Twitter avatar URLs  
+**Error:** `hostname "pbs.twimg.com" is not configured`  
+**Fix:** Added Twitter image hostname to `next.config.ts`  
+**Status:** ✅ Resolved
+
+#### 2. UI Flash on Page Load (FIXED)
+**Problem:** Brief flash of guest/anon UI before switching to logged-in UI  
+**Cause:** Async auth initialization (~100-500ms) while components render immediately  
+**Fix:** Added loading skeleton to Header that shows during `isLoading` state  
+**Status:** ✅ Resolved  
+**Note:** Still very brief (<100ms) but much less jarring
+
+### Known Intentional Gaps (For Phase 3)
+
+#### 3. Homepage → Conversation Flow (NOT IMPLEMENTED YET)
+**Status:** ⏸️ Intentionally delayed to Phase 3  
+**Why:** Requires AI SDK integration, API routes, streaming setup  
+**When:** Implement during AI Integration phase  
+**Flow to build:**
+```
+User enters prompt → POST /api/chat → Create conversation → 
+Navigate to /conversation/[id] → Stream AI response → Save messages
+```
+
+#### 4. History Sidebar Mock Data (NOT IMPLEMENTED YET)
+**Status:** ⏸️ Intentionally delayed to Phase 3  
+**Current:** Shows hardcoded mock conversations  
+**Fix needed:** Replace with `getConversations(user.id)` from `lib/db/queries.ts`  
+**When:** After AI integration creates real conversations to display  
+**Estimated effort:** 10 minutes
+
+#### 5. Slow Page Loads (EXPECTED IN DEV MODE)
+**Observation:** Settings page and other pages sometimes load slowly or show URL change without immediate render  
+**Causes:**
+- Development mode overhead (Turbopack, HMR)
+- No query caching (refetches user on every navigation)
+- Large bundle sizes (Settings: 175 kB)
+- Missing loading indicators
+
+**Solutions for Phase 3:**
+- Add `loading.tsx` files for routes
+- Implement query caching (React Query or similar)
+- Code split modal components
+- Test production build (`pnpm build && pnpm start`)
+
+**Current status:** Acceptable for development, will optimize in Phase 3
+
+---
+
+## 🎯 IMPORTANT REMINDERS FOR NEXT PHASE
+
+### Before Starting Phase 3 (AI Integration):
+
+1. **✅ Auth is production-ready** - No changes needed
+2. **✅ Database ready** - Schema supports conversations & messages
+3. **✅ Query helpers ready** - Use functions from `lib/db/queries.ts`
+4. **⚠️ History needs real data** - Replace mock with real fetch after AI creates conversations
+5. **⚠️ Production performance** - Test with `pnpm build && pnpm start` before deploying
+
+### Phase 3 Checklist:
+
+**AI Integration:**
+- [ ] Install AI SDK packages (`@ai-sdk/openai`, `@ai-sdk/anthropic`, etc.)
+- [ ] Create `/app/api/chat/route.ts` - AI streaming endpoint
+- [ ] Implement homepage → conversation flow
+- [ ] Save messages to database using `createMessage()`
+- [ ] Load conversation history using `getMessages()`
+
+**UI Enhancements:**
+- [ ] Replace history mock data with real database fetch
+- [ ] Add loading states (`loading.tsx` files)
+- [ ] Implement sources tab
+- [ ] Add reasoning display
+- [ ] Add loading animations for AI responses
+
+**Performance:**
+- [ ] Add query caching
+- [ ] Code split heavy components
+- [ ] Test production build performance
+- [ ] Optimize bundle sizes
+
+### Keep in Mind:
+
+**✅ Working Well:**
+- Auth architecture is solid (no race conditions)
+- Type system is comprehensive
+- Database schema is minimal and extensible
+- Query helpers abstract complexity
+- Build passes with zero errors
+
+**⚠️ Watch Out For:**
+- Don't over-engineer - keep the lean approach
+- Use existing query helpers instead of raw Supabase calls
+- Update history sidebar once real conversations exist
+- Test performance in production mode regularly
+- Add loading states as you build features
+
+**🚫 Don't Repeat qurse-old Mistakes:**
+- No hardcoded mock data in production code
+- No race conditions (always use AuthContext)
+- No over-engineered schemas (extend minimally)
+- No inline database queries (use query helpers)
+- No missing error handling
 
 ---
 
@@ -569,8 +828,11 @@ pnpm run build        # Test build
 - **Scira Reference:** `/Users/sri/Desktop/scira/`
 - **Old Project:** `/Users/sri/Desktop/qurse-old/`
 - **Current Project:** `/Users/sri/Desktop/qurse/`
+- **Setup Guide:** `SUPABASE_SETUP.md`
+- **Database Schema:** `lib/supabase/schema.sql`
 
 ---
 
-*This context file should be updated as development progresses. Last major update: Phase 1 (UI & Structure) complete.*
+*This context file should be updated as development progresses.*  
+**Last Major Update:** Phase 2 complete + Post-testing fixes applied - October 12, 2025
 
