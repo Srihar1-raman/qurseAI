@@ -1,4 +1,4 @@
-# qurseAI
+1# qurse
 
 A modern AI-powered search and chat application built with Next.js.
 
