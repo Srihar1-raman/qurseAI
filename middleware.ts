@@ -40,6 +40,14 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // Redirect logged-in users away from auth pages
+  if (user && (
+    request.nextUrl.pathname === '/login' || 
+    request.nextUrl.pathname === '/signup'
+  )) {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
   // Optionally: Redirect to login if user is not authenticated and trying to access protected routes
   // Uncomment the following lines if you want to protect routes
   /*
