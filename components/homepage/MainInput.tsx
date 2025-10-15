@@ -1,16 +1,21 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
+import { useConversation } from '@/lib/contexts/ConversationContext';
 
 export default function MainInput() {
+  const router = useRouter();
   const [inputValue, setInputValue] = useState('');
   const [isMultiline, setIsMultiline] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { resolvedTheme, mounted } = useTheme();
+  const { selectedModel, chatMode } = useConversation();
 
   // Detect mobile screen size
   useEffect(() => {
@@ -69,11 +74,44 @@ export default function MainInput() {
     }
   }, [inputValue, isMobile]);
 
-  const handleSend = () => {
-    if (inputValue.trim()) {
-      console.log('Sending:', inputValue);
-      // TODO: Send message logic
+  const handleSend = async () => {
+    const messageText = inputValue.trim();
+    if (!messageText || isLoading) return;
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: messageText }],
+          model: selectedModel,
+          chatMode,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to send message' }));
+        throw new Error(errorData.error || 'Failed to send message');
+      }
+
+      // Get conversation ID from response header
+      const conversationId = response.headers.get('X-Conversation-ID');
+      
+      if (conversationId) {
+        // Redirect to conversation page
+        router.push(`/conversation/${conversationId}`);
+      } else {
+        throw new Error('No conversation ID received');
+      }
+
       setInputValue('');
+    } catch (err) {
+      console.error('Error sending message:', err);
+      setIsLoading(false);
     }
   };
 
@@ -186,7 +224,7 @@ export default function MainInput() {
             {/* Send Button */}
             <button
               type="button"
-              disabled={!inputValue.trim()}
+              disabled={!inputValue.trim() || isLoading}
               className="flex items-center justify-center transition-all"
               aria-label="Send message"
               onClick={handleSend}
@@ -194,19 +232,30 @@ export default function MainInput() {
                 width: '36px',
                 height: '36px',
                 borderRadius: '50%',
-                background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                background: (inputValue.trim() && !isLoading) ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                border: `1px solid ${(inputValue.trim() && !isLoading) ? 'var(--color-primary)' : 'var(--color-border)'}`,
                 padding: '0',
-                opacity: inputValue.trim() ? 1 : 0.5,
-                cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
+                opacity: (inputValue.trim() && !isLoading) ? 1 : 0.5,
+                cursor: (inputValue.trim() && !isLoading) ? 'pointer' : 'not-allowed',
               }}
             >
-              <Image
-                src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                alt="Send"
-                width={16}
-                height={16}
-              />
+              {isLoading ? (
+                <div style={{ 
+                  width: '16px', 
+                  height: '16px', 
+                  border: '2px solid var(--color-text-secondary)',
+                  borderTopColor: 'transparent',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }} />
+              ) : (
+                <Image
+                  src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
+                  alt="Send"
+                  width={16}
+                  height={16}
+                />
+              )}
             </button>
           </div>
         ) : (
@@ -246,7 +295,7 @@ export default function MainInput() {
               {/* Send Button */}
               <button
                 type="button"
-                disabled={!inputValue.trim()}
+                disabled={!inputValue.trim() || isLoading}
                 className="flex items-center justify-center transition-all"
                 aria-label="Send message"
                 onClick={handleSend}
@@ -254,19 +303,30 @@ export default function MainInput() {
                   width: '36px',
                   height: '36px',
                   borderRadius: '50%',
-                  background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                  border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                  background: (inputValue.trim() && !isLoading) ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                  border: `1px solid ${(inputValue.trim() && !isLoading) ? 'var(--color-primary)' : 'var(--color-border)'}`,
                   padding: '0',
-                  opacity: inputValue.trim() ? 1 : 0.5,
-                  cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
+                  opacity: (inputValue.trim() && !isLoading) ? 1 : 0.5,
+                  cursor: (inputValue.trim() && !isLoading) ? 'pointer' : 'not-allowed',
                 }}
               >
-                <Image
-                  src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                  alt="Send"
-                  width={16}
-                  height={16}
-                />
+                {isLoading ? (
+                  <div style={{ 
+                    width: '16px', 
+                    height: '16px', 
+                    border: '2px solid var(--color-text-secondary)',
+                    borderTopColor: 'transparent',
+                    borderRadius: '50%',
+                    animation: 'spin 1s linear infinite'
+                  }} />
+                ) : (
+                  <Image
+                    src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
+                    alt="Send"
+                    width={16}
+                    height={16}
+                  />
+                )}
               </button>
             </div>
           </>

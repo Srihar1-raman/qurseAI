@@ -1,6 +1,9 @@
 /**
  * Database Query Helper Functions
  * Abstracts Supabase queries for cleaner code
+ * 
+ * NOTE: These functions use the browser client and are meant for client-side operations.
+ * For server-side operations (API routes), import from @/lib/supabase/server directly.
  */
 
 import { createClient } from '@/lib/supabase/client';

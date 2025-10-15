@@ -12,7 +12,6 @@ import HistorySidebar from '@/components/layout/history/HistorySidebar';
 import { useAuth } from '@/lib/contexts/AuthContext';
 
 export default function HomePage() {
-  const [selectedModel, setSelectedModel] = useState('GPT-OSS 120B');
   const [selectedSearchOption, setSelectedSearchOption] = useState('Chat');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const { user } = useAuth();
@@ -44,11 +43,7 @@ export default function HomePage() {
             marginBottom: '0',
           }}
         >
-          <ModelSelector
-            selectedModel={selectedModel}
-            onSelectModel={setSelectedModel}
-            selectedWebSearchOption={selectedSearchOption}
-          />
+          <ModelSelector />
           
           <DeepSearchButton />
           

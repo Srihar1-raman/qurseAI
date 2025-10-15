@@ -1,57 +1,73 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
+import { useAuth } from '@/lib/contexts/AuthContext';
+import { useConversation } from '@/lib/contexts/ConversationContext';
 import { getIconPath } from '@/lib/icon-utils';
-import { MODEL_GROUPS, isModelCompatibleWithArxiv } from '@/lib/constants';
+import { models, canUseModel, type ModelConfig } from '@/ai/models';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import type { ModelSelectorProps, ModelGroup } from '@/lib/types';
 
-export default function ModelSelector({ selectedModel, onSelectModel, selectedWebSearchOption }: ModelSelectorProps) {
+interface GroupedModels {
+  category: string;
+  models: ModelConfig[];
+}
+
+export default function ModelSelector() {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { resolvedTheme, mounted } = useTheme();
+  const { user } = useAuth();
+  const { selectedModel, setSelectedModel } = useConversation();
 
-  // Filter model groups based on search query and arxiv compatibility
-  const getFilteredModelGroups = (): ModelGroup[] => {
-    const filtered = Object.values(MODEL_GROUPS)
-      .filter(group => group.enabled)
-      .map(group => ({
-        ...group,
-        models: group.models
-          .filter(model => 
-            !searchQuery || 
-            model.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            group.provider.toLowerCase().includes(searchQuery.toLowerCase())
-          )
-          .map(model => ({
-            ...model,
-            disabled: selectedWebSearchOption === 'arXiv' && 
-                      !isModelCompatibleWithArxiv(model.name, group.provider)
-          }))
-      }))
-      .filter(group => group.models.length > 0);
+  // Group models by category and filter by search
+  const groupedModels = useMemo(() => {
+    const query = searchQuery.toLowerCase();
+    
+    // Filter models by search query
+    const filteredModels = models.filter(model => 
+      !query ||
+      model.label.toLowerCase().includes(query) ||
+      model.description.toLowerCase().includes(query) ||
+      model.provider.toLowerCase().includes(query) ||
+      model.tags?.some(tag => tag.toLowerCase().includes(query))
+    );
 
-    return filtered;
-  };
+    // Group by category
+    const groups: GroupedModels[] = [];
+    const categoryOrder = ['Free', 'Pro', 'Premium'];
 
-  const filteredGroups = getFilteredModelGroups();
+    categoryOrder.forEach(category => {
+      const categoryModels = filteredModels.filter(m => m.category === category);
+      if (categoryModels.length > 0) {
+        groups.push({
+          category,
+          models: categoryModels,
+        });
+      }
+    });
+
+    return groups;
+  }, [searchQuery]);
+
+  // Get selected model config
+  const selectedModelConfig = models.find(m => m.value === selectedModel);
 
   // Close dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
+        setSearchQuery('');
       }
     };
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
-      // Focus search input when dropdown opens
       setTimeout(() => searchInputRef.current?.focus(), 0);
     }
 
@@ -60,9 +76,17 @@ export default function ModelSelector({ selectedModel, onSelectModel, selectedWe
     };
   }, [isOpen]);
 
-  const handleSelectModel = (modelName: string, disabled?: boolean) => {
-    if (disabled) return;
-    onSelectModel(modelName);
+  const handleSelectModel = (modelValue: string) => {
+    const accessCheck = canUseModel(modelValue, user, false); // TODO: Get actual Pro status
+    
+    if (!accessCheck.canUse) {
+      // Show error or redirect to login
+      console.warn('Cannot use model:', accessCheck.reason);
+      // TODO: Show toast or modal
+      return;
+    }
+
+    setSelectedModel(modelValue);
     setIsOpen(false);
     setSearchQuery('');
   };
@@ -85,7 +109,9 @@ export default function ModelSelector({ selectedModel, onSelectModel, selectedWe
             width={16}
             height={16}
           />
-          <span className="model-selector-text">{selectedModel}</span>
+          <span className="model-selector-text">
+            {selectedModelConfig?.label || selectedModel}
+          </span>
         </div>
         <Image
           src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
@@ -98,7 +124,7 @@ export default function ModelSelector({ selectedModel, onSelectModel, selectedWe
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 min-w-[200px] max-h-[300px] bg-background border border-border rounded-lg shadow-lg z-50 overflow-hidden flex flex-col">
+        <div className="absolute top-full left-0 right-0 mt-1 min-w-[280px] max-h-[400px] bg-background border border-border rounded-lg shadow-lg z-50 overflow-hidden flex flex-col">
           {/* Search Input */}
           <div className="p-2 border-b border-border">
             <div className="relative">
@@ -122,80 +148,151 @@ export default function ModelSelector({ selectedModel, onSelectModel, selectedWe
 
           {/* Model List */}
           <div className="overflow-y-auto flex-1">
-            {filteredGroups.length === 0 ? (
+            {groupedModels.length === 0 ? (
               <div className="p-4 text-center text-sm text-muted-foreground">
                 No models found
               </div>
             ) : (
-              filteredGroups.map((group) => (
-                  <div key={group.provider}>
-                    {/* Group Header */}
-                    <div 
-                      style={{
-                        padding: '8px 12px 4px 12px',
-                        fontSize: '11px',
-                        fontWeight: 600,
-                        color: 'var(--color-text-muted)',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
-                        background: 'var(--color-bg-secondary)',
-                      }}
-                    >
-                      {group.provider}
-                    </div>
+              groupedModels.map((group) => (
+                <div key={group.category}>
+                  {/* Category Header */}
+                  <div 
+                    style={{
+                      padding: '8px 12px 4px 12px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      color: 'var(--color-text-muted)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      background: 'var(--color-bg-secondary)',
+                    }}
+                  >
+                    {group.category}
+                  </div>
+
                   {/* Models */}
-                  {group.models.map((model) => (
-                    <div
-                      key={model.id}
-                      onClick={() => handleSelectModel(model.name, model.disabled)}
-                      className={cn(
-                        "flex items-center justify-between cursor-pointer transition-colors",
-                        model.disabled && "opacity-40 cursor-not-allowed",
-                        !model.disabled && "hover:bg-muted",
-                        selectedModel === model.name && "bg-primary text-white hover:bg-primary/90"
-                      )}
-                      style={{
-                        padding: '8px 12px',
-                        fontSize: '13px',
-                        fontWeight: 500,
-                        color: selectedModel === model.name ? 'white' : 'var(--color-text)',
-                      }}
-                    >
-                      <span>{model.name}</span>
-                      <div className="flex items-center gap-1">
-                        {model.imageSupport && (
-                          <div className={cn(
-                            "w-[16px] h-[16px] rounded flex items-center justify-center",
-                            selectedModel === model.name
-                              ? "bg-white/10 border border-white/20 opacity-100"
-                              : "bg-muted/50 border border-border/50 opacity-70"
-                          )}>
-                            <Image
-                              src={getIconPath('image', resolvedTheme, selectedModel === model.name, mounted)}
-                              alt="Image support"
-                              width={9}
-                              height={9}
-                            />
-                          </div>
+                  {group.models.map((model) => {
+                    const accessCheck = canUseModel(model.value, user, false);
+                    const isSelected = selectedModel === model.value;
+                    const isDisabled = !accessCheck.canUse;
+
+                    return (
+                      <div
+                        key={model.value}
+                        onClick={() => handleSelectModel(model.value)}
+                        className={cn(
+                          "cursor-pointer transition-colors",
+                          isDisabled && "opacity-50 cursor-not-allowed",
+                          !isDisabled && "hover:bg-muted",
+                          isSelected && "bg-primary text-white hover:bg-primary/90"
                         )}
-                        {model.reasoningModel && (
-                          <div className={cn(
-                            "w-[16px] h-[16px] rounded flex items-center justify-center",
-                            selectedModel === model.name
-                              ? "bg-white/10 border border-white/20 opacity-100"
-                              : "bg-muted/50 border border-border/50 opacity-70"
-                          )}>
-                            <Image
-                              src={getIconPath('reason', resolvedTheme, selectedModel === model.name, mounted)}
-                              alt="Reasoning model"
-                              width={9}
-                              height={9}
-                            />
+                        style={{
+                          padding: '10px 12px',
+                        }}
+                        title={isDisabled ? accessCheck.reason : model.description}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-1">
+                              <span 
+                                style={{
+                                  fontSize: '13px',
+                                  fontWeight: 600,
+                                  color: isSelected ? 'white' : 'var(--color-text)',
+                                }}
+                              >
+                                {model.label}
+                              </span>
+                              
+                              {/* Tags */}
+                              {model.tags?.slice(0, 2).map(tag => (
+                                <span
+                                  key={tag}
+                                  className={cn(
+                                    "text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold",
+                                    isSelected 
+                                      ? "bg-white/20 text-white" 
+                                      : tag === 'fast'
+                                        ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                                        : tag === 'smart'
+                                          ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                                          : tag === 'new'
+                                            ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                                            : tag === 'reasoning'
+                                              ? "bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                                              : "bg-muted text-muted-foreground"
+                                  )}
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                            
+                            <p 
+                              style={{
+                                fontSize: '11px',
+                                color: isSelected ? 'rgba(255,255,255,0.8)' : 'var(--color-text-secondary)',
+                                lineHeight: '1.4',
+                              }}
+                              className="truncate"
+                            >
+                              {model.description}
+                            </p>
                           </div>
-                        )}
+
+                          {/* Icons */}
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            {model.vision && (
+                              <div 
+                                className={cn(
+                                  "w-[18px] h-[18px] rounded flex items-center justify-center",
+                                  isSelected
+                                    ? "bg-white/10 border border-white/20"
+                                    : "bg-muted/50 border border-border/50"
+                                )}
+                                title="Vision support"
+                              >
+                                <Image
+                                  src={getIconPath('image', resolvedTheme, isSelected, mounted)}
+                                  alt="Vision"
+                                  width={10}
+                                  height={10}
+                                />
+                              </div>
+                            )}
+                            
+                            {model.reasoning && (
+                              <div 
+                                className={cn(
+                                  "w-[18px] h-[18px] rounded flex items-center justify-center",
+                                  isSelected
+                                    ? "bg-white/10 border border-white/20"
+                                    : "bg-muted/50 border border-border/50"
+                                )}
+                                title="Reasoning model"
+                              >
+                                <Image
+                                  src={getIconPath('reason', resolvedTheme, isSelected, mounted)}
+                                  alt="Reasoning"
+                                  width={10}
+                                  height={10}
+                                />
+                              </div>
+                            )}
+
+                            {isDisabled && (
+                              <div 
+                                className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400 font-semibold"
+                                title={accessCheck.reason}
+                              >
+                                🔒
+                              </div>
+                            )}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ))
             )}
@@ -205,4 +302,3 @@ export default function ModelSelector({ selectedModel, onSelectModel, selectedWe
     </div>
   );
 }
-
