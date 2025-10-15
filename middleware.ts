@@ -50,18 +50,18 @@ export async function middleware(request: NextRequest) {
 
   // Optionally: Redirect to login if user is not authenticated and trying to access protected routes
   // Uncomment the following lines if you want to protect routes
-  /*
-  if (
-    !user &&
-    !request.nextUrl.pathname.startsWith('/login') &&
-    !request.nextUrl.pathname.startsWith('/signup') &&
-    !request.nextUrl.pathname.startsWith('/auth')
-  ) {
-    const url = request.nextUrl.clone();
-    url.pathname = '/login';
-    return NextResponse.redirect(url);
-  }
-  */
+  // /*
+  // if (
+  //   !user &&
+  //   !request.nextUrl.pathname.startsWith('/login') &&
+  //   !request.nextUrl.pathname.startsWith('/signup') &&
+  //   !request.nextUrl.pathname.startsWith('/auth')
+  // ) {
+  //   const url = request.nextUrl.clone();
+  //   url.pathname = '/';
+  //   return NextResponse.redirect(url);
+  // }
+  // */
 
   return supabaseResponse;
 }

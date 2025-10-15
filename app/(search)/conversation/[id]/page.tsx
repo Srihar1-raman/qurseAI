@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/components/layout/Header';
 import ChatMessage from '@/components/chat/ChatMessage';
@@ -9,26 +9,59 @@ import HistorySidebar from '@/components/layout/history/HistorySidebar';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { MODEL_GROUPS, WEB_SEARCH_OPTIONS, isModelCompatibleWithArxiv } from '@/lib/constants';
-import type { Message } from '@/lib/types';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { useConversation } from '@/lib/contexts/ConversationContext';
+import { getMessages } from '@/lib/db/queries';
+import type { Message } from '@/lib/types';
 
 export default function ConversationPage() {
   const router = useRouter();
+  const params = useParams();
+  const conversationId = params.id as string;
+  const { selectedModel, chatMode } = useConversation();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('GPT-OSS 120B');
+  const [input, setInput] = useState('');
   const [selectedWebSearchOption, setSelectedWebSearchOption] = useState('Chat');
   const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
   const [isWebSearchDropdownOpen, setIsWebSearchDropdownOpen] = useState(false);
   const [modelSearchQuery, setModelSearchQuery] = useState('');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
   const webSearchDropdownRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme, mounted } = useTheme();
   const { user } = useAuth();
+
+  const loadMessages = useCallback(async () => {
+    if (!user) {
+      setIsLoadingMessages(false);
+      return;
+    }
+
+    try {
+      const msgs = await getMessages(conversationId);
+      setMessages(msgs.map(msg => ({
+        id: msg.id || `msg-${Date.now()}`,
+        content: msg.content || '',
+        role: msg.role || 'user',
+        text: msg.content || '',
+        isUser: msg.role === 'user',
+        timestamp: msg.created_at || new Date().toISOString(),
+      })));
+    } catch (error) {
+      console.error('Error loading messages:', error);
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, [user, conversationId]);
+
+  // Load existing messages
+  useEffect(() => {
+    loadMessages();
+  }, [loadMessages]);
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
@@ -40,7 +73,7 @@ export default function ConversationPage() {
     scrollToBottom();
   }, [messages]);
 
-  // Auto-resize textarea when inputValue changes
+  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       const textarea = textareaRef.current;
@@ -48,19 +81,18 @@ export default function ConversationPage() {
       const scrollHeight = textarea.scrollHeight;
       textarea.style.height = Math.min(scrollHeight, 200) + 'px';
       
-      // If content exceeds max height, scroll to bottom to keep cursor visible
       if (scrollHeight > 200) {
         textarea.scrollTop = textarea.scrollHeight;
       }
     }
-  }, [inputValue]);
+  }, [input]);
 
-  // Auto-focus textarea on page load
+  // Auto-focus textarea
   useEffect(() => {
-    if (textareaRef.current) {
+    if (textareaRef.current && !isLoadingMessages) {
       textareaRef.current.focus();
     }
-  }, []);
+  }, [isLoadingMessages]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -83,7 +115,7 @@ export default function ConversationPage() {
     };
   }, [isModelDropdownOpen, isWebSearchDropdownOpen]);
 
-  // Filter models based on search query and arxiv compatibility
+  // Filter models based on search query
   const getFilteredModels = () => {
     return Object.values(MODEL_GROUPS)
       .filter(group => group.enabled)
@@ -106,41 +138,87 @@ export default function ConversationPage() {
 
   const filteredModels = getFilteredModels();
 
-  const handleSendMessage = async () => {
-    const messageText = inputValue.trim();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const messageText = input.trim();
     if (!messageText || isLoading) return;
 
-    const now = Date.now();
+    // Add user message immediately
     const userMessage: Message = {
-      id: `user-${now}`,
+      id: `temp-${Date.now()}`,
+      content: messageText,
+      role: 'user',
       text: messageText,
       isUser: true,
-      timestamp: new Date(now).toISOString()
+      timestamp: new Date().toISOString(),
     };
 
-    setInputValue('');
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
     setIsLoading(true);
-    setMessages(currentMessages => [...currentMessages, userMessage]);
 
-    // Simulate AI response (replace with actual API call)
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: `ai-${Date.now()}`,
-        text: `This is a simulated response to: "${messageText}". In production, this would be a real AI response.`,
-        isUser: false,
-        timestamp: new Date().toISOString(),
-        model: selectedModel
-      };
-      
-      setMessages(currentMessages => [...currentMessages, aiResponse]);
+    try {
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
+          conversationId,
+          model: selectedModel,
+          chatMode,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get response');
+      }
+
+      // Read streaming response
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let aiResponse = '';
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value);
+          aiResponse += chunk;
+
+          // Update AI message in real-time
+          setMessages(prev => {
+            const lastMessage = prev[prev.length - 1];
+            if (lastMessage && lastMessage.role === 'assistant') {
+              return [...prev.slice(0, -1), { ...lastMessage, content: aiResponse, text: aiResponse }];
+            } else {
+              return [...prev, {
+                id: `ai-${Date.now()}`,
+                content: aiResponse,
+                role: 'assistant' as const,
+                text: aiResponse,
+                isUser: false,
+                timestamp: new Date().toISOString(),
+                model: selectedModel,
+              }];
+            }
+          });
+        }
+      }
+
+    } catch (error) {
+      console.error('Error sending message:', error);
+      // Remove user message on error
+      setMessages(prev => prev.slice(0, -1));
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage();
+      handleSubmit(e as unknown as React.FormEvent);
     }
   };
 
@@ -166,20 +244,17 @@ export default function ConversationPage() {
         {/* Conversation Container */}
         <div className="conversation-container">
           <div className="conversation-thread">
-            
+            {/* Display messages */}
             {messages.map((message) => (
               <ChatMessage
                 key={message.id}
-                content={message.text}
+                content={message.content || ''}
                 isUser={message.isUser}
                 model={message.model}
-                onRedo={!message.isUser ? () => {
-                  // Handle redo logic
-                  console.log('Redo message');
-                } : undefined}
               />
             ))}
             
+            {/* Loading indicator */}
             {isLoading && (
               <div className="message bot-message">
                 <div style={{ maxWidth: '95%', marginRight: 'auto' }}>
@@ -208,7 +283,7 @@ export default function ConversationPage() {
                         fontSize: '14px',
                         fontStyle: 'italic'
                       }}>
-                        Reasoning...
+                        Thinking...
                       </span>
                     </div>
                   </div>
@@ -220,18 +295,19 @@ export default function ConversationPage() {
           </div>
         </div>
 
-        {/* Input Section */}
+        {/* Input Section - Same as before but with form */}
         <div className="input-section">
           <div className="input-section-content">
-            <div className="input-container conversation-input-container">
+            <form onSubmit={handleSubmit} className="input-container conversation-input-container">
               <textarea
                 ref={textareaRef}
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="Message Qurse..."
                 className="main-input conversation-input"
                 rows={1}
+                disabled={isLoading}
                 onInput={(e) => {
                   const target = e.target as HTMLTextAreaElement;
                   target.style.height = 'auto';
@@ -239,12 +315,9 @@ export default function ConversationPage() {
                 }}
               />
               
-              {/* Background strip behind buttons */}
               <div className="input-buttons-background"></div>
               
-              {/* Bottom Left - Model Selector and Attach Button */}
               <div className="input-actions-left">
-                {/* Model Selector */}
                 <div className="input-model-selector" ref={modelDropdownRef}>
                   <button
                     type="button"
@@ -257,7 +330,6 @@ export default function ConversationPage() {
                   
                   {isModelDropdownOpen && (
                     <div className="input-dropdown-menu show">
-                      {/* Search */}
                       <div style={{ padding: '8px', borderBottom: '1px solid var(--color-border)' }}>
                         <input
                           type="text"
@@ -273,17 +345,9 @@ export default function ConversationPage() {
                             color: 'var(--color-text)',
                             fontSize: '13px',
                             outline: 'none',
-                            transition: 'border-color 0.2s ease'
-                          }}
-                          onFocus={(e) => {
-                            e.target.style.borderColor = 'var(--color-primary)';
-                          }}
-                          onBlur={(e) => {
-                            e.target.style.borderColor = 'var(--color-border)';
                           }}
                         />
                       </div>
-                      {/* Models */}
                       <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
                         {filteredModels.map((group) => (
                         <div key={group.provider}>
@@ -299,20 +363,11 @@ export default function ConversationPage() {
                           {group.models.map((model) => (
                             <div
                               key={model.name}
-                              onClick={() => {
-                                if (!model.disabled) {
-                                  setSelectedModel(model.name);
-                                  setIsModelDropdownOpen(false);
-                                  setModelSearchQuery('');
-                                }
-                              }}
                               style={{
                                 padding: '8px 12px',
                                 fontSize: '13px',
-                                cursor: model.disabled ? 'not-allowed' : 'pointer',
-                                background: selectedModel === model.name ? 'var(--color-primary)' : 'transparent',
-                                color: selectedModel === model.name ? 'white' : 'var(--color-text)',
-                                opacity: model.disabled ? 0.4 : 1
+                                cursor: 'not-allowed',
+                                opacity: 0.6
                               }}
                             >
                               {model.name}
@@ -325,7 +380,6 @@ export default function ConversationPage() {
                   )}
                 </div>
                 
-                {/* Web Search Selector */}
                 <div className="input-model-selector" ref={webSearchDropdownRef}>
                   <button
                     type="button"
@@ -373,7 +427,6 @@ export default function ConversationPage() {
                   )}
                 </div>
 
-                {/* Attach Button */}
                 <button
                   type="button"
                   onClick={() => {/* Attach file functionality */}}
@@ -384,29 +437,26 @@ export default function ConversationPage() {
                 </button>
               </div>
               
-              {/* Bottom Right - Send Button */}
               <div className="input-actions-right">
                 <button
-                  type="button"
-                  onClick={handleSendMessage}
-                  className={`send-btn ${inputValue.trim() ? 'active' : ''}`}
+                  type="submit"
+                  className={`send-btn ${input.trim() ? 'active' : ''}`}
                   title="Send message"
-                  disabled={!inputValue.trim() || isLoading}
+                  disabled={!input.trim() || isLoading}
                 >
                   <Image 
-                    src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)} 
+                    src={input.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)} 
                     alt="Send" 
                     width={16} 
                     height={16} 
                   />
                 </button>
               </div>
-            </div>
+            </form>
           </div>
         </div>
       </main>
       
-      {/* History Sidebar */}
       <HistorySidebar 
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
@@ -414,4 +464,3 @@ export default function ConversationPage() {
     </div>
   );
 }
-

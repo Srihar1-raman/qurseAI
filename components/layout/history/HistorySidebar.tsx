@@ -1,9 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
+import { useAuth } from '@/lib/contexts/AuthContext';
+import { getConversations, deleteConversation, deleteAllConversations, updateConversation } from '@/lib/db/queries';
+import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import HistoryHeader from './HistoryHeader';
 import HistorySearch from './HistorySearch';
 import ConversationList from './ConversationList';
@@ -12,17 +16,40 @@ import type { Conversation, ConversationGroup, HistorySidebarProps } from '@/lib
 
 export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
   const { resolvedTheme, mounted } = useTheme();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [chatHistory, setChatHistory] = useState<Conversation[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Mock data for testing (will come from API later)
-  const [chatHistory, setChatHistory] = useState<Conversation[]>([
-    { id: '1', title: 'How to build a React app', updated_at: new Date().toISOString(), message_count: 5 },
-    { id: '2', title: 'Understanding TypeScript generics', updated_at: new Date(Date.now() - 3600000).toISOString(), message_count: 12 },
-    { id: '3', title: 'Next.js routing best practices', updated_at: new Date(Date.now() - 86400000 * 2).toISOString(), message_count: 8 },
-    { id: '4', title: 'CSS Grid vs Flexbox', updated_at: new Date(Date.now() - 86400000 * 5).toISOString(), message_count: 15 },
-    { id: '5', title: 'Tailwind CSS tips and tricks', updated_at: new Date(Date.now() - 86400000 * 10).toISOString(), message_count: 7 },
-  ]);
+  const loadConversations = useCallback(async () => {
+    if (!user || !user.id) {
+      setIsLoading(false);
+      return;
+    }
+    
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      const conversations = await getConversations(user.id);
+      setChatHistory(conversations || []);
+    } catch (err) {
+      console.error('Error loading conversations:', err);
+      setError('Failed to load conversations');
+      setChatHistory([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
+
+  // Load conversations when sidebar opens and user is logged in
+  useEffect(() => {
+    if (isOpen && user && !isAuthLoading) {
+      loadConversations();
+    }
+  }, [isOpen, user, isAuthLoading, loadConversations]);
 
   const getDateGroup = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -75,21 +102,41 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     );
   };
 
-  const handleClearHistory = () => {
-    setChatHistory([]);
-    setShowClearConfirm(false);
+  const handleClearHistory = async () => {
+    if (!user || !user.id) return;
+    
+    try {
+      await deleteAllConversations(user.id);
+      setChatHistory([]);
+      setShowClearConfirm(false);
+    } catch (err) {
+      console.error('Error clearing history:', err);
+      setError('Failed to clear history');
+    }
   };
 
-  const handleRename = (id: string, newTitle: string) => {
-    setChatHistory(prev => 
-      prev.map(chat => 
-        chat.id === id ? { ...chat, title: newTitle } : chat
-      )
-    );
+  const handleRename = async (id: string, newTitle: string) => {
+    try {
+      await updateConversation(id, { title: newTitle });
+      setChatHistory(prev => 
+        prev.map(chat => 
+          chat.id === id ? { ...chat, title: newTitle } : chat
+        )
+      );
+    } catch (err) {
+      console.error('Error renaming conversation:', err);
+      setError('Failed to rename conversation');
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setChatHistory(prev => prev.filter(chat => chat.id !== id));
+  const handleDelete = async (id: string) => {
+    try {
+      await deleteConversation(id);
+      setChatHistory(prev => prev.filter(chat => chat.id !== id));
+    } catch (err) {
+      console.error('Error deleting conversation:', err);
+      setError('Failed to delete conversation');
+    }
   };
 
   const filteredConversations = getFilteredConversations();
@@ -111,7 +158,36 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
 
         {/* Content */}
         <div className="history-content">
-          {chatHistory.length === 0 ? (
+          {/* Loading State */}
+          {isLoading && (
+            <div style={{ padding: '20px' }}>
+              <LoadingSkeleton variant="conversation" count={5} />
+            </div>
+          )}
+
+          {/* Error State */}
+          {error && !isLoading && (
+            <div className="history-empty">
+              <p style={{ color: 'var(--color-error)' }}>{error}</p>
+              <button 
+                onClick={loadConversations}
+                style={{
+                  marginTop: '12px',
+                  padding: '8px 16px',
+                  background: 'var(--color-primary)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          )}
+
+          {/* Guest State */}
+          {!user && !isLoading && !error && (
             <div className="history-empty">
               <Image 
                 src={getIconPath("history", resolvedTheme, false, mounted)} 
@@ -120,10 +196,42 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
                 height={48} 
                 className="history-empty-icon" 
               />
-              <p>No chat history yet</p>
-              <span>Your conversations will appear here</span>
+              <p>Sign in to view history</p>
+              <span>Your conversations will be saved after signing in</span>
+              <Link 
+                href="/login"
+                style={{
+                  marginTop: '16px',
+                  padding: '8px 24px',
+                  background: 'var(--color-primary)',
+                  color: 'white',
+                  borderRadius: '8px',
+                  textDecoration: 'none',
+                  display: 'inline-block'
+                }}
+              >
+                Sign In
+              </Link>
             </div>
-          ) : (
+          )}
+
+          {/* Empty State (Logged in, no conversations) */}
+          {user && chatHistory.length === 0 && !isLoading && !error && (
+            <div className="history-empty">
+              <Image 
+                src={getIconPath("history", resolvedTheme, false, mounted)} 
+                alt="History" 
+                width={48} 
+                height={48} 
+                className="history-empty-icon" 
+              />
+              <p>No conversations yet</p>
+              <span>Start a new chat to begin</span>
+            </div>
+          )}
+
+          {/* Conversation List */}
+          {user && chatHistory.length > 0 && !isLoading && !error && (
             <>
               <HistorySearch
                 searchQuery={searchQuery}
