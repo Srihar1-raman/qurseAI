@@ -49,7 +49,8 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     if (isOpen && user && !isAuthLoading) {
       loadConversations();
     }
-  }, [isOpen, user, isAuthLoading, loadConversations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, user, isAuthLoading]); // loadConversations intentionally excluded to prevent infinite re-renders
 
   const getDateGroup = (timestamp: string) => {
     const date = new Date(timestamp);

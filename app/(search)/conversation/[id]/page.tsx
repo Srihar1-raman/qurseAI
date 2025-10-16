@@ -36,6 +36,12 @@ export default function ConversationPage() {
   const { user } = useAuth();
 
   const loadMessages = useCallback(async () => {
+    // Skip loading for temp conversation IDs (they start with 'temp-')
+    if (conversationId.startsWith('temp-')) {
+      setIsLoadingMessages(false);
+      return;
+    }
+
     if (!user) {
       setIsLoadingMessages(false);
       return;
