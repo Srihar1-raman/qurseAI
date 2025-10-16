@@ -129,6 +129,9 @@ export async function POST(req: Request) {
       ...getModelParameters(model),
       tools: Object.keys(tools).length > 0 ? tools : undefined,
       
+      // Note: Reasoning streaming depends on the specific model/provider
+      // Grok models may show reasoning, others may not
+      
       // Save assistant message when streaming completes
       onFinish: async ({ text }) => {
         if (user && convId) {

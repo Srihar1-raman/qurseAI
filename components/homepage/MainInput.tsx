@@ -1,14 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 
 export default function MainInput() {
-  const router = useRouter();
   const [inputValue, setInputValue] = useState('');
   const [isMultiline, setIsMultiline] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -78,7 +76,14 @@ export default function MainInput() {
     const messageText = inputValue.trim();
     if (!messageText || isLoading) return;
 
+    // Generate a temporary conversation ID for instant redirect
+    const tempConversationId = `temp-${Date.now()}`;
+    
+    // INSTANT redirect (like Scira does)
+    window.history.replaceState({}, '', `/conversation/${tempConversationId}`);
+    
     setIsLoading(true);
+    setInputValue('');
 
     try {
       const response = await fetch('/api/chat', {
@@ -98,19 +103,18 @@ export default function MainInput() {
         throw new Error(errorData.error || 'Failed to send message');
       }
 
-      // Get conversation ID from response header
-      const conversationId = response.headers.get('X-Conversation-ID');
+      // Get real conversation ID from response header
+      const realConversationId = response.headers.get('X-Conversation-ID');
       
-      if (conversationId) {
-        // Redirect to conversation page
-        router.push(`/conversation/${conversationId}`);
-      } else {
-        throw new Error('No conversation ID received');
+      if (realConversationId && realConversationId !== tempConversationId) {
+        // Update URL with real conversation ID
+        window.history.replaceState({}, '', `/conversation/${realConversationId}`);
       }
-
-      setInputValue('');
+      
     } catch (err) {
       console.error('Error sending message:', err);
+      // Redirect back to homepage on error
+      window.history.replaceState({}, '', '/');
       setIsLoading(false);
     }
   };
