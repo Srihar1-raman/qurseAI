@@ -17,14 +17,17 @@ import type { Message } from '@/lib/types';
 export default function ConversationPage() {
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
   const conversationId = params.id as string;
   const { selectedModel, chatMode } = useConversation();
   
-  // Get initial message params from URL
-  const initialMessage = searchParams.get('message');
-  const initialModel = searchParams.get('model');
-  const initialMode = searchParams.get('mode');
+  // Capture URL params once in refs to avoid reactive issues
+  const searchParams = useSearchParams();
+  const initialParamsRef = useRef({
+    message: searchParams.get('message'),
+    model: searchParams.get('model'),
+    mode: searchParams.get('mode'),
+  });
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [selectedWebSearchOption, setSelectedWebSearchOption] = useState('Chat');
@@ -39,9 +42,13 @@ export default function ConversationPage() {
   const modelDropdownRef = useRef<HTMLDivElement>(null);
   const webSearchDropdownRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
-  const shouldLoadFromDBRef = useRef(true);
   const { resolvedTheme, mounted } = useTheme();
   const { user } = useAuth();
+
+  // Use ref values instead of reactive searchParams
+  const initialMessageFromRef = initialParamsRef.current.message;
+  const initialModelFromRef = initialParamsRef.current.model;
+  const initialModeFromRef = initialParamsRef.current.mode;
 
   const loadMessages = useCallback(async () => {
     // Skip loading for temp conversation IDs (they start with 'temp-')
@@ -50,8 +57,8 @@ export default function ConversationPage() {
       return;
     }
 
-    // Skip loading if we shouldn't load from DB (new conversation with initial message)
-    if (!shouldLoadFromDBRef.current) {
+    // Skip loading if there's an initial message from URL params (new conversation)
+    if (initialParamsRef.current.message) {
       setIsLoadingMessages(false);
       return;
     }
@@ -85,24 +92,16 @@ export default function ConversationPage() {
 
   // Send initial message from URL params if present (ONCE on mount)
   useEffect(() => {
-    if (!initialMessage || initialMessageSentRef.current || isLoadingMessages) return;
+    // Use ref values, not reactive searchParams
+    if (!initialMessageFromRef || initialMessageSentRef.current || isLoadingMessages) return;
     
     // Mark as sent immediately to prevent duplicate sends
     initialMessageSentRef.current = true;
-    // Prevent DB loading - we're creating a new conversation
-    shouldLoadFromDBRef.current = false;
-    
-    // Clear URL params to clean up the URL
-    const url = new URL(window.location.href);
-    url.searchParams.delete('message');
-    url.searchParams.delete('model');
-    url.searchParams.delete('mode');
-    window.history.replaceState({}, '', url.toString());
     
     // Send the initial message
-    const messageText = decodeURIComponent(initialMessage);
-    const model = initialModel || selectedModel;
-    const mode = initialMode || chatMode;
+    const messageText = decodeURIComponent(initialMessageFromRef);
+    const model = initialModelFromRef || selectedModel;
+    const mode = initialModeFromRef || chatMode;
     
     const userMessage: Message = {
       id: `temp-${Date.now()}`,
@@ -113,8 +112,22 @@ export default function ConversationPage() {
       timestamp: new Date().toISOString(),
     };
 
+    // Set user message FIRST (before any async operations)
     setMessages([userMessage]);
     setIsLoading(true);
+    
+    // Clean up URL params immediately after setting state (prevents reload issues)
+    setTimeout(() => {
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        if (url.searchParams.has('message')) {
+          url.searchParams.delete('message');
+          url.searchParams.delete('model');
+          url.searchParams.delete('mode');
+          window.history.replaceState({}, '', url.toString());
+        }
+      }
+    }, 50); // Minimal delay to let React process the state update
 
     fetch('/api/chat', {
       method: 'POST',
@@ -173,13 +186,10 @@ export default function ConversationPage() {
         console.error('Error sending message:', err);
         setMessages([]);
         setIsLoading(false);
-        initialMessageSentRef.current = false; // Reset on error
-        shouldLoadFromDBRef.current = true; // Allow DB loading on retry
+        initialMessageSentRef.current = false; // Reset on error to allow retry
       });
-  // Note: selectedModel and chatMode intentionally excluded - we use URL params or fallback
-  // Initial message params captured once on mount, don't re-depend on them
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialMessage, isLoadingMessages, conversationId]);
+  }, [isLoadingMessages, conversationId, selectedModel, chatMode]);
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
