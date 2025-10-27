@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import Header from '@/components/layout/Header';
 import ChatMessage from '@/components/chat/ChatMessage';
@@ -17,8 +17,14 @@ import type { Message } from '@/lib/types';
 export default function ConversationPage() {
   const router = useRouter();
   const params = useParams();
+  const searchParams = useSearchParams();
   const conversationId = params.id as string;
   const { selectedModel, chatMode } = useConversation();
+  
+  // Get initial message params from URL
+  const initialMessage = searchParams.get('message');
+  const initialModel = searchParams.get('model');
+  const initialMode = searchParams.get('mode');
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [selectedWebSearchOption, setSelectedWebSearchOption] = useState('Chat');
@@ -32,12 +38,20 @@ export default function ConversationPage() {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const modelDropdownRef = useRef<HTMLDivElement>(null);
   const webSearchDropdownRef = useRef<HTMLDivElement>(null);
+  const initialMessageSentRef = useRef(false);
+  const shouldLoadFromDBRef = useRef(true);
   const { resolvedTheme, mounted } = useTheme();
   const { user } = useAuth();
 
   const loadMessages = useCallback(async () => {
     // Skip loading for temp conversation IDs (they start with 'temp-')
     if (conversationId.startsWith('temp-')) {
+      setIsLoadingMessages(false);
+      return;
+    }
+
+    // Skip loading if we shouldn't load from DB (new conversation with initial message)
+    if (!shouldLoadFromDBRef.current) {
       setIsLoadingMessages(false);
       return;
     }
@@ -68,6 +82,104 @@ export default function ConversationPage() {
   useEffect(() => {
     loadMessages();
   }, [loadMessages]);
+
+  // Send initial message from URL params if present (ONCE on mount)
+  useEffect(() => {
+    if (!initialMessage || initialMessageSentRef.current || isLoadingMessages) return;
+    
+    // Mark as sent immediately to prevent duplicate sends
+    initialMessageSentRef.current = true;
+    // Prevent DB loading - we're creating a new conversation
+    shouldLoadFromDBRef.current = false;
+    
+    // Clear URL params to clean up the URL
+    const url = new URL(window.location.href);
+    url.searchParams.delete('message');
+    url.searchParams.delete('model');
+    url.searchParams.delete('mode');
+    window.history.replaceState({}, '', url.toString());
+    
+    // Send the initial message
+    const messageText = decodeURIComponent(initialMessage);
+    const model = initialModel || selectedModel;
+    const mode = initialMode || chatMode;
+    
+    const userMessage: Message = {
+      id: `temp-${Date.now()}`,
+      content: messageText,
+      role: 'user',
+      text: messageText,
+      isUser: true,
+      timestamp: new Date().toISOString(),
+    };
+
+    setMessages([userMessage]);
+    setIsLoading(true);
+
+    fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [{ role: 'user', content: messageText }],
+        conversationId,
+        model,
+        chatMode: mode,
+      }),
+    })
+      .then(response => {
+        if (!response.ok) throw new Error('Failed to get response');
+        return response.body?.getReader();
+      })
+      .then(reader => {
+        if (!reader) return;
+        const decoder = new TextDecoder();
+        let aiResponse = '';
+        
+        const processStream = async () => {
+          while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            aiResponse += chunk;
+
+            setMessages(prev => {
+              const lastMessage = prev[prev.length - 1];
+              if (lastMessage && lastMessage.role === 'assistant') {
+                return [...prev.slice(0, -1), { ...lastMessage, content: aiResponse, text: aiResponse }];
+              } else {
+                return [...prev, {
+                  id: `ai-${Date.now()}`,
+                  content: aiResponse,
+                  role: 'assistant' as const,
+                  text: aiResponse,
+                  isUser: false,
+                  timestamp: new Date().toISOString(),
+                  model,
+                }];
+              }
+            });
+          }
+          setIsLoading(false);
+        };
+        
+        processStream().catch(err => {
+          console.error('Error processing stream:', err);
+          setMessages(prev => prev.slice(0, -1));
+          setIsLoading(false);
+        });
+      })
+      .catch(err => {
+        console.error('Error sending message:', err);
+        setMessages([]);
+        setIsLoading(false);
+        initialMessageSentRef.current = false; // Reset on error
+        shouldLoadFromDBRef.current = true; // Allow DB loading on retry
+      });
+  // Note: selectedModel and chatMode intentionally excluded - we use URL params or fallback
+  // Initial message params captured once on mount, don't re-depend on them
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialMessage, isLoadingMessages, conversationId]);
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {

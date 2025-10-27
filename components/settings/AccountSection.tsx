@@ -20,17 +20,28 @@ export default function AccountSection({
 
   // Fetch linked providers from Supabase on mount
   useEffect(() => {
-    if (user) {
-      getUserLinkedProviders()
-        .then(providers => {
-          setLinkedProviders(providers);
-          setIsLoadingProviders(false);
-        })
-        .catch(error => {
-          console.error('Failed to load linked providers:', error);
-          setIsLoadingProviders(false);
-        });
+    if (!user) {
+      setIsLoadingProviders(false);
+      return;
     }
+
+    // Add timeout to prevent hanging
+    const timeoutId = setTimeout(() => {
+      console.error('Timeout loading linked providers');
+      setIsLoadingProviders(false);
+    }, 5000);
+
+    getUserLinkedProviders()
+      .then(providers => {
+        clearTimeout(timeoutId);
+        setLinkedProviders(providers);
+        setIsLoadingProviders(false);
+      })
+      .catch(error => {
+        clearTimeout(timeoutId);
+        console.error('Failed to load linked providers:', error);
+        setIsLoadingProviders(false);
+      });
   }, [user]);
 
   // Get primary provider (first one) for "Connected via..." text

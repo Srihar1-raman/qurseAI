@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useConversation } from '@/lib/contexts/ConversationContext';
@@ -10,8 +11,8 @@ export default function MainInput() {
   const [inputValue, setInputValue] = useState('');
   const [isMultiline, setIsMultiline] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const router = useRouter();
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
 
@@ -72,51 +73,17 @@ export default function MainInput() {
     }
   }, [inputValue, isMobile]);
 
-  const handleSend = async () => {
+  const handleSend = () => {
     const messageText = inputValue.trim();
-    if (!messageText || isLoading) return;
+    if (!messageText) return;
 
-    // Generate a temporary conversation ID for instant redirect
-    const tempConversationId = `temp-${Date.now()}`;
+    // Generate conversation ID (using crypto.randomUUID - available in modern browsers)
+    const chatId = crypto.randomUUID();
     
-    // INSTANT redirect (like Scira does)
-    window.history.replaceState({}, '', `/conversation/${tempConversationId}`);
+    // Navigate immediately with URL params
+    router.push(`/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`);
     
-    setIsLoading(true);
     setInputValue('');
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: [{ role: 'user', content: messageText }],
-          model: selectedModel,
-          chatMode,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to send message' }));
-        throw new Error(errorData.error || 'Failed to send message');
-      }
-
-      // Get real conversation ID from response header
-      const realConversationId = response.headers.get('X-Conversation-ID');
-      
-      if (realConversationId && realConversationId !== tempConversationId) {
-        // Update URL with real conversation ID
-        window.history.replaceState({}, '', `/conversation/${realConversationId}`);
-      }
-      
-    } catch (err) {
-      console.error('Error sending message:', err);
-      // Redirect back to homepage on error
-      window.history.replaceState({}, '', '/');
-      setIsLoading(false);
-    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -228,7 +195,7 @@ export default function MainInput() {
             {/* Send Button */}
             <button
               type="button"
-              disabled={!inputValue.trim() || isLoading}
+              disabled={!inputValue.trim()}
               className="flex items-center justify-center transition-all"
               aria-label="Send message"
               onClick={handleSend}
@@ -236,30 +203,19 @@ export default function MainInput() {
                 width: '36px',
                 height: '36px',
                 borderRadius: '50%',
-                background: (inputValue.trim() && !isLoading) ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                border: `1px solid ${(inputValue.trim() && !isLoading) ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
                 padding: '0',
-                opacity: (inputValue.trim() && !isLoading) ? 1 : 0.5,
-                cursor: (inputValue.trim() && !isLoading) ? 'pointer' : 'not-allowed',
+                opacity: inputValue.trim() ? 1 : 0.5,
+                cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
               }}
             >
-              {isLoading ? (
-                <div style={{ 
-                  width: '16px', 
-                  height: '16px', 
-                  border: '2px solid var(--color-text-secondary)',
-                  borderTopColor: 'transparent',
-                  borderRadius: '50%',
-                  animation: 'spin 1s linear infinite'
-                }} />
-              ) : (
-                <Image
-                  src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                  alt="Send"
-                  width={16}
-                  height={16}
-                />
-              )}
+              <Image
+                src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
+                alt="Send"
+                width={16}
+                height={16}
+              />
             </button>
           </div>
         ) : (
@@ -299,7 +255,7 @@ export default function MainInput() {
               {/* Send Button */}
               <button
                 type="button"
-                disabled={!inputValue.trim() || isLoading}
+                disabled={!inputValue.trim()}
                 className="flex items-center justify-center transition-all"
                 aria-label="Send message"
                 onClick={handleSend}
@@ -307,30 +263,19 @@ export default function MainInput() {
                   width: '36px',
                   height: '36px',
                   borderRadius: '50%',
-                  background: (inputValue.trim() && !isLoading) ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                  border: `1px solid ${(inputValue.trim() && !isLoading) ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                  background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                  border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
                   padding: '0',
-                  opacity: (inputValue.trim() && !isLoading) ? 1 : 0.5,
-                  cursor: (inputValue.trim() && !isLoading) ? 'pointer' : 'not-allowed',
+                  opacity: inputValue.trim() ? 1 : 0.5,
+                  cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
-                {isLoading ? (
-                  <div style={{ 
-                    width: '16px', 
-                    height: '16px', 
-                    border: '2px solid var(--color-text-secondary)',
-                    borderTopColor: 'transparent',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite'
-                  }} />
-                ) : (
-                  <Image
-                    src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                    alt="Send"
-                    width={16}
-                    height={16}
-                  />
-                )}
+                <Image
+                  src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
+                  alt="Send"
+                  width={16}
+                  height={16}
+                />
               </button>
             </div>
           </>
