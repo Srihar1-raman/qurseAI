@@ -43,30 +43,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(initialSession);
 
         if (initialSession?.user) {
-          // Fetch full user data from users table
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', initialSession.user.id)
-            .single();
-
-          if (error) {
-            console.error('Error fetching user data:', error);
-            // Fall back to auth user metadata if users table query fails
-            setUser({
-              id: initialSession.user.id,
-              email: initialSession.user.email!,
-              name: initialSession.user.user_metadata?.full_name || initialSession.user.user_metadata?.name,
-              avatar_url: initialSession.user.user_metadata?.avatar_url,
-            });
-          } else {
-            setUser({
-              id: userData.id,
-              email: userData.email,
-              name: userData.name,
-              avatar_url: userData.avatar_url,
-            });
-          }
+          // Use session metadata directly (no DB fetch needed)
+          setUser({
+            id: initialSession.user.id,
+            email: initialSession.user.email!,
+            name: initialSession.user.user_metadata?.full_name || initialSession.user.user_metadata?.name,
+            avatar_url: initialSession.user.user_metadata?.avatar_url,
+          });
         }
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -84,30 +67,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(newSession);
 
         if (newSession?.user) {
-          // Fetch updated user data
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', newSession.user.id)
-            .single();
-
-          if (error) {
-            console.error('Error fetching user data on auth change:', error);
-            // Fall back to auth user metadata
-            setUser({
-              id: newSession.user.id,
-              email: newSession.user.email!,
-              name: newSession.user.user_metadata?.full_name || newSession.user.user_metadata?.name,
-              avatar_url: newSession.user.user_metadata?.avatar_url,
-            });
-          } else {
-            setUser({
-              id: userData.id,
-              email: userData.email,
-              name: userData.name,
-              avatar_url: userData.avatar_url,
-            });
-          }
+          // Use session metadata directly (no DB fetch needed)
+          setUser({
+            id: newSession.user.id,
+            email: newSession.user.email!,
+            name: newSession.user.user_metadata?.full_name || newSession.user.user_metadata?.name,
+            avatar_url: newSession.user.user_metadata?.avatar_url,
+          });
         } else {
           setUser(null);
         }

@@ -34,7 +34,7 @@ export default function ConversationItem({
 
   const handleChatClick = () => {
     if (!isEditing) {
-      router.push(`/conversation?id=${conversation.id}`);
+      router.push(`/conversation/${conversation.id}`);
       onClose();
     }
   };

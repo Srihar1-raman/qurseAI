@@ -62,27 +62,75 @@ export async function POST(req: Request) {
     // ============================================
     let convId = conversationId;
     
-    // Create new conversation if needed (only for authenticated users)
-    if (!convId && user) {
+    // For authenticated users: Create or verify conversation exists
+    if (user) {
       const userMessage = messages[messages.length - 1]?.content || '';
       const title = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
       
-      // Insert conversation using the server client (which has user's session)
-      const { data: conversation, error: convError } = await supabase
-        .from('conversations')
-        .insert({
-          user_id: user.id,
-          title,
-        })
-        .select()
-        .single();
-      
-      if (convError) {
-        console.error('Error creating conversation:', convError);
-        throw new Error('Failed to create conversation');
+      if (convId) {
+        // Check if conversation exists and belongs to this user
+        const { data: existingConv, error: checkError } = await supabase
+          .from('conversations')
+          .select('id, user_id')
+          .eq('id', convId)
+          .maybeSingle();
+        
+        // If error is NOT a not-found error, handle it
+        if (checkError && checkError.code !== 'PGRST116') {
+          console.error('Error checking conversation:', checkError);
+        }
+        
+        // If conversation doesn't exist OR belongs to another user, create new one
+        if (!existingConv || existingConv.user_id !== user.id) {
+          // Try to create conversation with the provided ID
+          const { error: convError } = await supabase
+            .from('conversations')
+            .insert({
+              id: convId,
+              user_id: user.id,
+              title,
+            })
+            .select()
+            .maybeSingle();
+          
+          // If it's a duplicate key error, conversation already exists (race condition)
+          // Check ownership one more time
+          if (convError && convError.code !== '23505') {
+            console.error('Error creating conversation:', convError);
+            throw new Error('Failed to create conversation');
+          }
+          
+          // If duplicate key, verify it belongs to us
+          if (convError && convError.code === '23505') {
+            const { data: verifyConv } = await supabase
+              .from('conversations')
+              .select('user_id')
+              .eq('id', convId)
+              .maybeSingle();
+            
+            if (!verifyConv || verifyConv.user_id !== user.id) {
+              throw new Error('Failed to create conversation - ownership conflict');
+            }
+          }
+        }
+      } else {
+        // No conversationId provided, create new one
+        const { data: conversation, error: convError } = await supabase
+          .from('conversations')
+          .insert({
+            user_id: user.id,
+            title,
+          })
+          .select()
+          .single();
+        
+        if (convError) {
+          console.error('Error creating conversation:', convError);
+          throw new Error('Failed to create conversation');
+        }
+        
+        convId = conversation.id;
       }
-      
-      convId = conversation.id;
     }
     
     // ============================================
