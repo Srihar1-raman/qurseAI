@@ -58,7 +58,7 @@ export default function ConversationPage() {
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialMessageSentRef = useRef(false);
-  const { resolvedTheme, mounted } = useTheme();
+  const { resolvedTheme, mounted} = useTheme();
   const { user } = useAuth();
 
   // Use ref values instead of reactive searchParams
@@ -184,7 +184,6 @@ export default function ConversationPage() {
                   text: aiResponse,
                   isUser: false,
                   timestamp: new Date().toISOString(),
-                  model,
                 }];
               }
             });

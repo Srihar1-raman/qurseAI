@@ -9,23 +9,39 @@ import { xai } from '@ai-sdk/xai';
 import { createOpenAI } from '@ai-sdk/openai';
 
 /**
- * Reasoning Middleware
- * Extracts reasoning/thinking content from model responses
- * Uses <think> tags which are standardized across providers
+ * Reasoning Middleware Configuration
+ * Supports different reasoning formats for different model types
+ * Infrastructure ready for multiple reasoning approaches
  */
-const reasoningMiddleware = extractReasoningMiddleware({
-  tagName: 'think',
-});
+const reasoningMiddlewares = {
+  // Standard <think> tag extraction - used by most models
+  think: extractReasoningMiddleware({
+    tagName: 'think',
+  }),
+  
+  // <think> with startWithReasoning - for models like Qwen that need it
+  thinkWithStart: extractReasoningMiddleware({
+    tagName: 'think',
+    startWithReasoning: true,
+  }),
+  
+  // TODO: Future reasoning formats
+  // anthropic: Native thinking support (built into Claude models)
+  // openai: o1-style reasoning format
+  // google: Gemini thinking configuration
+};
 
 /**
  * Helper function to wrap models with reasoning middleware
- * Used for models that support reasoning/thinking capabilities
- * Accepts any language model type (groq, xai, anannas, etc.)
+ * Selects appropriate middleware based on model requirements
  */
-function wrapReasoningModel(model: Parameters<typeof wrapLanguageModel>[0]['model']) {
+function wrapReasoningModel(
+  model: Parameters<typeof wrapLanguageModel>[0]['model'],
+  middlewareType: 'think' | 'thinkWithStart' = 'think'
+) {
   return wrapLanguageModel({
     model,
-    middleware: [reasoningMiddleware],
+    middleware: [reasoningMiddlewares[middlewareType]],
   });
 }
 
@@ -51,6 +67,11 @@ const anannas = createOpenAI({
  * 1. Add model to languageModels below
  * 2. Add configuration to ai/models.ts
  * 3. Done! No other changes needed.
+ * 
+ * TODO: Gateway pattern for provider fallbacks
+ * When implemented, replace direct provider calls with:
+ * 'model-id': gateway('provider/model-name')
+ * This enables automatic fallbacks when providers fail
  */
 export const qurse = customProvider({
   languageModels: {
