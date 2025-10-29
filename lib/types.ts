@@ -43,6 +43,45 @@ export interface Message {
   created_at?: string;
 }
 
+// ============================================
+// AI Streaming Types (NEW)
+// ============================================
+
+/**
+ * Reasoning part of AI response
+ * Contains the model's thinking process
+ */
+export interface ReasoningPart {
+  type: 'reasoning';
+  text: string;
+  isComplete: boolean;
+}
+
+/**
+ * Stream metadata for AI responses
+ * Contains token usage and timing information
+ */
+export interface StreamMetadata {
+  model: string;
+  totalTokens?: number;
+  inputTokens?: number;
+  outputTokens?: number;
+  completionTime: number;
+}
+
+/**
+ * Enhanced chat message for AI SDK streaming
+ * Used with useChat hook and createUIMessageStream
+ */
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+  reasoning?: string;
+  metadata?: StreamMetadata;
+  timestamp?: string;
+}
+
 export interface Conversation {
   id: string;
   title: string;

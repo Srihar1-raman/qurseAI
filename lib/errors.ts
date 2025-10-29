@@ -48,3 +48,40 @@ export class ChatModeError extends Error {
   }
 }
 
+/**
+ * Streaming Error
+ * Thrown when streaming operations fail
+ */
+export class StreamingError extends Error {
+  statusCode: number = 500;
+  
+  constructor(
+    message: string,
+    public phase: 'initialization' | 'streaming' | 'completion'
+  ) {
+    super(message);
+    this.name = 'StreamingError';
+    Object.setPrototypeOf(this, StreamingError.prototype);
+  }
+}
+
+/**
+ * Provider Error
+ * Thrown when AI provider operations fail
+ * Includes retry information for error recovery
+ */
+export class ProviderError extends Error {
+  statusCode: number = 502;
+  
+  constructor(
+    message: string,
+    public provider: string,
+    public retryable: boolean = true
+  ) {
+    super(message);
+    this.name = 'ProviderError';
+    Object.setPrototypeOf(this, ProviderError.prototype);
+  }
+}
+
+

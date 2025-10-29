@@ -4,6 +4,29 @@
  */
 
 /**
+ * Provider-Specific Option Types
+ */
+
+// Groq provider options
+export interface GroqOptions {
+  reasoningEffort?: 'none' | 'low' | 'medium' | 'high';
+  reasoningFormat?: 'visible' | 'hidden';
+  parallelToolCalls?: boolean;
+  structuredOutputs?: boolean;
+}
+
+// XAI provider options
+export interface XaiOptions {
+  parallel_tool_calls?: boolean;
+}
+
+// Anannas (OpenAI-compatible) options
+export interface AnannasOptions {
+  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
+  parallelToolCalls?: boolean;
+}
+
+/**
  * Model Configuration Interface
  * Defines all metadata for an AI model
  */
@@ -59,6 +82,24 @@ export interface ModelConfig {
     topK?: number;
     frequencyPenalty?: number;
   };
+  
+  // ============================================
+  // REASONING CONFIGURATION (NEW)
+  // ============================================
+  reasoningConfig?: {
+    middleware: 'think' | 'thinkWithStart' | 'native' | 'none';
+    streamable: boolean;
+    format?: 'hidden' | 'visible';
+  };
+  
+  // ============================================
+  // PROVIDER CONFIGURATION (NEW)
+  // ============================================
+  providerConfig?: {
+    groq?: GroqOptions;
+    xai?: XaiOptions;
+    anannas?: AnannasOptions;
+  };
 }
 
 /**
@@ -101,6 +142,23 @@ export const models: ModelConfig[] = [
     // UI
     category: 'Free',
     tags: ['fast', 'reasoning', 'new'],
+    
+    // Reasoning configuration
+    reasoningConfig: {
+      middleware: 'think',
+      streamable: true,
+      format: 'hidden',
+    },
+    
+    // Provider configuration
+    providerConfig: {
+      groq: {
+        reasoningEffort: 'high',
+        reasoningFormat: 'hidden',
+        parallelToolCalls: false,
+        structuredOutputs: true,
+      },
+    },
   },
   
   // ============================================
@@ -135,6 +193,20 @@ export const models: ModelConfig[] = [
     // UI
     category: 'Pro',
     tags: ['smart', 'reasoning'],
+    
+    // Reasoning configuration
+    reasoningConfig: {
+      middleware: 'think',
+      streamable: true,
+      format: 'hidden',
+    },
+    
+    // Provider configuration
+    providerConfig: {
+      xai: {
+        parallel_tool_calls: false,
+      },
+    },
   },
   
   // ============================================
@@ -169,6 +241,19 @@ export const models: ModelConfig[] = [
     // UI
     category: 'Free',
     tags: ['fast'],
+    
+    // Reasoning configuration
+    reasoningConfig: {
+      middleware: 'none',
+      streamable: false,
+    },
+    
+    // Provider configuration (OpenAI-compatible via Anannas)
+    providerConfig: {
+      anannas: {
+        parallelToolCalls: false,
+      },
+    },
   },
 ];
 
@@ -317,5 +402,39 @@ export function getMaxOutputTokens(modelValue: string): number {
 export function getModelParameters(modelValue: string): ModelConfig['parameters'] {
   const model = getModelConfig(modelValue);
   return model?.parameters ?? {};
+}
+
+/**
+ * Get provider-specific options for a model
+ * Returns configuration for the appropriate provider
+ */
+export function getProviderOptions(modelValue: string): {
+  groq?: GroqOptions;
+  xai?: XaiOptions;
+  openai?: AnannasOptions;
+} {
+  const model = getModelConfig(modelValue);
+  if (!model?.providerConfig) return {};
+  
+  // Return provider-specific configs
+  const options: {
+    groq?: GroqOptions;
+    xai?: XaiOptions;
+    openai?: AnannasOptions;
+  } = {};
+  
+  if (model.provider === 'groq' && model.providerConfig.groq) {
+    options.groq = model.providerConfig.groq;
+  }
+  
+  if (model.provider === 'xai' && model.providerConfig.xai) {
+    options.xai = model.providerConfig.xai;
+  }
+  
+  if (model.provider === 'anannas' && model.providerConfig.anannas) {
+    options.openai = model.providerConfig.anannas;
+  }
+  
+  return options;
 }
 
