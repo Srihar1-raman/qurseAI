@@ -134,6 +134,24 @@ export default function MainInput() {
       `}</style>
       
       <div className="homepage-input-container">
+        {/* Opaque background bar for multiline mode to hide scrolled text */}
+        {(isMultiline || isMobile) && (
+          <div 
+            className="homepage-buttons-background show"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: '50px',
+              background: 'var(--color-bg-input)',
+              borderRadius: '0 0 20px 20px',
+              zIndex: 1,
+              pointerEvents: 'none',
+            }}
+          />
+        )}
+        
         <textarea
           ref={inputRef}
           rows={1}
@@ -159,7 +177,8 @@ export default function MainInput() {
             transition: 'padding 0.2s',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
-            zIndex: 3, // Ensure text is above background strip and buttons
+            position: 'relative',
+            zIndex: 0, // Textarea content below buttons
           }}
         />
         
@@ -223,7 +242,7 @@ export default function MainInput() {
           <>
             <div 
               className="absolute left-3 bottom-2 flex items-center gap-2"
-              style={{ zIndex: 2, transition: 'all 0.2s' }}
+              style={{ zIndex: 10, transition: 'all 0.2s' }}
             >
               {/* Attach Button */}
               <button
@@ -250,7 +269,7 @@ export default function MainInput() {
             
             <div 
               className="absolute right-3 bottom-2 flex items-center gap-2"
-              style={{ zIndex: 2, transition: 'all 0.2s' }}
+              style={{ zIndex: 10, transition: 'all 0.2s' }}
             >
               {/* Send Button */}
               <button
