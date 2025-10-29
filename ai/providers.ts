@@ -3,10 +3,31 @@
  * Unified provider abstraction for all AI models across different providers
  */
 
-import { customProvider } from 'ai';
+import { customProvider, extractReasoningMiddleware, wrapLanguageModel } from 'ai';
 import { groq } from '@ai-sdk/groq';
 import { xai } from '@ai-sdk/xai';
 import { createOpenAI } from '@ai-sdk/openai';
+
+/**
+ * Reasoning Middleware
+ * Extracts reasoning/thinking content from model responses
+ * Uses <think> tags which are standardized across providers
+ */
+const reasoningMiddleware = extractReasoningMiddleware({
+  tagName: 'think',
+});
+
+/**
+ * Helper function to wrap models with reasoning middleware
+ * Used for models that support reasoning/thinking capabilities
+ * Accepts any language model type (groq, xai, anannas, etc.)
+ */
+function wrapReasoningModel(model: Parameters<typeof wrapLanguageModel>[0]['model']) {
+  return wrapLanguageModel({
+    model,
+    middleware: [reasoningMiddleware],
+  });
+}
 
 /**
  * Anannas AI - OpenAI-compatible provider with access to multiple models
@@ -36,23 +57,26 @@ export const qurse = customProvider({
     // ============================================
     // GROQ MODELS (Free, Fast)
     // ============================================
-    'openai/gpt-oss-120b': groq('openai/gpt-oss-120b'),
+    'openai/gpt-oss-120b': wrapReasoningModel(groq('openai/gpt-oss-120b')),
     
     // ============================================
     // XAI MODELS (Grok)
     // ============================================
-    'grok-3-mini': xai('grok-3-mini'),
+    'grok-3-mini': wrapReasoningModel(xai('grok-3-mini')),
     
     // ============================================
     // ANANNAS MODELS (Via OpenAI-compatible API)
     // ============================================
+    // Kimi K2 does not support reasoning, keep unwrapped
     'moonshotai/kimi-k2-instruct': anannas.chat('moonshotai/kimi-k2-instruct'),
     
     // ============================================
     // FUTURE: Add more models here
     // ============================================
+    // For reasoning models: wrapReasoningModel(groq('model-name'))
+    // For non-reasoning models: groq('model-name') or xai('model-name')
     // 'llama-70b': groq('llama-3.3-70b-versatile'),
-    // 'claude-sonnet': anthropic('claude-3-5-sonnet'),
+    // 'claude-sonnet': wrapReasoningModel(anthropic('claude-3-5-sonnet')),
     // 'gemini-flash': google('gemini-2.0-flash-exp'),
   },
 });

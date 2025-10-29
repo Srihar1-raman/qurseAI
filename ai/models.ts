@@ -30,6 +30,13 @@ export interface ModelConfig {
   requiresAuth: boolean;      // Requires user authentication
   requiresPro: boolean;       // Requires Pro subscription
   free: boolean;              // Completely free (no rate limits)
+  freeUnlimited?: boolean;     // Completely free with no rate limits (infrastructure flag)
+  
+  // ============================================
+  // ADDITIONAL CAPABILITIES
+  // ============================================
+  experimental?: boolean;     // Is this model experimental/beta?
+  pdf?: boolean;              // Supports PDF file inputs
   
   // ============================================
   // LIMITS & PERFORMANCE
@@ -81,6 +88,11 @@ export const models: ModelConfig[] = [
     requiresAuth: false,
     requiresPro: false,
     free: true,
+    freeUnlimited: true,  // Free with no rate limits
+    
+    // Additional capabilities
+    experimental: false,
+    pdf: false,
     
     // Limits
     maxOutputTokens: 65536,
@@ -110,6 +122,11 @@ export const models: ModelConfig[] = [
     requiresAuth: true,
     requiresPro: true,
     free: false,
+    freeUnlimited: false,
+    
+    // Additional capabilities
+    experimental: false,
+    pdf: false,
     
     // Limits
     maxOutputTokens: 16000,
@@ -139,6 +156,11 @@ export const models: ModelConfig[] = [
     requiresAuth: false,
     requiresPro: false,
     free: true,
+    freeUnlimited: true,
+    
+    // Additional capabilities
+    experimental: false,
+    pdf: false,
     
     // Limits
     maxOutputTokens: 4000,
@@ -149,6 +171,49 @@ export const models: ModelConfig[] = [
     tags: ['fast'],
   },
 ];
+
+// ============================================
+// ENHANCED HELPER FUNCTIONS
+// ============================================
+
+/**
+ * Check if model is experimental/beta
+ */
+export function isExperimentalModel(modelValue: string): boolean {
+  const model = getModelConfig(modelValue);
+  return model?.experimental ?? false;
+}
+
+/**
+ * Check if model supports PDF file inputs
+ */
+export function hasPdfSupport(modelValue: string): boolean {
+  const model = getModelConfig(modelValue);
+  return model?.pdf ?? false;
+}
+
+/**
+ * Check if model is free with unlimited usage (no rate limits)
+ * Infrastructure hook for future rate limiting business logic
+ */
+export function isFreeUnlimited(modelValue: string): boolean {
+  const model = getModelConfig(modelValue);
+  return model?.freeUnlimited ?? false;
+}
+
+/**
+ * Check if user should bypass rate limits for a model
+ * Infrastructure hook - actual rate limiting enforcement is business logic
+ * @param modelValue - Model identifier
+ * @param user - User object (null if guest)
+ * @returns True if rate limits should be bypassed
+ */
+export function shouldBypassRateLimits(modelValue: string, user: any): boolean {
+  // If model is free unlimited and user is authenticated, bypass limits
+  // TODO: Add actual subscription check when business logic is implemented
+  const model = getModelConfig(modelValue);
+  return Boolean(user && model?.freeUnlimited);
+}
 
 // ============================================
 // HELPER FUNCTIONS

@@ -10,6 +10,7 @@ import { canUseModel, getModelParameters } from '@/ai/models';
 import { getChatMode } from '@/ai/config';
 import { getToolsByIds } from '@/lib/tools';
 import { createClient } from '@/lib/supabase/server';
+import { ModelAccessError, ChatModeError } from '@/lib/errors';
 
 /**
  * POST /api/chat
@@ -48,13 +49,16 @@ export async function POST(req: Request) {
     // TODO: Get actual Pro status from user subscription
     const isPro = false;
     
+    // TODO: Rate limit check (business logic - add later)
+    // Use shouldBypassRateLimits() helper from ai/models.ts
+    // if (!shouldBypassRateLimits(model, user)) {
+    //   // Check usage limits and throw RateLimitError if exceeded
+    // }
+    
     const accessCheck = canUseModel(model, user, isPro);
     if (!accessCheck.canUse) {
       const statusCode = accessCheck.reason === 'Authentication required' ? 401 : 403;
-      return NextResponse.json(
-        { error: accessCheck.reason },
-        { status: statusCode }
-      );
+      throw new ModelAccessError(accessCheck.reason || 'Access denied', statusCode);
     }
     
     // ============================================
@@ -158,10 +162,7 @@ export async function POST(req: Request) {
     // ============================================
     const modeConfig = getChatMode(chatMode);
     if (!modeConfig) {
-      return NextResponse.json(
-        { error: `Chat mode '${chatMode}' not found` },
-        { status: 400 }
-      );
+      throw new ChatModeError(`Chat mode '${chatMode}' not found`);
     }
     
     // Get tools for this chat mode
@@ -177,13 +178,15 @@ export async function POST(req: Request) {
       ...getModelParameters(model),
       tools: Object.keys(tools).length > 0 ? tools : undefined,
       
-      // Note: Reasoning streaming depends on the specific model/provider
-      // Grok models may show reasoning, others may not
+      // Reasoning is automatically extracted by middleware in providers.ts
+      // result.reasoning contains the thinking process (when available)
+      // result.text contains the final answer
       
       // Save assistant message when streaming completes
-      onFinish: async ({ text }) => {
+      onFinish: async ({ text, reasoning }) => {
         if (user && convId) {
           try {
+            // Save the final answer text
             const { error: msgError } = await supabase
               .from('messages')
               .insert({
@@ -194,6 +197,14 @@ export async function POST(req: Request) {
             
             if (msgError) {
               console.error('Error saving assistant message:', msgError);
+            }
+            
+            // Reasoning is extracted but not saved to DB yet (infrastructure ready, UI needed)
+            // TODO: Save reasoning separately when UI is implemented
+            if (reasoning) {
+              // Infrastructure: Reasoning extraction is working
+              // Business logic: Save to DB when UI is implemented
+              // console.log('Reasoning extracted:', reasoning.length, 'chars');
             }
           } catch (error) {
             console.error('Failed to save assistant message:', error);
@@ -214,6 +225,14 @@ export async function POST(req: Request) {
     
   } catch (error) {
     console.error('Chat API Error:', error);
+    
+    // Handle custom error classes with proper status codes
+    if (error instanceof ModelAccessError || error instanceof ChatModeError) {
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.statusCode }
+      );
+    }
     
     const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     
