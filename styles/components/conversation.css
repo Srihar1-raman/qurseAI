@@ -9,6 +9,63 @@
   z-index: 1001;
 }
 
+/* Style shared components to match conversation page layout */
+.input-model-selector .model-selector-mobile,
+.input-model-selector .web-search-mobile {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  min-width: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+}
+
+.input-model-selector .model-selector-mobile:hover,
+.input-model-selector .web-search-mobile:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-hover);
+  transform: scale(1.05);
+}
+
+/* Hide text labels in conversation page for compact display */
+.input-model-selector .model-selector-text,
+.input-model-selector .web-search-text {
+  display: none;
+}
+
+/* Hide dropdown arrow icons in conversation page */
+.input-model-selector img[alt="Dropdown"],
+.input-model-selector img[src*="dropdown-arrow"] {
+  display: none !important;
+}
+
+/* Ensure dropdowns appear above input (open upward) */
+/* Target all absolute positioned dropdowns inside input-model-selector */
+.input-model-selector div[class*="absolute"] {
+  bottom: calc(100% + 8px) !important;
+  top: auto !important;
+  margin-top: 0 !important;
+  margin-bottom: 8px !important;
+}
+
+/* Specifically target elements with top-full class */
+.input-model-selector [class*="top-full"] {
+  bottom: calc(100% + 8px) !important;
+  top: auto !important;
+}
+
+/* Target the direct child divs with absolute positioning */
+.input-model-selector > div > div[class*="absolute"] {
+  bottom: calc(100% + 8px) !important;
+  top: auto !important;
+  margin-top: 0 !important;
+  margin-bottom: 8px !important;
+}
+
 .model-selector-btn,
 .attach-btn,
 .send-btn {
@@ -217,9 +274,38 @@
   font-size: 16px;
 }
 
+/* Remove all browser default focus indicators */
+.conversation-input:focus,
+.conversation-input:focus-visible,
+.conversation-input:focus-within {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.conversation-input-container {
+  outline: none !important;
+}
+
 .conversation-input-container:focus-within {
   border: 1px solid var(--color-primary);
   box-shadow: 0 2px 8px var(--color-shadow);
+  outline: none !important;
+}
+
+/* Remove browser default focus indicators from form element */
+form.conversation-input-container,
+form.conversation-input-container:focus,
+form.conversation-input-container:focus-visible,
+form.conversation-input-container:focus-within {
+  outline: none !important;
+  outline-offset: 0 !important;
+  box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+form.conversation-input-container:focus-within {
+  border: 1px solid var(--color-primary);
 }
 
 .conversation-input::-webkit-scrollbar {

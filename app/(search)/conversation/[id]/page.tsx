@@ -6,9 +6,10 @@ import Image from 'next/image';
 import Header from '@/components/layout/Header';
 import ChatMessage from '@/components/chat/ChatMessage';
 import HistorySidebar from '@/components/layout/history/HistorySidebar';
+import ModelSelector from '@/components/homepage/ModelSelector';
+import WebSearchSelector from '@/components/homepage/WebSearchSelector';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
-import { MODEL_GROUPS, WEB_SEARCH_OPTIONS, isModelCompatibleWithArxiv } from '@/lib/constants';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { getMessages } from '@/lib/db/queries';
@@ -18,7 +19,28 @@ export default function ConversationPage() {
   const router = useRouter();
   const params = useParams();
   const conversationId = params.id as string;
-  const { selectedModel, chatMode } = useConversation();
+  const { selectedModel, chatMode, setChatMode } = useConversation();
+  
+  // Map chatMode (lowercase IDs) to WebSearchSelector option names (display names)
+  const getOptionFromChatMode = (mode: string): string => {
+    const mapping: Record<string, string> = {
+      'chat': 'Chat',
+      'web': 'Web Search (Exa)',
+      'web-search': 'Web Search (Exa)',
+      'arxiv': 'arXiv',
+    };
+    return mapping[mode] || 'Chat';
+  };
+  
+  // Map WebSearchSelector option names to chatMode IDs
+  const getChatModeFromOption = (optionName: string): string => {
+    const mapping: Record<string, string> = {
+      'Chat': 'chat',
+      'Web Search (Exa)': 'web',
+      'arXiv': 'arxiv',
+    };
+    return mapping[optionName] || 'chat';
+  };
   
   // Capture URL params once in refs to avoid reactive issues
   const searchParams = useSearchParams();
@@ -30,17 +52,11 @@ export default function ConversationPage() {
   
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [selectedWebSearchOption, setSelectedWebSearchOption] = useState('Chat');
-  const [isModelDropdownOpen, setIsModelDropdownOpen] = useState(false);
-  const [isWebSearchDropdownOpen, setIsWebSearchDropdownOpen] = useState(false);
-  const [modelSearchQuery, setModelSearchQuery] = useState('');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const modelDropdownRef = useRef<HTMLDivElement>(null);
-  const webSearchDropdownRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
   const { resolvedTheme, mounted } = useTheme();
   const { user } = useAuth();
@@ -222,49 +238,6 @@ export default function ConversationPage() {
     }
   }, [isLoadingMessages]);
 
-  // Close dropdowns on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (modelDropdownRef.current && !modelDropdownRef.current.contains(event.target as Node)) {
-        setIsModelDropdownOpen(false);
-        setModelSearchQuery('');
-      }
-      if (webSearchDropdownRef.current && !webSearchDropdownRef.current.contains(event.target as Node)) {
-        setIsWebSearchDropdownOpen(false);
-      }
-    };
-
-    if (isModelDropdownOpen || isWebSearchDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isModelDropdownOpen, isWebSearchDropdownOpen]);
-
-  // Filter models based on search query
-  const getFilteredModels = () => {
-    return Object.values(MODEL_GROUPS)
-      .filter(group => group.enabled)
-      .map(group => ({
-        ...group,
-        models: group.models
-          .filter(model => 
-            !modelSearchQuery ||
-            model.name.toLowerCase().includes(modelSearchQuery.toLowerCase()) ||
-            group.provider.toLowerCase().includes(modelSearchQuery.toLowerCase())
-          )
-          .map(model => ({
-            ...model,
-            disabled: selectedWebSearchOption === 'arXiv' && 
-                      !isModelCompatibleWithArxiv(model.name, group.provider)
-          }))
-      }))
-      .filter(group => group.models.length > 0);
-  };
-
-  const filteredModels = getFilteredModels();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -446,113 +419,17 @@ export default function ConversationPage() {
               <div className="input-buttons-background"></div>
               
               <div className="input-actions-left">
-                <div className="input-model-selector" ref={modelDropdownRef}>
-                  <button
-                    type="button"
-                    onClick={() => setIsModelDropdownOpen(!isModelDropdownOpen)}
-                    className="model-selector-btn"
-                    title="Select model"
-                  >
-                    <Image src={getIconPath("model", resolvedTheme, false, mounted)} alt="Model" width={16} height={16} />
-                  </button>
-                  
-                  {isModelDropdownOpen && (
-                    <div className="input-dropdown-menu show">
-                      <div style={{ padding: '8px', borderBottom: '1px solid var(--color-border)' }}>
-                        <input
-                          type="text"
-                          placeholder="Search models..."
-                          value={modelSearchQuery}
-                          onChange={(e) => setModelSearchQuery(e.target.value)}
-                          style={{
-                            width: '100%',
-                            padding: '6px 8px',
-                            border: '1px solid var(--color-border)',
-                            borderRadius: '6px',
-                            background: 'var(--color-bg-secondary)',
-                            color: 'var(--color-text)',
-                            fontSize: '13px',
-                            outline: 'none',
-                          }}
-                        />
-                      </div>
-                      <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                        {filteredModels.map((group) => (
-                        <div key={group.provider}>
-                          <div style={{
-                            padding: '6px 12px',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            color: 'var(--color-text-muted)',
-                            textTransform: 'uppercase'
-                          }}>
-                            {group.provider}
-                          </div>
-                          {group.models.map((model) => (
-                            <div
-                              key={model.name}
-                              style={{
-                                padding: '8px 12px',
-                                fontSize: '13px',
-                                cursor: 'not-allowed',
-                                opacity: 0.6
-                              }}
-                            >
-                              {model.name}
-                            </div>
-                          ))}
-                        </div>
-                      ))}
-                      </div>
-                    </div>
-                  )}
+                <div className="input-model-selector">
+                  <ModelSelector />
                 </div>
                 
-                <div className="input-model-selector" ref={webSearchDropdownRef}>
-                  <button
-                    type="button"
-                    onClick={() => setIsWebSearchDropdownOpen(!isWebSearchDropdownOpen)}
-                    className="model-selector-btn"
-                    title="Select web search option"
-                  >
-                    <Image 
-                      src={getIconPath(
-                        selectedWebSearchOption === 'Chat' ? 'chat' : 
-                        selectedWebSearchOption === 'Web Search (Exa)' ? 'exa' : 
-                        'arxiv-logo',
-                        resolvedTheme,
-                        false,
-                        mounted
-                      )} 
-                      alt="Web Search" 
-                      width={16} 
-                      height={16}
-                      className={selectedWebSearchOption === 'arXiv' ? 'arxiv-icon' : ''}
-                    />
-                  </button>
-                  
-                  {isWebSearchDropdownOpen && (
-                    <div className="input-dropdown-menu show">
-                      {WEB_SEARCH_OPTIONS.map((option) => (
-                        <div
-                          key={option.name}
-                          onClick={() => {
-                            setSelectedWebSearchOption(option.name);
-                            setIsWebSearchDropdownOpen(false);
-                          }}
-                          style={{
-                            padding: '8px 12px',
-                            fontSize: '13px',
-                            cursor: 'pointer',
-                            background: selectedWebSearchOption === option.name ? 'var(--color-primary)' : 'transparent',
-                            color: selectedWebSearchOption === option.name ? 'white' : 'var(--color-text)'
-                          }}
-                        >
-                          {option.name}
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                <div className="input-model-selector">
+                  <WebSearchSelector
+                    selectedOption={getOptionFromChatMode(chatMode)}
+                    onSelectOption={(optionName) => {
+                      setChatMode(getChatModeFromOption(optionName));
+                    }}
+                  />
                 </div>
 
                 <button
