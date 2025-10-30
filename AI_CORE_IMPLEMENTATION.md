@@ -720,3 +720,134 @@ The AI core infrastructure is now **production-ready** with:
 **Build Status:** ✅ Passing
 **Implementation Status:** ✅ Complete
 
+## Unified Reasoning Streaming (Provider‑agnostic) — Added
+
+### What changed (high level)
+- Server now emits a normalized SSE stream with both text and reasoning parts using the AI SDK UI streaming interface.
+- Client parses SSE parts and renders reasoning live while the final answer streams.
+- Model registry no longer hides reasoning for Groq GPT‑OSS; it allows reasoning to be delivered as separate parts.
+
+### Why this matters
+- Provider differences (Groq, Anthropic, Google, OpenAI-like) are encapsulated in the model registry and provider options. The route and client don’t branch per provider.
+- Adding new models/providers will not require API/Client rewrites; only registry entries.
+- This matches industry patterns and Scira’s approach for robust multi-provider systems.
+
+### Server changes (normalized SSE with reasoning)
+- File: `app/api/chat/route.ts`
+- Replaced text-only `toTextStreamResponse()` with normalized UI streaming:
+
+```startLine:endLine:app/api/chat/route.ts
+import { streamText, createUIMessageStream, JsonToSseTransformStream } from 'ai';
+// ...
+const stream = createUIMessageStream({
+  execute: async ({ writer: dataStream }) => {
+    const result = streamText({
+      model: qurse.languageModel(model),
+      messages,
+      system: modeConfig.systemPrompt,
+      maxRetries: 5,
+      ...getModelParameters(model),
+      providerOptions: getProviderOptions(model) as any,
+      tools: Object.keys(tools).length > 0 ? tools : undefined,
+      onError: (err) => { /* provider-aware error mapping */ },
+      onFinish: async ({ text, reasoning }) => { /* fire-and-forget DB save */ },
+    });
+
+    dataStream.merge(
+      result.toUIMessageStream({
+        sendReasoning: true,
+        messageMetadata: ({ part }) => (part.type === 'finish' ? { model } : undefined),
+      })
+    );
+  },
+});
+
+return new Response(stream.pipeThrough(new JsonToSseTransformStream()), {
+  headers: {
+    'Content-Type': 'text/event-stream; charset=utf-8',
+    'Cache-Control': 'no-cache, no-transform',
+    'Connection': 'keep-alive',
+    'X-Conversation-ID': convId || '',
+  },
+});
+```
+
+- Preserved:
+  - Parallel setup
+  - `maxRetries: 5`
+  - Fire‑and‑forget DB persistence
+  - Typed provider/streaming errors
+
+### Model reasoning policy (Groq GPT‑OSS)
+- File: `ai/models.ts`
+- Removed hidden reasoning for `openai/gpt-oss-120b` so Groq can return reasoning in the dedicated field.
+
+```startLine:endLine:ai/models.ts
+// Reasoning configuration
+reasoningConfig: {
+  middleware: 'think',
+  streamable: true,
+},
+// Provider configuration
+providerConfig: {
+  groq: {
+    reasoningEffort: 'high',
+    parallelToolCalls: false,
+    structuredOutputs: true,
+  },
+},
+```
+
+- Behavior:
+  - GPT‑OSS does not use `reasoningFormat`; Groq returns reasoning separately by default.
+  - For models that support formats (e.g., Qwen), the registry can set `parsed`/`raw` later.
+
+### Client changes (SSE parts parsing with reasoning)
+- File: `app/(search)/conversation/[id]/page.tsx`
+- Replaced plain text concatenation with a minimal SSE-part parser that:
+  - Aggregates `text` deltas into the assistant message.
+  - Aggregates `reasoning` deltas into a dedicated buffer.
+  - Renders reasoning inline above the answer as it streams (non-persistent UI-only view).
+
+```startLine:endLine:app/(search)/conversation/[id]/page.tsx
+// inside streaming loop
+buffer += decoder.decode(value, { stream: true });
+while ((boundaryIndex = buffer.indexOf('\n\n')) !== -1) {
+  const rawEvent = buffer.slice(0, boundaryIndex);
+  buffer = buffer.slice(boundaryIndex + 2);
+  // parse event: and data: lines, JSON.parse payload
+  if (eventType === 'text') { /* update aiResponse */ }
+  else if (eventType === 'reasoning') { /* update reasoningBuffer */ }
+}
+```
+
+- UI behavior:
+  - Shows a "Thinking…" area with live reasoning; the final answer continues streaming below.
+  - No DB change: reasoning is not stored; only the assistant text is persisted (same as before).
+
+### Effects & Impacts
+- Developer experience:
+  - Adding a model = registry entry (provider, reasoning behavior, provider options). No changes to route/client.
+  - Provider quirks are isolated in `getProviderOptions()` and `reasoningConfig`.
+- Performance:
+  - Streaming path remains efficient; retries maintained.
+  - Parsing SSE parts is lightweight and happens incrementally.
+- UX:
+  - Users see live "Thinking" updates and the final response, similar to Scira.
+
+### Testing
+- Build validation: `npm run build` passes; no linter errors.
+- Manual checks:
+  - Groq `openai/gpt-oss-120b`: reasoning now streams (as separate parts) and renders live.
+  - Non‑reasoning model (Kimi K2): text streams without reasoning (no UI flicker).
+
+### Post-Implementation Fix
+- **Issue Found**: Client had two different streaming parsers - SSE parsing for initial messages but plain text for follow-up messages in `handleSubmit`
+- **Fix Applied**: Unified both handlers to use identical SSE parsing logic
+- **Result**: Reasoning now displays consistently for ALL messages (initial and follow-ups)
+
+### Compatibility & Future Work
+- Compatible with current UI; no framework change required.
+- Future: add enriched metadata streaming and a dedicated Reasoning UI component.
+- Gateway pattern, additional providers, and tool streaming can be enabled without changing transport or client parsing.
+

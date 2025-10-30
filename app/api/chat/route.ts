@@ -3,10 +3,10 @@
  * Main endpoint for AI streaming responses with reasoning support
  */
 
-import { streamText } from 'ai';
+import { streamText, createUIMessageStream, JsonToSseTransformStream, convertToModelMessages } from 'ai';
 import { NextResponse } from 'next/server';
 import { qurse } from '@/ai/providers';
-import { canUseModel, getModelParameters, getProviderOptions } from '@/ai/models';
+import { canUseModel, getModelParameters, getProviderOptions, getModelConfig } from '@/ai/models';
 import { getChatMode } from '@/ai/config';
 import { getToolsByIds } from '@/lib/tools';
 import { createClient } from '@/lib/supabase/server';
@@ -19,11 +19,29 @@ import { ModelAccessError, ChatModeError, StreamingError, ProviderError } from '
 async function handleConversationCreation(
   user: { id: string },
   conversationId: string | undefined,
-  messages: Array<{ content?: string }>,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  messages: Array<any>,
   supabase: Awaited<ReturnType<typeof createClient>>
 ): Promise<string> {
   let convId = conversationId;
-  const userMessage = messages[messages.length - 1]?.content || '';
+  
+  // Extract user message content from UIMessage parts structure
+  const lastMessage = messages[messages.length - 1];
+  let userMessage = '';
+  
+  if (lastMessage?.parts && Array.isArray(lastMessage.parts)) {
+    // UIMessage format with parts
+    userMessage = lastMessage.parts
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((p: any) => p.type === 'text')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((p: any) => p.text)
+      .join('');
+  } else if (lastMessage?.content) {
+    // Fallback: ModelMessage format with content
+    userMessage = lastMessage.content;
+  }
+  
   const title = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
   
   if (convId) {
@@ -165,56 +183,79 @@ export async function POST(req: Request) {
     console.log(`⏱️  Time to stream: ${Date.now() - requestStartTime}ms`);
     
     // ============================================
-    // Stage 5: Stream AI response
+    // Stage 5: Stream AI response (UI stream with reasoning)
     // ============================================
-    // Get tools for this chat mode
     const tools = getToolsByIds(modeConfig.enabledTools);
-    
-    const result = streamText({
-      model: qurse.languageModel(model),
-      messages,
-      system: modeConfig.systemPrompt,
-      maxRetries: 5,
-      ...getModelParameters(model),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      providerOptions: getProviderOptions(model) as any, // Provider options type compatibility
-      tools: Object.keys(tools).length > 0 ? tools : undefined,
-      onError: (err) => {
-        console.error('Stream error:', err);
-        const errorMessage = err.error instanceof Error ? err.error.message : String(err.error);
-        if (errorMessage.includes('API key')) {
-          throw new ProviderError(
-            'Provider authentication failed',
-            model.split('/')[0] || 'unknown',
-            false
-          );
-        }
-      },
-      onFinish: async ({ text, reasoning }) => {
-        // Save messages after streaming completes
-        if (user && convId) {
-          void supabase.from('messages').insert({
-            conversation_id: convId,
-            content: text,
-            role: 'assistant',
-          }).then(({ error }) => {
-            if (error) {
-              console.error('Message save failed:', error);
+
+    const stream = createUIMessageStream({
+      execute: async ({ writer: dataStream }) => {
+        const result = streamText({
+          model: qurse.languageModel(model),
+          messages: convertToModelMessages(messages),
+          system: modeConfig.systemPrompt,
+          maxRetries: 5,
+          ...getModelParameters(model),
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          providerOptions: getProviderOptions(model) as any,
+          tools: Object.keys(tools).length > 0 ? tools : undefined,
+          onError: (err) => {
+            console.error('Stream error:', err);
+            const errorMessage = err.error instanceof Error ? err.error.message : String(err.error);
+            if (errorMessage.includes('API key')) {
+              throw new ProviderError(
+                'Provider authentication failed',
+                model.split('/')[0] || 'unknown',
+                false
+              );
             }
-          });
-        }
+          },
+          onFinish: async ({ text, reasoning, usage }) => {
+            if (user && convId) {
+              // Save assistant message to database
+              void supabase
+                .from('messages')
+                .insert({ 
+                  conversation_id: convId, 
+                  content: text, 
+                  role: 'assistant' 
+                })
+                .then(({ error }) => {
+                  if (error) console.error('❌ Message save failed:', error);
+                  else console.log('✅ Message saved to DB');
+                });
+            }
+
+            const processingTime = (Date.now() - requestStartTime) / 1000;
+            console.log(`✅ Request completed: ${processingTime.toFixed(2)}s`);
+            if (reasoning) console.log(`🧠 Reasoning extracted (${reasoning.length} chars)`);
+            if (usage) console.log(`📊 Tokens: ${usage.totalTokens || 0}`);
+          },
+        });
+
+        // Merge normalized UI stream with conditional reasoning
+        // Only send reasoning for models that support it
+        const modelConfig = getModelConfig(model);
+        const shouldSendReasoning = modelConfig?.reasoning || false;
         
-        const processingTime = (Date.now() - requestStartTime) / 1000;
-        console.log(`✅ Request completed: ${processingTime.toFixed(2)}s`);
-        if (reasoning) {
-          console.log(`🧠 Reasoning extracted (${reasoning.length} chars)`);
-        }
+        dataStream.merge(
+          result.toUIMessageStream({
+            sendReasoning: shouldSendReasoning,
+            messageMetadata: ({ part }) => {
+              if (part.type === 'finish') {
+                return { model };
+              }
+            },
+          })
+        );
       },
     });
-    
-    // Return streaming response
-    return result.toTextStreamResponse({
+
+    // Return as SSE
+    return new Response(stream.pipeThrough(new JsonToSseTransformStream()), {
       headers: {
+        'Content-Type': 'text/event-stream; charset=utf-8',
+        'Cache-Control': 'no-cache, no-transform',
+        'Connection': 'keep-alive',
         'X-Conversation-ID': convId || '',
       },
     });

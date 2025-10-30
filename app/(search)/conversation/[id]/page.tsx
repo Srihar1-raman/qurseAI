@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
+import { useChat } from '@ai-sdk/react';
 import Image from 'next/image';
 import Header from '@/components/layout/Header';
 import ChatMessage from '@/components/chat/ChatMessage';
@@ -13,7 +14,7 @@ import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { getMessages } from '@/lib/db/queries';
-import type { Message } from '@/lib/types';
+import type { QurseMessage } from '@/lib/types';
 
 export default function ConversationPage() {
   const router = useRouter();
@@ -50,11 +51,10 @@ export default function ConversationPage() {
     mode: searchParams.get('mode'),
   });
   
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [input, setInput] = useState('');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMessages, setIsLoadingMessages] = useState(true);
+  const [initialMessages, setInitialMessages] = useState<Array<{ id: string; role: 'user' | 'assistant'; content: string }>>([]);
+  const [input, setInput] = useState('');
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const initialMessageSentRef = useRef(false);
@@ -63,9 +63,8 @@ export default function ConversationPage() {
 
   // Use ref values instead of reactive searchParams
   const initialMessageFromRef = initialParamsRef.current.message;
-  const initialModelFromRef = initialParamsRef.current.model;
-  const initialModeFromRef = initialParamsRef.current.mode;
 
+  // Load messages from database
   const loadMessages = useCallback(async () => {
     // Skip loading for temp conversation IDs (they start with 'temp-')
     if (conversationId.startsWith('temp-')) {
@@ -86,14 +85,13 @@ export default function ConversationPage() {
 
     try {
       const msgs = await getMessages(conversationId);
-      setMessages(msgs.map(msg => ({
+      // Convert to format compatible with useChat
+      const formattedMessages = msgs.map(msg => ({
         id: msg.id || `msg-${Date.now()}`,
+        role: (msg.role || 'user') as 'user' | 'assistant',
         content: msg.content || '',
-        role: msg.role || 'user',
-        text: msg.content || '',
-        isUser: msg.role === 'user',
-        timestamp: msg.created_at || new Date().toISOString(),
-      })));
+      }));
+      setInitialMessages(formattedMessages);
     } catch (error) {
       console.error('Error loading messages:', error);
     } finally {
@@ -101,110 +99,75 @@ export default function ConversationPage() {
     }
   }, [user, conversationId]);
 
-  // Load existing messages
+  // Load existing messages on mount
   useEffect(() => {
     loadMessages();
   }, [loadMessages]);
 
+  // useChat hook - the core of the new implementation
+  const {
+    messages,
+    sendMessage,
+    status,
+    error,
+  } = useChat({
+    id: conversationId,
+    initialMessages: initialMessages,
+    fetch: async (input: RequestInfo, init?: RequestInit) => {
+      // Custom fetch to add body parameters
+      const body = JSON.parse((init?.body as string) || '{}');
+      return fetch(input, {
+        ...init,
+        body: JSON.stringify({
+          ...body,
+          conversationId,
+          model: selectedModel,
+          chatMode,
+        }),
+      });
+    },
+    api: '/api/chat',
+    onFinish: ({ message }: { message: { id: string } }) => {
+      console.log('✅ Message complete:', message.id);
+    },
+    onError: (error: Error) => {
+      console.error('❌ Chat error:', error);
+    },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  } as any);
+
+  const isLoading = status === 'submitted';
+
   // Send initial message from URL params if present (ONCE on mount)
   useEffect(() => {
     // Use ref values, not reactive searchParams
-    if (!initialMessageFromRef || initialMessageSentRef.current || isLoadingMessages) return;
+    if (!initialMessageFromRef || initialMessageSentRef.current || isLoadingMessages || messages.length > 0) return;
     
     // Mark as sent immediately to prevent duplicate sends
     initialMessageSentRef.current = true;
     
     // Send the initial message
     const messageText = decodeURIComponent(initialMessageFromRef);
-    const model = initialModelFromRef || selectedModel;
-    const mode = initialModeFromRef || chatMode;
     
-    const userMessage: Message = {
-      id: `temp-${Date.now()}`,
-      content: messageText,
-      role: 'user',
-      text: messageText,
-      isUser: true,
-      timestamp: new Date().toISOString(),
-    };
-
-    // Set user message FIRST (before any async operations)
-    setMessages([userMessage]);
-    setIsLoading(true);
-    
-    // Clean up URL params immediately after setting state (prevents reload issues)
-    setTimeout(() => {
-      if (typeof window !== 'undefined') {
-        const url = new URL(window.location.href);
-        if (url.searchParams.has('message')) {
-          url.searchParams.delete('message');
-          url.searchParams.delete('model');
-          url.searchParams.delete('mode');
-          window.history.replaceState({}, '', url.toString());
-        }
+    // Clean up URL params immediately
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      if (url.searchParams.has('message')) {
+        url.searchParams.delete('message');
+        url.searchParams.delete('model');
+        url.searchParams.delete('mode');
+        window.history.replaceState({}, '', url.toString());
       }
-    }, 50); // Minimal delay to let React process the state update
+    }
 
-    fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        messages: [{ role: 'user', content: messageText }],
-        conversationId,
-        model,
-        chatMode: mode,
-      }),
-    })
-      .then(response => {
-        if (!response.ok) throw new Error('Failed to get response');
-        return response.body?.getReader();
-      })
-      .then(reader => {
-        if (!reader) return;
-        const decoder = new TextDecoder();
-        let aiResponse = '';
-        
-        const processStream = async () => {
-          while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-
-            const chunk = decoder.decode(value);
-            aiResponse += chunk;
-
-            setMessages(prev => {
-              const lastMessage = prev[prev.length - 1];
-              if (lastMessage && lastMessage.role === 'assistant') {
-                return [...prev.slice(0, -1), { ...lastMessage, content: aiResponse, text: aiResponse }];
-              } else {
-                return [...prev, {
-                  id: `ai-${Date.now()}`,
-                  content: aiResponse,
-                  role: 'assistant' as const,
-                  text: aiResponse,
-                  isUser: false,
-                  timestamp: new Date().toISOString(),
-                }];
-              }
-            });
-          }
-          setIsLoading(false);
-        };
-        
-        processStream().catch(err => {
-          console.error('Error processing stream:', err);
-          setMessages(prev => prev.slice(0, -1));
-          setIsLoading(false);
-        });
-      })
-      .catch(err => {
-        console.error('Error sending message:', err);
-        setMessages([]);
-        setIsLoading(false);
-        initialMessageSentRef.current = false; // Reset on error to allow retry
-      });
+    // Send message via useChat with parts structure
+    sendMessage({
+      role: 'user',
+      parts: [{ type: 'text', text: messageText }],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoadingMessages, conversationId, selectedModel, chatMode]);
+  }, [isLoadingMessages, messages.length]);
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => {
@@ -237,88 +200,27 @@ export default function ConversationPage() {
     }
   }, [isLoadingMessages]);
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const messageText = input.trim();
     if (!messageText || isLoading) return;
 
-    // Add user message immediately
-    const userMessage: Message = {
-      id: `temp-${Date.now()}`,
-      content: messageText,
+    // Send message via useChat with parts structure
+    sendMessage({
       role: 'user',
-      text: messageText,
-      isUser: true,
-      timestamp: new Date().toISOString(),
-    };
+      parts: [{ type: 'text', text: messageText }],
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any);
 
-    setMessages(prev => [...prev, userMessage]);
+    // Clear input
     setInput('');
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [...messages, userMessage].map(m => ({ role: m.role, content: m.content })),
-          conversationId,
-          model: selectedModel,
-          chatMode,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to get response');
-      }
-
-      // Read streaming response
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
-      let aiResponse = '';
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          aiResponse += chunk;
-
-          // Update AI message in real-time
-          setMessages(prev => {
-            const lastMessage = prev[prev.length - 1];
-            if (lastMessage && lastMessage.role === 'assistant') {
-              return [...prev.slice(0, -1), { ...lastMessage, content: aiResponse, text: aiResponse }];
-            } else {
-              return [...prev, {
-                id: `ai-${Date.now()}`,
-                content: aiResponse,
-                role: 'assistant' as const,
-                text: aiResponse,
-                isUser: false,
-                timestamp: new Date().toISOString(),
-                model: selectedModel,
-              }];
-            }
-          });
-        }
-      }
-
-    } catch (error) {
-      console.error('Error sending message:', error);
-      // Remove user message on error
-      setMessages(prev => prev.slice(0, -1));
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as unknown as React.FormEvent);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      handleSubmit(e as any);
     }
   };
 
@@ -348,9 +250,9 @@ export default function ConversationPage() {
             {messages.map((message) => (
               <ChatMessage
                 key={message.id}
-                content={message.content || ''}
-                isUser={message.isUser}
-                model={message.model}
+                message={message as QurseMessage}
+                isUser={message.role === 'user'}
+                model={selectedModel}
               />
             ))}
             
@@ -390,12 +292,23 @@ export default function ConversationPage() {
                 </div>
               </div>
             )}
+
+            {/* Error display */}
+            {error && (
+              <div className="message bot-message">
+                <div style={{ maxWidth: '95%', marginRight: 'auto' }}>
+                  <div className="message-content" style={{ color: 'var(--color-error)' }}>
+                    ❌ Error: {error.message}
+                  </div>
+                </div>
+              </div>
+            )}
             
             <div ref={conversationEndRef} />
           </div>
         </div>
 
-        {/* Input Section - Same as before but with form */}
+        {/* Input Section */}
         <div className="input-section">
           <div className="input-section-content">
             <form onSubmit={handleSubmit} className="input-container conversation-input-container">

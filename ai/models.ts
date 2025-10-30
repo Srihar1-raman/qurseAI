@@ -147,14 +147,12 @@ export const models: ModelConfig[] = [
     reasoningConfig: {
       middleware: 'think',
       streamable: true,
-      format: 'hidden',
     },
     
     // Provider configuration
     providerConfig: {
       groq: {
         reasoningEffort: 'high',
-        reasoningFormat: 'hidden',
         parallelToolCalls: false,
         structuredOutputs: true,
       },

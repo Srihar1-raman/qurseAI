@@ -3,6 +3,8 @@
  * All shared types used across the application
  */
 
+import type { UIMessagePart } from 'ai';
+
 // ============================================
 // User & Authentication Types
 // ============================================
@@ -82,6 +84,18 @@ export interface ChatMessage {
   timestamp?: string;
 }
 
+/**
+ * Message structure for useChat hook with parts
+ * Supports text, reasoning, and other part types
+ */
+export interface QurseMessage {
+  id: string;
+  role: 'user' | 'assistant';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  parts: UIMessagePart<any, any>[];
+  metadata?: StreamMetadata;
+}
+
 export interface Conversation {
   id: string;
   title: string;
@@ -127,7 +141,7 @@ export interface SearchOption {
 // ============================================
 
 export interface ChatMessageProps {
-  content: string;
+  message: QurseMessage;
   isUser: boolean;
   model?: string;
   onRedo?: () => void | Promise<void>;
