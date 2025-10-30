@@ -12,6 +12,7 @@
   "dependencies": {
     "@ai-sdk/groq": "^2.0.24",
     "@ai-sdk/openai": "^2.0.52",
+    "@ai-sdk/react": "^2.0.82",
     "@ai-sdk/xai": "^2.0.26",
     "@supabase/ssr": "^0.7.0",
     "@supabase/supabase-js": "^2.75.0",
