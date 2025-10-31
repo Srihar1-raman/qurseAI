@@ -6,15 +6,19 @@ import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useConversation } from '@/lib/contexts/ConversationContext';
+import { useAuth } from '@/lib/contexts/AuthContext';
+import { ensureConversation } from '@/lib/db/queries';
 
 export default function MainInput() {
   const [inputValue, setInputValue] = useState('');
   const [isMultiline, setIsMultiline] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const router = useRouter();
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
+  const { user } = useAuth();
 
   // Detect mobile screen size
   useEffect(() => {
@@ -73,17 +77,38 @@ export default function MainInput() {
     }
   }, [inputValue, isMobile]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const messageText = inputValue.trim();
-    if (!messageText) return;
+    if (!messageText || isCreatingConversation) return;
 
-    // Generate conversation ID (using crypto.randomUUID - available in modern browsers)
-    const chatId = crypto.randomUUID();
-    
-    // Navigate immediately with URL params
-    router.push(`/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`);
-    
-    setInputValue('');
+    try {
+      setIsCreatingConversation(true);
+      
+      // Generate conversation ID
+      const chatId = crypto.randomUUID();
+      
+      // Extract title from message (first 50 chars)
+      const title = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
+      
+      if (user && user.id) {
+        // Authenticated: Create conversation in DB first
+        await ensureConversation(chatId, user.id, title);
+        
+        // Navigate with message in URL params
+        router.push(`/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`);
+      } else {
+        // Guest mode: Use temp ID prefix (won't persist to DB)
+        router.push(`/conversation/temp-${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`);
+      }
+      
+      setInputValue('');
+    } catch (error) {
+      console.error('Error creating conversation:', error);
+      // Show error to user
+      alert('Failed to create conversation. Please try again.');
+    } finally {
+      setIsCreatingConversation(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -214,7 +239,7 @@ export default function MainInput() {
             {/* Send Button */}
             <button
               type="button"
-              disabled={!inputValue.trim()}
+              disabled={!inputValue.trim() || isCreatingConversation}
               className="flex items-center justify-center transition-all"
               aria-label="Send message"
               onClick={handleSend}
@@ -222,11 +247,11 @@ export default function MainInput() {
                 width: '36px',
                 height: '36px',
                 borderRadius: '50%',
-                background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                background: inputValue.trim() && !isCreatingConversation ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                border: `1px solid ${inputValue.trim() && !isCreatingConversation ? 'var(--color-primary)' : 'var(--color-border)'}`,
                 padding: '0',
-                opacity: inputValue.trim() ? 1 : 0.5,
-                cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
+                opacity: inputValue.trim() && !isCreatingConversation ? 1 : 0.5,
+                cursor: inputValue.trim() && !isCreatingConversation ? 'pointer' : 'not-allowed',
               }}
             >
               <Image
@@ -274,7 +299,7 @@ export default function MainInput() {
               {/* Send Button */}
               <button
                 type="button"
-                disabled={!inputValue.trim()}
+                disabled={!inputValue.trim() || isCreatingConversation}
                 className="flex items-center justify-center transition-all"
                 aria-label="Send message"
                 onClick={handleSend}
@@ -282,11 +307,11 @@ export default function MainInput() {
                   width: '36px',
                   height: '36px',
                   borderRadius: '50%',
-                  background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                  border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                  background: inputValue.trim() && !isCreatingConversation ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                  border: `1px solid ${inputValue.trim() && !isCreatingConversation ? 'var(--color-primary)' : 'var(--color-border)'}`,
                   padding: '0',
-                  opacity: inputValue.trim() ? 1 : 0.5,
-                  cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
+                  opacity: inputValue.trim() && !isCreatingConversation ? 1 : 0.5,
+                  cursor: inputValue.trim() && !isCreatingConversation ? 'pointer' : 'not-allowed',
                 }}
               >
                 <Image

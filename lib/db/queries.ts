@@ -128,7 +128,7 @@ export async function deleteConversation(conversationId: string): Promise<void> 
 }
 
 /**
- * Get all messages for a conversation
+ * Get all messages for a conversation (client-side)
  */
 export async function getMessages(conversationId: string): Promise<Message[]> {
   const supabase = createClient();
@@ -154,6 +154,7 @@ export async function getMessages(conversationId: string): Promise<Message[]> {
     created_at: msg.created_at,
   }));
 }
+
 
 /**
  * Create a new message
@@ -204,6 +205,71 @@ export async function deleteAllConversations(userId: string): Promise<void> {
 
   if (error) {
     console.error('Error deleting all conversations:', error);
+    throw error;
+  }
+}
+
+/**
+ * Ensure a conversation exists in the database
+ * Creates the conversation if it doesn't exist, with the provided ID
+ * This is idempotent and handles race conditions gracefully
+ */
+export async function ensureConversation(
+  conversationId: string,
+  userId: string,
+  title: string
+): Promise<void> {
+  const supabase = createClient();
+  
+  try {
+    // First check if conversation already exists
+    const { data: existing, error: checkError } = await supabase
+      .from('conversations')
+      .select('id, user_id')
+      .eq('id', conversationId)
+      .maybeSingle();
+    
+    if (checkError) {
+      console.error('Error checking conversation:', checkError);
+      throw checkError;
+    }
+    
+    // If exists, verify ownership
+    if (existing) {
+      if (existing.user_id !== userId) {
+        throw new Error('Conversation belongs to another user');
+      }
+      return; // Already exists and ownership verified
+    }
+    
+    // Create new conversation with explicit ID
+    const { error: insertError } = await supabase
+      .from('conversations')
+      .insert({
+        id: conversationId,
+        user_id: userId,
+        title,
+      });
+    
+    if (insertError) {
+      // Handle race condition - another request may have created it
+      if (insertError.code === '23505') { // Duplicate key
+        // Verify ownership
+        const { data: verify } = await supabase
+          .from('conversations')
+          .select('user_id')
+          .eq('id', conversationId)
+          .maybeSingle();
+        
+        if (verify && verify.user_id === userId) {
+          return; // Created by another request, ownership verified
+        }
+        throw new Error('Conversation ID conflict');
+      }
+      throw insertError;
+    }
+  } catch (error) {
+    console.error('Error ensuring conversation:', error);
     throw error;
   }
 }
