@@ -186,12 +186,22 @@ export async function POST(req: Request) {
           },
           onFinish: async ({ text, reasoning, usage }) => {
             if (user && convId) {
-              // Save assistant message to database (RLS policy checks conversation ownership)
+              // Save assistant message - store reasoning in content with delimiter
+              let fullContent = text;
+              if (reasoning) {
+                // Serialize reasoning (could be string or object) properly
+                const reasoningText = typeof reasoning === 'string' 
+                  ? reasoning 
+                  : JSON.stringify(reasoning);
+                fullContent = `${text}|||REASONING|||${reasoningText}`;
+              }
+              
+              // Only use guaranteed columns: conversation_id, content, role
               const { error: assistantMsgError } = await supabase
                 .from('messages')
                 .insert({ 
                   conversation_id: convId, 
-                  content: text, 
+                  content: fullContent, 
                   role: 'assistant',
                 });
               
@@ -199,6 +209,8 @@ export async function POST(req: Request) {
                 console.error('❌ Assistant message save failed:', assistantMsgError);
               } else {
                 console.log('✅ Assistant message saved to DB');
+                if (reasoning) console.log('✅ Reasoning saved in content field');
+                console.log('📊 Tokens used:', usage?.totalTokens, '| Model:', model);
               }
             }
 

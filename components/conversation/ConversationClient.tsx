@@ -18,7 +18,7 @@ import type { QurseMessage } from '@/lib/types';
 
 interface ConversationClientProps {
   conversationId: string;
-  initialMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string }>;
+  initialMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }>;
   hasInitialMessageParam: boolean;
 }
 
@@ -111,21 +111,51 @@ export function ConversationClient({
   console.log('🔍 CLIENT - useChat messages:', messages);
 
   // Workaround for useChat not respecting initialMessages
-  // Use initialMessages until user interacts, then switch to useChat's messages
-  const rawDisplayMessages = hasInteracted || messages.length > 0 ? messages : initialMessages;
+  // Merge initialMessages with new messages from useChat, avoiding duplicates
+  const rawDisplayMessages = React.useMemo(() => {
+    if (!hasInteracted && messages.length === 0) {
+      // Not interacted yet, use server-loaded messages
+      return initialMessages;
+    }
+    
+    // Merge: start with initialMessages, add new useChat messages that aren't duplicates
+    const messageIds = new Set(initialMessages.map(m => m.id));
+    const newMessages = messages.filter(m => !messageIds.has(m.id));
+    
+    return [...initialMessages, ...newMessages];
+  }, [initialMessages, messages, hasInteracted]);
   
   // Transform server messages to have parts structure that ChatMessage expects
-  const displayMessages = rawDisplayMessages.map((msg) => {
-    // If message already has parts (from useChat), use as is
-    if ('parts' in msg && msg.parts) {
-      return msg;
-    }
-    // Transform server message format to parts structure
-    return {
-      ...msg,
-      parts: [{ type: 'text' as const, text: msg.content }],
-    };
-  });
+  const displayMessages = React.useMemo(() => {
+    return rawDisplayMessages.map((msg): QurseMessage => {
+      // If message already has parts (from useChat), use as is
+      if ('parts' in msg && msg.parts) {
+        return {
+          id: msg.id,
+          role: msg.role as 'user' | 'assistant',
+          parts: msg.parts,
+          metadata: ('metadata' in msg && msg.metadata) ? msg.metadata as any : undefined,
+        };
+      }
+      
+      // Transform server message format to parts structure
+      const parts: Array<{ type: 'text' | 'reasoning'; text: string }> = [
+        { type: 'text' as const, text: (msg as any).content }
+      ];
+      
+      // Add reasoning as a separate part if it exists
+      if ('reasoning' in msg && msg.reasoning) {
+        parts.push({ type: 'reasoning' as const, text: msg.reasoning });
+      }
+      
+      return {
+        id: msg.id,
+        role: msg.role as 'user' | 'assistant',
+        parts: parts as any,
+        metadata: undefined,
+      };
+    });
+  }, [rawDisplayMessages]);
   
   console.log('🔍 CLIENT - displayMessages count:', displayMessages.length);
   console.log('🔍 CLIENT - hasInteracted:', hasInteracted);
