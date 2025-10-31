@@ -17,7 +17,7 @@ export default async function ConversationPage({ params, searchParams }: PagePro
   console.log('🔍 SERVER - urlParams.message:', urlParams.message);
   console.log('🔍 SERVER - user:', user?.id);
 
-  let initialMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string }> = [];
+  let initialMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }> = [];
 
   // Only load messages if:
   // 1. Not a temp conversation

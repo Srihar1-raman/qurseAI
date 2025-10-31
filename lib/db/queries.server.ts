@@ -11,7 +11,7 @@ import { createClient } from '@/lib/supabase/server';
  */
 export async function getMessagesServerSide(
   conversationId: string
-): Promise<Array<{ id: string; role: 'user' | 'assistant'; content: string }>> {
+): Promise<Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }>> {
   const supabase = await createClient();
 
   console.log('🔍 QUERY - Fetching messages for conversation:', conversationId);
@@ -35,11 +35,32 @@ export async function getMessagesServerSide(
   
   console.log('🔍 QUERY - After filtering:', filtered.length, 'messages');
 
-  return filtered.map((msg) => ({
-    id: msg.id,
-    role: msg.role as 'user' | 'assistant',
-    content: msg.content,
-  }));
+  return filtered.map((msg) => {
+    // Extract reasoning from content if it exists (delimiter: |||REASONING|||)
+    let content = msg.content;
+    let reasoning: string | undefined;
+    
+    if (content.includes('|||REASONING|||')) {
+      const parts = content.split('|||REASONING|||');
+      content = parts[0];
+      const reasoningRaw = parts[1];
+      
+      // Try to parse if it's JSON, otherwise use as-is
+      try {
+        const parsed = JSON.parse(reasoningRaw);
+        reasoning = typeof parsed === 'string' ? parsed : JSON.stringify(parsed);
+      } catch {
+        reasoning = reasoningRaw;
+      }
+    }
+    
+    return {
+      id: msg.id,
+      role: msg.role as 'user' | 'assistant',
+      content: content,
+      reasoning: reasoning,
+    };
+  });
 }
 
 /**
