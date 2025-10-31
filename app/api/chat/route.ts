@@ -13,17 +13,20 @@ import { createClient } from '@/lib/supabase/server';
 import { ModelAccessError, ChatModeError, StreamingError, ProviderError } from '@/lib/errors';
 
 /**
- * Helper: Handle conversation creation and validation
- * Ensures conversation exists and belongs to the user
+ * Helper: Validate conversation and save user message
+ * Assumes conversation exists in DB (created by client)
+ * Validates ownership and saves the user message
  */
-async function handleConversationCreation(
+async function validateAndSaveMessage(
   user: { id: string },
   conversationId: string | undefined,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   messages: Array<any>,
   supabase: Awaited<ReturnType<typeof createClient>>
 ): Promise<string> {
-  let convId = conversationId;
+  if (!conversationId) {
+    throw new Error('Conversation ID is required');
+  }
   
   // Extract user message content from UIMessage parts structure
   const lastMessage = messages[messages.length - 1];
@@ -42,75 +45,45 @@ async function handleConversationCreation(
     userMessage = lastMessage.content;
   }
   
-  const title = userMessage.slice(0, 50) + (userMessage.length > 50 ? '...' : '');
+  console.log('🔍 validateAndSaveMessage - conversationId:', conversationId);
   
-  if (convId) {
-    // Check if conversation exists
-    const { data: existingConv, error: checkError } = await supabase
-      .from('conversations')
-      .select('id, user_id')
-      .eq('id', convId)
-      .maybeSingle();
-    
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Error checking conversation:', checkError);
-    }
-    
-    if (!existingConv || existingConv.user_id !== user.id) {
-      // Create new conversation
-      const { error: convError } = await supabase
-        .from('conversations')
-        .insert({ id: convId, user_id: user.id, title })
-        .select()
-        .maybeSingle();
-      
-      if (convError && convError.code !== '23505') {
-        throw new Error('Failed to create conversation');
-      }
-      
-      // If duplicate key (race condition), verify ownership
-      if (convError && convError.code === '23505') {
-        const { data: verifyConv } = await supabase
-          .from('conversations')
-          .select('user_id')
-          .eq('id', convId)
-          .maybeSingle();
-        
-        if (!verifyConv || verifyConv.user_id !== user.id) {
-          throw new Error('Failed to create conversation - ownership conflict');
-        }
-      }
-    }
-  } else {
-    // No conversationId provided, create new one
-    const { data: conversation, error: convError } = await supabase
-      .from('conversations')
-      .insert({ user_id: user.id, title })
-      .select()
-      .single();
-    
-    if (convError) {
-      throw new Error('Failed to create conversation');
-    }
-    
-    convId = conversation.id;
+  // Validate conversation exists and belongs to user
+  const { data: conversation, error: checkError } = await supabase
+    .from('conversations')
+    .select('id, user_id')
+    .eq('id', conversationId)
+    .maybeSingle();
+  
+  if (checkError) {
+    console.error('Error checking conversation:', checkError);
+    throw new Error('Failed to validate conversation');
   }
   
-  // Save user message
+  if (!conversation) {
+    throw new Error('Conversation not found');
+  }
+  
+  if (conversation.user_id !== user.id) {
+    throw new Error('Unauthorized: conversation belongs to another user');
+  }
+  
+  // Save user message (RLS policy checks conversation ownership)
   const { error: msgError } = await supabase
     .from('messages')
     .insert({
-      conversation_id: convId,
+      conversation_id: conversationId,
       content: userMessage,
       role: 'user',
     });
   
   if (msgError) {
     console.error('Error saving user message:', msgError);
-    // Don't throw - conversation already created, can continue
+    throw new Error('Failed to save user message');
   }
   
-  return convId!; // convId is guaranteed to be set by this point
+  console.log('✅ User message saved to conversation:', conversationId);
+  
+  return conversationId;
 }
 
 /**
@@ -173,11 +146,13 @@ export async function POST(req: Request) {
     }
     
     // ============================================
-    // Stage 4: Conversation management (only if user authenticated)
+    // Stage 4: Message validation and persistence (only if user authenticated)
     // ============================================
     let convId = conversationId;
+    console.log('📝 Received conversationId:', conversationId);
     if (user) {
-      convId = await handleConversationCreation(user, conversationId, messages, supabase);
+      convId = await validateAndSaveMessage(user, conversationId, messages, supabase);
+      console.log('✅ Validated conversation and saved message:', convId);
     }
     
     console.log(`⏱️  Time to stream: ${Date.now() - requestStartTime}ms`);
@@ -211,18 +186,20 @@ export async function POST(req: Request) {
           },
           onFinish: async ({ text, reasoning, usage }) => {
             if (user && convId) {
-              // Save assistant message to database
-              void supabase
+              // Save assistant message to database (RLS policy checks conversation ownership)
+              const { error: assistantMsgError } = await supabase
                 .from('messages')
                 .insert({ 
                   conversation_id: convId, 
                   content: text, 
-                  role: 'assistant' 
-                })
-                .then(({ error }) => {
-                  if (error) console.error('❌ Message save failed:', error);
-                  else console.log('✅ Message saved to DB');
+                  role: 'assistant',
                 });
+              
+              if (assistantMsgError) {
+                console.error('❌ Assistant message save failed:', assistantMsgError);
+              } else {
+                console.log('✅ Assistant message saved to DB');
+              }
             }
 
             const processingTime = (Date.now() - requestStartTime) / 1000;
@@ -256,7 +233,6 @@ export async function POST(req: Request) {
         'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
         'Connection': 'keep-alive',
-        'X-Conversation-ID': convId || '',
       },
     });
     
