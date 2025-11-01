@@ -36,7 +36,6 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       const conversations = await getConversations(user.id);
       setChatHistory(conversations || []);
     } catch (err) {
-      console.error('Error loading conversations:', err);
       setError('Failed to load conversations');
       setChatHistory([]);
     } finally {
@@ -111,7 +110,7 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       setChatHistory([]);
       setShowClearConfirm(false);
     } catch (err) {
-      console.error('Error clearing history:', err);
+      // Error handled by setError state
       setError('Failed to clear history');
     }
   };
@@ -125,7 +124,7 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
         )
       );
     } catch (err) {
-      console.error('Error renaming conversation:', err);
+      // Error handled by component state
       setError('Failed to rename conversation');
     }
   };
@@ -135,7 +134,7 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       await deleteConversation(id);
       setChatHistory(prev => prev.filter(chat => chat.id !== id));
     } catch (err) {
-      console.error('Error deleting conversation:', err);
+      // Error handled by component state
       setError('Failed to delete conversation');
     }
   };

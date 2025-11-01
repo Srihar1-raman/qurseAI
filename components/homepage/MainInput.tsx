@@ -7,6 +7,8 @@ import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { useToast } from '@/lib/contexts/ToastContext';
+import { handleClientError } from '@/lib/utils/error-handler';
 import { ensureConversation } from '@/lib/db/queries';
 
 export default function MainInput() {
@@ -19,6 +21,7 @@ export default function MainInput() {
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
   const { user } = useAuth();
+  const { error: showToastError } = useToast();
 
   // Detect mobile screen size
   useEffect(() => {
@@ -103,9 +106,9 @@ export default function MainInput() {
       
       setInputValue('');
     } catch (error) {
-      console.error('Error creating conversation:', error);
-      // Show error to user
-      alert('Failed to create conversation. Please try again.');
+      const userMessage = handleClientError(error, 'homepage/create-conversation');
+      showToastError(userMessage);
+      setIsCreatingConversation(false);
     } finally {
       setIsCreatingConversation(false);
     }

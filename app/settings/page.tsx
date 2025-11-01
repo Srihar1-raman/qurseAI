@@ -15,6 +15,8 @@ import ClearChatsModal from '@/components/settings/ClearChatsModal';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { useToast } from '@/lib/contexts/ToastContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 function SettingsPageContent() {
   const [activeSection, setActiveSection] = useState('accounts');
@@ -32,6 +34,7 @@ function SettingsPageContent() {
   
   const { resolvedTheme, mounted } = useTheme();
   const { user: mockUser, signOut } = useAuth();
+  const { error: showToastError, warning: showToastWarning } = useToast();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -61,16 +64,15 @@ function SettingsPageContent() {
     }
     try {
       // TODO: Implement API call to save settings
-      console.log('Saving settings:', { autoSaveConversations, language });
       if (!isAutoSave) {
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 3000);
       }
     } catch (error) {
-      console.error('Error saving settings:', error);
       if (!isAutoSave) {
         setSaveStatus('error');
         setTimeout(() => setSaveStatus('idle'), 3000);
+        showToastError('Failed to save settings. Please try again.');
       }
     } finally {
       if (!isAutoSave) {
@@ -86,19 +88,17 @@ function SettingsPageContent() {
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmation !== 'DELETE') {
-      alert('Please type "DELETE" to confirm account deletion.');
+      showToastWarning('Please type "DELETE" to confirm account deletion.');
       return;
     }
     
     try {
       setIsDeleting(true);
       // TODO: Implement API call to delete account
-      console.log('Deleting account');
       await handleSignOut();
     } catch (error) {
-      console.error('Error deleting account:', error);
       setIsDeleting(false);
-      alert('Failed to delete account');
+      showToastError('Failed to delete account. Please try again.');
     }
   };
 
@@ -106,13 +106,12 @@ function SettingsPageContent() {
     try {
       setIsClearingChats(true);
       // TODO: Implement API call to clear chats
-      console.log('Clearing all chats');
       setUserStats({ totalConversations: 0 });
       setShowClearChatsConfirm(false);
       router.push('/');
     } catch (error) {
-      console.error('Error clearing chats:', error);
       setIsClearingChats(false);
+      showToastError('Failed to clear chats. Please try again.');
     }
   };
 
@@ -132,6 +131,7 @@ function SettingsPageContent() {
   };
 
   return (
+    <ErrorBoundary>
     <div className="settings-page-container">
       <Header 
         user={mockUser}
@@ -228,6 +228,7 @@ function SettingsPageContent() {
         userStats={userStats}
       />
     </div>
+    </ErrorBoundary>
   );
 }
 

@@ -5,6 +5,10 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { createScopedLogger } from '@/lib/utils/logger';
+import { handleDbError } from '@/lib/utils/error-handler';
+
+const logger = createScopedLogger('db/queries.server');
 
 /**
  * Get all messages for a conversation (server-side)
@@ -14,8 +18,6 @@ export async function getMessagesServerSide(
 ): Promise<Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }>> {
   const supabase = await createClient();
 
-  console.log('🔍 QUERY - Fetching messages for conversation:', conversationId);
-
   const { data, error } = await supabase
     .from('messages')
     .select('id, role, content, created_at')
@@ -23,17 +25,20 @@ export async function getMessagesServerSide(
     .order('created_at', { ascending: true });
 
   if (error) {
-    console.error('❌ QUERY - Error fetching messages:', error);
-    throw error;
+    const userMessage = handleDbError(error, 'db/queries.server/getMessagesServerSide');
+    logger.error('Error fetching messages', error, { conversationId });
+    const dbError = new Error(userMessage);
+    throw dbError;
   }
-
-  console.log('🔍 QUERY - Raw data from DB:', data?.length, 'messages');
-  console.log('🔍 QUERY - Raw data:', data);
 
   const filtered = (data || [])
     .filter((msg) => msg.role === 'user' || msg.role === 'assistant');
   
-  console.log('🔍 QUERY - After filtering:', filtered.length, 'messages');
+  logger.debug('Messages fetched', { 
+    conversationId, 
+    total: data?.length || 0, 
+    filtered: filtered.length 
+  });
 
   return filtered.map((msg) => {
     // Extract reasoning from content if it exists (delimiter: |||REASONING|||)
@@ -81,12 +86,15 @@ export async function ensureConversationServerSide(
       .maybeSingle();
 
     if (checkError) {
-      console.error('Error checking conversation:', checkError);
-      throw checkError;
+      const userMessage = handleDbError(checkError, 'db/queries.server/ensureConversationServerSide');
+      logger.error('Error checking conversation', checkError, { conversationId, userId });
+      const dbError = new Error(userMessage);
+      throw dbError;
     }
 
     if (existing) {
       if (existing.user_id !== userId) {
+        logger.warn('Unauthorized conversation access attempt', { conversationId, userId, ownerId: existing.user_id });
         throw new Error('Conversation belongs to another user');
       }
       return;
@@ -107,15 +115,21 @@ export async function ensureConversationServerSide(
           .maybeSingle();
 
         if (verify && verify.user_id === userId) {
+          logger.debug('Conversation created by another request', { conversationId });
           return;
         }
         throw new Error('Conversation ID conflict');
       }
-      throw insertError;
+      const userMessage = handleDbError(insertError, 'db/queries.server/ensureConversationServerSide');
+      logger.error('Error creating conversation', insertError, { conversationId, userId });
+      const dbError = new Error(userMessage);
+      throw dbError;
     }
   } catch (error) {
-    console.error('Error ensuring conversation:', error);
-    throw error;
+    const userMessage = handleDbError(error, 'db/queries.server/ensureConversationServerSide');
+    logger.error('Error ensuring conversation', error, { conversationId, userId });
+    const dbError = new Error(userMessage);
+    throw dbError;
   }
 }
 

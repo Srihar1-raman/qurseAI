@@ -84,4 +84,22 @@ export class ProviderError extends Error {
   }
 }
 
+/**
+ * Validation Error
+ * Thrown when request validation fails
+ * Includes Zod validation errors for detailed feedback
+ */
+export class ValidationError extends Error {
+  statusCode: number = 400;
+  
+  constructor(
+    message: string,
+    public validationErrors?: Array<{ field: string; message: string }>
+  ) {
+    super(message);
+    this.name = 'ValidationError';
+    Object.setPrototypeOf(this, ValidationError.prototype);
+  }
+}
+
 
