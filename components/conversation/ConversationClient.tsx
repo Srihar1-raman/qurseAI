@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import { DefaultChatTransport, type UIMessage, type UIMessagePart } from 'ai';
 import Image from 'next/image';
 import Header from '@/components/layout/Header';
 import ChatMessage from '@/components/chat/ChatMessage';
@@ -16,7 +16,8 @@ import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { handleClientError } from '@/lib/utils/error-handler';
-import type { QurseMessage } from '@/lib/types';
+import { toUIMessageFromServer } from '@/lib/utils/message-adapters';
+import type { QurseMessage, StreamMetadata } from '@/lib/types';
 
 interface ConversationClientProps {
   conversationId: string;
@@ -76,6 +77,11 @@ export function ConversationClient({
     return mapping[optionName] || 'chat';
   };
 
+  // Convert initialMessages from server format to UIMessage format
+  const convertedInitialMessages: UIMessage[] = React.useMemo(() => {
+    return toUIMessageFromServer(initialMessages);
+  }, [initialMessages]);
+
   // useChat hook with pre-loaded initialMessages (no timing issues!)
   const {
     messages,
@@ -84,7 +90,7 @@ export function ConversationClient({
     error,
   } = useChat({
     id: conversationId,
-    initialMessages: initialMessages,
+    initialMessages: convertedInitialMessages,
     transport: new DefaultChatTransport({
       api: '/api/chat',
       prepareSendMessagesRequest({ messages }) {
@@ -105,8 +111,7 @@ export function ConversationClient({
       const userMessage = handleClientError(error, 'conversation/chat');
       showToastError(userMessage);
     },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  } as any);
+  });
 
   // Workaround for useChat not respecting initialMessages
   // Merge initialMessages with new messages from useChat, avoiding duplicates
@@ -132,24 +137,27 @@ export function ConversationClient({
           id: msg.id,
           role: msg.role as 'user' | 'assistant',
           parts: msg.parts,
-          metadata: ('metadata' in msg && msg.metadata) ? msg.metadata as any : undefined,
+          metadata: ('metadata' in msg && msg.metadata) ? (msg.metadata as StreamMetadata) : undefined,
         };
       }
       
       // Transform server message format to parts structure
-      const parts: Array<{ type: 'text' | 'reasoning'; text: string }> = [
-        { type: 'text' as const, text: (msg as any).content }
-      ];
+      const parts: UIMessagePart[] = [];
+      
+      // Extract content if it exists
+      if ('content' in msg && typeof msg.content === 'string') {
+        parts.push({ type: 'text', text: msg.content });
+      }
       
       // Add reasoning as a separate part if it exists
       if ('reasoning' in msg && msg.reasoning) {
-        parts.push({ type: 'reasoning' as const, text: msg.reasoning });
+        parts.push({ type: 'reasoning', text: msg.reasoning });
       }
       
       return {
         id: msg.id,
         role: msg.role as 'user' | 'assistant',
-        parts: parts as any,
+        parts,
         metadata: undefined,
       };
     });
@@ -191,8 +199,7 @@ export function ConversationClient({
       sendMessage({
         role: 'user',
         parts: [{ type: 'text', text: messageText }],
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any);
+      });
       }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -240,17 +247,21 @@ export function ConversationClient({
     sendMessage({
       role: 'user',
       parts: [{ type: 'text', text: messageText }],
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } as any);
+    });
 
     setInput('');
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      handleSubmit(e as any);
+      // Create synthetic form event for handleSubmit
+      const syntheticEvent = {
+        preventDefault: () => {},
+        target: e.target,
+        currentTarget: e.currentTarget,
+      } as React.FormEvent<HTMLFormElement>;
+      handleSubmit(syntheticEvent);
     }
   };
 

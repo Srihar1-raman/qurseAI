@@ -5,6 +5,9 @@
 
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { createScopedLogger } from '@/lib/utils/logger';
+
+const logger = createScopedLogger('auth/callback');
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -18,7 +21,7 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-      console.error('Error exchanging code for session:', error);
+      logger.error('Error exchanging code for session', error, { code: code.substring(0, 10) + '...' });
       return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
     }
 
@@ -42,10 +45,10 @@ export async function GET(request: Request) {
           });
 
         if (insertError) {
-          console.error('Error creating user profile:', insertError);
+          logger.error('Error creating user profile', insertError, { userId: data.user.id });
         }
       } else if (fetchError) {
-        console.error('Error checking user profile:', fetchError);
+        logger.error('Error checking user profile', fetchError, { userId: data.user.id });
       }
     }
 

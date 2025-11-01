@@ -3,7 +3,7 @@
  * Main endpoint for AI streaming responses with reasoning support
  */
 
-import { streamText, createUIMessageStream, JsonToSseTransformStream, convertToModelMessages } from 'ai';
+import { streamText, createUIMessageStream, JsonToSseTransformStream, convertToModelMessages, type UIMessage, type UIMessagePart } from 'ai';
 import { NextResponse } from 'next/server';
 import { qurse } from '@/ai/providers';
 import { canUseModel, getModelParameters, getProviderOptions, getModelConfig } from '@/ai/models';
@@ -15,6 +15,7 @@ import { safeValidateChatRequest } from '@/lib/validation/chat-schema';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { handleApiError } from '@/lib/utils/error-handler';
 import { sanitizeApiError } from '@/lib/utils/error-sanitizer';
+import { toUIMessageFromZod, type StreamTextProviderOptions } from '@/lib/utils/message-adapters';
 
 const logger = createScopedLogger('api/chat');
 
@@ -26,8 +27,7 @@ const logger = createScopedLogger('api/chat');
 async function validateAndSaveMessage(
   user: { id: string },
   conversationId: string | undefined,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  messages: Array<any>,
+  messages: UIMessage[],
   supabase: Awaited<ReturnType<typeof createClient>>
 ): Promise<string> {
   if (!conversationId) {
@@ -41,12 +41,10 @@ async function validateAndSaveMessage(
   if (lastMessage?.parts && Array.isArray(lastMessage.parts)) {
     // UIMessage format with parts
     userMessage = lastMessage.parts
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((p: any) => p.type === 'text')
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((p: any) => p.text)
+      .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+      .map((p) => p.text)
       .join('');
-  } else if (lastMessage?.content) {
+  } else if (lastMessage && 'content' in lastMessage && typeof lastMessage.content === 'string') {
     // Fallback: ModelMessage format with content
     userMessage = lastMessage.content;
   }
@@ -168,8 +166,12 @@ export async function POST(req: Request) {
     // Stage 4: Message validation and persistence (only if user authenticated)
     // ============================================
     let convId = conversationId;
+    
+    // Convert Zod-validated messages to UIMessage[] format
+    const uiMessages = toUIMessageFromZod(messages);
+    
     if (user) {
-      convId = await validateAndSaveMessage(user, conversationId, messages, supabase);
+      convId = await validateAndSaveMessage(user, conversationId, uiMessages, supabase);
       logger.debug('Conversation validated and message saved', { conversationId: convId });
     }
     
@@ -184,13 +186,11 @@ export async function POST(req: Request) {
       execute: async ({ writer: dataStream }) => {
         const result = streamText({
           model: qurse.languageModel(model),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          messages: convertToModelMessages(messages as any),
+          messages: convertToModelMessages(uiMessages),
           system: modeConfig.systemPrompt,
           maxRetries: 5,
           ...getModelParameters(model),
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          providerOptions: getProviderOptions(model) as any,
+          providerOptions: getProviderOptions(model) as StreamTextProviderOptions,
           tools: Object.keys(tools).length > 0 ? tools : undefined,
           onError: (err) => {
             logger.error('Stream error', err.error, { model });

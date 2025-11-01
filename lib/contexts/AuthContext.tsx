@@ -4,6 +4,9 @@ import { createContext, useContext, useEffect, useState, ReactNode } from 'react
 import { createClient } from '@/lib/supabase/client';
 import type { User } from '@/lib/types';
 import type { Session } from '@supabase/supabase-js';
+import { createScopedLogger } from '@/lib/utils/logger';
+
+const logger = createScopedLogger('auth/context');
 
 interface AuthContextType {
   user: User | null;
@@ -52,7 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           });
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
+        logger.error('Auth initialization error', error);
       } finally {
         setIsLoading(false);
       }
@@ -63,7 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Listen to auth state changes (prevents race conditions)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
-        console.log('Auth state changed:', event);
+        logger.debug('Auth state changed', { event });
         setSession(newSession);
 
         if (newSession?.user) {
@@ -96,7 +99,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(null);
       setSession(null);
     } catch (error) {
-      console.error('Error signing out:', error);
+      logger.error('Error signing out', error);
     }
   };
 

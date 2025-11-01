@@ -3,6 +3,8 @@
  * Centralized model metadata, capabilities, and access control
  */
 
+import type { User } from '@/lib/types';
+
 /**
  * Provider-Specific Option Types
  */
@@ -291,7 +293,7 @@ export function isFreeUnlimited(modelValue: string): boolean {
  * @param user - User object (null if guest)
  * @returns True if rate limits should be bypassed
  */
-export function shouldBypassRateLimits(modelValue: string, user: any): boolean {
+export function shouldBypassRateLimits(modelValue: string, user: User | null): boolean {
   // If model is free unlimited and user is authenticated, bypass limits
   // TODO: Add actual subscription check when business logic is implemented
   const model = getModelConfig(modelValue);
@@ -334,7 +336,7 @@ export function requiresProSubscription(modelValue: string): boolean {
  */
 export function canUseModel(
   modelValue: string,
-  user: any,
+  user: User | null,
   isPro: boolean
 ): { canUse: boolean; reason?: string } {
   const model = getModelConfig(modelValue);
