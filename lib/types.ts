@@ -91,8 +91,8 @@ export interface ChatMessage {
 export interface QurseMessage {
   id: string;
   role: 'user' | 'assistant';
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  parts: UIMessagePart<any, any>[];
+  // Using type from message-adapters for consistency with conversion functions
+  parts: Array<{ type: 'text' | 'reasoning'; text: string }>;
   metadata?: StreamMetadata;
 }
 
