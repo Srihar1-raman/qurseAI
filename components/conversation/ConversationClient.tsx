@@ -14,6 +14,8 @@ import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversation } from '@/lib/contexts/ConversationContext';
+import { useToast } from '@/lib/contexts/ToastContext';
+import { handleClientError } from '@/lib/utils/error-handler';
 import type { QurseMessage } from '@/lib/types';
 
 interface ConversationClientProps {
@@ -27,13 +29,11 @@ export function ConversationClient({
   initialMessages,
   hasInitialMessageParam,
 }: ConversationClientProps) {
-  console.log('🔍 CLIENT - Received initialMessages count:', initialMessages.length);
-  console.log('🔍 CLIENT - initialMessages:', initialMessages);
-  
   const router = useRouter();
   const { selectedModel, chatMode, setChatMode } = useConversation();
   const { user } = useAuth();
   const { resolvedTheme, mounted } = useTheme();
+  const { error: showToastError } = useToast();
 
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [input, setInput] = useState('');
@@ -99,16 +99,14 @@ export function ConversationClient({
       },
     }),
     onFinish: ({ message }: { message: { id: string } }) => {
-      console.log('✅ Message complete:', message.id);
+      // Message completed successfully
     },
     onError: (error: Error) => {
-      console.error('❌ Chat error:', error);
+      const userMessage = handleClientError(error, 'conversation/chat');
+      showToastError(userMessage);
     },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } as any);
-
-  console.log('🔍 CLIENT - useChat messages count:', messages.length);
-  console.log('🔍 CLIENT - useChat messages:', messages);
 
   // Workaround for useChat not respecting initialMessages
   // Merge initialMessages with new messages from useChat, avoiding duplicates
@@ -156,9 +154,6 @@ export function ConversationClient({
       };
     });
   }, [rawDisplayMessages]);
-  
-  console.log('🔍 CLIENT - displayMessages count:', displayMessages.length);
-  console.log('🔍 CLIENT - hasInteracted:', hasInteracted);
 
   const isLoading = status === 'submitted';
 
@@ -174,8 +169,17 @@ export function ConversationClient({
     const messageParam = params.get('message');
     
     if (messageParam) {
-      const messageText = decodeURIComponent(messageParam);
+      // Safely decode URL-encoded message parameter
+      let messageText: string;
+      try {
+        messageText = decodeURIComponent(messageParam);
+      } catch (error) {
+        // If decoding fails, use the raw parameter as fallback
+        messageText = messageParam;
+      }
 
+      // Only send if we have a valid message
+      if (messageText && messageText.trim()) {
       // Clean up URL params
       params.delete('message');
       params.delete('model');
@@ -189,6 +193,7 @@ export function ConversationClient({
         parts: [{ type: 'text', text: messageText }],
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
+      }
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasInitialMessageParam, displayMessages.length]);

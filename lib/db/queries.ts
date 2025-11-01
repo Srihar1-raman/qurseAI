@@ -8,6 +8,10 @@
 
 import { createClient } from '@/lib/supabase/client';
 import type { Conversation, Message } from '@/lib/types';
+import { createScopedLogger } from '@/lib/utils/logger';
+import { handleDbError } from '@/lib/utils/error-handler';
+
+const logger = createScopedLogger('db/queries');
 
 /**
  * Get user's linked OAuth providers from Supabase auth identities
@@ -19,7 +23,7 @@ export async function getUserLinkedProviders(): Promise<string[]> {
     const { data: { user }, error } = await supabase.auth.getUser();
     
     if (error || !user) {
-      console.error('Error fetching user identities:', error);
+      logger.error('Error fetching user identities', error);
       return [];
     }
     
@@ -27,7 +31,7 @@ export async function getUserLinkedProviders(): Promise<string[]> {
     // Each identity has: { provider: 'google' | 'github' | 'twitter', ... }
     return user.identities?.map(identity => identity.provider) || [];
   } catch (error) {
-    console.error('Error getting linked providers:', error);
+    logger.error('Error getting linked providers', error);
     return [];
   }
 }
@@ -45,8 +49,10 @@ export async function getConversations(userId: string): Promise<Conversation[]> 
     .order('updated_at', { ascending: false });
 
   if (error) {
-    console.error('Error fetching conversations:', error);
-    throw error;
+    const userMessage = handleDbError(error, 'db/queries/getConversations');
+    logger.error('Error fetching conversations', error, { userId });
+    const dbError = new Error(userMessage);
+    throw dbError;
   }
 
   return data.map(conv => ({
@@ -77,8 +83,10 @@ export async function createConversation(
     .single();
 
   if (error) {
-    console.error('Error creating conversation:', error);
-    throw error;
+    const userMessage = handleDbError(error, 'db/queries/createConversation');
+    logger.error('Error creating conversation', error, { userId, title });
+    const dbError = new Error(userMessage);
+    throw dbError;
   }
 
   return {
@@ -105,8 +113,10 @@ export async function updateConversation(
     .eq('id', conversationId);
 
   if (error) {
-    console.error('Error updating conversation:', error);
-    throw error;
+    const userMessage = handleDbError(error, 'db/queries/updateConversation');
+    logger.error('Error updating conversation', error, { conversationId, updates });
+    const dbError = new Error(userMessage);
+    throw dbError;
   }
 }
 
@@ -122,8 +132,10 @@ export async function deleteConversation(conversationId: string): Promise<void> 
     .eq('id', conversationId);
 
   if (error) {
-    console.error('Error deleting conversation:', error);
-    throw error;
+    const userMessage = handleDbError(error, 'db/queries/deleteConversation');
+    logger.error('Error deleting conversation', error, { conversationId });
+    const dbError = new Error(userMessage);
+    throw dbError;
   }
 }
 
@@ -140,8 +152,10 @@ export async function getMessages(conversationId: string): Promise<Message[]> {
     .order('created_at', { ascending: true });
 
   if (error) {
-    console.error('Error fetching messages:', error);
-    throw error;
+    const userMessage = handleDbError(error, 'db/queries/getMessages');
+    logger.error('Error fetching messages', error, { conversationId });
+    const dbError = new Error(userMessage);
+    throw dbError;
   }
 
   return data.map(msg => ({
@@ -177,8 +191,10 @@ export async function createMessage(
     .single();
 
   if (error) {
-    console.error('Error creating message:', error);
-    throw error;
+    const userMessage = handleDbError(error, 'db/queries/createMessage');
+    logger.error('Error creating message', error, { conversationId, role });
+    const dbError = new Error(userMessage);
+    throw dbError;
   }
 
   return {
@@ -204,8 +220,10 @@ export async function deleteAllConversations(userId: string): Promise<void> {
     .eq('user_id', userId);
 
   if (error) {
-    console.error('Error deleting all conversations:', error);
-    throw error;
+    const userMessage = handleDbError(error, 'db/queries/deleteAllConversations');
+    logger.error('Error deleting all conversations', error, { userId });
+    const dbError = new Error(userMessage);
+    throw dbError;
   }
 }
 
@@ -230,8 +248,10 @@ export async function ensureConversation(
       .maybeSingle();
     
     if (checkError) {
-      console.error('Error checking conversation:', checkError);
-      throw checkError;
+      const userMessage = handleDbError(checkError, 'db/queries/ensureConversation');
+      logger.error('Error checking conversation', checkError, { conversationId, userId });
+      const dbError = new Error(userMessage);
+      throw dbError;
     }
     
     // If exists, verify ownership
@@ -269,8 +289,10 @@ export async function ensureConversation(
       throw insertError;
     }
   } catch (error) {
-    console.error('Error ensuring conversation:', error);
-    throw error;
+    const userMessage = handleDbError(error, 'db/queries/ensureConversation');
+    logger.error('Error ensuring conversation', error, { conversationId, userId, title });
+    const dbError = new Error(userMessage);
+    throw dbError;
   }
 }
 

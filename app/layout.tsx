@@ -3,6 +3,9 @@ import { Inter, Reenie_Beanie } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { AuthProvider } from "@/lib/contexts/AuthContext";
+import { ToastProvider } from "@/lib/contexts/ToastContext";
+import { Toaster } from "@/components/ui/toaster";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -75,11 +78,16 @@ export default function RootLayout({
         />
       </head>
       <body className={`${inter.variable} ${reenieBeanie.variable} antialiased`} suppressHydrationWarning>
+        <ErrorBoundary>
         <ThemeProvider>
           <AuthProvider>
+              <ToastProvider>
             {children}
+                <Toaster />
+              </ToastProvider>
           </AuthProvider>
         </ThemeProvider>
+        </ErrorBoundary>
       </body>
     </html>
   );

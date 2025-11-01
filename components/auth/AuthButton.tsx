@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
+import { useToast } from '@/lib/contexts/ToastContext';
 import { createClient } from '@/lib/supabase/client';
 
 interface AuthButtonProps {
@@ -29,6 +30,7 @@ const providerConfig = {
 export default function AuthButton({ provider, onClick }: AuthButtonProps) {
   const config = providerConfig[provider];
   const { resolvedTheme, mounted } = useTheme();
+  const { error: showToastError } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleClick = async () => {
@@ -49,14 +51,12 @@ export default function AuthButton({ provider, onClick }: AuthButtonProps) {
       });
 
       if (error) {
-        console.error(`Error signing in with ${provider}:`, error);
-        alert(`Failed to sign in with ${config.name}. Please try again.`);
+        showToastError(`Failed to sign in with ${config.name}. Please try again.`);
         setIsLoading(false);
       }
       // No need to setIsLoading(false) on success - user will be redirected
     } catch (error) {
-      console.error('Unexpected error during sign in:', error);
-      alert('An unexpected error occurred. Please try again.');
+      showToastError('An unexpected error occurred. Please try again.');
       setIsLoading(false);
     }
   };
