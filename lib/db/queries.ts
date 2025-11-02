@@ -37,31 +37,145 @@ export async function getUserLinkedProviders(): Promise<string[]> {
 }
 
 /**
- * Get all conversations for a user
+ * Get conversations for a user with optional pagination
+ * @param userId - User ID
+ * @param options - Pagination options (limit, offset)
+ * @returns Array of conversations (default limit: 50)
  */
-export async function getConversations(userId: string): Promise<Conversation[]> {
+export async function getConversations(
+  userId: string,
+  options?: { limit?: number; offset?: number }
+): Promise<{ 
+  conversations: Conversation[];
+  hasMore: boolean;
+}> {
   const supabase = createClient();
   
-  const { data, error } = await supabase
+  const limit = options?.limit ?? 50;
+  const offset = options?.offset ?? 0;
+  
+  let query = supabase
     .from('conversations')
     .select('*, message_count:messages(count)')
     .eq('user_id', userId)
     .order('updated_at', { ascending: false });
+  
+  // Use range() for pagination (handles both offset and limit)
+  // When offset = 0, range(0, limit - 1) = first 'limit' rows
+  if (offset > 0) {
+    query = query.range(offset, offset + limit - 1);
+  } else {
+    query = query.range(0, limit - 1);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     const userMessage = handleDbError(error, 'db/queries/getConversations');
-    logger.error('Error fetching conversations', error, { userId });
+    logger.error('Error fetching conversations', error, { userId, limit, offset });
     const dbError = new Error(userMessage);
     throw dbError;
   }
 
-  return data.map(conv => ({
+  // If we got fewer rows than requested, there are no more conversations in DB
+  const hasMore = (data?.length || 0) >= limit;
+
+  const conversations = (data || []).map(conv => ({
     id: conv.id,
     title: conv.title,
     updated_at: conv.updated_at,
     created_at: conv.created_at,
     message_count: conv.message_count?.[0]?.count || 0,
   }));
+
+  return {
+    conversations,
+    hasMore,
+  };
+}
+
+/**
+ * Get older messages for a conversation (client-side)
+ * Used for scroll-up pagination
+ * @param conversationId - Conversation ID
+ * @param limit - Number of messages to load
+ * @param offset - Offset for pagination (number of messages already loaded)
+ * @returns Object with messages array and hasMore flag
+ */
+export async function getOlderMessages(
+  conversationId: string,
+  limit: number = 50,
+  offset: number = 0
+): Promise<{ 
+  messages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }>;
+  hasMore: boolean;
+  dbRowCount: number; // Actual rows queried from DB (for accurate offset calculation)
+}> {
+  const supabase = createClient();
+  
+  // Query newest first (DESC), then reverse to maintain ascending order
+  // For older messages, we need messages BEFORE the ones we already have
+  // Offset represents messages we've already loaded (newest ones)
+  // So we skip the offset messages and get the next batch
+  let query = supabase
+    .from('messages')
+    .select('id, role, content, created_at')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + limit - 1);
+  
+  const { data, error } = await query;
+  
+  if (error) {
+    const userMessage = handleDbError(error, 'db/queries/getOlderMessages');
+    logger.error('Error fetching older messages', error, { conversationId, limit, offset });
+    const dbError = new Error(userMessage);
+    throw dbError;
+  }
+  
+  const filtered = (data || [])
+    .filter((msg) => msg.role === 'user' || msg.role === 'assistant');
+  
+  // If we got fewer rows than requested, there are no more messages in DB
+  const hasMoreInDb = (data?.length || 0) >= limit;
+  const actualDbRowCount = data?.length || 0; // Track actual rows queried from DB
+  
+  // Reverse to oldest-first for display (chronological order)
+  const reversed = filtered.reverse();
+  
+  logger.debug('Older messages fetched', { 
+    conversationId, 
+    total: actualDbRowCount, 
+    filtered: filtered.length,
+    hasMoreInDb,
+    limit,
+    offset
+  });
+  
+  const messages = reversed.map((msg) => {
+    // Extract reasoning from content if it exists (delimiter: |||REASONING|||)
+    let content = msg.content;
+    let reasoning: string | undefined;
+    
+    if (content.includes('|||REASONING|||')) {
+      const parts = content.split('|||REASONING|||');
+      content = parts[0];
+      reasoning = parts[1];
+    }
+    
+    return {
+      id: msg.id,
+      role: msg.role as 'user' | 'assistant',
+      content,
+      reasoning,
+    };
+  });
+
+  return {
+    messages,
+    hasMore: hasMoreInDb,
+    dbRowCount: actualDbRowCount, // Return actual DB rows queried for accurate offset calculation
+  };
 }
 
 /**

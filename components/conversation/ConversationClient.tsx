@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessage, type UIMessagePart } from 'ai';
@@ -17,17 +17,22 @@ import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { handleClientError } from '@/lib/utils/error-handler';
 import { toUIMessageFromServer } from '@/lib/utils/message-adapters';
+import { getOlderMessages } from '@/lib/db/queries';
 import type { QurseMessage, StreamMetadata } from '@/lib/types';
 
 interface ConversationClientProps {
   conversationId: string;
   initialMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }>;
+  initialHasMore?: boolean;
+  initialDbRowCount?: number;
   hasInitialMessageParam: boolean;
 }
 
 export function ConversationClient({
   conversationId,
   initialMessages,
+  initialHasMore = false,
+  initialDbRowCount = 0,
   hasInitialMessageParam,
 }: ConversationClientProps) {
   const router = useRouter();
@@ -40,10 +45,22 @@ export function ConversationClient({
   const [input, setInput] = useState('');
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const conversationThreadRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
+  const scrollPositionRef = useRef<{ height: number; top: number } | null>(null);
   
   // Track if we've had any user interaction (useChat bug workaround)
   const [hasInteracted, setHasInteracted] = useState(false);
+  
+  // Scroll-up pagination state
+  const [loadedMessages, setLoadedMessages] = useState(initialMessages);
+  // Track database offset (rows queried, not visible messages after filtering)
+  // Each page loads 50 rows from database, so offset increases by 50 each time
+  const [messagesOffset, setMessagesOffset] = useState(initialDbRowCount || initialMessages.length); // Use dbRowCount if available, fallback to filtered count
+  const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false);
+  // Only assume there are more if we loaded a full page initially (50 messages from DB)
+  const [hasMoreMessages, setHasMoreMessages] = useState(initialMessages.length > 0);
+  const [isScrollTopDetected, setIsScrollTopDetected] = useState(false);
 
   // Create refs to store current values (Scira pattern - avoids closure issues)
   const conversationIdRef = useRef(conversationId);
@@ -77,10 +94,20 @@ export function ConversationClient({
     return mapping[optionName] || 'chat';
   };
 
-  // Convert initialMessages from server format to UIMessage format
+  // Update loadedMessages when initialMessages change (e.g., on conversation change)
+  useEffect(() => {
+    setLoadedMessages(initialMessages);
+    // Set offset to actual DB rows queried (not filtered count) for accurate pagination
+    setMessagesOffset(initialDbRowCount || initialMessages.length);
+    // Use hasMore flag from server if available, otherwise fall back to heuristic
+    setHasMoreMessages(initialHasMore ?? initialMessages.length >= 50);
+    setIsScrollTopDetected(false);
+  }, [conversationId, initialMessages, initialHasMore, initialDbRowCount]);
+
+  // Convert loadedMessages from server format to UIMessage format
   const convertedInitialMessages: UIMessage[] = React.useMemo(() => {
-    return toUIMessageFromServer(initialMessages);
-  }, [initialMessages]);
+    return toUIMessageFromServer(loadedMessages);
+  }, [loadedMessages]);
 
   // useChat hook with pre-loaded initialMessages (no timing issues!)
   const {
@@ -114,19 +141,23 @@ export function ConversationClient({
   });
 
   // Workaround for useChat not respecting initialMessages
-  // Merge initialMessages with new messages from useChat, avoiding duplicates
+  // Merge loadedMessages with new messages from useChat, avoiding duplicates
+  // Note: useChat handles optimistic updates natively - user message appears immediately
   const rawDisplayMessages = React.useMemo(() => {
     if (!hasInteracted && messages.length === 0) {
       // Not interacted yet, use server-loaded messages
-      return initialMessages;
+      return loadedMessages;
     }
     
-    // Merge: start with initialMessages, add new useChat messages that aren't duplicates
-    const messageIds = new Set(initialMessages.map(m => m.id));
+    // Merge: start with loadedMessages, add new useChat messages that aren't duplicates
+    // This includes optimistic updates (user messages appear immediately via useChat)
+    const messageIds = new Set(loadedMessages.map(m => m.id));
     const newMessages = messages.filter(m => !messageIds.has(m.id));
     
-    return [...initialMessages, ...newMessages];
-  }, [initialMessages, messages, hasInteracted]);
+    // Combine in chronological order (loadedMessages first, then new messages from useChat)
+    // useChat's optimistic updates are included in messages array immediately
+    return [...loadedMessages, ...newMessages];
+  }, [loadedMessages, messages, hasInteracted]);
   
   // Transform server messages to have parts structure that ChatMessage expects
   const displayMessages = React.useMemo(() => {
@@ -164,6 +195,107 @@ export function ConversationClient({
   }, [rawDisplayMessages]);
 
   const isLoading = status === 'submitted';
+
+  // Load older messages when user scrolls to top
+  const loadOlderMessages = useCallback(async () => {
+    if (isLoadingOlderMessages || !hasMoreMessages || conversationId.startsWith('temp-')) {
+      return;
+    }
+
+    const threadElement = conversationThreadRef.current;
+    if (!threadElement) return;
+
+    // Save current scroll position and height before loading
+    scrollPositionRef.current = {
+      height: threadElement.scrollHeight,
+      top: threadElement.scrollTop,
+    };
+
+    setIsLoadingOlderMessages(true);
+    
+    try {
+      const { messages: olderMessages, hasMore, dbRowCount } = await getOlderMessages(conversationId, 50, messagesOffset);
+      
+      // Update hasMoreMessages based on database result
+      setHasMoreMessages(hasMore);
+      
+      // If no more messages in DB, we're done
+      if (!hasMore && olderMessages.length === 0) {
+        scrollPositionRef.current = null;
+        return;
+      }
+      
+      // Only prepend if we got messages
+      if (olderMessages.length > 0) {
+        setLoadedMessages((prev) => [...olderMessages, ...prev]);
+      }
+      
+      // Increase offset by actual DB rows queried (not filtered count)
+      // This ensures accurate pagination even if some rows are filtered out
+      setMessagesOffset((prev) => prev + dbRowCount);
+      
+      // If we got no messages but there are more in DB, clear scroll position
+      // (likely filtered out, will try again on next scroll)
+      if (olderMessages.length === 0 && hasMore) {
+        scrollPositionRef.current = null;
+      }
+    } catch (error) {
+      const userMessage = handleClientError(error as Error, 'conversation/loadOlderMessages');
+      showToastError(userMessage);
+      setHasMoreMessages(false); // Stop trying if there's an error
+      scrollPositionRef.current = null;
+    } finally {
+      setIsLoadingOlderMessages(false);
+      setIsScrollTopDetected(false);
+    }
+  }, [conversationId, messagesOffset, isLoadingOlderMessages, hasMoreMessages, showToastError]);
+
+  // Restore scroll position after older messages are loaded and DOM is updated
+  useEffect(() => {
+    if (!isLoadingOlderMessages && scrollPositionRef.current) {
+      const threadElement = conversationThreadRef.current;
+      if (!threadElement) {
+        scrollPositionRef.current = null;
+        return;
+      }
+
+      const saved = scrollPositionRef.current;
+      
+      // Use requestAnimationFrame to wait for DOM to update
+      requestAnimationFrame(() => {
+        if (threadElement && saved) {
+          const scrollHeightAfter = threadElement.scrollHeight;
+          const heightDifference = scrollHeightAfter - saved.height;
+          // Adjust scroll position to maintain visual position
+          threadElement.scrollTop = saved.top + heightDifference;
+          scrollPositionRef.current = null;
+        }
+      });
+    }
+  }, [loadedMessages.length, isLoadingOlderMessages]);
+
+  // Scroll detection for loading older messages
+  useEffect(() => {
+    const threadElement = conversationThreadRef.current;
+    if (!threadElement) return;
+
+    const handleScroll = () => {
+      // Reset detection flag if user scrolled away from top
+      if (threadElement.scrollTop > 200) {
+        setIsScrollTopDetected(false);
+      }
+      
+      // Check if user scrolled to top (within 100px threshold)
+      if (threadElement.scrollTop < 100 && !isScrollTopDetected && hasMoreMessages && !isLoadingOlderMessages) {
+        setIsScrollTopDetected(true);
+        loadOlderMessages();
+      }
+    };
+
+    threadElement.addEventListener('scroll', handleScroll);
+    return () => threadElement.removeEventListener('scroll', handleScroll);
+  }, [loadOlderMessages, isScrollTopDetected, hasMoreMessages, isLoadingOlderMessages]);
+
 
   // Send initial message if we have one from URL params
   useEffect(() => {
@@ -237,22 +369,25 @@ export function ConversationClient({
     }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     const messageText = input.trim();
+    
+    // Prevent duplicate sends (debouncing via isLoading check)
     if (!messageText || isLoading) return;
 
+    // Clear input immediately for better UX (before API call)
+    setInput('');
     setHasInteracted(true); // Mark that user has interacted
     
+    // Send message (useChat handles optimistic updates natively)
     sendMessage({
       role: 'user',
       parts: [{ type: 'text', text: messageText }],
     });
+  }, [input, isLoading, sendMessage]);
 
-    setInput('');
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       // Create synthetic form event for handleSubmit
@@ -263,7 +398,7 @@ export function ConversationClient({
       } as React.FormEvent<HTMLFormElement>;
       handleSubmit(syntheticEvent);
     }
-  };
+  }, [handleSubmit]);
 
   const handleNewChatClick = () => {
     router.push('/');
@@ -285,7 +420,22 @@ export function ConversationClient({
 
       <main className="conversation-main-content">
         <div className="conversation-container">
-          <div className="conversation-thread">
+          <div 
+            ref={conversationThreadRef}
+            className="conversation-thread"
+            style={{ overflowY: 'auto', height: '100%' }}
+          >
+            {/* Loading indicator for older messages */}
+            {isLoadingOlderMessages && (
+              <div style={{ 
+                padding: '16px', 
+                textAlign: 'center',
+                color: 'var(--color-text-secondary)',
+                fontSize: '14px'
+              }}>
+                Loading older messages...
+              </div>
+            )}
             {displayMessages.map((message) => (
               <ChatMessage
                 key={message.id}
