@@ -24,6 +24,7 @@ export default function HistoryHeader({ onClose }: HistoryHeaderProps) {
           />
           <h2>Chat History</h2>
         </div>
+        <div className="history-header-actions">
         <button 
           onClick={onClose}
           className="history-close-btn"
@@ -37,6 +38,7 @@ export default function HistoryHeader({ onClose }: HistoryHeaderProps) {
             className="icon" 
           />
         </button>
+        </div>
       </div>
     </div>
   );

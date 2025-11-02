@@ -507,7 +507,7 @@ export async function POST(req: Request) {
   
   // Save user message to database
   if (user && conversationId) {
-    await validateAndSaveMessage(user, conversationId, messages, supabase);
+    await 2(user, conversationId, messages, supabase);
   }
 }
 ```
@@ -695,16 +695,16 @@ qurse/
 
 ### Key Files Explained
 
-| File | Purpose | When It Runs |
-|------|---------|--------------|
-| `app/(search)/page.tsx` | Homepage | On `/` route |
-| `app/(search)/conversation/[id]/page.tsx` | Conversation page | On `/conversation/:id` route |
-| `app/api/chat/route.ts` | AI streaming endpoint | On POST to `/api/chat` |
-| `components/homepage/MainInput.tsx` | Input field on homepage | Client-side (browser) |
-| `components/conversation/ConversationClient.tsx` | Chat interface | Client-side (browser) |
-| `lib/contexts/AuthContext.tsx` | Auth state management | On app load (client-side) |
-| `lib/db/queries.ts` | Database helpers | When called by components |
-| `middleware.ts` | Session refresh | On every request |
+| File                                             | Purpose                 | When It Runs                 |
+|------                                            |---------                |--------------                |
+| `app/(search)/page.tsx`                          | Homepage                | On `/` route                 |
+| `app/(search)/conversation/[id]/page.tsx`        | Conversation page       | On `/conversation/:id` route |
+| `app/api/chat/route.ts`                          | AI streaming endpoint   | On POST to `/api/chat`       |
+| `components/homepage/MainInput.tsx`              | Input field on homepage | Client-side (browser)        |
+| `components/conversation/ConversationClient.tsx` | Chat interface          | Client-side (browser)        |
+| `lib/contexts/AuthContext.tsx`                   | Auth state management   | On app load (client-side)    |
+| `lib/db/queries.ts`                              | Database helpers        | When called by components    |
+| `middleware.ts`                                  | Session refresh         | On every request             |
 
 ---
 

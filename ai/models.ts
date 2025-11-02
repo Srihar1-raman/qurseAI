@@ -258,6 +258,21 @@ export const models: ModelConfig[] = [
 ];
 
 // ============================================
+// MODEL CONFIG CACHE
+// ============================================
+
+/**
+ * Map-based cache for O(1) model config lookups
+ * Initialized once at module load time
+ */
+const modelConfigCache = new Map<string, ModelConfig>();
+
+// Initialize cache with all models at module load
+models.forEach((model) => {
+  modelConfigCache.set(model.value, model);
+});
+
+// ============================================
 // ENHANCED HELPER FUNCTIONS
 // ============================================
 
@@ -306,9 +321,10 @@ export function shouldBypassRateLimits(modelValue: string, user: User | null): b
 
 /**
  * Get model configuration by value
+ * Uses Map-based cache for O(1) lookup performance
  */
 export function getModelConfig(modelValue: string): ModelConfig | undefined {
-  return models.find((m) => m.value === modelValue);
+  return modelConfigCache.get(modelValue);
 }
 
 /**

@@ -13,20 +13,45 @@ const logger = createScopedLogger('db/queries.server');
 /**
  * Get all messages for a conversation (server-side)
  */
+/**
+ * Get messages for a conversation with optional pagination
+ * @param conversationId - Conversation ID
+ * @param options - Pagination options (limit, offset)
+ * @returns Object with messages array and hasMore flag (default limit: 50, ordered ascending by created_at)
+ */
 export async function getMessagesServerSide(
-  conversationId: string
-): Promise<Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }>> {
+  conversationId: string,
+  options?: { limit?: number; offset?: number }
+): Promise<{ 
+  messages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }>;
+  hasMore: boolean;
+  dbRowCount: number; // Actual rows queried from DB (for accurate offset calculation)
+}> {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const limit = options?.limit ?? 50;
+  const offset = options?.offset ?? 0;
+
+  // Query newest first (DESC), then reverse array to maintain ascending order
+  let query = supabase
     .from('messages')
     .select('id, role, content, created_at')
     .eq('conversation_id', conversationId)
-    .order('created_at', { ascending: true });
+    .order('created_at', { ascending: false });
+  
+  // Use range() for pagination (handles both offset and limit)
+  // When offset = 0, range(0, limit - 1) = first 'limit' rows
+  if (offset > 0) {
+    query = query.range(offset, offset + limit - 1);
+  } else {
+    query = query.range(0, limit - 1);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     const userMessage = handleDbError(error, 'db/queries.server/getMessagesServerSide');
-    logger.error('Error fetching messages', error, { conversationId });
+    logger.error('Error fetching messages', error, { conversationId, limit, offset });
     const dbError = new Error(userMessage);
     throw dbError;
   }
@@ -34,13 +59,23 @@ export async function getMessagesServerSide(
   const filtered = (data || [])
     .filter((msg) => msg.role === 'user' || msg.role === 'assistant');
   
+  // If we got fewer rows than requested, there are no more messages in DB
+  const hasMore = (data?.length || 0) >= limit;
+  const actualDbRowCount = data?.length || 0; // Track actual rows queried from DB
+  
+  // Reverse array to maintain ascending order (oldest first) for display
+  const reversed = filtered.reverse();
+  
   logger.debug('Messages fetched', { 
     conversationId, 
-    total: data?.length || 0, 
-    filtered: filtered.length 
+    total: actualDbRowCount, 
+    filtered: filtered.length,
+    hasMore,
+    limit,
+    offset
   });
 
-  return filtered.map((msg) => {
+  const messages = reversed.map((msg) => {
     // Extract reasoning from content if it exists (delimiter: |||REASONING|||)
     let content = msg.content;
     let reasoning: string | undefined;
@@ -66,6 +101,12 @@ export async function getMessagesServerSide(
       reasoning: reasoning,
     };
   });
+
+  return {
+    messages,
+    hasMore,
+    dbRowCount: actualDbRowCount, // Return actual DB rows queried for accurate offset calculation
+  };
 }
 
 /**

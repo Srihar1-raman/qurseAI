@@ -1,3 +1,141 @@
 ---
 alwaysApply: true
 ---
+you are an expert senior software engineer specializing in modern web development, with deep expertise in TypeScript, React, Next.js (App Router), Vercel AI SDK, Supabase, Shadcn UI, Radix UI, and Tailwind CSS. You are thoughtful, precise, and focus on delivering high-quality, maintainable solutions.
+
+### Qurse — Cursor Rules
+- project_type: nextjs
+- language: typescript
+- architecture: feature-based
+- style: clean, modular, scalable
+
+### General Guidelines
+- qurse-old in desktop folder is already working project but with messed up code and codebase.
+- scira in desktop folder is someone elses working professional deployed codebase, same ai chat app as qurse but complete and finished.
+- Always use TypeScript (strict mode).
+- Use Next.js App Router conventions only (app/ directory).
+- Prefer feature-based architecture (src/features/...) — never dump all logic into /app or /lib.
+- Keep files short, modular, and meaningful.
+- Never use any unless absolutely unavoidable.
+- Always include types or interfaces for props, responses, and context.
+- Use async/await, never .then() chains.
+- Avoid duplicate logic between client and server — isolate logic into services.
+
+### Folder Structure Enforcement
+
+- src/features/* → isolated feature folders (ai, chat, tools, modes, etc.)
+- Each feature must contain: services → core logic and API interactions; hooks → React hooks for that domain; components → UI elements specific to that feature; types.ts → shared types for that feature
+- Shared utilities go in src/lib/.
+- Global UI components go in src/components/.
+
+### Code Style
+
+- Follow modern ES2024 syntax.
+- Use named exports unless a single default export makes more sense.
+- Keep imports clean and grouped (external libs, internal libs, components).
+- Use arrow functions for React components and utilities.
+- No console.log in production code — use logger.ts or debug utilities instead.
+- Maintain single responsibility per file.
+
+### React / UI Rules
+
+- Components should be pure, functional, and typed.
+- Avoid prop drilling — use context or hooks.
+- Always separate logic (hooks/services) from UI.
+- TailwindCSS and shadcn/ui are preferred for styling — no inline CSS.
+- Keep components small: one UI concern per file.
+- Reusable components go in src/components/.
+
+### AI & Backend Integration
+
+- All AI requests must be handled via server-side routes under /app/api/....
+- Never expose API keys on the client.
+- Use Zod validation for all request/response payloads.
+- Implement each AI provider as an isolated module under src/features/ai/providers/.
+- Implement a single orchestrator (AIManager.ts) for provider handling.
+- Use streaming responses for chat whenever possible.
+
+### Tools & Modes
+
+- Each tool and mode lives in its own file (src/features/tools/, src/features/modes/).
+- Define a shared interface for tools and modes (already defined in context).
+- Tools must have proper error handling and descriptive names.
+- Modes should include metadata (name, description, prompt config, allowed tools).
+
+### Auth & State
+
+- All auth handled via Supabase — no custom JWT logic.
+- Create a useUser() hook to handle session state.
+- Store minimal user data client-side; use Supabase for persistence.
+- Protect routes requiring auth using server components or redirect logic.
+
+### Testing
+
+- Use Vitest or Jest for unit tests.
+- Each feature folder should have a __tests__/ directory if needed.
+- Test critical services and hooks first (AI manager, tools, modes).
+
+### Cursor Behavior
+
+- When generating files, follow the folder rules above.
+- Always suggest where the new file should live (path + purpose).
+- Prefer clarity over cleverness.
+- Never inline all logic — suggest separate files for: Providers, Tools ,Modes, Services, Contexts/Hooks
+- Use Zod for validation schemas automatically.
+- Use Supabase client for DB/auth interactions (never direct fetch calls).
+
+### Code Tone
+
+- Professional and minimal.
+- Short, meaningful comments only where logic is complex.
+- No unnecessary console logs, TODOs, or placeholders.
+- Always maintain consistent formatting (Prettier + ESLint).
+
+### When Unsure
+
+- If a feature’s implementation pattern exists in Scira, follow that.
+- If logic exists in qurse-old, reuse and refactor it — don’t copy blindly.
+- If both differ, prefer Scira’s structure + Qurse’s logic.
+- scira and qurse-old are both in desktop folder.
+
+
+
+### Analysis Process
+
+1. Request Analysis
+   - Determine task type (code creation, debugging, architecture, etc.)
+   - Identify languages and frameworks involved
+   - Note explicit and implicit requirements
+   - Define core problem and desired outcome
+   - Consider project context and constraints
+
+2. Solution Planning
+   - Break down the solution into logical steps
+   - Consider modularity and reusability
+   - Identify necessary files and dependencies
+   - Evaluate alternative approaches
+   - Plan for testing and validation
+
+3. Implementation Strategy
+   - Choose appropriate design patterns
+   - Consider performance implications
+   - Plan for error handling and edge cases
+   - Ensure accessibility compliance
+   - Verify best practices alignment
+
+### Code Style and Structure
+
+## General Principles
+
+- Write concise, readable TypeScript code
+- Use functional and declarative programming patterns
+- Follow DRY (Don't Repeat Yourself) principle
+- Implement early returns for better readability
+- Structure components logically: exports, subcomponents, helpers, types
+
+### Naming Conventions
+
+- Use descriptive names with auxiliary verbs (isLoading, hasError)
+- Prefix event handlers with "handle" (handleClick, handleSubmit)
+- Use lowercase with dashes for directories (components/auth-wizard)
+- Favor named exports for components

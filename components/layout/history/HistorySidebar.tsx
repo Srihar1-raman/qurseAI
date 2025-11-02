@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme-provider';
@@ -22,8 +22,13 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
   const [chatHistory, setChatHistory] = useState<Conversation[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [conversationsOffset, setConversationsOffset] = useState(0); // Start at 0, updated after first load
+  const [hasMoreConversations, setHasMoreConversations] = useState(true); // Assume more until proven otherwise
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  const loadConversations = useCallback(async () => {
+  const loadConversations = useCallback(async (forceRefresh = false) => {
     if (!user || !user.id) {
       setIsLoading(false);
       return;
@@ -33,23 +38,81 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     setError(null);
     
     try {
-      const conversations = await getConversations(user.id);
+      const { conversations, hasMore } = await getConversations(user.id, { limit: 50 });
       setChatHistory(conversations || []);
+      setHasLoaded(true);
+      // Set offset to actual count loaded (in case we got fewer than 50)
+      setConversationsOffset(conversations.length);
+      setHasMoreConversations(hasMore); // Use DB result, not inferred
     } catch (err) {
       setError('Failed to load conversations');
       setChatHistory([]);
+      setHasLoaded(false);
+      setHasMoreConversations(false);
     } finally {
       setIsLoading(false);
     }
   }, [user]);
 
-  // Load conversations when sidebar opens and user is logged in
+  const loadMoreConversations = useCallback(async () => {
+    if (!user || !user.id || isLoadingMore || !hasMoreConversations || searchQuery.trim()) {
+      return; // Don't load more if searching (search filters client-side)
+    }
+
+    setIsLoadingMore(true);
+
+    try {
+      const { conversations: moreConversations, hasMore } = await getConversations(user.id, { 
+        limit: 50, 
+        offset: conversationsOffset 
+      });
+
+      // Update hasMoreConversations based on DB result
+      setHasMoreConversations(hasMore);
+
+      if (moreConversations.length > 0) {
+        setChatHistory((prev) => [...prev, ...moreConversations]);
+        // Increase offset by actual number loaded (in case we got less than 50)
+        setConversationsOffset((prev) => prev + moreConversations.length);
+      }
+    } catch (err) {
+      setHasMoreConversations(false); // Stop trying on error
+    } finally {
+      setIsLoadingMore(false);
+    }
+  }, [user, conversationsOffset, isLoadingMore, hasMoreConversations, searchQuery]);
+
+
+  // Scroll detection for infinite scrolling
   useEffect(() => {
-    if (isOpen && user && !isAuthLoading) {
+    if (!isOpen || searchQuery.trim() || !hasMoreConversations || isLoadingMore) {
+      return;
+    }
+
+    const contentElement = contentRef.current;
+    if (!contentElement) return;
+
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = contentElement;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+
+      // Load more when user is within 200px of bottom
+      if (distanceFromBottom < 200) {
+        loadMoreConversations();
+      }
+    };
+
+    contentElement.addEventListener('scroll', handleScroll);
+    return () => contentElement.removeEventListener('scroll', handleScroll);
+  }, [isOpen, searchQuery, hasMoreConversations, isLoadingMore, loadMoreConversations]);
+
+  // Load conversations when sidebar opens and user is logged in (only if not already loaded)
+  useEffect(() => {
+    if (isOpen && user && !isAuthLoading && !hasLoaded) {
       loadConversations();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, user, isAuthLoading]); // loadConversations intentionally excluded to prevent infinite re-renders
+  }, [isOpen, user, isAuthLoading, hasLoaded]); // loadConversations intentionally excluded to prevent infinite re-renders
 
   const getDateGroup = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -157,7 +220,7 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
         <HistoryHeader onClose={onClose} />
 
         {/* Content */}
-        <div className="history-content">
+        <div className="history-content" ref={contentRef}>
           {/* Loading State */}
           {isLoading && (
             <div style={{ padding: '20px' }}>
@@ -170,7 +233,7 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
             <div className="history-empty">
               <p style={{ color: 'var(--color-error)' }}>{error}</p>
               <button 
-                onClick={loadConversations}
+                onClick={() => loadConversations(true)}
                 style={{
                   marginTop: '12px',
                   padding: '8px 16px',
@@ -246,6 +309,18 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
                 onDelete={handleDelete}
                 onClose={onClose}
               />
+
+              {/* Loading indicator for infinite scroll */}
+              {isLoadingMore && (
+                <div style={{ 
+                  padding: '16px', 
+                  textAlign: 'center',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '14px'
+                }}>
+                  Loading more conversations...
+                </div>
+              )}
             </>
           )}
         </div>
