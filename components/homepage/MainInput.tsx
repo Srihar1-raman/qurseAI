@@ -57,6 +57,38 @@ export default function MainInput() {
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Industry standard: Aggressive prefetching for likely-used routes
+  // Prefetch on mount (immediate) + on interaction (redundant but safe)
+  // This ensures route is ready before user clicks send, eliminating homepage delay
+  useEffect(() => {
+    // Prefetch immediately on mount (industry standard for high-probability routes)
+    const sampleId = '00000000-0000-0000-0000-000000000000'; // Dummy ID for prefetch
+    router.prefetch(`/conversation/${sampleId}`);
+
+    // Also prefetch on interaction (redundant but ensures it's always ready)
+    const handlePrefetch = () => {
+      router.prefetch(`/conversation/${sampleId}`);
+    };
+
+    const textarea = inputRef.current;
+    if (!textarea) return;
+
+    // Prefetch on focus (user starts typing)
+    textarea.addEventListener('focus', handlePrefetch);
+    
+    // Prefetch on hover (desktop - user might send message)
+    if (!isMobile) {
+      textarea.addEventListener('mouseenter', handlePrefetch);
+    }
+
+    return () => {
+      textarea.removeEventListener('focus', handlePrefetch);
+      if (!isMobile) {
+        textarea.removeEventListener('mouseenter', handlePrefetch);
+      }
+    };
+  }, [router, isMobile]);
+
   // Auto-resize textarea and check if multiline
   useEffect(() => {
     if (inputRef.current) {

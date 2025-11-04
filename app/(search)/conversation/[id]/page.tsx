@@ -34,9 +34,13 @@ interface PageProps {
 }
 
 export default async function ConversationPage({ params, searchParams }: PageProps) {
-  const { id: conversationId } = await params;
-  const urlParams = await searchParams;
-  const supabase = await createClient();
+  // Industry standard: Parallelize async params resolution (Next.js 15 best practice)
+  // This reduces server-side page load time by resolving both promises concurrently
+  const [{ id: conversationId }, urlParams, supabase] = await Promise.all([
+    params,
+    searchParams,
+    createClient(),
+  ]);
 
   // Validate conversation ID format
   if (!isValidConversationId(conversationId)) {
