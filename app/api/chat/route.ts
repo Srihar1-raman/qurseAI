@@ -21,6 +21,7 @@ const logger = createScopedLogger('api/chat');
 
 /**
  * Helper: Ensure conversation exists (creates if needed)
+ * Optimized: Check first, then insert (faster than insert-then-select pattern)
  * Handles race conditions (duplicate key errors)
  */
 async function ensureConversation(
@@ -33,7 +34,30 @@ async function ensureConversation(
     return conversationId;
   }
 
-  // Try to create conversation
+  // Optimized: Check if conversation exists FIRST (fast - single SELECT)
+  // This avoids unnecessary INSERT attempts for existing conversations
+  const { data: existing, error: checkError } = await supabase
+    .from('conversations')
+    .select('id, user_id')
+    .eq('id', conversationId)
+    .maybeSingle();
+
+  if (checkError) {
+    logger.error('Error checking conversation', checkError, { conversationId });
+    throw new Error('Failed to check conversation');
+  }
+
+  // If conversation exists, verify ownership immediately (no extra query needed)
+  if (existing) {
+    if (existing.user_id !== user.id) {
+      throw new Error('Unauthorized: conversation belongs to another user');
+    }
+    // Conversation exists and ownership verified - return immediately
+    logger.debug('Conversation already exists', { conversationId });
+    return conversationId;
+  }
+
+  // Conversation doesn't exist - create it
   const { error: insertError } = await supabase
     .from('conversations')
     .insert({
@@ -43,7 +67,7 @@ async function ensureConversation(
     });
 
   if (insertError) {
-    // Handle race condition (duplicate key)
+    // Handle race condition (duplicate key - another request created it between our check and insert)
     if (insertError.code === '23505') {
       // Another request created it - verify ownership
       const { data: verify } = await supabase
