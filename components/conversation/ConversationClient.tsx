@@ -299,8 +299,10 @@ export function ConversationClient({
 
   // Send initial message if we have one from URL params
   useEffect(() => {
-    if (!hasInitialMessageParam || initialMessageSentRef.current || displayMessages.length > 0) return;
+    // Guard: Don't send if already sent or no message param
+    if (!hasInitialMessageParam || initialMessageSentRef.current) return;
 
+    // Mark as sent immediately to prevent duplicate sends
     initialMessageSentRef.current = true;
     setHasInteracted(true); // Mark as interacted for initial message
 
@@ -320,22 +322,21 @@ export function ConversationClient({
 
       // Only send if we have a valid message
       if (messageText && messageText.trim()) {
-      // Clean up URL params
-      params.delete('message');
-      params.delete('model');
-      params.delete('mode');
-      const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
-      window.history.replaceState({}, '', newUrl);
+        // Clean up URL params immediately (better UX)
+        params.delete('message');
+        params.delete('model');
+        params.delete('mode');
+        const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+        window.history.replaceState({}, '', newUrl);
 
-      // Send message
-      sendMessage({
-        role: 'user',
-        parts: [{ type: 'text', text: messageText }],
-      });
+        // Send message immediately (don't wait for displayMessages)
+        sendMessage({
+          role: 'user',
+          parts: [{ type: 'text', text: messageText }],
+        });
       }
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasInitialMessageParam, displayMessages.length]);
+  }, [hasInitialMessageParam, sendMessage]); // ✅ Fixed: Depends on sendMessage directly, not displayMessages.length
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { Component, ReactNode } from 'react';
-import { useTheme } from '@/lib/theme-provider';
 import { handleClientError } from '@/lib/utils/error-handler';
 
 interface ErrorBoundaryProps {
@@ -124,8 +123,6 @@ function DefaultErrorFallback({
   errorId: string | null;
   onReset: () => void;
 }) {
-  const { resolvedTheme, mounted } = useTheme();
-
   const handleGoHome = () => {
     // Use window.location for hard navigation (works even in error state)
     // This ensures we fully navigate away from the error state

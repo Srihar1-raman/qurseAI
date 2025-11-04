@@ -37,7 +37,6 @@ export default async function ConversationPage({ params, searchParams }: PagePro
   const { id: conversationId } = await params;
   const urlParams = await searchParams;
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
   // Validate conversation ID format
   if (!isValidConversationId(conversationId)) {
@@ -57,48 +56,39 @@ export default async function ConversationPage({ params, searchParams }: PagePro
   let initialMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }> = [];
   let initialHasMore = false;
   let initialDbRowCount = 0;
+  let user = null;
 
-  // Only load messages if:
-  // 1. Not a temp conversation
-  // 2. No initial message param (not a brand new conversation)
-  // 3. User is authenticated
-  if (!conversationId.startsWith('temp-') && !validatedParams.message && user) {
-    try {
-      // Ensure conversation exists (in case of direct URL access)
-      await ensureConversationServerSide(conversationId, user.id, 'Chat');
-      
-      // Load messages from database (last 50 messages)
-      const { messages, hasMore, dbRowCount } = await getMessagesServerSide(conversationId, { limit: 50 });
-      initialMessages = messages;
-      initialHasMore = hasMore;
-      initialDbRowCount = dbRowCount;
-      logger.debug('Messages loaded', { 
-        conversationId, 
-        messageCount: initialMessages.length,
-        hasMore: initialHasMore,
-        dbRowCount: initialDbRowCount
-      });
-    } catch (error) {
-      logger.error('Error loading conversation', error, { conversationId });
-      // Continue with empty messages - user can still chat
-    }
-  }
+  // Only check auth if we need to load messages (not a new conversation)
+  // For new conversations, skip auth check (handled client-side via AuthContext)
+  if (!conversationId.startsWith('temp-') && !validatedParams.message) {
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    user = authUser;
 
-  // If there's an initial message param and user exists, ensure conversation exists
-  if (validatedParams.message && user && !conversationId.startsWith('temp-')) {
-    try {
-      // Safely decode URL-encoded message
-      const messageText = safeDecodeURIComponent(validatedParams.message);
-      if (!messageText) {
-        logger.warn('Failed to decode message parameter', { conversationId });
-      } else {
-      const title = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
-      await ensureConversationServerSide(conversationId, user.id, title);
+    // Only load messages if user is authenticated
+    if (user) {
+      try {
+        // Ensure conversation exists (in case of direct URL access)
+        await ensureConversationServerSide(conversationId, user.id, 'Chat');
+        
+        // Load messages from database (last 50 messages)
+        const { messages, hasMore, dbRowCount } = await getMessagesServerSide(conversationId, { limit: 50 });
+        initialMessages = messages;
+        initialHasMore = hasMore;
+        initialDbRowCount = dbRowCount;
+        logger.debug('Messages loaded', { 
+          conversationId, 
+          messageCount: initialMessages.length,
+          hasMore: initialHasMore,
+          dbRowCount: initialDbRowCount
+        });
+      } catch (error) {
+        logger.error('Error loading conversation', error, { conversationId });
+        // Continue with empty messages - user can still chat
       }
-    } catch (error) {
-      logger.error('Error ensuring conversation', error, { conversationId });
     }
   }
+  // For new conversations (with ?message=... param), skip auth check and message loading
+  // Auth is handled client-side, conversation created in API route
 
   return (
     <ErrorBoundary>
