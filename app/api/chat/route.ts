@@ -4,7 +4,7 @@
  */
 
 import { streamText, createUIMessageStream, JsonToSseTransformStream, convertToModelMessages, type UIMessage, type UIMessagePart } from 'ai';
-import { NextResponse } from 'next/server';
+import { NextResponse, after } from 'next/server';
 import { qurse } from '@/ai/providers';
 import { canUseModel, getModelParameters, getProviderOptions, getModelConfig } from '@/ai/models';
 import { getChatMode } from '@/ai/config';
@@ -20,74 +20,88 @@ import { toUIMessageFromZod, type StreamTextProviderOptions } from '@/lib/utils/
 const logger = createScopedLogger('api/chat');
 
 /**
- * Helper: Validate conversation and save user message
- * Assumes conversation exists in DB (created by client)
- * Validates ownership and saves the user message
+ * Helper: Ensure conversation exists (creates if needed)
+ * Handles race conditions (duplicate key errors)
  */
-async function validateAndSaveMessage(
+async function ensureConversation(
   user: { id: string },
-  conversationId: string | undefined,
-  messages: UIMessage[],
+  conversationId: string,
+  title: string,
   supabase: Awaited<ReturnType<typeof createClient>>
 ): Promise<string> {
-  if (!conversationId) {
-    throw new Error('Conversation ID is required');
+  if (!conversationId || conversationId.startsWith('temp-')) {
+    return conversationId;
   }
-  
-  // Extract user message content from UIMessage parts structure
-  const lastMessage = messages[messages.length - 1];
-  let userMessage = '';
-  
-  if (lastMessage?.parts && Array.isArray(lastMessage.parts)) {
-    // UIMessage format with parts
-    userMessage = lastMessage.parts
-      .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
-      .map((p) => p.text)
-      .join('');
-  } else if (lastMessage && 'content' in lastMessage && typeof lastMessage.content === 'string') {
-    // Fallback: ModelMessage format with content
-    userMessage = lastMessage.content;
-  }
-  
-  // Validate conversation exists and belongs to user
-  const { data: conversation, error: checkError } = await supabase
+
+  // Try to create conversation
+  const { error: insertError } = await supabase
     .from('conversations')
-    .select('id, user_id')
-    .eq('id', conversationId)
-    .maybeSingle();
-  
-  if (checkError) {
-    logger.error('Failed to validate conversation', checkError, { conversationId });
-    throw new Error('Failed to validate conversation');
+    .insert({
+      id: conversationId,
+      user_id: user.id,
+      title: title,
+    });
+
+  if (insertError) {
+    // Handle race condition (duplicate key)
+    if (insertError.code === '23505') {
+      // Another request created it - verify ownership
+      const { data: verify } = await supabase
+        .from('conversations')
+        .select('user_id')
+        .eq('id', conversationId)
+        .maybeSingle();
+
+      if (!verify) {
+        // Conversation doesn't exist after duplicate key error - shouldn't happen
+        logger.error('Conversation not found after duplicate key error', { conversationId });
+        throw new Error('Conversation creation failed');
+      }
+
+      if (verify.user_id !== user.id) {
+        throw new Error('Unauthorized: conversation belongs to another user');
+      }
+
+      // Conversation created by another request - that's OK
+      logger.debug('Conversation created by concurrent request', { conversationId });
+    } else {
+      logger.error('Failed to create conversation', insertError, { conversationId });
+      throw insertError;
+    }
+  } else {
+    logger.debug('Conversation created', { conversationId });
   }
-  
-  if (!conversation) {
-    logger.warn('Conversation not found', { conversationId });
-    throw new Error('Conversation not found');
+
+  return conversationId;
+}
+
+/**
+ * Helper: Save user message
+ */
+async function saveUserMessage(
+  conversationId: string,
+  messageText: string,
+  supabase: Awaited<ReturnType<typeof createClient>>
+): Promise<void> {
+  if (!conversationId || conversationId.startsWith('temp-') || !messageText.trim()) {
+    return;
   }
-  
-  if (conversation.user_id !== user.id) {
-    logger.warn('Unauthorized conversation access attempt', { conversationId, userId: user.id, ownerId: conversation.user_id });
-    throw new Error('Unauthorized: conversation belongs to another user');
-  }
-  
-  // Save user message (RLS policy checks conversation ownership)
+
   const { error: msgError } = await supabase
     .from('messages')
     .insert({
       conversation_id: conversationId,
-      content: userMessage,
+      content: messageText.trim(),
       role: 'user',
     });
-  
+
   if (msgError) {
-    logger.error('Failed to save user message', msgError, { conversationId });
+    logger.error('Failed to save user message', msgError, {
+      conversationId,
+      messageLength: messageText.length
+    });
     throw new Error('Failed to save user message');
   }
-  
-  logger.debug('User message saved', { conversationId });
-  
-  return conversationId;
 }
 
 /**
@@ -163,17 +177,10 @@ export async function POST(req: Request) {
     }
     
     // ============================================
-    // Stage 4: Message validation and persistence (only if user authenticated)
+    // Stage 4: Convert messages to UIMessage[] format
     // ============================================
-    let convId = conversationId;
-    
     // Convert Zod-validated messages to UIMessage[] format
     const uiMessages = toUIMessageFromZod(messages);
-    
-    if (user) {
-      convId = await validateAndSaveMessage(user, conversationId, uiMessages, supabase);
-      logger.debug('Conversation validated and message saved', { conversationId: convId });
-    }
     
     logger.debug('Starting stream', { duration: `${Date.now() - requestStartTime}ms` });
     
@@ -184,6 +191,58 @@ export async function POST(req: Request) {
 
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
+        // ============================================
+        // CONVERSATION CREATION AND USER MESSAGE SAVE
+        // (critical for history, must be synchronous before streaming)
+        // ============================================
+        let convId = conversationId;
+        let userMessageText = '';
+
+        if (uiMessages.length > 0) {
+          const lastMessage = uiMessages[uiMessages.length - 1];
+          
+          // Verify last message is a user message (critical for data integrity)
+          if (lastMessage.role !== 'user') {
+            logger.warn('Last message is not a user message', { 
+              role: lastMessage.role,
+              conversationId 
+            });
+          } else {
+            // Extract user message text
+            if (lastMessage?.parts && Array.isArray(lastMessage.parts)) {
+              userMessageText = lastMessage.parts
+                .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+                .map((p) => p.text)
+                .join('');
+            } else if (lastMessage && 'content' in lastMessage && typeof lastMessage.content === 'string') {
+              userMessageText = lastMessage.content;
+            }
+          }
+        }
+
+        // Save user message BEFORE streaming (critical for conversation history)
+        // This matches Scira's pattern - synchronous save before streamText()
+        if (user && conversationId && !conversationId.startsWith('temp-') && userMessageText.trim().length > 0) {
+          try {
+            const title = userMessageText.slice(0, 50) + (userMessageText.length > 50 ? '...' : '');
+            
+            // Ensure conversation exists (creates if needed)
+            convId = await ensureConversation(user, conversationId, title, supabase);
+            
+            // Save user message (synchronous - critical for history)
+            await saveUserMessage(convId, userMessageText, supabase);
+            
+            logger.debug('Conversation validated and user message saved', { conversationId: convId });
+          } catch (error) {
+            logger.error('Error ensuring conversation or saving user message', error, { conversationId });
+            // Don't throw - streaming can continue even if save fails
+            // Error is logged for monitoring
+          }
+        }
+
+        // ============================================
+        // START STREAMING (after user message is saved)
+        // ============================================
         const result = streamText({
           model: qurse.languageModel(model),
           messages: convertToModelMessages(uiMessages),
@@ -204,36 +263,40 @@ export async function POST(req: Request) {
             }
           },
           onFinish: async ({ text, reasoning, usage }) => {
-            if (user && convId) {
-              // Save assistant message - store reasoning in content with delimiter
-              let fullContent = text;
-              if (reasoning) {
-                // Serialize reasoning (could be string or object) properly
-                const reasoningText = typeof reasoning === 'string' 
-                  ? reasoning 
-                  : JSON.stringify(reasoning);
-                fullContent = `${text}|||REASONING|||${reasoningText}`;
-              }
-              
-              // Only use guaranteed columns: conversation_id, content, role
-              const { error: assistantMsgError } = await supabase
-                .from('messages')
-                .insert({ 
-                  conversation_id: convId, 
-                  content: fullContent, 
-                  role: 'assistant',
-                });
-              
-              if (assistantMsgError) {
-                logger.error('Assistant message save failed', assistantMsgError, { conversationId: convId });
-              } else {
-                logger.info('Assistant message saved', {
-                  conversationId: convId,
-                  hasReasoning: !!reasoning,
-                  tokens: usage?.totalTokens,
-                  model,
-                });
-              }
+            // Save assistant message in BACKGROUND (non-blocking)
+            if (user && convId && !convId.startsWith('temp-')) {
+              after(async () => {
+                try {
+                  let fullContent = text;
+                  if (reasoning) {
+                    const reasoningText = typeof reasoning === 'string'
+                      ? reasoning
+                      : JSON.stringify(reasoning);
+                    fullContent = `${text}|||REASONING|||${reasoningText}`;
+                  }
+
+                  const { error: assistantMsgError } = await supabase
+                    .from('messages')
+                    .insert({
+                      conversation_id: convId,
+                      content: fullContent,
+                      role: 'assistant',
+                    });
+
+                  if (assistantMsgError) {
+                    logger.error('Background assistant message save failed', assistantMsgError, { conversationId: convId });
+                  } else {
+                    logger.info('Assistant message saved', {
+                      conversationId: convId,
+                      hasReasoning: !!reasoning,
+                      tokens: usage?.totalTokens,
+                      model,
+                    });
+                  }
+                } catch (error) {
+                  logger.error('Background assistant message save error', error, { conversationId: convId });
+                }
+              });
             }
 
             const processingTime = (Date.now() - requestStartTime) / 1000;
@@ -246,6 +309,9 @@ export async function POST(req: Request) {
           },
         });
 
+        // ============================================
+        // MERGE STREAM (streaming starts immediately)
+        // ============================================
         // Merge normalized UI stream with conditional reasoning
         // Only send reasoning for models that support it
         const modelConfig = getModelConfig(model);

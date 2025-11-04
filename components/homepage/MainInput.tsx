@@ -7,9 +7,6 @@ import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
-import { useToast } from '@/lib/contexts/ToastContext';
-import { handleClientError } from '@/lib/utils/error-handler';
-import { ensureConversation } from '@/lib/db/queries';
 
 export default function MainInput() {
   const [inputValue, setInputValue] = useState('');
@@ -21,7 +18,6 @@ export default function MainInput() {
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
   const { user } = useAuth();
-  const { error: showToastError } = useToast();
 
   // Detect mobile screen size
   useEffect(() => {
@@ -80,38 +76,26 @@ export default function MainInput() {
     }
   }, [inputValue, isMobile]);
 
-  const handleSend = async () => {
+  const handleSend = () => {
     const messageText = inputValue.trim();
     if (!messageText || isCreatingConversation) return;
 
-    try {
-      setIsCreatingConversation(true);
-      
-      // Generate conversation ID
-      const chatId = crypto.randomUUID();
-      
-      // Extract title from message (first 50 chars)
-      const title = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
-      
-      if (user && user.id) {
-        // Authenticated: Create conversation in DB first
-        await ensureConversation(chatId, user.id, title);
-        
-        // Navigate with message in URL params
-        router.push(`/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`);
-      } else {
-        // Guest mode: Use temp ID prefix (won't persist to DB)
-        router.push(`/conversation/temp-${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`);
-      }
-      
-      setInputValue('');
-    } catch (error) {
-      const userMessage = handleClientError(error, 'homepage/create-conversation');
-      showToastError(userMessage);
-      setIsCreatingConversation(false);
-    } finally {
-      setIsCreatingConversation(false);
+    setIsCreatingConversation(true);
+    
+    // Generate conversation ID
+    const chatId = crypto.randomUUID();
+    
+    // Redirect immediately - conversation will be created in API route (single source of truth)
+    if (user && user.id) {
+      // Authenticated: Navigate with message in URL params
+      router.push(`/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`);
+    } else {
+      // Guest mode: Use temp ID prefix (won't persist to DB)
+      router.push(`/conversation/temp-${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`);
     }
+    
+    setInputValue('');
+    // Note: isCreatingConversation will be reset when component unmounts on navigation
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
