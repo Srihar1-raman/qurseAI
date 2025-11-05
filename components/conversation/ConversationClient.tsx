@@ -3,7 +3,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport, type UIMessage, type UIMessagePart } from 'ai';
+import { DefaultChatTransport } from 'ai';
 import Image from 'next/image';
 import Header from '@/components/layout/Header';
 import ChatMessage from '@/components/chat/ChatMessage';
@@ -16,7 +16,6 @@ import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { handleClientError } from '@/lib/utils/error-handler';
-import { toUIMessageFromServer } from '@/lib/utils/message-adapters';
 import { getOlderMessages } from '@/lib/db/queries';
 import type { QurseMessage, StreamMetadata } from '@/lib/types';
 
@@ -104,21 +103,10 @@ export function ConversationClient({
     setIsScrollTopDetected(false);
   }, [conversationId, initialMessages, initialHasMore, initialDbRowCount]);
 
-  // Convert loadedMessages from server format to UIMessage format
-  const convertedInitialMessages: UIMessage[] = React.useMemo(() => {
-    return toUIMessageFromServer(loadedMessages);
-  }, [loadedMessages]);
-
-  // useChat hook with pre-loaded initialMessages (no timing issues!)
-  const {
-    messages,
-    sendMessage,
-    status,
-    error,
-  } = useChat({
-    id: conversationId,
-    initialMessages: convertedInitialMessages,
-    transport: new DefaultChatTransport({
+  // Memoize transport to prevent useChat reset on re-render
+  // CRITICAL: Transport recreation causes useChat to reset, breaking streaming
+  const transport = React.useMemo(() => {
+    return new DefaultChatTransport({
       api: '/api/chat',
       prepareSendMessagesRequest({ messages }) {
         return {
@@ -130,14 +118,32 @@ export function ConversationClient({
           },
         };
       },
-    }),
-    onFinish: ({ message }: { message: { id: string } }) => {
-      // Message completed successfully
-    },
-    onError: (error: Error) => {
-      const userMessage = handleClientError(error, 'conversation/chat');
-      showToastError(userMessage);
-    },
+    });
+  }, []); // Empty deps - refs are stable, don't recreate transport
+
+  // Memoize callbacks to prevent useChat reset
+  const handleFinish = React.useCallback(({ message }: { message: { id: string } }) => {
+    // Message completed successfully
+  }, []);
+
+  const handleError = React.useCallback((error: Error) => {
+    const userMessage = handleClientError(error, 'conversation/chat');
+    showToastError(userMessage);
+  }, [showToastError]);
+
+  // useChat hook (initialMessages prop removed - useChat doesn't respect it)
+  // Workaround: Use rawDisplayMessages to merge loadedMessages with useChat messages
+  // CRITICAL: conversationId must be stable - if it changes, useChat resets mid-stream
+  const {
+    messages,
+    sendMessage,
+    status,
+    error,
+  } = useChat({
+    id: conversationId,
+    transport,
+    onFinish: handleFinish,
+    onError: handleError,
   });
 
   // Workaround for useChat not respecting initialMessages
@@ -162,18 +168,29 @@ export function ConversationClient({
   // Transform server messages to have parts structure that ChatMessage expects
   const displayMessages = React.useMemo(() => {
     return rawDisplayMessages.map((msg): QurseMessage => {
-      // If message already has parts (from useChat), use as is
-      if ('parts' in msg && msg.parts) {
+      // If message already has parts (from useChat), filter to only text/reasoning parts
+      if ('parts' in msg && msg.parts && Array.isArray(msg.parts)) {
+        const validParts = msg.parts
+          .filter((part): part is { type: 'text' | 'reasoning'; text: string } => 
+            (part.type === 'text' || part.type === 'reasoning') && 
+            'text' in part && 
+            typeof part.text === 'string'
+          )
+          .map(part => ({
+            type: part.type as 'text' | 'reasoning',
+            text: part.text,
+          }));
+        
         return {
           id: msg.id,
           role: msg.role as 'user' | 'assistant',
-          parts: msg.parts,
+          parts: validParts.length > 0 ? validParts : [{ type: 'text', text: '' }],
           metadata: ('metadata' in msg && msg.metadata) ? (msg.metadata as StreamMetadata) : undefined,
         };
       }
       
       // Transform server message format to parts structure
-      const parts: UIMessagePart[] = [];
+      const parts: Array<{ type: 'text' | 'reasoning'; text: string }> = [];
       
       // Extract content if it exists
       if ('content' in msg && typeof msg.content === 'string') {
@@ -181,14 +198,14 @@ export function ConversationClient({
       }
       
       // Add reasoning as a separate part if it exists
-      if ('reasoning' in msg && msg.reasoning) {
+      if ('reasoning' in msg && msg.reasoning && typeof msg.reasoning === 'string') {
         parts.push({ type: 'reasoning', text: msg.reasoning });
       }
       
       return {
         id: msg.id,
         role: msg.role as 'user' | 'assistant',
-        parts,
+        parts: parts.length > 0 ? parts : [{ type: 'text', text: '' }],
         metadata: undefined,
       };
     });
@@ -298,11 +315,12 @@ export function ConversationClient({
 
 
   // Send initial message if we have one from URL params
+  // CRITICAL: Guard against useChat resets causing duplicate sends
   useEffect(() => {
     // Guard: Don't send if already sent or no message param
     if (!hasInitialMessageParam || initialMessageSentRef.current) return;
 
-    // Mark as sent immediately to prevent duplicate sends
+    // Mark as sent immediately to prevent duplicate sends (even if useChat resets)
     initialMessageSentRef.current = true;
     setHasInteracted(true); // Mark as interacted for initial message
 
@@ -330,13 +348,14 @@ export function ConversationClient({
         window.history.replaceState({}, '', newUrl);
 
         // Send message immediately (don't wait for displayMessages)
+        // Note: sendMessage is stable now (memoized transport prevents useChat reset)
         sendMessage({
           role: 'user',
           parts: [{ type: 'text', text: messageText }],
         });
       }
     }
-  }, [hasInitialMessageParam, sendMessage]); // ✅ Fixed: Depends on sendMessage directly, not displayMessages.length
+  }, [hasInitialMessageParam, sendMessage]); // sendMessage is now stable due to memoized transport
 
   // Auto-scroll to bottom
   const scrollToBottom = () => {
@@ -391,15 +410,17 @@ export function ConversationClient({
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      // Create synthetic form event for handleSubmit
-      const syntheticEvent = {
-        preventDefault: () => {},
-        target: e.target,
-        currentTarget: e.currentTarget,
-      } as React.FormEvent<HTMLFormElement>;
-      handleSubmit(syntheticEvent);
+      // Directly call handleSubmit logic instead of creating synthetic event
+      const messageText = input.trim();
+      if (!messageText || isLoading) return;
+      setInput('');
+      setHasInteracted(true);
+      sendMessage({
+        role: 'user',
+        parts: [{ type: 'text', text: messageText }],
+      });
     }
-  }, [handleSubmit]);
+  }, [input, isLoading, sendMessage]);
 
   const handleNewChatClick = () => {
     router.push('/');
