@@ -1,30 +1,31 @@
 'use client';
 
+import React from 'react';
 import { useTheme } from '@/lib/theme-provider';
 import Image from 'next/image';
-import MarkdownRenderer from './MarkdownRenderer';
+// import MarkdownRenderer from './MarkdownRenderer'; // Temporarily disabled for faster streaming
 import { getIconPath } from '@/lib/icon-utils';
 import type { ChatMessageProps } from '@/lib/types';
 
-export default function ChatMessage({ message, isUser, onRedo }: ChatMessageProps) {
+function ChatMessageComponent({ message, isUser, onRedo }: ChatMessageProps) {
   const { resolvedTheme, mounted } = useTheme();
 
   // Extract text content from message parts
   const content = message.parts
-    .filter((p): p is Extract<typeof p, { type: 'text' }> => p.type === 'text')
+    .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
     .map(p => p.text)
     .join('');
 
   // Extract reasoning from message parts
   const reasoning = message.parts
-    .filter((p): p is Extract<typeof p, { type: 'reasoning' }> => p.type === 'reasoning')
+    .filter((p): p is { type: 'reasoning'; text: string } => p.type === 'reasoning')
     .map(p => p.text)
     .join('\n\n') || null;
 
-  const copyToClipboard = () => {
+  const copyToClipboard = React.useCallback(() => {
     navigator.clipboard.writeText(content);
     // You could add a toast notification here
-  };
+  }, [content]);
 
   return (
     <div className={`message ${isUser ? 'user-message' : 'bot-message'}`}>
@@ -48,9 +49,11 @@ export default function ChatMessage({ message, isUser, onRedo }: ChatMessageProp
             </div>
             <div className="reasoning-content" style={{
               fontSize: '14px',
-              color: 'var(--color-text-secondary)'
+              color: 'var(--color-text-secondary)',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word'
             }}>
-              <MarkdownRenderer content={reasoning} />
+              {reasoning}
             </div>
           </div>
         )}
@@ -60,7 +63,9 @@ export default function ChatMessage({ message, isUser, onRedo }: ChatMessageProp
           {isUser ? (
             content
           ) : (
-            <MarkdownRenderer content={content} />
+            <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
+              {content}
+            </div>
           )}
         </div>
         
@@ -90,4 +95,45 @@ export default function ChatMessage({ message, isUser, onRedo }: ChatMessageProp
     </div>
   );
 }
+
+// Memoize component to prevent re-renders of unchanged messages during streaming
+// CRITICAL: When streaming updates last message, other messages shouldn't re-render
+export default React.memo(ChatMessageComponent, (prevProps, nextProps) => {
+  // Quick check: if IDs don't match, definitely re-render
+  if (prevProps.message.id !== nextProps.message.id) {
+    return false;
+  }
+  
+  // Quick check: if isUser changed, re-render
+  if (prevProps.isUser !== nextProps.isUser) {
+    return false;
+  }
+  
+  // Quick check: if parts array length changed, content definitely changed
+  if (prevProps.message.parts.length !== nextProps.message.parts.length) {
+    return false;
+  }
+  
+  // Only re-render if message content actually changed
+  const prevContent = prevProps.message.parts
+    .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+    .map(p => p.text)
+    .join('');
+  const nextContent = nextProps.message.parts
+    .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
+    .map(p => p.text)
+    .join('');
+  
+  const prevReasoning = prevProps.message.parts
+    .filter((p): p is { type: 'reasoning'; text: string } => p.type === 'reasoning')
+    .map(p => p.text)
+    .join('');
+  const nextReasoning = nextProps.message.parts
+    .filter((p): p is { type: 'reasoning'; text: string } => p.type === 'reasoning')
+    .map(p => p.text)
+    .join('');
+  
+  // Return true if props are EQUAL (skip re-render), false if different (re-render)
+  return prevContent === nextContent && prevReasoning === nextReasoning;
+});
 

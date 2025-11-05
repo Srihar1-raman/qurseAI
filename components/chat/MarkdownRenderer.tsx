@@ -29,11 +29,62 @@ interface TableProps {
 }
 
 // Enhanced Code Block Component
-const CodeBlock = ({ language, children }: CodeBlockProps) => {
+// CRITICAL: Memoized to prevent re-renders during streaming
+// SyntaxHighlighter is extremely expensive for large code blocks
+const CodeBlock = React.memo(({ language, children }: CodeBlockProps) => {
   const [copied, setCopied] = useState(false);
   const { resolvedTheme } = useTheme();
+  
+  // Track content length changes to detect streaming
+  // CRITICAL: Use ref instead of state to prevent infinite loops
+  const prevLengthRef = React.useRef(0);
+  const streamingTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const isStreamingRef = React.useRef(false);
+  const [, forceUpdate] = React.useReducer((x) => x + 1, 0);
 
-  const handleCopy = async () => {
+  // Detect if content is actively streaming (growing rapidly)
+  // Use ref instead of state to avoid re-render loops
+  React.useEffect(() => {
+    const currentLength = children.length;
+    const prevLength = prevLengthRef.current;
+    
+    // Initialize on first render
+    if (prevLength === 0) {
+      prevLengthRef.current = currentLength;
+      return;
+    }
+    
+    // Clear any existing timeout
+    if (streamingTimeoutRef.current) {
+      clearTimeout(streamingTimeoutRef.current);
+    }
+    
+    if (currentLength > prevLength) {
+      // Content is growing - mark as streaming
+      if (!isStreamingRef.current) {
+        isStreamingRef.current = true;
+        forceUpdate(); // Force re-render to update shouldHighlight
+      }
+      
+      // Wait 500ms after last change before considering stream complete
+      streamingTimeoutRef.current = setTimeout(() => {
+        if (isStreamingRef.current) {
+          isStreamingRef.current = false;
+          forceUpdate(); // Force re-render to enable highlighting
+        }
+      }, 500);
+    }
+    
+    prevLengthRef.current = currentLength;
+    
+    return () => {
+      if (streamingTimeoutRef.current) {
+        clearTimeout(streamingTimeoutRef.current);
+      }
+    };
+  }, [children, forceUpdate]); // ⚠️ CRITICAL: Include forceUpdate but it's stable from useReducer
+
+  const handleCopy = React.useCallback(async () => {
     try {
       await navigator.clipboard.writeText(children);
       setCopied(true);
@@ -41,7 +92,30 @@ const CodeBlock = ({ language, children }: CodeBlockProps) => {
     } catch (err) {
       console.error('Failed to copy code:', err);
     }
-  };
+  }, [children]);
+
+  // Performance optimization: Skip syntax highlighting for large code blocks OR during streaming
+  // SyntaxHighlighter is extremely expensive (causes crashes during streaming)
+  // CRITICAL: Disable during streaming and for large blocks
+  const codeLength = children.length;
+  const MAX_LINES_FOR_HIGHLIGHTING = 200; // Reduced - line numbers are expensive
+  const MAX_CHARS_FOR_HIGHLIGHTING = 5000; // Reduced - parsing is expensive
+  
+  // Optimized: Count newlines instead of splitting entire string (much faster)
+  const lineCount = React.useMemo(() => {
+    if (codeLength > MAX_CHARS_FOR_HIGHLIGHTING) return Infinity;
+    let count = 0;
+    for (let i = 0; i < codeLength; i++) {
+      if (children[i] === '\n') count++;
+    }
+    return count + 1; // +1 for last line
+  }, [children, codeLength]);
+  
+  // CRITICAL: Disable highlighting during streaming OR for large blocks
+  // During streaming, SyntaxHighlighter causes crashes
+  const shouldHighlight = !isStreamingRef.current && codeLength <= MAX_CHARS_FOR_HIGHLIGHTING && lineCount <= MAX_LINES_FOR_HIGHLIGHTING;
+  // Disable line numbers for blocks > 100 lines (very expensive)
+  const showLineNumbers = shouldHighlight && lineCount <= 100;
 
   return (
     <div className="enhanced-code-block">
@@ -56,54 +130,98 @@ const CodeBlock = ({ language, children }: CodeBlockProps) => {
         </button>
       </div>
       <div className="code-content">
-        <SyntaxHighlighter
-          language={language || 'text'}
-          style={resolvedTheme === 'dark' ? oneDark : oneLight}
-          customStyle={{
-            margin: 0,
-            borderRadius: '0 0 8px 8px',
-            fontSize: '0.875rem',
-            lineHeight: '1.5',
-          }}
-          showLineNumbers={true}
-          lineNumberStyle={{
-            color: 'var(--color-text-secondary)',
-            paddingRight: '1rem',
-            minWidth: '2.5rem',
-            textAlign: 'right',
-            userSelect: 'none',
-            fontSize: '0.75rem',
-          }}
-          PreTag={({ children, ...props }) => (
-            <pre {...props} className="syntax-highlighter-pre">
-              {children}
-            </pre>
-          )}
-        >
-          {children}
-        </SyntaxHighlighter>
+        {shouldHighlight ? (
+          <SyntaxHighlighter
+            language={language || 'text'}
+            style={resolvedTheme === 'dark' ? oneDark : oneLight}
+            customStyle={{
+              margin: 0,
+              borderRadius: '0 0 8px 8px',
+              fontSize: '0.875rem',
+              lineHeight: '1.5',
+            }}
+            showLineNumbers={showLineNumbers}
+            lineNumberStyle={{
+              color: 'var(--color-text-secondary)',
+              paddingRight: '1rem',
+              minWidth: '2.5rem',
+              textAlign: 'right',
+              userSelect: 'none',
+              fontSize: '0.75rem',
+            }}
+            PreTag={({ children, ...props }) => (
+              <pre {...props} className="syntax-highlighter-pre">
+                {children}
+              </pre>
+            )}
+          >
+            {children}
+          </SyntaxHighlighter>
+        ) : (
+          // Fallback for large/streaming code blocks - plain <pre> to avoid crashes
+          <pre
+            className="syntax-highlighter-pre"
+            style={{
+              margin: 0,
+              borderRadius: '0 0 8px 8px',
+              fontSize: '0.875rem',
+              lineHeight: '1.5',
+              padding: '1rem',
+              backgroundColor: resolvedTheme === 'dark' ? '#282c34' : '#f5f5f5',
+              color: resolvedTheme === 'dark' ? '#abb2bf' : '#383a42',
+              overflow: 'auto',
+              fontFamily: 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+            }}
+          >
+            <code>{children}</code>
+          </pre>
+        )}
       </div>
     </div>
   );
-};
+}, (prevProps, nextProps) => {
+  // Only re-render if content actually changed
+  // CRITICAL: During streaming, children prop changes frequently
+  // This comparison prevents unnecessary re-renders when content is identical
+  return prevProps.language === nextProps.language && prevProps.children === nextProps.children;
+});
+
+CodeBlock.displayName = 'CodeBlock';
 
 // Enhanced Inline Code Component
-const InlineCode = ({ children }: InlineCodeProps) => {
+// CRITICAL: Memoized to prevent re-renders during streaming
+const InlineCode = React.memo(({ children }: InlineCodeProps) => {
   const [copied, setCopied] = useState(false);
+  const timeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
-  const handleCopy = async () => {
+  const handleCopy = React.useCallback(async () => {
     try {
       await navigator.clipboard.writeText(children);
       setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      timeoutRef.current = setTimeout(() => setCopied(false), 1500);
     } catch (err) {
       console.error('Failed to copy code:', err);
     }
-  };
+  }, [children]);
+
+  // Cleanup timeout on unmount
+  React.useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   // Smart detection for explanatory vs copyable code
-  const trimmedChildren = children.trim();
-  const isExplanatory = (
+  const trimmedChildren = React.useMemo(() => children.trim(), [children]);
+  const isExplanatory = React.useMemo(() => (
     trimmedChildren.length <= 30 && 
     !trimmedChildren.includes('\n') &&
     !trimmedChildren.includes('```') &&
@@ -116,7 +234,7 @@ const InlineCode = ({ children }: InlineCodeProps) => {
       /^[O()VE+\-*/^=<>0-9\s]+$/.test(trimmedChildren) &&
       !trimmedChildren.includes('\\')
     )
-  );
+  ), [trimmedChildren]);
   
   const codeClass = isExplanatory ? "enhanced-inline-code explanatory" : "enhanced-inline-code";
 
@@ -129,7 +247,12 @@ const InlineCode = ({ children }: InlineCodeProps) => {
       {children}
     </code>
   );
-};
+}, (prevProps, nextProps) => {
+  // Only re-render if content changed
+  return prevProps.children === nextProps.children;
+});
+
+InlineCode.displayName = 'InlineCode';
 
 // Enhanced Table Component
 const Table = ({ children }: TableProps) => (
@@ -221,27 +344,36 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
     return { processedContent: modifiedContent, latexBlocks };
   }, [content]);
 
-  // Handle empty content
-  if (!content || content.trim() === '') {
-    return <div className={`markdown-renderer empty ${className}`}>No content to render</div>;
-  }
+  // CRITICAL: Memoize renderer object to prevent Marked from re-initializing
+  // The renderer object should be stable across renders
+  // MUST be called before any early returns to maintain hook order
+  const renderer: Partial<ReactRenderer> = React.useMemo(() => {
+    // Stable key generator - use index-based keys instead of random
+    let keyCounter = 0;
+    const getStableKey = (prefix: string) => `${prefix}-${keyCounter++}`;
+    
+    // Pre-compile regex patterns once (performance optimization)
+    const blockPattern = /LATEXBLOCK(\d+)END/g;
+    const inlinePattern = /LATEXINLINE(\d+)END/g;
+    
+    return {
+      text(text: string) {
+      // Quick check: if text doesn't contain LATEX markers, return immediately
+      // This avoids expensive regex operations for most text nodes
+      if (!text.includes('LATEXBLOCK') && !text.includes('LATEXINLINE')) {
+        return text;
+      }
 
-  const generateKey = () => {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  };
-
-  const renderer: Partial<ReactRenderer> = {
-    text(text: string) {
+      // Reset regex state (global regex can have stale state)
+      blockPattern.lastIndex = 0;
+      inlinePattern.lastIndex = 0;
+      
       // Check if this text contains any LaTeX placeholders
-      const blockPattern = /LATEXBLOCK(\d+)END/g;
-      const inlinePattern = /LATEXINLINE(\d+)END/g;
-
-      // If no LaTeX placeholders, return text as-is
       if (!blockPattern.test(text) && !inlinePattern.test(text)) {
         return text;
       }
 
-      // Reset regex state
+      // Reset regex state again after test
       blockPattern.lastIndex = 0;
       inlinePattern.lastIndex = 0;
 
@@ -272,7 +404,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
         // Add text before this match
         if (start > lastEnd) {
           const textContent = text.slice(lastEnd, start);
-          components.push(<span key={`text-${components.length}-${generateKey()}`}>{textContent}</span>);
+          components.push(<span key={getStableKey('text')}>{textContent}</span>);
         }
 
         // Find the corresponding LaTeX block
@@ -282,7 +414,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
             // Don't wrap block equations in div here - let paragraph handler do it
             components.push(
               <Latex
-                key={`latex-${components.length}-${generateKey()}`}
+                key={getStableKey('latex')}
                 delimiters={[
                   { left: '$$', right: '$$', display: true },
                   { left: '\\[', right: '\\]', display: true },
@@ -295,7 +427,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
           } else {
             components.push(
               <Latex
-                key={`latex-${components.length}-${generateKey()}`}
+                key={getStableKey('latex')}
                 delimiters={[
                   { left: '$', right: '$', display: false },
                   { left: '\\(', right: '\\)', display: false },
@@ -307,7 +439,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
             );
           }
         } else {
-          components.push(<span key={`fallback-${components.length}-${generateKey()}`}>{fullMatch}</span>);
+          components.push(<span key={getStableKey('fallback')}>{fullMatch}</span>);
         }
 
         lastEnd = start + fullMatch.length;
@@ -316,13 +448,13 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       // Add any remaining text
       if (lastEnd < text.length) {
         const textContent = text.slice(lastEnd);
-        components.push(<span key={`text-final-${components.length}-${generateKey()}`}>{textContent}</span>);
+        components.push(<span key={getStableKey('text-final')}>{textContent}</span>);
       }
 
-      return components.length === 1 ? components[0] : <React.Fragment key={generateKey()}>{components}</React.Fragment>;
+      return components.length === 1 ? components[0] : <React.Fragment key={getStableKey('fragment')}>{components}</React.Fragment>;
     },
     hr() {
-      return <hr key={generateKey()} className="enhanced-hr" />;
+      return <hr key={getStableKey('element')} className="enhanced-hr" />;
     },
     paragraph(children) {
       // Check if the paragraph contains only a LaTeX block placeholder
@@ -333,7 +465,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
           if (latexBlock && latexBlock.isBlock) {
             // Render block equations outside of paragraph tags
             return (
-              <div className="my-6 text-center" key={generateKey()}>
+              <div className="my-6 text-center" key={getStableKey('element')}>
                 <Latex
                   delimiters={[
                     { left: '$$', right: '$$', display: true },
@@ -350,7 +482,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       }
 
       return (
-        <p key={generateKey()} className="enhanced-paragraph">
+        <p key={getStableKey('element')} className="enhanced-paragraph">
           {children}
         </p>
       );
@@ -358,7 +490,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
     code(children, language) {
       // This handles fenced code blocks (```)
       return (
-        <CodeBlock language={language} key={generateKey()}>
+        <CodeBlock language={language} key={getStableKey('element')}>
           {String(children)}
         </CodeBlock>
       );
@@ -366,11 +498,11 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
     codespan(code) {
       // This handles inline code (`code`)
       const codeString = typeof code === 'string' ? code : String(code || '');
-      return <InlineCode key={generateKey()}>{codeString}</InlineCode>;
+      return <InlineCode key={getStableKey('element')}>{codeString}</InlineCode>;
     },
     link(href, text) {
       return (
-        <Link key={generateKey()} href={href || '#'}>
+        <Link key={getStableKey('element')} href={href || '#'}>
           {text}
         </Link>
       );
@@ -380,7 +512,7 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       const headingClass = `enhanced-heading h${level}`;
 
       return (
-        <HeadingTag key={generateKey()} className={headingClass}>
+        <HeadingTag key={getStableKey('element')} className={headingClass}>
           {children}
         </HeadingTag>
       );
@@ -390,72 +522,72 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       const listClass = `enhanced-list ${ordered ? 'ol' : 'ul'}`;
       
       return (
-        <ListTag key={generateKey()} className={listClass}>
+        <ListTag key={getStableKey('element')} className={listClass}>
           {children}
         </ListTag>
       );
     },
     listItem(children) {
       return (
-        <li key={generateKey()} className="enhanced-list-item">
+        <li key={getStableKey('element')} className="enhanced-list-item">
           {children}
         </li>
       );
     },
     blockquote(children) {
       return (
-        <blockquote key={generateKey()} className="enhanced-blockquote">
+        <blockquote key={getStableKey('element')} className="enhanced-blockquote">
           {children}
         </blockquote>
       );
     },
     table(children) {
-      return <Table key={generateKey()}>{children}</Table>;
+      return <Table key={getStableKey('element')}>{children}</Table>;
     },
     tableRow(children) {
-      return <tr key={generateKey()} className="enhanced-tr">{children}</tr>;
+      return <tr key={getStableKey('element')} className="enhanced-tr">{children}</tr>;
     },
     tableCell(children, flags) {
       const isHeader = flags.header;
 
       return isHeader ? (
-        <th key={generateKey()} className="enhanced-th">
+        <th key={getStableKey('element')} className="enhanced-th">
           {children}
         </th>
       ) : (
-        <td key={generateKey()} className="enhanced-td">
+        <td key={getStableKey('element')} className="enhanced-td">
           {children}
         </td>
       );
     },
     tableHeader(children) {
       return (
-        <thead key={generateKey()} className="enhanced-thead">
+        <thead key={getStableKey('element')} className="enhanced-thead">
           {children}
         </thead>
       );
     },
     tableBody(children) {
       return (
-        <tbody key={generateKey()} className="enhanced-tbody">
+        <tbody key={getStableKey('element')} className="enhanced-tbody">
           {children}
         </tbody>
       );
     },
     strong(children) {
-      return <strong key={generateKey()} className="enhanced-strong">{children}</strong>;
+      return <strong key={getStableKey('element')} className="enhanced-strong">{children}</strong>;
     },
     em(children) {
-      return <em key={generateKey()} className="enhanced-em">{children}</em>;
+      return <em key={getStableKey('element')} className="enhanced-em">{children}</em>;
     },
     del(children) {
-      return <del key={generateKey()} className="enhanced-del">{children}</del>;
+      return <del key={getStableKey('element')} className="enhanced-del">{children}</del>;
     },
     image(href, text) {
       return (
         // eslint-disable-next-line @next/next/no-img-element
         <img 
-          key={generateKey()}
+          key={getStableKey('element')}
           src={href || ''} 
           alt={text || ''} 
           className="enhanced-image"
@@ -463,6 +595,12 @@ export default function MarkdownRenderer({ content, className = '' }: MarkdownRe
       );
     },
   };
+  }, [latexBlocks]); // Only recreate if latexBlocks change
+
+  // Handle empty content AFTER all hooks (React Rules of Hooks)
+  if (!content || content.trim() === '') {
+    return <div className={`markdown-renderer empty ${className}`}>No content to render</div>;
+  }
 
   return (
     <div className={`markdown-renderer ${className}`}>

@@ -123,12 +123,12 @@ export function ConversationClient({
 
   // Memoize callbacks to prevent useChat reset
   const handleFinish = React.useCallback(({ message }: { message: { id: string } }) => {
-    // Message completed successfully
+      // Message completed successfully
   }, []);
 
   const handleError = React.useCallback((error: Error) => {
-    const userMessage = handleClientError(error, 'conversation/chat');
-    showToastError(userMessage);
+      const userMessage = handleClientError(error, 'conversation/chat');
+      showToastError(userMessage);
   }, [showToastError]);
 
   // useChat hook (initialMessages prop removed - useChat doesn't respect it)
