@@ -12,8 +12,9 @@ export default function MainInput() {
   const [inputValue, setInputValue] = useState('');
   const [isMultiline, setIsMultiline] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [isCreatingConversation, setIsCreatingConversation] = useState(false);
+  const [isNavigating, setIsNavigating] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
@@ -77,17 +78,19 @@ export default function MainInput() {
     textarea.addEventListener('focus', handlePrefetch);
     
     // Prefetch on hover (desktop - user might send message)
-    if (!isMobile) {
+    const currentIsMobile = window.innerWidth <= 768;
+    if (!currentIsMobile) {
       textarea.addEventListener('mouseenter', handlePrefetch);
     }
 
     return () => {
+      // Remove listeners from the textarea we added them to
+      // Use captured textarea variable (not inputRef.current) to ensure we remove
+      // listeners from the exact element we added them to
       textarea.removeEventListener('focus', handlePrefetch);
-      if (!isMobile) {
-        textarea.removeEventListener('mouseenter', handlePrefetch);
-      }
+      textarea.removeEventListener('mouseenter', handlePrefetch);
     };
-  }, [router, isMobile]);
+  }, [router]);
 
   // Auto-resize textarea and check if multiline
   useEffect(() => {
@@ -108,29 +111,51 @@ export default function MainInput() {
     }
   }, [inputValue, isMobile]);
 
+  // Cleanup navigation timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+        navigationTimeoutRef.current = null;
+      }
+    };
+  }, []);
+
   const handleSend = () => {
     const messageText = inputValue.trim();
-    if (!messageText || isCreatingConversation) return;
+    if (!messageText || isNavigating) return;
 
-    setIsCreatingConversation(true);
+    // Clear any existing timeout
+    if (navigationTimeoutRef.current) {
+      clearTimeout(navigationTimeoutRef.current);
+      navigationTimeoutRef.current = null;
+    }
+
+    setIsNavigating(true);
     
     // Generate conversation ID
     const chatId = crypto.randomUUID();
     
-    // Redirect immediately - conversation will be created in API route (single source of truth)
-    if (user && user.id) {
-      // Authenticated: Navigate with message in URL params
-      router.push(`/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`);
-    } else {
-      // Guest mode: Use temp ID prefix (won't persist to DB)
-      router.push(`/conversation/temp-${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`);
-    }
+    // Construct navigation URL
+    const url = user && user.id
+      ? `/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`
+      : `/conversation/temp-${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`;
+    
+    // Non-blocking navigation - router.push() handles prefetching
+    router.push(url);
+    
+    // Safety: Reset navigation state after a delay if navigation doesn't complete
+    // This prevents isNavigating from staying true forever if navigation fails
+    // Note: If component unmounts (navigation succeeded), cleanup useEffect will clear this timeout
+    navigationTimeoutRef.current = setTimeout(() => {
+      setIsNavigating(false);
+      navigationTimeoutRef.current = null;
+    }, 2000);
     
     setInputValue('');
-    // Note: isCreatingConversation will be reset when component unmounts on navigation
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
@@ -203,7 +228,7 @@ export default function MainInput() {
           placeholder="Message Qurse..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyDown}
           style={{
             padding: (isMultiline || isMobile) ? '12px 15px 60px 15px' : '12px 96px 12px 16px',
             borderRadius: '20px',
@@ -258,7 +283,7 @@ export default function MainInput() {
             {/* Send Button */}
             <button
               type="button"
-              disabled={!inputValue.trim() || isCreatingConversation}
+              disabled={!inputValue.trim() || isNavigating}
               className="flex items-center justify-center transition-all"
               aria-label="Send message"
               onClick={handleSend}
@@ -266,11 +291,11 @@ export default function MainInput() {
                 width: '36px',
                 height: '36px',
                 borderRadius: '50%',
-                background: inputValue.trim() && !isCreatingConversation ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                border: `1px solid ${inputValue.trim() && !isCreatingConversation ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                background: inputValue.trim() && !isNavigating ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                border: `1px solid ${inputValue.trim() && !isNavigating ? 'var(--color-primary)' : 'var(--color-border)'}`,
                 padding: '0',
-                opacity: inputValue.trim() && !isCreatingConversation ? 1 : 0.5,
-                cursor: inputValue.trim() && !isCreatingConversation ? 'pointer' : 'not-allowed',
+                opacity: inputValue.trim() && !isNavigating ? 1 : 0.5,
+                cursor: inputValue.trim() && !isNavigating ? 'pointer' : 'not-allowed',
               }}
             >
               <Image
@@ -318,7 +343,7 @@ export default function MainInput() {
               {/* Send Button */}
               <button
                 type="button"
-                disabled={!inputValue.trim() || isCreatingConversation}
+                disabled={!inputValue.trim() || isNavigating}
                 className="flex items-center justify-center transition-all"
                 aria-label="Send message"
                 onClick={handleSend}
@@ -326,11 +351,11 @@ export default function MainInput() {
                   width: '36px',
                   height: '36px',
                   borderRadius: '50%',
-                  background: inputValue.trim() && !isCreatingConversation ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                  border: `1px solid ${inputValue.trim() && !isCreatingConversation ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                  background: inputValue.trim() && !isNavigating ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                  border: `1px solid ${inputValue.trim() && !isNavigating ? 'var(--color-primary)' : 'var(--color-border)'}`,
                   padding: '0',
-                  opacity: inputValue.trim() && !isCreatingConversation ? 1 : 0.5,
-                  cursor: inputValue.trim() && !isCreatingConversation ? 'pointer' : 'not-allowed',
+                  opacity: inputValue.trim() && !isNavigating ? 1 : 0.5,
+                  cursor: inputValue.trim() && !isNavigating ? 'pointer' : 'not-allowed',
                 }}
               >
                 <Image
