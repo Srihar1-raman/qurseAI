@@ -88,7 +88,7 @@ export default function MainInput() {
       // Use captured textarea variable (not inputRef.current) to ensure we remove
       // listeners from the exact element we added them to
       textarea.removeEventListener('focus', handlePrefetch);
-      textarea.removeEventListener('mouseenter', handlePrefetch);
+        textarea.removeEventListener('mouseenter', handlePrefetch);
     };
   }, [router]);
 
