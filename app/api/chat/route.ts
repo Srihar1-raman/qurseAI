@@ -101,14 +101,15 @@ async function ensureConversation(
 
 /**
  * Helper: Save user message
+ * Returns true if message was saved, false if skipped (early return)
  */
 async function saveUserMessage(
   conversationId: string,
   messageText: string,
   supabase: Awaited<ReturnType<typeof createClient>>
-): Promise<void> {
+): Promise<boolean> {
   if (!conversationId || conversationId.startsWith('temp-') || !messageText.trim()) {
-    return;
+    return false;
   }
 
   const { error: msgError } = await supabase
@@ -126,6 +127,8 @@ async function saveUserMessage(
     });
     throw new Error('Failed to save user message');
   }
+
+  return true;
 }
 
 /**
@@ -206,61 +209,90 @@ export async function POST(req: Request) {
     // Convert Zod-validated messages to UIMessage[] format
     const uiMessages = toUIMessageFromZod(messages);
     
+    // Extract user message text early (enables parallel DB operations)
+    // Note: toUIMessageFromZod() always returns messages with 'parts' array (never 'content' directly)
+    let userMessageText = '';
+    if (uiMessages.length > 0) {
+      const lastMessage = uiMessages[uiMessages.length - 1];
+      
+      // Verify last message is a user message (critical for data integrity)
+      if (lastMessage.role === 'user') {
+        // Extract user message text from parts array
+        // If parts doesn't exist or is empty, userMessageText remains '' (handled by outer check)
+        if (lastMessage?.parts && Array.isArray(lastMessage.parts)) {
+          userMessageText = lastMessage.parts
+            .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+            .map((p) => p.text)
+            .join('');
+        }
+      }
+    }
+    
+    // Calculate title for conversation creation
+    const title = userMessageText.trim().length > 0
+      ? userMessageText.slice(0, 50) + (userMessageText.length > 50 ? '...' : '')
+      : 'New Chat';
+    
     logger.debug('Starting stream', { duration: `${Date.now() - requestStartTime}ms` });
     
     // ============================================
     // Stage 5: Stream AI response (UI stream with reasoning)
     // ============================================
-    const tools = getToolsByIds(modeConfig.enabledTools);
+    // Create promises for operations that can run in parallel
+    // Create tools promise (modeConfig is already resolved)
+    const toolsPromise = Promise.resolve(getToolsByIds(modeConfig.enabledTools));
+    
+    // Create DB operations promise (runs in parallel with other operations)
+    // CRITICAL: ensureConversation must complete before saveUserMessage
+    // CRITICAL: User message must be saved BEFORE streaming starts (for conversation history integrity)
+    // We chain them to ensure proper order while still parallelizing with other operations
+    const dbOperationsPromise = user && conversationId && !conversationId.startsWith('temp-') && userMessageText.trim().length > 0
+      ? ensureConversation(user, conversationId, title, supabase)
+          .then(convId => {
+            // After conversation is ensured, save user message
+            // Check conditions again (defensive programming - saveUserMessage has its own checks)
+            if (!convId || convId.startsWith('temp-') || !userMessageText.trim()) {
+              // Shouldn't happen due to outer check, but handle defensively
+              return { convId, saveSuccess: false };
+            }
+            
+            // Return object with convId and saveSuccess flag
+            return saveUserMessage(convId, userMessageText, supabase)
+              .then((saved) => ({ convId, saveSuccess: saved })) // Return actual save result
+              .catch(error => {
+                // Log error but still return convId so we can use it
+                // This allows streaming to start but logs the failure
+                logger.error('Failed to save user message', error, { conversationId: convId });
+                return { convId, saveSuccess: false }; // Return failure flag
+              });
+          })
+          .catch(error => {
+            logger.error('DB operations failed', error, { conversationId });
+            // Return null to allow streaming to continue even if conversation creation fails
+            return null;
+          })
+      : Promise.resolve(null);
 
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
         // ============================================
-        // CONVERSATION CREATION AND USER MESSAGE SAVE
-        // (critical for history, must be synchronous before streaming)
+        // AWAIT ALL OPERATIONS IN PARALLEL
+        // (operations started before execute() - now await together)
         // ============================================
+        const [tools, dbResult] = await Promise.all([
+          toolsPromise,
+          dbOperationsPromise,
+        ]);
+
+        // Extract convId from DB result
+        // dbResult is { convId: string, saveSuccess: boolean } when successful, null when failed
         let convId = conversationId;
-        let userMessageText = '';
-
-        if (uiMessages.length > 0) {
-          const lastMessage = uiMessages[uiMessages.length - 1];
-          
-          // Verify last message is a user message (critical for data integrity)
-          if (lastMessage.role !== 'user') {
-            logger.warn('Last message is not a user message', { 
-              role: lastMessage.role,
-              conversationId 
-            });
-          } else {
-            // Extract user message text
-            if (lastMessage?.parts && Array.isArray(lastMessage.parts)) {
-              userMessageText = lastMessage.parts
-                .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
-                .map((p) => p.text)
-                .join('');
-            } else if (lastMessage && 'content' in lastMessage && typeof lastMessage.content === 'string') {
-              userMessageText = lastMessage.content;
-            }
-          }
-        }
-
-        // Save user message BEFORE streaming (critical for conversation history)
-        // This matches Scira's pattern - synchronous save before streamText()
-        if (user && conversationId && !conversationId.startsWith('temp-') && userMessageText.trim().length > 0) {
-          try {
-            const title = userMessageText.slice(0, 50) + (userMessageText.length > 50 ? '...' : '');
-            
-            // Ensure conversation exists (creates if needed)
-            convId = await ensureConversation(user, conversationId, title, supabase);
-            
-            // Save user message (synchronous - critical for history)
-            await saveUserMessage(convId, userMessageText, supabase);
-            
+        if (dbResult && typeof dbResult === 'object' && !Array.isArray(dbResult) && 'convId' in dbResult) {
+          convId = dbResult.convId;
+          if (dbResult.saveSuccess) {
             logger.debug('Conversation validated and user message saved', { conversationId: convId });
-          } catch (error) {
-            logger.error('Error ensuring conversation or saving user message', error, { conversationId });
-            // Don't throw - streaming can continue even if save fails
-            // Error is logged for monitoring
+          } else {
+            logger.debug('Conversation validated but user message save failed', { conversationId: convId });
           }
         }
 
