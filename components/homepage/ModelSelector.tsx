@@ -9,6 +9,7 @@ import { getIconPath } from '@/lib/icon-utils';
 import { models, canUseModel, type ModelConfig } from '@/ai/models';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useClickOutside } from '@/hooks/use-click-outside';
 
 interface GroupedModels {
   category: string;
@@ -57,23 +58,17 @@ export default function ModelSelector() {
   // Get selected model config
   const selectedModelConfig = models.find(m => m.value === selectedModel);
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-        setSearchQuery('');
-      }
-    };
+  // Close dropdown on outside click using hook
+  useClickOutside(dropdownRef, () => {
+    setIsOpen(false);
+    setSearchQuery('');
+  }, isOpen);
 
+  // Focus search input when dropdown opens
+  useEffect(() => {
     if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
       setTimeout(() => searchInputRef.current?.focus(), 0);
     }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
   }, [isOpen]);
 
   const handleSelectModel = (modelValue: string) => {
