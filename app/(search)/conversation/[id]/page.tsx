@@ -1,30 +1,11 @@
-import dynamic from 'next/dynamic';
 import { getMessagesServerSide, ensureConversationServerSide } from '@/lib/db/queries.server';
 import { createClient } from '@/lib/supabase/server';
-import { isValidConversationId, validateUrlSearchParams, safeDecodeURIComponent } from '@/lib/validation/chat-schema';
+import { isValidConversationId, validateUrlSearchParams } from '@/lib/validation/chat-schema';
 import { redirect } from 'next/navigation';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-
-// Lazy load ConversationClient to code split AI SDK
-// AI SDK code is only loaded when user navigates to a conversation page
-// Note: ConversationClient is a client component ('use client'), so it won't SSR anyway
-const ConversationClient = dynamic(
-  () => import('@/components/conversation/ConversationClient').then(mod => ({ default: mod.ConversationClient })),
-  {
-    loading: () => (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh',
-        color: 'var(--color-text)'
-      }}>
-        Loading conversation...
-      </div>
-    ),
-  }
-);
+import ConversationPageClient from './ConversationPageClient';
+import type { User } from '@/lib/types';
 
 const logger = createScopedLogger('conversation/page');
 
@@ -60,16 +41,25 @@ export default async function ConversationPage({ params, searchParams }: PagePro
   let initialMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }> = [];
   let initialHasMore = false;
   let initialDbRowCount = 0;
-  let user = null;
+  let user: User | null = null;
 
   // Only check auth if we need to load messages (not a new conversation)
   // For new conversations, skip auth check (handled client-side via AuthContext)
   if (!conversationId.startsWith('temp-') && !validatedParams.message) {
     const { data: { user: authUser } } = await supabase.auth.getUser();
-    user = authUser;
+    
+    // Map Supabase auth user to our User type
+    if (authUser) {
+      user = {
+        id: authUser.id,
+        email: authUser.email,
+        name: authUser.user_metadata?.full_name || authUser.user_metadata?.name,
+        avatar_url: authUser.user_metadata?.avatar_url,
+      };
+    }
 
     // Only load messages if user is authenticated
-    if (user) {
+    if (user && user.id) {
       try {
         // Ensure conversation exists (in case of direct URL access)
         await ensureConversationServerSide(conversationId, user.id, 'Chat');
@@ -96,12 +86,13 @@ export default async function ConversationPage({ params, searchParams }: PagePro
 
   return (
     <ErrorBoundary>
-    <ConversationClient
+      <ConversationPageClient
       conversationId={conversationId}
       initialMessages={initialMessages}
       initialHasMore={initialHasMore}
       initialDbRowCount={initialDbRowCount}
       hasInitialMessageParam={!!validatedParams.message}
+        user={user}
     />
     </ErrorBoundary>
   );

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { WEB_SEARCH_OPTIONS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { useClickOutside } from '@/hooks/use-click-outside';
 import type { WebSearchSelectorProps } from '@/lib/types';
 
 export default function WebSearchSelector({ selectedOption, onSelectOption }: WebSearchSelectorProps) {
@@ -14,22 +15,10 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme, mounted } = useTheme();
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isOpen]);
+  // Close dropdown on outside click using hook
+  useClickOutside(dropdownRef, () => {
+    setIsOpen(false);
+  }, isOpen);
 
   const handleSelectOption = (optionName: string) => {
     // Always allow selection, just show disabled state visually

@@ -1,157 +1,50 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { useMobile } from '@/hooks/use-mobile';
+import { useAutoFocus } from '@/hooks/use-auto-focus';
+import { useTextareaAutoResize } from '@/hooks/use-textarea-auto-resize';
 
 export default function MainInput() {
   const [inputValue, setInputValue] = useState('');
-  const [isMultiline, setIsMultiline] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const navigationTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const router = useRouter();
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
   const { user } = useAuth();
 
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-
-  // Auto-focus input when user starts typing
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const activeElement = document.activeElement;
-      const isInputFocused = activeElement && (
-        activeElement.tagName === 'INPUT' ||
-        activeElement.tagName === 'TEXTAREA' ||
-        activeElement.getAttribute('contenteditable') === 'true'
-      );
-
-      if (
-        !isInputFocused &&
-        !e.ctrlKey && 
-        !e.metaKey && 
-        !e.altKey && 
-        e.key !== 'Tab' &&
-        e.key !== 'Escape' &&
-        e.key !== 'Enter'
-      ) {
-        inputRef.current?.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  // Industry standard: Aggressive prefetching for likely-used routes
-  // Prefetch on mount (immediate) + on interaction (redundant but safe)
-  // This ensures route is ready before user clicks send, eliminating homepage delay
-  useEffect(() => {
-    // Prefetch immediately on mount (industry standard for high-probability routes)
-    const sampleId = '00000000-0000-0000-0000-000000000000'; // Dummy ID for prefetch
-    router.prefetch(`/conversation/${sampleId}`);
-
-    // Also prefetch on interaction (redundant but ensures it's always ready)
-    const handlePrefetch = () => {
-      router.prefetch(`/conversation/${sampleId}`);
-    };
-
-    const textarea = inputRef.current;
-    if (!textarea) return;
-
-    // Prefetch on focus (user starts typing)
-    textarea.addEventListener('focus', handlePrefetch);
-    
-    // Prefetch on hover (desktop - user might send message)
-    const currentIsMobile = window.innerWidth <= 768;
-    if (!currentIsMobile) {
-      textarea.addEventListener('mouseenter', handlePrefetch);
-    }
-
-    return () => {
-      // Remove listeners from the textarea we added them to
-      // Use captured textarea variable (not inputRef.current) to ensure we remove
-      // listeners from the exact element we added them to
-      textarea.removeEventListener('focus', handlePrefetch);
-        textarea.removeEventListener('mouseenter', handlePrefetch);
-    };
-  }, [router]);
-
-  // Auto-resize textarea and check if multiline
-  useEffect(() => {
-    if (inputRef.current) {
-      const textarea = inputRef.current;
-      textarea.style.height = 'auto';
-      const scrollHeight = textarea.scrollHeight;
-      const newHeight = Math.min(scrollHeight, 200);
-      textarea.style.height = newHeight + 'px';
-      
-      // Switch to multiline layout if content exceeds ~2 lines (60px) OR if on mobile
-      setIsMultiline(scrollHeight > 60 || isMobile);
-      
-      // If content exceeds max height, scroll to bottom to keep cursor visible
-      if (scrollHeight > 200) {
-        textarea.scrollTop = textarea.scrollHeight;
-      }
-    }
-  }, [inputValue, isMobile]);
-
-  // Cleanup navigation timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (navigationTimeoutRef.current) {
-        clearTimeout(navigationTimeoutRef.current);
-        navigationTimeoutRef.current = null;
-      }
-    };
-  }, []);
+  // Use hooks for mobile detection, auto-focus, and textarea auto-resize
+  const isMobile = useMobile();
+  useAutoFocus(inputRef);
+  const { isMultiline } = useTextareaAutoResize(inputRef, inputValue, {
+    multilineThreshold: 60,
+    maxHeight: 200,
+  });
 
   const handleSend = () => {
     const messageText = inputValue.trim();
-    if (!messageText || isNavigating) return;
-
-    // Clear any existing timeout
-    if (navigationTimeoutRef.current) {
-      clearTimeout(navigationTimeoutRef.current);
-      navigationTimeoutRef.current = null;
-    }
-
-    setIsNavigating(true);
+    if (!messageText) return;
     
     // Generate conversation ID
     const chatId = crypto.randomUUID();
     
-    // Construct navigation URL
+    // Construct URL with message params
     const url = user && user.id
       ? `/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`
       : `/conversation/temp-${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`;
     
-    // Non-blocking navigation - router.push() handles prefetching
-    router.push(url);
+    // Use router.replace() instead of window.history.replaceState()
+    // This ensures Next.js router is notified and usePathname() updates correctly
+    // scroll: false prevents scroll to top, maintaining SPA behavior
+    router.replace(url, { scroll: false });
     
-    // Safety: Reset navigation state after a delay if navigation doesn't complete
-    // This prevents isNavigating from staying true forever if navigation fails
-    // Note: If component unmounts (navigation succeeded), cleanup useEffect will clear this timeout
-    navigationTimeoutRef.current = setTimeout(() => {
-      setIsNavigating(false);
-      navigationTimeoutRef.current = null;
-    }, 2000);
-    
+    // Clear input
     setInputValue('');
   };
 
@@ -283,7 +176,7 @@ export default function MainInput() {
             {/* Send Button */}
             <button
               type="button"
-              disabled={!inputValue.trim() || isNavigating}
+              disabled={!inputValue.trim()}
               className="flex items-center justify-center transition-all"
               aria-label="Send message"
               onClick={handleSend}
@@ -291,11 +184,11 @@ export default function MainInput() {
                 width: '36px',
                 height: '36px',
                 borderRadius: '50%',
-                background: inputValue.trim() && !isNavigating ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                border: `1px solid ${inputValue.trim() && !isNavigating ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
                 padding: '0',
-                opacity: inputValue.trim() && !isNavigating ? 1 : 0.5,
-                cursor: inputValue.trim() && !isNavigating ? 'pointer' : 'not-allowed',
+                opacity: inputValue.trim() ? 1 : 0.5,
+                cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
               }}
             >
               <Image
@@ -343,7 +236,7 @@ export default function MainInput() {
               {/* Send Button */}
               <button
                 type="button"
-                disabled={!inputValue.trim() || isNavigating}
+                disabled={!inputValue.trim()}
                 className="flex items-center justify-center transition-all"
                 aria-label="Send message"
                 onClick={handleSend}
@@ -351,11 +244,11 @@ export default function MainInput() {
                   width: '36px',
                   height: '36px',
                   borderRadius: '50%',
-                  background: inputValue.trim() && !isNavigating ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
-                  border: `1px solid ${inputValue.trim() && !isNavigating ? 'var(--color-primary)' : 'var(--color-border)'}`,
+                  background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
+                  border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
                   padding: '0',
-                  opacity: inputValue.trim() && !isNavigating ? 1 : 0.5,
-                  cursor: inputValue.trim() && !isNavigating ? 'pointer' : 'not-allowed',
+                  opacity: inputValue.trim() ? 1 : 0.5,
+                  cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
                 <Image

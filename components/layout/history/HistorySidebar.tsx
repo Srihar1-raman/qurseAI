@@ -12,6 +12,7 @@ import HistoryHeader from './HistoryHeader';
 import HistorySearch from './HistorySearch';
 import ConversationList from './ConversationList';
 import ClearHistoryModal from './ClearHistoryModal';
+import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
 import type { Conversation, ConversationGroup, HistorySidebarProps } from '@/lib/types';
 
 export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
@@ -71,8 +72,17 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       setHasMoreConversations(hasMore);
 
       if (moreConversations.length > 0) {
-        setChatHistory((prev) => [...prev, ...moreConversations]);
-        // Increase offset by actual number loaded (in case we got less than 50)
+        // Deduplicate conversations by ID to prevent duplicate keys
+        // This handles edge cases where conversations might appear in multiple pages
+        // (e.g., if a conversation was updated between loads, causing it to shift positions)
+        setChatHistory((prev) => {
+          const existingIds = new Set(prev.map(conv => conv.id));
+          const newConversations = moreConversations.filter(conv => !existingIds.has(conv.id));
+          return [...prev, ...newConversations];
+        });
+        // Increase offset by actual number returned from DB (not deduplicated count)
+        // This ensures correct pagination even if there are duplicates
+        // The deduplication above prevents React key errors, but offset tracks DB queries
         setConversationsOffset((prev) => prev + moreConversations.length);
       }
     } catch (err) {
@@ -83,28 +93,16 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
   }, [user, conversationsOffset, isLoadingMore, hasMoreConversations, searchQuery]);
 
 
-  // Scroll detection for infinite scrolling
-  useEffect(() => {
-    if (!isOpen || searchQuery.trim() || !hasMoreConversations || isLoadingMore) {
-      return;
+  // Infinite scroll detection using hook
+  useInfiniteScroll(
+    contentRef,
+    loadMoreConversations,
+    {
+      threshold: 200,
+      direction: 'bottom',
+      enabled: isOpen && !searchQuery.trim() && hasMoreConversations && !isLoadingMore,
     }
-
-    const contentElement = contentRef.current;
-    if (!contentElement) return;
-
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = contentElement;
-      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
-
-      // Load more when user is within 200px of bottom
-      if (distanceFromBottom < 200) {
-        loadMoreConversations();
-      }
-    };
-
-    contentElement.addEventListener('scroll', handleScroll);
-    return () => contentElement.removeEventListener('scroll', handleScroll);
-  }, [isOpen, searchQuery, hasMoreConversations, isLoadingMore, loadMoreConversations]);
+  );
 
   // Load conversations when sidebar opens and user is logged in (only if not already loaded)
   useEffect(() => {

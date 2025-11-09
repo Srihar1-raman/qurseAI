@@ -8,6 +8,7 @@ import { useTheme } from '@/lib/theme-provider';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropdown';
 import { getIconPath, getInvertedIconPath } from '@/lib/icon-utils';
+import { useClickOutside } from '@/hooks/use-click-outside';
 import type { HeaderProps } from '@/lib/types';
 
 export default function Header({
@@ -43,22 +44,10 @@ export default function Header({
     router.push('/');
   };
 
-  // Close dropdown when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [isDropdownOpen]);
+  // Close dropdown when clicking outside using hook
+  useClickOutside(dropdownRef, () => {
+    setIsDropdownOpen(false);
+  }, isDropdownOpen);
 
   // Show loading skeleton while auth is initializing
   if (isLoading) {

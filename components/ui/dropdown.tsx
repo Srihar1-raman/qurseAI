@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils";
+import { useClickOutside } from "@/hooks/use-click-outside";
 
 interface DropdownProps {
   trigger: React.ReactNode;
@@ -15,21 +16,10 @@ interface DropdownProps {
 export function Dropdown({ trigger, children, open, onOpenChange, align = 'start', className }: DropdownProps) {
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        onOpenChange(false);
-      }
-    };
-
-    if (open) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [open, onOpenChange]);
+  // Close dropdown when clicking outside using hook
+  useClickOutside(dropdownRef, () => {
+    onOpenChange(false);
+  }, open);
 
   return (
     <div className="relative inline-block" ref={dropdownRef}>
