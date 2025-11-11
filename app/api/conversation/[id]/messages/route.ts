@@ -5,7 +5,7 @@ import { isValidConversationId } from '@/lib/validation/chat-schema';
 import { createScopedLogger } from '@/lib/utils/logger';
 
 const logger = createScopedLogger('api/conversation/[id]/messages');
-
+//#region GET
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

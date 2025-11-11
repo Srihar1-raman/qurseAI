@@ -20,6 +20,7 @@ import { toUIMessageFromZod, type StreamTextProviderOptions } from '@/lib/utils/
 const logger = createScopedLogger('api/chat');
 
 /**
+ * region Helper Functions
  * Helper: Ensure conversation exists (creates if needed)
  * Optimized: Check first, then insert (faster than insert-then-select pattern)
  * Handles race conditions (duplicate key errors)
@@ -210,20 +211,20 @@ export async function POST(req: Request) {
     const uiMessages = toUIMessageFromZod(messages);
     
     // Extract user message text early (enables parallel DB operations)
-    // Note: toUIMessageFromZod() always returns messages with 'parts' array (never 'content' directly)
     let userMessageText = '';
     if (uiMessages.length > 0) {
       const lastMessage = uiMessages[uiMessages.length - 1];
       
       // Verify last message is a user message (critical for data integrity)
       if (lastMessage.role === 'user') {
-        // Extract user message text from parts array
-        // If parts doesn't exist or is empty, userMessageText remains '' (handled by outer check)
+        // Extract user message text
         if (lastMessage?.parts && Array.isArray(lastMessage.parts)) {
           userMessageText = lastMessage.parts
             .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
             .map((p) => p.text)
             .join('');
+        } else if (lastMessage && 'content' in lastMessage && typeof lastMessage.content === 'string') {
+          userMessageText = lastMessage.content;
         }
       }
     }
