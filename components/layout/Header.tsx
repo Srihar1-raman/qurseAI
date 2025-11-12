@@ -244,11 +244,11 @@ export default function Header({
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'var(--color-text)',
-                  color: 'var(--color-bg)',
+                  background: user ? 'var(--color-text)' : 'var(--color-bg-secondary)',
+                  color: user ? 'var(--color-bg)' : 'var(--color-text)',
+                  border: user ? 'none' : '1px solid var(--color-border)',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
-                  border: 'none',
                   padding: 0,
                   fontSize: '14px',
                   fontWeight: 600,
@@ -261,7 +261,7 @@ export default function Header({
                   </span>
                 ) : (
                   <Image
-                    src={getInvertedIconPath('profile', resolvedTheme, mounted)}
+                    src={getIconPath('profile', resolvedTheme, false, mounted)}
                     alt="Settings"
                     width={16}
                     height={16}

@@ -54,37 +54,64 @@ export function useTextareaAutoResize(
     
     const textarea = textareaRef.current;
     
-    // Reset height to auto to get accurate scrollHeight
-    textarea.style.height = 'auto';
-    const scrollHeight = textarea.scrollHeight;
-    
-    // Calculate new height (clamped to maxHeight)
-    const newHeight = Math.min(scrollHeight, maxHeight);
-    textarea.style.height = newHeight + 'px';
-    
-    // Apply minHeight if specified
-    if (minHeight !== undefined && newHeight < minHeight) {
-      textarea.style.height = minHeight + 'px';
+    // Set minHeight as inline style (like MainInput does)
+    if (minHeight !== undefined) {
+      textarea.style.minHeight = minHeight + 'px';
     }
     
-    // Determine if multiline (only if multilineThreshold is provided)
-    if (multilineThreshold !== undefined) {
-      const shouldBeMultiline = scrollHeight > multilineThreshold || isMobile;
-      
-      // Update state only if changed to avoid unnecessary re-renders
-      setIsMultiline((prev) => {
-        if (prev !== shouldBeMultiline) {
-          onMultilineChangeRef.current?.(shouldBeMultiline);
-          return shouldBeMultiline;
+    // If value is empty, just set height to auto and let CSS min-height handle it
+    // This prevents timing issues where scrollHeight is read before DOM updates
+    if (!value || value.trim() === '') {
+      textarea.style.height = 'auto';
+      return; // Early return - let CSS handle empty state
+    }
+    
+    // For non-empty values, wait for DOM to update before reading scrollHeight
+    // Use double requestAnimationFrame to ensure DOM has fully updated
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!textareaRef.current) return;
+        
+        // Double-check value is still not empty (in case it changed during RAF)
+        if (!textareaRef.current.value || textareaRef.current.value.trim() === '') {
+          textareaRef.current.style.height = 'auto';
+          return;
         }
-        return prev;
+        
+        // Reset height to auto to get accurate scrollHeight
+        textareaRef.current.style.height = 'auto';
+        const scrollHeight = textareaRef.current.scrollHeight;
+        
+        // Calculate new height (clamped to maxHeight)
+        const newHeight = Math.min(scrollHeight, maxHeight);
+        
+        // Enforce minHeight - always use the larger value
+        const finalHeight = minHeight !== undefined 
+          ? Math.max(newHeight, minHeight)
+          : newHeight;
+        
+        textareaRef.current.style.height = finalHeight + 'px';
+        
+        // Determine if multiline (only if multilineThreshold is provided)
+        if (multilineThreshold !== undefined) {
+          const shouldBeMultiline = scrollHeight > multilineThreshold || isMobile;
+          
+          // Update state only if changed to avoid unnecessary re-renders
+          setIsMultiline((prev) => {
+            if (prev !== shouldBeMultiline) {
+              onMultilineChangeRef.current?.(shouldBeMultiline);
+              return shouldBeMultiline;
+            }
+            return prev;
+          });
+        }
+        
+        // Scroll to bottom if content exceeds max height
+        if (scrollHeight > maxHeight) {
+          textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+        }
       });
-    }
-    
-    // Scroll to bottom if content exceeds max height
-    if (scrollHeight > maxHeight) {
-      textarea.scrollTop = textarea.scrollHeight;
-    }
+    });
   }, [value, maxHeight, minHeight, multilineThreshold, isMobile, textareaRef]);
   
   return { isMultiline };

@@ -53,7 +53,9 @@ export function getInvertedIconPath(
     return `/icon_light/${iconName}.svg`;
   }
   
-  // Inverted: dark theme uses dark icons, light theme uses light icons
+  // Inverted: Button background is var(--color-text)
+  // Dark mode: white background (#ffffff) → needs dark icon (icon folder)
+  // Light mode: dark background (#333333) → needs light icon (icon_light folder)
   const iconFolder = resolvedTheme === 'dark' ? 'icon' : 'icon_light';
   return `/${iconFolder}/${iconName}.svg`;
 }
