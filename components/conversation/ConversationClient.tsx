@@ -170,15 +170,15 @@ export function ConversationClient({
       setHasMoreMessages(false);
       
       // Load messages client-side if needed
-      if (
-        conversationId && 
-        !conversationId.startsWith('temp-') && 
-        user &&
-        !hasInitialMessageParam  // Don't load for new conversations - messages are being streamed
-      ) {
+    if (
+      conversationId && 
+      !conversationId.startsWith('temp-') && 
+      user &&
+      !hasInitialMessageParam  // Don't load for new conversations - messages are being streamed
+    ) {
         // Only set loading state if we're actually loading messages
         setIsLoadingInitialMessages(true);
-        loadInitialMessages(conversationId);
+      loadInitialMessages(conversationId);
       } else {
         // For new conversations (hasInitialMessageParam) or temp conversations,
         // messages come from useChat, so don't set loading state
@@ -477,31 +477,31 @@ export function ConversationClient({
     // Mark as sent immediately to prevent duplicate sends (even if useChat resets)
     initialMessageSentRef.current = true;
     setHasInteracted(true); // Mark as interacted for initial message
-    
-    // Safely decode URL-encoded message parameter
-    let messageText: string;
-    try {
-      messageText = decodeURIComponent(messageParam);
-    } catch {
-      // If decoding fails, use the raw parameter as fallback
-      messageText = messageParam;
-    }
 
-    // Only send if we have a valid message
-    if (messageText && messageText.trim()) {
-      // Clean up URL params immediately (better UX)
-      params.delete('message');
-      params.delete('model');
-      params.delete('mode');
-      const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
-      window.history.replaceState({}, '', newUrl);
+      // Safely decode URL-encoded message parameter
+      let messageText: string;
+      try {
+        messageText = decodeURIComponent(messageParam);
+      } catch {
+        // If decoding fails, use the raw parameter as fallback
+        messageText = messageParam;
+      }
 
-      // Send message immediately (don't wait for displayMessages)
-      // Note: sendMessage is stable now (memoized transport prevents useChat reset)
-      sendMessage({
-        role: 'user',
-        parts: [{ type: 'text', text: messageText }],
-      });
+      // Only send if we have a valid message
+      if (messageText && messageText.trim()) {
+        // Clean up URL params immediately (better UX)
+        params.delete('message');
+        params.delete('model');
+        params.delete('mode');
+        const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+        window.history.replaceState({}, '', newUrl);
+
+        // Send message immediately (don't wait for displayMessages)
+        // Note: sendMessage is stable now (memoized transport prevents useChat reset)
+        sendMessage({
+          role: 'user',
+          parts: [{ type: 'text', text: messageText }],
+        });
     }
   }, [hasInitialMessageParam, sendMessage, conversationId]); // Added conversationId to deps for visibility check
 
@@ -567,6 +567,7 @@ export function ConversationClient({
   // Auto-resize textarea using hook
   useTextareaAutoResize(textareaRef, input, {
     maxHeight: 200,
+    minHeight: 48, // Prevent collapse when input is cleared after sending
   });
 
   // Auto-focus textarea
@@ -700,11 +701,6 @@ export function ConversationClient({
                 className="main-input conversation-input"
                 rows={1}
                 disabled={isLoading}
-                onInput={(e) => {
-                  const target = e.target as HTMLTextAreaElement;
-                  target.style.height = 'auto';
-                  target.style.height = Math.min(target.scrollHeight, 200) + 'px';
-                }}
               />
 
               <div className="input-buttons-background"></div>
