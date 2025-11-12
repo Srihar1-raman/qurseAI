@@ -44,6 +44,7 @@ export function ConversationClient({
   const conversationThreadRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
   const scrollPositionRef = useRef<{ height: number; top: number } | null>(null);
+  const hasInitiallyScrolledRef = useRef(false);
   
   // Use optimized scroll hook (Scira pattern)
   const { scrollToBottom, markManualScroll, resetManualScroll } = useOptimizedScroll(conversationEndRef);
@@ -66,7 +67,7 @@ export function ConversationClient({
   const conversationIdRef = useRef(conversationId);
   const selectedModelRef = useRef(selectedModel);
   const chatModeRef = useRef(chatMode);
-  
+
   // Track previous conversationId to detect actual switches
   const previousConversationIdRef = useRef<string | null>(null);
 
@@ -167,7 +168,6 @@ export function ConversationClient({
       setLoadedMessages([]);
       setMessagesOffset(0);
       setHasMoreMessages(false);
-      setIsLoadingInitialMessages(true);
       
       // Load messages client-side if needed
       if (
@@ -176,7 +176,13 @@ export function ConversationClient({
         user &&
         !hasInitialMessageParam  // Don't load for new conversations - messages are being streamed
       ) {
+        // Only set loading state if we're actually loading messages
+        setIsLoadingInitialMessages(true);
         loadInitialMessages(conversationId);
+      } else {
+        // For new conversations (hasInitialMessageParam) or temp conversations,
+        // messages come from useChat, so don't set loading state
+        setIsLoadingInitialMessages(false);
       }
     } else {
       // ConversationId hasn't changed - don't reset anything
@@ -197,12 +203,12 @@ export function ConversationClient({
     // Only update if we have initial messages (from server-side loading)
     // Don't overwrite client-loaded messages with empty array
     if (initialMessages.length > 0) {
-      setLoadedMessages(initialMessages);
-      // Set offset to actual DB rows queried (not filtered count) for accurate pagination
-      setMessagesOffset(initialDbRowCount || initialMessages.length);
-      // Use hasMore flag from server if available, otherwise fall back to heuristic
-      setHasMoreMessages(initialHasMore ?? initialMessages.length >= 50);
-      setIsScrollTopDetected(false);
+    setLoadedMessages(initialMessages);
+    // Set offset to actual DB rows queried (not filtered count) for accurate pagination
+    setMessagesOffset(initialDbRowCount || initialMessages.length);
+    // Use hasMore flag from server if available, otherwise fall back to heuristic
+    setHasMoreMessages(initialHasMore ?? initialMessages.length >= 50);
+    setIsScrollTopDetected(false);
       // CRITICAL FIX: Reset loading state when server-side messages are loaded
       // This ensures rawDisplayMessages logic works correctly
       setIsLoadingInitialMessages(false);
@@ -443,8 +449,8 @@ export function ConversationClient({
   // CRITICAL: Also guard against duplicate sends when ConversationClient is mounted twice
   // (e.g., homepage ConversationClient hidden + conversation route ConversationClient visible)
   useEffect(() => {
-    // Guard: Don't send if already sent or no message param
-    if (!hasInitialMessageParam || initialMessageSentRef.current) return;
+    // Guard: Don't send if already sent
+    if (initialMessageSentRef.current) return;
 
     // CRITICAL FIX: Check if this ConversationClient instance is actually visible
     // If we're on the conversation route, the homepage ConversationClient (hidden) should not send
@@ -460,40 +466,42 @@ export function ConversationClient({
       return; // This instance is not the active one, don't send
     }
 
-    // Mark as sent immediately to prevent duplicate sends (even if useChat resets)
-    initialMessageSentRef.current = true;
-    setHasInteracted(true); // Mark as interacted for initial message
-
-    // Get message from current URL params
+    // Get message from current URL params (read directly from window.location for reliability)
+    // This ensures we detect the message param even if useSearchParams() hasn't updated yet
     const params = new URLSearchParams(window.location.search);
     const messageParam = params.get('message');
     
-    if (messageParam) {
-      // Safely decode URL-encoded message parameter
-      let messageText: string;
-      try {
-        messageText = decodeURIComponent(messageParam);
-      } catch {
-        // If decoding fails, use the raw parameter as fallback
-        messageText = messageParam;
-      }
+    // Guard: Don't send if no message param (check window.location directly, not just prop)
+    if (!messageParam) return;
 
-      // Only send if we have a valid message
-      if (messageText && messageText.trim()) {
-        // Clean up URL params immediately (better UX)
-        params.delete('message');
-        params.delete('model');
-        params.delete('mode');
-        const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
-        window.history.replaceState({}, '', newUrl);
+    // Mark as sent immediately to prevent duplicate sends (even if useChat resets)
+    initialMessageSentRef.current = true;
+    setHasInteracted(true); // Mark as interacted for initial message
+    
+    // Safely decode URL-encoded message parameter
+    let messageText: string;
+    try {
+      messageText = decodeURIComponent(messageParam);
+    } catch {
+      // If decoding fails, use the raw parameter as fallback
+      messageText = messageParam;
+    }
 
-        // Send message immediately (don't wait for displayMessages)
-        // Note: sendMessage is stable now (memoized transport prevents useChat reset)
-        sendMessage({
-          role: 'user',
-          parts: [{ type: 'text', text: messageText }],
-        });
-      }
+    // Only send if we have a valid message
+    if (messageText && messageText.trim()) {
+      // Clean up URL params immediately (better UX)
+      params.delete('message');
+      params.delete('model');
+      params.delete('mode');
+      const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+      window.history.replaceState({}, '', newUrl);
+
+      // Send message immediately (don't wait for displayMessages)
+      // Note: sendMessage is stable now (memoized transport prevents useChat reset)
+      sendMessage({
+        role: 'user',
+        parts: [{ type: 'text', text: messageText }],
+      });
     }
   }, [hasInitialMessageParam, sendMessage, conversationId]); // Added conversationId to deps for visibility check
 
@@ -522,6 +530,39 @@ export function ConversationClient({
     scrollToBottom();
     }
   }, [messages, status, scrollToBottom]);
+
+  // Scroll to bottom when messages are initially loaded (for existing conversations)
+  // This ensures users see the latest messages first, not the oldest
+  // CRITICAL: Only runs on initial load, not during pagination
+  useEffect(() => {
+    // Only scroll if:
+    // 1. We have loaded messages (from DB)
+    // 2. We haven't interacted yet (preserve scroll if user manually scrolled)
+    // 3. We're not loading older messages (pagination) - CRITICAL: prevents interference
+    // 4. We're not currently streaming (streaming has its own scroll logic)
+    // 5. We haven't already scrolled to bottom for this conversation (prevents re-scrolling after pagination)
+    if (
+      loadedMessages.length > 0 &&
+      !hasInteracted &&
+      !isLoadingOlderMessages &&
+      status !== 'streaming' &&
+      !isLoadingInitialMessages &&
+      !hasInitiallyScrolledRef.current
+    ) {
+      // Use setTimeout to ensure DOM is updated before scrolling
+      const timeoutId = setTimeout(() => {
+        scrollToBottom();
+        hasInitiallyScrolledRef.current = true; // Mark as scrolled
+      }, 100);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [loadedMessages.length, hasInteracted, isLoadingOlderMessages, status, isLoadingInitialMessages, scrollToBottom]);
+
+  // Reset scroll flag when conversation changes (so it scrolls for new conversations)
+  useEffect(() => {
+    hasInitiallyScrolledRef.current = false;
+  }, [conversationId]);
 
   // Auto-resize textarea using hook
   useTextareaAutoResize(textareaRef, input, {

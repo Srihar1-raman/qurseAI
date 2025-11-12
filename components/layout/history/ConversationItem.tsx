@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import type { ConversationItemProps } from '@/lib/types';
@@ -14,7 +13,6 @@ export default function ConversationItem({
   onClose 
 }: ConversationItemProps) {
   const { resolvedTheme, mounted } = useTheme();
-  const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(conversation.title);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -34,7 +32,10 @@ export default function ConversationItem({
 
   const handleChatClick = () => {
     if (!isEditing) {
-      router.push(`/conversation/${conversation.id}`);
+      // Use window.history.replaceState() for true SPA behavior (0ms, no navigation)
+      // Next.js usePathname() hook automatically detects replaceState() changes
+      // This eliminates 200-500ms navigation delay
+      window.history.replaceState({}, '', `/conversation/${conversation.id}`);
       onClose();
     }
   };

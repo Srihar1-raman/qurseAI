@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useConversation } from '@/lib/contexts/ConversationContext';
@@ -14,7 +13,6 @@ import { useTextareaAutoResize } from '@/hooks/use-textarea-auto-resize';
 export default function MainInput() {
   const [inputValue, setInputValue] = useState('');
   const inputRef = useRef<HTMLTextAreaElement>(null);
-  const router = useRouter();
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
   const { user } = useAuth();
@@ -39,10 +37,10 @@ export default function MainInput() {
       ? `/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`
       : `/conversation/temp-${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`;
     
-    // Use router.replace() instead of window.history.replaceState()
-    // This ensures Next.js router is notified and usePathname() updates correctly
-    // scroll: false prevents scroll to top, maintaining SPA behavior
-    router.replace(url, { scroll: false });
+    // Use window.history.replaceState() for true SPA behavior (0ms, no navigation)
+    // Next.js usePathname() hook automatically detects replaceState() changes
+    // This eliminates 200-500ms navigation delay
+    window.history.replaceState({}, '', url);
     
     // Clear input
     setInputValue('');
