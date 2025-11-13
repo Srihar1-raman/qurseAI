@@ -4,20 +4,23 @@ import { useState, useLayoutEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
+import { useClickOutside } from '@/hooks/use-click-outside';
 import type { ConversationItemProps } from '@/lib/types';
 
 export default function ConversationItem({ 
   conversation, 
   onRename, 
   onDelete, 
-  onClose 
+  onClose,
+  isMenuOpen,
+  onMenuToggle
 }: ConversationItemProps) {
   const { resolvedTheme, mounted } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(conversation.title);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [menuDirection, setMenuDirection] = useState<'up' | 'down'>('up');
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
+  const menuContainerRef = useRef<HTMLDivElement>(null);
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -47,12 +50,12 @@ export default function ConversationItem({
       onRename(conversation.id, editTitle.trim());
     }
     setIsEditing(false);
-    setIsMenuOpen(false);
+    onMenuToggle(); // Close menu after rename
   };
 
   const handleDelete = () => {
     onDelete(conversation.id);
-    setIsMenuOpen(false);
+    onMenuToggle(); // Close menu after delete
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -68,6 +71,12 @@ export default function ConversationItem({
   const handleBlur = () => {
     handleRename();
   };
+
+  // Close menu when clicking outside (industry standard pattern)
+  // Note: enabled flag already ensures callback only fires when menu is open
+  useClickOutside(menuContainerRef as React.RefObject<HTMLElement>, () => {
+    onMenuToggle();
+  }, isMenuOpen);
 
   // Viewport-aware menu positioning: detect available space and flip direction if needed
   // Use useLayoutEffect to calculate before paint (eliminates flash)
@@ -118,6 +127,9 @@ export default function ConversationItem({
         // If neither direction has enough space, prefer downward for first items
         setMenuDirection('down');
       }
+    } else if (!isMenuOpen) {
+      // Reset to default direction when menu closes (consistency)
+      setMenuDirection('up');
     }
   }, [isMenuOpen]);
 
@@ -150,13 +162,13 @@ export default function ConversationItem({
         </div>
         
         {/* Actions */}
-        <div className="tree-item-actions">
+        <div className="tree-item-actions" ref={menuContainerRef}>
           <button
             ref={menuTriggerRef}
             className="chat-menu-trigger"
             onClick={(e) => {
               e.stopPropagation();
-              setIsMenuOpen(!isMenuOpen);
+              onMenuToggle();
             }}
             title="More options"
           >
@@ -175,7 +187,7 @@ export default function ConversationItem({
                 e.stopPropagation();
                 setIsEditing(true);
                 setEditTitle(conversation.title);
-                setIsMenuOpen(false);
+                onMenuToggle(); // Close menu
               }}>
                 <Image 
                   src={getIconPath("rename", resolvedTheme, false, mounted)} 

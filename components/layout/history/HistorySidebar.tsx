@@ -8,7 +8,7 @@ import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useSidebar } from '@/lib/contexts/SidebarContext';
 import { createClient } from '@/lib/supabase/client';
-import { getConversations, deleteConversation, deleteAllConversations, updateConversation } from '@/lib/db/queries';
+import { getConversations, deleteConversation, deleteAllConversations, updateConversation, getConversationCount } from '@/lib/db/queries';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import HistoryHeader from './HistoryHeader';
 import HistorySearch from './HistorySearch';
@@ -36,6 +36,10 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
   const [conversationsOffset, setConversationsOffset] = useState(0); // Start at 0, updated after first load
   const [hasMoreConversations, setHasMoreConversations] = useState(true); // Assume more until proven otherwise
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [totalConversationCount, setTotalConversationCount] = useState<number | null>(null);
+  const [searchResults, setSearchResults] = useState<Conversation[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const loadConversations = useCallback(async (forceRefresh = false) => {
@@ -71,7 +75,7 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
 
   const loadMoreConversations = useCallback(async () => {
     if (!user || !user.id || isLoadingMore || !hasMoreConversations || searchQuery.trim()) {
-      return; // Don't load more if searching (search filters client-side)
+      return; // Don't load more if searching (server-side search replaces list)
     }
 
     setIsLoadingMore(true);
@@ -141,6 +145,27 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     return registerHandler(() => {});
   }, [user, registerHandler, addConversationOptimistically]);
 
+  // Fetch conversation count when sidebar opens and user is logged in
+  // Reset count when user logs out
+  useEffect(() => {
+    if (!user || !user.id) {
+      setTotalConversationCount(null);
+      return;
+    }
+
+    if (isOpen && !isAuthLoading && totalConversationCount === null) {
+      getConversationCount(user.id)
+        .then(count => {
+          setTotalConversationCount(count);
+          logger.debug('Conversation count fetched', { count });
+        })
+        .catch(err => {
+          logger.error('Failed to fetch conversation count', err);
+          // Fallback to chatHistory.length (will be updated when conversations load)
+        });
+    }
+  }, [isOpen, user, isAuthLoading, totalConversationCount]);
+
   // Load conversations when sidebar opens and user is logged in (only if not already loaded)
   useEffect(() => {
     if (isOpen && user && !isAuthLoading && !hasLoaded) {
@@ -191,6 +216,9 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
             };
             
             logger.debug('Real-time INSERT detected', { conversationId: newConv.id });
+            
+            // Update count
+            setTotalConversationCount(prev => (prev !== null ? prev + 1 : null));
             
             setChatHistory((prev) => {
               // Deduplicate: Check if already exists (prevent duplicates from optimistic + real-time)
@@ -255,6 +283,9 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
             // Conversation deleted
             const deletedId = payload.old.id as string;
             logger.debug('Real-time DELETE detected', { conversationId: deletedId });
+            
+            // Update count
+            setTotalConversationCount(prev => (prev !== null ? Math.max(0, prev - 1) : null));
             
             setChatHistory((prev) => prev.filter(c => c.id !== deletedId));
           }
@@ -337,15 +368,64 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       }));
   };
 
-  const getFilteredConversations = () => {
-    if (!searchQuery.trim()) {
-      return chatHistory;
+  // Server-side search with debouncing
+  useEffect(() => {
+    // Clear existing timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
     }
-    
-    const query = searchQuery.toLowerCase();
-    return chatHistory.filter(chat => 
-      chat.title.toLowerCase().includes(query)
-    );
+
+    const query = searchQuery.trim();
+
+    // If search is empty, clear results and restore chatHistory
+    if (!query) {
+      setSearchResults([]);
+      setIsSearching(false);
+      return;
+    }
+
+    // Debounce search (300ms)
+    setIsSearching(true);
+    searchTimeoutRef.current = setTimeout(async () => {
+      if (!user || !user.id) {
+        setIsSearching(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/conversations/search?query=${encodeURIComponent(query)}`
+        );
+
+        if (!response.ok) {
+          throw new Error('Search failed');
+        }
+
+        const { conversations } = await response.json();
+        setSearchResults(conversations || []);
+        logger.debug('Search completed', { query, resultCount: conversations?.length || 0 });
+      } catch (err) {
+        logger.error('Search error', err);
+        setError('Failed to search conversations');
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 300);
+
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, [searchQuery, user]);
+
+  // Get conversations to display (search results or paginated list)
+  const getDisplayConversations = () => {
+    if (searchQuery.trim()) {
+      return searchResults;
+    }
+    return chatHistory;
   };
 
   const handleClearHistory = async () => {
@@ -354,6 +434,8 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     try {
       await deleteAllConversations(user.id);
       setChatHistory([]);
+      setSearchResults([]);
+      setTotalConversationCount(0);
       setShowClearConfirm(false);
     } catch (err) {
       // Error handled by setError state
@@ -369,6 +451,12 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
           chat.id === id ? { ...chat, title: newTitle } : chat
         )
       );
+      // Also update search results if conversation is in search results
+      setSearchResults(prev =>
+        prev.map(chat =>
+          chat.id === id ? { ...chat, title: newTitle } : chat
+        )
+      );
     } catch (err) {
       // Error handled by component state
       setError('Failed to rename conversation');
@@ -379,14 +467,18 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     try {
       await deleteConversation(id);
       setChatHistory(prev => prev.filter(chat => chat.id !== id));
+      // Also remove from search results if conversation is in search results
+      setSearchResults(prev => prev.filter(chat => chat.id !== id));
+      // Update count (real-time subscription will also update, but this ensures immediate UI update)
+      setTotalConversationCount(prev => (prev !== null ? Math.max(0, prev - 1) : null));
     } catch (err) {
       // Error handled by component state
       setError('Failed to delete conversation');
     }
   };
 
-  const filteredConversations = getFilteredConversations();
-  const groupedConversations = groupConversations(filteredConversations);
+  const displayConversations = getDisplayConversations();
+  const groupedConversations = groupConversations(displayConversations);
 
   return (
     <>
@@ -461,8 +553,18 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
             </div>
           )}
 
-          {/* Empty State (Logged in, no conversations) */}
-          {user && chatHistory.length === 0 && !isLoading && !error && (
+          {/* Search Bar - Always show when user is logged in */}
+          {user && !isLoading && !error && (
+            <HistorySearch
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              conversationCount={totalConversationCount ?? chatHistory.length}
+              onClearHistory={() => setShowClearConfirm(true)}
+            />
+          )}
+
+          {/* Empty State (Logged in, no conversations, not searching) */}
+          {user && chatHistory.length === 0 && !isLoading && !error && !searchQuery.trim() && (
             <div className="history-empty">
               <Image 
                 src={getIconPath("history", resolvedTheme, false, mounted)} 
@@ -476,25 +578,31 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
             </div>
           )}
 
-          {/* Conversation List */}
-          {user && chatHistory.length > 0 && !isLoading && !error && (
-            <>
-              <HistorySearch
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                conversationCount={chatHistory.length}
-                onClearHistory={() => setShowClearConfirm(true)}
-              />
+          {/* Searching indicator - Show whenever searching, even if sidebar is blank */}
+          {user && isSearching && !isLoading && !error && (
+            <div style={{ 
+              padding: '16px', 
+              textAlign: 'center',
+              color: 'var(--color-text-secondary)',
+              fontSize: '14px'
+            }}>
+              Searching...
+            </div>
+          )}
 
+          {/* Conversation List */}
+          {user && displayConversations.length > 0 && !isLoading && !error && (
+            <>
               <ConversationList
                 groupedConversations={groupedConversations}
                 onRename={handleRename}
                 onDelete={handleDelete}
                 onClose={onClose}
+                isSidebarOpen={isOpen}
               />
 
               {/* Loading indicator for infinite scroll */}
-              {isLoadingMore && (
+              {isLoadingMore && !searchQuery.trim() && (
                 <div style={{ 
                   padding: '16px', 
                   textAlign: 'center',
@@ -505,6 +613,14 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
                 </div>
               )}
             </>
+          )}
+
+          {/* No search results message */}
+          {user && searchQuery.trim() && !isSearching && displayConversations.length === 0 && !isLoading && !error && (
+            <div className="history-empty">
+              <p>No conversations found</p>
+              <span>Try a different search term</span>
+            </div>
           )}
         </div>
       </div>

@@ -163,6 +163,8 @@ export interface ConversationItemProps {
   onRename: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
+  isMenuOpen: boolean;
+  onMenuToggle: () => void;
 }
 
 export interface ConversationListProps {
@@ -170,6 +172,7 @@ export interface ConversationListProps {
   onRename: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
+  isSidebarOpen: boolean;
 }
 
 export interface HistorySidebarProps {
