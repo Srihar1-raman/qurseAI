@@ -1,0 +1,1 @@
+did this whole implementation effect the time between hitting send to first streamining start, like did it add any delay or some in the process/flow

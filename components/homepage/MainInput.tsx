@@ -6,9 +6,11 @@ import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { useSidebar } from '@/lib/contexts/SidebarContext';
 import { useMobile } from '@/hooks/use-mobile';
 import { useAutoFocus } from '@/hooks/use-auto-focus';
 import { useTextareaAutoResize } from '@/hooks/use-textarea-auto-resize';
+import type { Conversation } from '@/lib/types';
 
 export default function MainInput() {
   const [inputValue, setInputValue] = useState('');
@@ -16,6 +18,7 @@ export default function MainInput() {
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
   const { user } = useAuth();
+  const { addConversationOptimistically } = useSidebar();
 
   // Use hooks for mobile detection, auto-focus, and textarea auto-resize
   const isMobile = useMobile();
@@ -31,6 +34,19 @@ export default function MainInput() {
     
     // Generate conversation ID
     const chatId = crypto.randomUUID();
+    
+    // OPTIMISTIC UPDATE: Add conversation to sidebar immediately (only for logged-in users)
+    if (user && user.id) {
+      const truncatedTitle = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
+      const optimisticConversation: Conversation = {
+        id: chatId,
+        title: truncatedTitle,
+        updated_at: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        message_count: 0,
+      };
+      addConversationOptimistically(optimisticConversation);
+    }
     
     // Construct URL with message params
     const url = user && user.id
