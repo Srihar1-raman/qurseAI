@@ -95,6 +95,78 @@ export async function getConversations(
 }
 
 /**
+ * Get total count of conversations for a user
+ * Fast COUNT query - no data transfer, just count
+ * @param userId - User ID
+ * @returns Total number of conversations
+ */
+export async function getConversationCount(userId: string): Promise<number> {
+  const supabase = createClient();
+  
+  const { count, error } = await supabase
+    .from('conversations')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (error) {
+    const userMessage = handleDbError(error, 'db/queries/getConversationCount');
+    logger.error('Error fetching conversation count', error, { userId });
+    const dbError = new Error(userMessage);
+    throw dbError;
+  }
+
+  return count || 0;
+}
+
+/**
+ * Search conversations by title (server-side search)
+ * Searches entire database, not just loaded conversations
+ * @param userId - User ID
+ * @param searchQuery - Search term (will be used with ILIKE)
+ * @returns Array of matching conversations (max 1000)
+ */
+export async function searchConversations(
+  userId: string,
+  searchQuery: string
+): Promise<Conversation[]> {
+  const supabase = createClient();
+  
+  // Sanitize search query (trim, escape special characters for ILIKE)
+  const sanitizedQuery = searchQuery.trim();
+  if (!sanitizedQuery) {
+    return [];
+  }
+
+  const { data, error } = await supabase
+    .from('conversations')
+    .select('id, title, updated_at, created_at, user_id')
+    .eq('user_id', userId)
+    .ilike('title', `%${sanitizedQuery}%`)
+    .order('updated_at', { ascending: false })
+    .limit(1000);
+
+  if (error) {
+    const userMessage = handleDbError(error, 'db/queries/searchConversations');
+    logger.error('Error searching conversations', error, { userId, searchQuery: sanitizedQuery });
+    const dbError = new Error(userMessage);
+    throw dbError;
+  }
+
+  // Map to Conversation type (no message_count needed for search results)
+  const conversations = (data || []).map(conv => ({
+    id: conv.id,
+    title: conv.title,
+    updated_at: conv.updated_at,
+    created_at: conv.created_at,
+    message_count: 0, // Not needed for search results, set to 0
+  }));
+
+  logger.debug('Search results', { userId, query: sanitizedQuery, count: conversations.length });
+
+  return conversations;
+}
+
+/**
  * Get older messages for a conversation (client-side)
  * Used for scroll-up pagination
  * @param conversationId - Conversation ID

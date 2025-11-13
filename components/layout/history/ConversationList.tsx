@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import ConversationItem from './ConversationItem';
 import type { ConversationListProps } from '@/lib/types';
 
@@ -8,9 +8,18 @@ export default function ConversationList({
   groupedConversations, 
   onRename, 
   onDelete, 
-  onClose 
+  onClose,
+  isSidebarOpen
 }: ConversationListProps) {
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+
+  // Reset menu state when sidebar closes (industry standard: cleanup on unmount/hide)
+  useEffect(() => {
+    if (!isSidebarOpen) {
+      setOpenMenuId(null);
+    }
+  }, [isSidebarOpen]);
 
   const toggleSection = (sectionLabel: string) => {
     setCollapsedSections(prev => {
@@ -23,6 +32,30 @@ export default function ConversationList({
       return newSet;
     });
   };
+
+  // Memoize to prevent unnecessary re-renders of all ConversationItem components
+  const handleMenuToggle = useCallback((conversationId: string) => {
+    // Single-menu pattern: close others when one opens
+    setOpenMenuId(prev => prev === conversationId ? null : conversationId);
+  }, []);
+
+  // Wrap onDelete to also reset menu state if deleted conversation's menu was open
+  const handleDelete = useCallback((id: string) => {
+    setOpenMenuId(prev => prev === id ? null : prev);
+    onDelete(id);
+  }, [onDelete]);
+
+  // Create a memoized map of toggle callbacks for all conversations
+  // This prevents creating new functions on every render
+  const menuToggleMap = useMemo(() => {
+    const map = new Map<string, () => void>();
+    groupedConversations.forEach(group => {
+      group.conversations.forEach(conversation => {
+        map.set(conversation.id, () => handleMenuToggle(conversation.id));
+      });
+    });
+    return map;
+  }, [groupedConversations, handleMenuToggle]);
 
   if (groupedConversations.length === 0) {
     return (
@@ -74,8 +107,10 @@ export default function ConversationList({
                   key={conversation.id}
                   conversation={conversation}
                   onRename={onRename}
-                  onDelete={onDelete}
+                  onDelete={handleDelete}
                   onClose={onClose}
+                  isMenuOpen={openMenuId === conversation.id}
+                  onMenuToggle={menuToggleMap.get(conversation.id) || (() => {})}
                 />
               ))}
             </div>

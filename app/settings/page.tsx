@@ -17,6 +17,7 @@ import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { getConversationCount } from '@/lib/db/queries';
 
 function SettingsPageContent() {
   const [activeSection, setActiveSection] = useState('accounts');
@@ -47,6 +48,20 @@ function SettingsPageContent() {
       setActiveSection('accounts');
     }
   }, [searchParams]);
+
+  // Fetch conversation count on mount
+  useEffect(() => {
+    if (mockUser && mockUser.id) {
+      getConversationCount(mockUser.id)
+        .then(count => {
+          setUserStats({ totalConversations: count });
+        })
+        .catch(err => {
+          // Silently fail - count will remain 0
+          console.error('Failed to fetch conversation count', err);
+        });
+    }
+  }, [mockUser]);
 
   // Auto-save settings when they change (debounced)
   useEffect(() => {
