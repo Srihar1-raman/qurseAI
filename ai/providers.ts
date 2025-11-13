@@ -79,6 +79,7 @@ export const qurse = customProvider({
     // GROQ MODELS (Free, Fast)
     // ============================================
     'openai/gpt-oss-120b': wrapReasoningModel(groq('openai/gpt-oss-120b')),
+    'llama-3.1-8b-instant': groq('llama-3.1-8b-instant'), // Fast title generation (no reasoning needed)
     
     // ============================================
     // XAI MODELS (Grok)

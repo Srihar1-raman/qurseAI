@@ -174,3 +174,89 @@ export async function ensureConversationServerSide(
   }
 }
 
+/**
+ * Update conversation title (server-side)
+ * Used for background title generation updates
+ */
+export async function updateConversationTitle(
+  conversationId: string,
+  title: string,
+  supabaseClient?: Awaited<ReturnType<typeof createClient>>
+): Promise<void> {
+  const supabase = supabaseClient || await createClient();
+
+  const { error } = await supabase
+    .from('conversations')
+    .update({ title, updated_at: new Date().toISOString() })
+    .eq('id', conversationId);
+
+  if (error) {
+    const userMessage = handleDbError(error, 'db/queries.server/updateConversationTitle');
+    logger.error('Error updating conversation title', error, { conversationId, title });
+    const dbError = new Error(userMessage);
+    throw dbError;
+  }
+
+  logger.debug('Conversation title updated', { conversationId, title });
+}
+
+/**
+ * Check conversation access (read-only)
+ * Validates if conversation exists and belongs to user
+ * Does NOT create conversation (unlike ensureConversationServerSide)
+ * 
+ * @param conversationId - Conversation ID to check
+ * @param userId - User ID to verify ownership
+ * @param supabaseClient - Optional Supabase client (creates one if not provided)
+ * @returns Object with exists, belongsToUser flags and conversation data if exists
+ */
+export async function checkConversationAccess(
+  conversationId: string,
+  userId: string,
+  supabaseClient?: Awaited<ReturnType<typeof createClient>>
+): Promise<{
+  exists: boolean;
+  belongsToUser: boolean;
+  error?: boolean; // Indicates database error occurred (fail-secure)
+  conversation?: { id: string; user_id: string };
+}> {
+  const supabase = supabaseClient || await createClient();
+
+  try {
+    const { data: conversation, error } = await supabase
+      .from('conversations')
+      .select('id, user_id')
+      .eq('id', conversationId)
+      .maybeSingle();
+
+    if (error) {
+      const userMessage = handleDbError(error, 'db/queries.server/checkConversationAccess');
+      logger.error('Error checking conversation access', error, { conversationId, userId });
+      // Return error flag for fail-secure handling (distinguish from "doesn't exist")
+      return { exists: false, belongsToUser: false, error: true };
+    }
+
+    if (!conversation) {
+      // Conversation does not exist (valid case - not an error)
+      return { exists: false, belongsToUser: false, error: false };
+    }
+
+    // Conversation exists - check ownership
+    const belongsToUser = conversation.user_id === userId;
+
+    return {
+      exists: true,
+      belongsToUser,
+      error: false,
+      conversation: {
+        id: conversation.id,
+        user_id: conversation.user_id,
+      },
+    };
+  } catch (error) {
+    logger.error('Error in checkConversationAccess', error, { conversationId, userId });
+    // Return error flag for fail-secure handling
+    return { exists: false, belongsToUser: false, error: true };
+  }
+}
+

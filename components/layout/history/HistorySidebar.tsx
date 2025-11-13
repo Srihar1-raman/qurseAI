@@ -6,6 +6,8 @@ import Link from 'next/link';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { useSidebar } from '@/lib/contexts/SidebarContext';
+import { createClient } from '@/lib/supabase/client';
 import { getConversations, deleteConversation, deleteAllConversations, updateConversation } from '@/lib/db/queries';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import HistoryHeader from './HistoryHeader';
@@ -13,11 +15,18 @@ import HistorySearch from './HistorySearch';
 import ConversationList from './ConversationList';
 import ClearHistoryModal from './ClearHistoryModal';
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
+import { useConversationId } from '@/hooks/use-conversation-id';
+import { createScopedLogger } from '@/lib/utils/logger';
 import type { Conversation, ConversationGroup, HistorySidebarProps } from '@/lib/types';
+
+const logger = createScopedLogger('history-sidebar');
 
 export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
   const { resolvedTheme, mounted } = useTheme();
   const { user, isLoading: isAuthLoading } = useAuth();
+  const { registerHandler } = useSidebar();
+  const conversationId = useConversationId();
+  const prevConversationIdRef = useRef<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
   const [chatHistory, setChatHistory] = useState<Conversation[]>([]);
@@ -33,6 +42,11 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     if (!user || !user.id) {
       setIsLoading(false);
       return;
+    }
+    
+    // If force refresh, reset hasLoaded to allow reload
+    if (forceRefresh) {
+      setHasLoaded(false);
     }
     
     setIsLoading(true);
@@ -104,6 +118,29 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     }
   );
 
+  // Optimistic update handler: Add conversation to sidebar immediately
+  const addConversationOptimistically = useCallback((conversation: Conversation) => {
+    setChatHistory((prev) => {
+      // Deduplicate: Check if already exists (prevent duplicates from optimistic + real-time)
+      if (prev.some(c => c.id === conversation.id)) {
+        return prev;
+      }
+      // Add to top (newest first)
+      return [conversation, ...prev];
+    });
+  }, []);
+
+  // Register optimistic update handler with context
+  useEffect(() => {
+    if (user && user.id) {
+      const unregister = registerHandler(addConversationOptimistically);
+      return unregister;
+    }
+    // If no user, unregister by registering a no-op handler
+    // This ensures the handler is cleared when user logs out
+    return registerHandler(() => {});
+  }, [user, registerHandler, addConversationOptimistically]);
+
   // Load conversations when sidebar opens and user is logged in (only if not already loaded)
   useEffect(() => {
     if (isOpen && user && !isAuthLoading && !hasLoaded) {
@@ -111,6 +148,154 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, user, isAuthLoading, hasLoaded]); // loadConversations intentionally excluded to prevent infinite re-renders
+
+  // Real-time subscription: Listen for conversation changes (INSERT, UPDATE, DELETE)
+  useEffect(() => {
+    if (!user || !user.id || !isOpen) {
+      return;
+    }
+
+    try {
+      const supabase = createClient();
+      
+      // Use unique channel name per user to avoid conflicts
+      const channelName = `conversations-${user.id}`;
+      const channel = supabase
+        .channel(channelName)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'conversations',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            // New conversation created in database
+            const dbConv = payload.new as {
+              id: string;
+              title: string;
+              updated_at: string;
+              created_at?: string;
+              user_id?: string;
+            };
+            
+            // Map to Conversation type (message_count not available in real-time payload)
+            const newConv: Conversation = {
+              id: dbConv.id,
+              title: dbConv.title,
+              updated_at: dbConv.updated_at,
+              created_at: dbConv.created_at,
+              message_count: 0, // Real-time payload doesn't include message_count
+              user_id: dbConv.user_id,
+            };
+            
+            logger.debug('Real-time INSERT detected', { conversationId: newConv.id });
+            
+            setChatHistory((prev) => {
+              // Deduplicate: Check if already exists (prevent duplicates from optimistic + real-time)
+              if (prev.some(c => c.id === newConv.id)) {
+                return prev;
+              }
+              // Add to top (newest first)
+              return [newConv, ...prev];
+            });
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'conversations',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            // Conversation updated (e.g., title generation completed)
+            const dbConv = payload.new as {
+              id: string;
+              title: string;
+              updated_at: string;
+              created_at?: string;
+              user_id?: string;
+            };
+            
+            // Map to Conversation type, preserve existing message_count if available
+            const updatedConv: Conversation = {
+              id: dbConv.id,
+              title: dbConv.title,
+              updated_at: dbConv.updated_at,
+              created_at: dbConv.created_at,
+              user_id: dbConv.user_id,
+              // Preserve message_count from existing conversation if it exists
+            };
+            
+            logger.debug('Real-time UPDATE detected', { conversationId: updatedConv.id, title: updatedConv.title });
+            
+            setChatHistory((prev) =>
+              prev.map(c => {
+                if (c.id === updatedConv.id) {
+                  // Preserve message_count from existing conversation
+                  return { ...updatedConv, message_count: c.message_count ?? 0 };
+                }
+                return c;
+              })
+            );
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'conversations',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            // Conversation deleted
+            const deletedId = payload.old.id as string;
+            logger.debug('Real-time DELETE detected', { conversationId: deletedId });
+            
+            setChatHistory((prev) => prev.filter(c => c.id !== deletedId));
+          }
+        )
+        .subscribe((status) => {
+          if (status === 'SUBSCRIBED') {
+            logger.debug('Real-time subscription active');
+          } else if (status === 'CHANNEL_ERROR') {
+            logger.error('Real-time subscription error', new Error('Channel error'));
+            // Graceful degradation: Don't break UI, cache invalidation will handle updates
+          }
+        });
+
+      return () => {
+        supabase.removeChannel(channel);
+        logger.debug('Real-time subscription cleaned up');
+      };
+    } catch (error) {
+      logger.error('Failed to set up real-time subscription', error);
+      // Graceful degradation: Don't break UI, cache invalidation will handle updates
+    }
+  }, [user, isOpen]);
+
+  // Cache invalidation: Refresh on conversation ID changes (fallback if real-time fails)
+  useEffect(() => {
+    if (
+      conversationId &&
+      conversationId !== prevConversationIdRef.current &&
+      isOpen &&
+      hasLoaded &&
+      !conversationId.startsWith('temp-')
+    ) {
+      // Invalidate cache and refresh
+      logger.debug('Cache invalidation triggered', { conversationId });
+      setHasLoaded(false);
+      loadConversations(true);
+    }
+    
+    // Update ref to track previous ID
+    prevConversationIdRef.current = conversationId;
+  }, [conversationId, isOpen, hasLoaded, loadConversations]);
 
   const getDateGroup = (timestamp: string) => {
     const date = new Date(timestamp);

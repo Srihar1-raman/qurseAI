@@ -13,6 +13,7 @@ import MainInput from '@/components/homepage/MainInput';
 import HistorySidebar from '@/components/layout/history/HistorySidebar';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversationId } from '@/hooks/use-conversation-id';
+import { SidebarProvider } from '@/lib/contexts/SidebarContext';
 
 // Lazy load ConversationClient to code split AI SDK
 // AI SDK code is only loaded when needed
@@ -57,69 +58,71 @@ export default function HomePage() {
   // Always mount ConversationClient (matching Scira's pattern)
   // Conditionally show homepage UI or ConversationClient based on conversationId
   return (
-    <div className="homepage-container">
-      <Header 
-        user={user}
-        showHistoryButton={true}
-        onHistoryClick={() => setIsHistoryOpen(true)}
-        showNewChatButton={!!conversationId}
-        onNewChatClick={handleNewChat}
-      />
-      
-      {/* Show homepage UI when no conversation */}
-      {!conversationId && (
-        <>
-      <main 
-        className="flex-1 flex flex-col justify-center items-center px-5 py-10 max-w-3xl mx-auto w-full"
-      >
-        <Hero />
+    <SidebarProvider>
+      <div className="homepage-container">
+        <Header 
+          user={user}
+          showHistoryButton={true}
+          onHistoryClick={() => setIsHistoryOpen(true)}
+          showNewChatButton={!!conversationId}
+          onNewChatClick={handleNewChat}
+        />
         
-        {/* Input comes FIRST */}
-        <div style={{ marginTop: '12px', marginBottom: '8px', width: '100%' }}>
-          <MainInput />
-        </div>
-
-        {/* Control Buttons come BELOW the input */}
-        <div 
-          className="flex gap-3 flex-wrap justify-center items-center"
-          style={{ 
-            marginTop: '0',
-            marginBottom: '0',
-          }}
+        {/* Show homepage UI when no conversation */}
+        {!conversationId && (
+          <>
+        <main 
+          className="flex-1 flex flex-col justify-center items-center px-5 py-10 max-w-3xl mx-auto w-full"
         >
-          <ModelSelector />
+          <Hero />
           
-          <DeepSearchButton />
-          
-          <WebSearchSelector
-            selectedOption={selectedSearchOption}
-            onSelectOption={setSelectedSearchOption}
+          {/* Input comes FIRST */}
+          <div style={{ marginTop: '12px', marginBottom: '8px', width: '100%' }}>
+            <MainInput />
+          </div>
+
+          {/* Control Buttons come BELOW the input */}
+          <div 
+            className="flex gap-3 flex-wrap justify-center items-center"
+            style={{ 
+              marginTop: '0',
+              marginBottom: '0',
+            }}
+          >
+            <ModelSelector />
+            
+            <DeepSearchButton />
+            
+            <WebSearchSelector
+              selectedOption={selectedSearchOption}
+              onSelectOption={setSelectedSearchOption}
+            />
+          </div>
+        </main>
+
+        <Footer />
+          </>
+        )}
+        
+        {/* Always mount ConversationClient (matching Scira's pattern) */}
+        {/* When conversationId exists, it's visible; when null, it's hidden but mounted */}
+        {/* This pre-initializes useChat hook for instant sends when conversation starts */}
+        <div style={{ display: conversationId ? 'block' : 'none' }}>
+          <ConversationClient
+            conversationId={conversationId || 'temp-new'}
+            initialMessages={[]}
+            initialHasMore={false}
+            initialDbRowCount={0}
+            hasInitialMessageParam={hasInitialMessageParam}
           />
         </div>
-      </main>
-
-      <Footer />
-        </>
-      )}
-      
-      {/* Always mount ConversationClient (matching Scira's pattern) */}
-      {/* When conversationId exists, it's visible; when null, it's hidden but mounted */}
-      {/* This pre-initializes useChat hook for instant sends when conversation starts */}
-      <div style={{ display: conversationId ? 'block' : 'none' }}>
-        <ConversationClient
-          conversationId={conversationId || 'temp-new'}
-          initialMessages={[]}
-          initialHasMore={false}
-          initialDbRowCount={0}
-          hasInitialMessageParam={hasInitialMessageParam}
+        
+        {/* History Sidebar */}
+        <HistorySidebar 
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
         />
       </div>
-      
-      {/* History Sidebar */}
-      <HistorySidebar 
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-      />
-    </div>
+    </SidebarProvider>
   );
 }

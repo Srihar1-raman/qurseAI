@@ -6,16 +6,19 @@
 import { streamText, createUIMessageStream, JsonToSseTransformStream, convertToModelMessages, type UIMessage, type UIMessagePart } from 'ai';
 import { NextResponse, after } from 'next/server';
 import { qurse } from '@/ai/providers';
-import { canUseModel, getModelParameters, getProviderOptions, getModelConfig } from '@/ai/models';
+import { canUseModel, getModelParameters, getProviderOptions, getModelConfig, requiresAuthentication, requiresProSubscription } from '@/ai/models';
 import { getChatMode } from '@/ai/config';
 import { getToolsByIds } from '@/lib/tools';
 import { createClient } from '@/lib/supabase/server';
+import { getUserData } from '@/lib/supabase/auth-utils';
 import { ModelAccessError, ChatModeError, StreamingError, ProviderError, ValidationError } from '@/lib/errors';
 import { safeValidateChatRequest } from '@/lib/validation/chat-schema';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { handleApiError } from '@/lib/utils/error-handler';
 import { sanitizeApiError } from '@/lib/utils/error-sanitizer';
 import { toUIMessageFromZod, type StreamTextProviderOptions } from '@/lib/utils/message-adapters';
+import { generateTitleFromUserMessage } from '@/lib/utils/convo-title-generation';
+import { updateConversationTitle } from '@/lib/db/queries.server';
 
 const logger = createScopedLogger('api/chat');
 
@@ -142,10 +145,14 @@ export async function POST(req: Request) {
   
   try {
     // ============================================
-    // Stage 1: Fast authentication check
+    // Stage 1: Fast authentication check (single getUser() call)
     // ============================================
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    // Single call gets both lightweight and full user data
+    // Also returns Supabase client for reuse (avoids creating it 3 times)
+    const { lightweightUser, fullUser, supabaseClient } = await getUserData();
+    
+    // Full user is already available (no promise needed)
+    const fullUserData = fullUser;
     
     // ============================================
     // Stage 2: Parse and validate request body
@@ -178,31 +185,53 @@ export async function POST(req: Request) {
     } = validationResult.data!;
     
     // ============================================
-    // Stage 3: Parallel data fetching (critical path)
+    // Stage 2.5: Early exit checks (before expensive operations)
     // ============================================
-    const [accessCheck, modeConfig] = await Promise.all([
-      // Access control check
-      (async () => {
-        const isPro = false; // TODO: Get from subscription
-        return canUseModel(model, user, isPro);
-      })(),
-      // Chat mode config (validation already verified it exists)
-      getChatMode(chatMode),
-    ]);
-    
-    logger.debug('Setup complete', { duration: `${Date.now() - requestStartTime}ms` });
-    
-    // Check access
-    if (!accessCheck.canUse) {
-      const statusCode = accessCheck.reason === 'Authentication required' ? 401 : 403;
-      logger.warn('Model access denied', { model, reason: accessCheck.reason, userId: user?.id });
-      throw new ModelAccessError(accessCheck.reason || 'Access denied', statusCode);
+    // Check auth requirements immediately to avoid wasted work
+    if (requiresAuthentication(model) && !lightweightUser) {
+      logger.warn('Early exit: Auth required', { model, userId: null });
+      throw new ModelAccessError('Authentication required', 401);
     }
     
-    // modeConfig is guaranteed to exist (validated by schema)
+    // TODO: Enable Pro check when subscription logic is implemented
+    // if (requiresProSubscription(model) && !lightweightUser?.isProUser) {
+    //   logger.warn('Early exit: Pro required', { model, userId: lightweightUser?.userId });
+    //   throw new ModelAccessError('Pro subscription required', 403);
+    // }
+    
+    // ============================================
+    // Stage 3: Start promises early (parallel execution)
+    // ============================================
+    // Get modeConfig immediately (synchronous, but start tools loading early)
+    const modeConfig = getChatMode(chatMode);
     if (!modeConfig) {
       throw new ChatModeError(`Chat mode '${chatMode}' not found`);
     }
+    
+    // Tools are loaded synchronously (getToolsByIds is fast, no promise needed)
+    // We'll get them when needed in execute block
+    
+    // Access control check (using lightweight user for fast check)
+    const accessCheckPromise = (async () => {
+      const isPro = lightweightUser?.isProUser ?? false;
+      // Convert lightweight user to User type for canUseModel
+      const userForCheck = lightweightUser ? { id: lightweightUser.userId } : null;
+      return canUseModel(model, userForCheck, isPro);
+    })();
+    
+    // Await access check (needed to determine if we can proceed)
+    const accessCheck = await accessCheckPromise;
+    
+    logger.debug('Setup complete', { duration: `${Date.now() - requestStartTime}ms` });
+    
+    // Check access (early exit already handled above, but double-check for safety)
+    if (!accessCheck.canUse) {
+      const statusCode = accessCheck.reason === 'Authentication required' ? 401 : 403;
+      logger.warn('Model access denied', { model, reason: accessCheck.reason, userId: lightweightUser?.userId });
+      throw new ModelAccessError(accessCheck.reason || 'Access denied', statusCode);
+    }
+    
+    // modeConfig already retrieved above (synchronous operation)
     
     // ============================================
     // Stage 4: Convert messages to UIMessage[] format
@@ -239,16 +268,18 @@ export async function POST(req: Request) {
     // ============================================
     // Stage 5: Stream AI response (UI stream with reasoning)
     // ============================================
-    // Create promises for operations that can run in parallel
-    // Create tools promise (modeConfig is already resolved)
-    const toolsPromise = Promise.resolve(getToolsByIds(modeConfig.enabledTools));
+    // Supabase client already available from getUserData() (reused, no extra creation)
+    // Tools are loaded synchronously when needed (getToolsByIds is fast)
     
     // Create DB operations promise (runs in parallel with other operations)
     // CRITICAL: ensureConversation must complete before saveUserMessage
     // CRITICAL: User message must be saved BEFORE streaming starts (for conversation history integrity)
     // We chain them to ensure proper order while still parallelizing with other operations
-    const dbOperationsPromise = user && conversationId && !conversationId.startsWith('temp-') && userMessageText.trim().length > 0
-      ? ensureConversation(user, conversationId, title, supabase)
+    // Full user already available (no await needed)
+    const dbOperationsPromise = (async () => {
+      const user = fullUserData;
+      if (user && conversationId && !conversationId.startsWith('temp-') && userMessageText.trim().length > 0) {
+        return ensureConversation(user, conversationId, title, supabaseClient)
           .then(convId => {
             // After conversation is ensured, save user message
             // Check conditions again (defensive programming - saveUserMessage has its own checks)
@@ -257,8 +288,28 @@ export async function POST(req: Request) {
               return { convId, saveSuccess: false };
             }
             
+            // Generate better title in BACKGROUND (non-blocking, non-critical)
+            // Only generate if message is longer than 50 chars (meaning we truncated it)
+            if (userMessageText.trim().length > 50) {
+              // Use the last message directly (already verified as user message above)
+              const lastUserMessage = uiMessages[uiMessages.length - 1];
+              
+              if (lastUserMessage && lastUserMessage.role === 'user') {
+                after(async () => {
+                  try {
+                    const betterTitle = await generateTitleFromUserMessage({ message: lastUserMessage });
+                    await updateConversationTitle(convId, betterTitle, supabaseClient);
+                    logger.debug('Title generated and updated', { conversationId: convId, title: betterTitle });
+                  } catch (error) {
+                    // Title generation is non-critical - log but don't throw
+                    logger.error('Background title generation failed', error, { conversationId: convId });
+                  }
+                });
+              }
+            }
+            
             // Return object with convId and saveSuccess flag
-            return saveUserMessage(convId, userMessageText, supabase)
+            return saveUserMessage(convId, userMessageText, supabaseClient)
               .then((saved) => ({ convId, saveSuccess: saved })) // Return actual save result
               .catch(error => {
                 // Log error but still return convId so we can use it
@@ -271,19 +322,21 @@ export async function POST(req: Request) {
             logger.error('DB operations failed', error, { conversationId });
             // Return null to allow streaming to continue even if conversation creation fails
             return null;
-          })
-      : Promise.resolve(null);
+          });
+      }
+      return null;
+    })();
 
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
         // ============================================
-        // AWAIT ALL OPERATIONS IN PARALLEL
-        // (operations started before execute() - now await together)
+        // AWAIT DB OPERATIONS (tools loaded synchronously)
         // ============================================
-        const [tools, dbResult] = await Promise.all([
-          toolsPromise,
-          dbOperationsPromise,
-        ]);
+        // Load tools synchronously (fast operation, no need for promise)
+        const tools = getToolsByIds(modeConfig.enabledTools);
+        
+        // Await DB operations (user message must be saved before streaming)
+        const dbResult = await dbOperationsPromise;
 
         // Extract convId from DB result
         // dbResult is { convId: string, saveSuccess: boolean } when successful, null when failed
@@ -321,6 +374,8 @@ export async function POST(req: Request) {
           },
           onFinish: async ({ text, reasoning, usage }) => {
             // Save assistant message in BACKGROUND (non-blocking)
+            // Full user already available (no await needed)
+            const user = fullUserData;
             if (user && convId && !convId.startsWith('temp-')) {
               after(async () => {
                 try {
@@ -332,7 +387,7 @@ export async function POST(req: Request) {
                     fullContent = `${text}|||REASONING|||${reasoningText}`;
                   }
 
-                  const { error: assistantMsgError } = await supabase
+                  const { error: assistantMsgError } = await supabaseClient
                     .from('messages')
                     .insert({
                       conversation_id: convId,
