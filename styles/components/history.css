@@ -375,8 +375,6 @@
 .chat-menu {
   position: absolute;
   right: 0;
-  top: 100%;
-  margin-top: 4px;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 8px;
@@ -384,6 +382,18 @@
   z-index: 9999;
   min-width: 140px;
   padding: 4px 0;
+}
+
+/* Menu opens upward (default, for most items) */
+.chat-menu.chat-menu-up {
+  bottom: 100%;
+  margin-bottom: 4px;
+}
+
+/* Menu opens downward (for first items when space above is limited) */
+.chat-menu.chat-menu-down {
+  top: 100%;
+  margin-top: 4px;
 }
 
 .chat-menu-item {

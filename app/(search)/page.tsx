@@ -59,70 +59,70 @@ export default function HomePage() {
   // Conditionally show homepage UI or ConversationClient based on conversationId
   return (
     <SidebarProvider>
-      <div className="homepage-container">
-        <Header 
-          user={user}
-          showHistoryButton={true}
-          onHistoryClick={() => setIsHistoryOpen(true)}
-          showNewChatButton={!!conversationId}
-          onNewChatClick={handleNewChat}
-        />
+    <div className="homepage-container">
+      <Header 
+        user={user}
+        showHistoryButton={true}
+        onHistoryClick={() => setIsHistoryOpen(true)}
+        showNewChatButton={!!conversationId}
+        onNewChatClick={handleNewChat}
+      />
+      
+      {/* Show homepage UI when no conversation */}
+      {!conversationId && (
+        <>
+      <main 
+        className="flex-1 flex flex-col justify-center items-center px-5 py-10 max-w-3xl mx-auto w-full"
+      >
+        <Hero />
         
-        {/* Show homepage UI when no conversation */}
-        {!conversationId && (
-          <>
-        <main 
-          className="flex-1 flex flex-col justify-center items-center px-5 py-10 max-w-3xl mx-auto w-full"
+        {/* Input comes FIRST */}
+        <div style={{ marginTop: '12px', marginBottom: '8px', width: '100%' }}>
+          <MainInput />
+        </div>
+
+        {/* Control Buttons come BELOW the input */}
+        <div 
+          className="flex gap-3 flex-wrap justify-center items-center"
+          style={{ 
+            marginTop: '0',
+            marginBottom: '0',
+          }}
         >
-          <Hero />
+          <ModelSelector />
           
-          {/* Input comes FIRST */}
-          <div style={{ marginTop: '12px', marginBottom: '8px', width: '100%' }}>
-            <MainInput />
-          </div>
-
-          {/* Control Buttons come BELOW the input */}
-          <div 
-            className="flex gap-3 flex-wrap justify-center items-center"
-            style={{ 
-              marginTop: '0',
-              marginBottom: '0',
-            }}
-          >
-            <ModelSelector />
-            
-            <DeepSearchButton />
-            
-            <WebSearchSelector
-              selectedOption={selectedSearchOption}
-              onSelectOption={setSelectedSearchOption}
-            />
-          </div>
-        </main>
-
-        <Footer />
-          </>
-        )}
-        
-        {/* Always mount ConversationClient (matching Scira's pattern) */}
-        {/* When conversationId exists, it's visible; when null, it's hidden but mounted */}
-        {/* This pre-initializes useChat hook for instant sends when conversation starts */}
-        <div style={{ display: conversationId ? 'block' : 'none' }}>
-          <ConversationClient
-            conversationId={conversationId || 'temp-new'}
-            initialMessages={[]}
-            initialHasMore={false}
-            initialDbRowCount={0}
-            hasInitialMessageParam={hasInitialMessageParam}
+          <DeepSearchButton />
+          
+          <WebSearchSelector
+            selectedOption={selectedSearchOption}
+            onSelectOption={setSelectedSearchOption}
           />
         </div>
-        
-        {/* History Sidebar */}
-        <HistorySidebar 
-          isOpen={isHistoryOpen}
-          onClose={() => setIsHistoryOpen(false)}
+      </main>
+
+      <Footer />
+        </>
+      )}
+      
+      {/* Always mount ConversationClient (matching Scira's pattern) */}
+      {/* When conversationId exists, it's visible; when null, it's hidden but mounted */}
+      {/* This pre-initializes useChat hook for instant sends when conversation starts */}
+      <div style={{ display: conversationId ? 'block' : 'none' }}>
+        <ConversationClient
+          conversationId={conversationId || 'temp-new'}
+          initialMessages={[]}
+          initialHasMore={false}
+          initialDbRowCount={0}
+          hasInitialMessageParam={hasInitialMessageParam}
         />
       </div>
+      
+      {/* History Sidebar */}
+      <HistorySidebar 
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
+    </div>
     </SidebarProvider>
   );
 }

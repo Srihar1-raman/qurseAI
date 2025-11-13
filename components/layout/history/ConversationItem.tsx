@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useLayoutEffect, useRef } from 'react';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
@@ -16,6 +16,8 @@ export default function ConversationItem({
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(conversation.title);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [menuDirection, setMenuDirection] = useState<'up' | 'down'>('up');
+  const menuTriggerRef = useRef<HTMLButtonElement>(null);
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -67,6 +69,58 @@ export default function ConversationItem({
     handleRename();
   };
 
+  // Viewport-aware menu positioning: detect available space and flip direction if needed
+  // Use useLayoutEffect to calculate before paint (eliminates flash)
+  useLayoutEffect(() => {
+    if (isMenuOpen && menuTriggerRef.current) {
+      const triggerRect = menuTriggerRef.current.getBoundingClientRect();
+      
+      // Find the scrollable container (.history-content) to check space relative to it
+      const scrollContainer = menuTriggerRef.current.closest('.history-content') as HTMLElement;
+      
+      let spaceAbove: number;
+      let spaceBelow: number;
+      
+      if (scrollContainer) {
+        // Calculate space relative to scroll container (not window viewport)
+        const containerRect = scrollContainer.getBoundingClientRect();
+        
+        // Find search bar container and account for its height
+        const searchContainer = scrollContainer.querySelector('.history-search-container') as HTMLElement;
+        const searchBarHeight = searchContainer ? searchContainer.getBoundingClientRect().height : 0;
+        
+        // Space above = distance from trigger to container top, minus search bar height
+        spaceAbove = triggerRect.top - containerRect.top - searchBarHeight;
+        spaceBelow = containerRect.bottom - triggerRect.bottom;
+      } else {
+        // Fallback to window viewport if container not found
+        spaceAbove = triggerRect.top;
+        spaceBelow = window.innerHeight - triggerRect.bottom;
+      }
+      
+      // Handle negative space explicitly (edge case: trigger above container)
+      if (spaceAbove < 0) {
+        setMenuDirection('down');
+        return;
+      }
+      
+      // Use estimate for calculation (menu not rendered yet in useLayoutEffect)
+      // Estimate: 2 items (~32px each) + padding (8px) = ~72px, add buffer = 80px
+      // This is accurate enough for positioning decisions
+      const estimatedMenuHeight = 80;
+      
+      // Open upward if there's enough space above, otherwise open downward
+      if (spaceAbove >= estimatedMenuHeight) {
+        setMenuDirection('up');
+      } else if (spaceBelow >= estimatedMenuHeight) {
+        setMenuDirection('down');
+      } else {
+        // If neither direction has enough space, prefer downward for first items
+        setMenuDirection('down');
+      }
+    }
+  }, [isMenuOpen]);
+
   return (
     <div className="history-tree-item">
       <div 
@@ -98,6 +152,7 @@ export default function ConversationItem({
         {/* Actions */}
         <div className="tree-item-actions">
           <button
+            ref={menuTriggerRef}
             className="chat-menu-trigger"
             onClick={(e) => {
               e.stopPropagation();
@@ -115,7 +170,7 @@ export default function ConversationItem({
           </button>
           
           {isMenuOpen && (
-            <div className="chat-menu">
+            <div className={`chat-menu chat-menu-${menuDirection}`}>
               <div className="chat-menu-item" onClick={(e) => {
                 e.stopPropagation();
                 setIsEditing(true);
