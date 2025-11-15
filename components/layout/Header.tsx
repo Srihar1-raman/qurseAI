@@ -11,6 +11,7 @@ import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropd
 import { getIconPath, getInvertedIconPath } from '@/lib/icon-utils';
 import { useClickOutside } from '@/hooks/use-click-outside';
 import type { HeaderProps } from '@/lib/types';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 function Header({
   showNewChatButton = false,
@@ -159,36 +160,14 @@ function Header({
             {/* Desktop auth buttons */}
             <div className="hidden md:flex items-center gap-2">
               <Link href="/login">
-                <button
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    background: 'var(--color-text)',
-                    color: 'var(--color-bg)',
-                    border: 'none',
-                  }}
-                >
+                <UnifiedButton variant="primary">
                   Log in
-                </button>
+                </UnifiedButton>
               </Link>
               <Link href="/signup">
-                <button
-                  style={{
-                    padding: '6px 14px',
-                    borderRadius: '6px',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    background: 'transparent',
-                    color: 'var(--color-text)',
-                    border: '1px solid var(--color-border)',
-                  }}
-                  className="hover:bg-bg-hover"
-                >
+                <UnifiedButton variant="secondary">
                   Sign up
-                </button>
+                </UnifiedButton>
               </Link>
             </div>
           </>

@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import type { GeneralSectionProps } from '@/lib/types';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 export default function GeneralSection({ 
   autoSaveConversations, 
@@ -114,14 +115,14 @@ export default function GeneralSection({
             )}
           </div>
           {user && (
-            <button 
-              className={`settings-btn-secondary-small ${isSaving ? 'loading' : ''}`}
+            <UnifiedButton 
+              variant="secondary"
               onClick={onSaveSettings}
               disabled={isSaving}
               title="Manually save settings"
             >
               {isSaving ? 'Saving...' : 'Save'}
-            </button>
+            </UnifiedButton>
           )}
         </div>
       </div>

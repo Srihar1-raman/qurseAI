@@ -2,6 +2,8 @@
 
 import React, { Component, ReactNode } from 'react';
 import { handleClientError } from '@/lib/utils/error-handler';
+import { Modal } from '@/components/ui/Modal';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -112,7 +114,8 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
 
 /**
  * Default Error Fallback UI
- * Theme-aware error display with "Go Home" button
+ * Theme-aware error display with "Go Home" and "Try Again" buttons
+ * Uses unified Modal and UnifiedButton components
  */
 function DefaultErrorFallback({ 
   error, 
@@ -133,28 +136,12 @@ function DefaultErrorFallback({
   const userMessage = handleClientError(error, 'error-boundary-ui');
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '2rem',
-        background: 'var(--color-bg)',
-        color: 'var(--color-text)',
-      }}
+    <Modal 
+      isOpen={true} 
+      onClose={() => {}} 
+      maxWidth="600px"
     >
-      <div
-        style={{
-          maxWidth: '600px',
-          width: '100%',
-          padding: '2rem',
-          borderRadius: '12px',
-          border: '2px solid var(--color-border)',
-          background: 'var(--color-bg-secondary)',
-          textAlign: 'center',
-        }}
-      >
+      <div style={{ textAlign: 'center' }}>
         <h1
           style={{
             fontSize: '24px',
@@ -198,58 +185,16 @@ function DefaultErrorFallback({
             flexWrap: 'wrap',
           }}
         >
-          <button
-            onClick={handleGoHome}
-            style={{
-              padding: '12px 24px',
-              borderRadius: '8px',
-              border: '1px solid var(--color-primary)',
-              background: 'var(--color-primary)',
-              color: 'white',
-              fontSize: '14px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--color-primary-hover)';
-              e.currentTarget.style.borderColor = 'var(--color-primary-hover)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--color-primary)';
-              e.currentTarget.style.borderColor = 'var(--color-primary)';
-            }}
-          >
+          <UnifiedButton variant="success" onClick={handleGoHome}>
             Go Home
-          </button>
+          </UnifiedButton>
 
-          <button
-            onClick={onReset}
-            style={{
-              padding: '12px 24px',
-              borderRadius: '8px',
-              border: '1px solid var(--color-border)',
-              background: 'var(--color-bg)',
-              color: 'var(--color-text)',
-              fontSize: '14px',
-              fontWeight: 500,
-              cursor: 'pointer',
-              transition: 'all 0.2s',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--color-bg-hover)';
-              e.currentTarget.style.borderColor = 'var(--color-border-hover)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--color-bg)';
-              e.currentTarget.style.borderColor = 'var(--color-border)';
-            }}
-          >
+          <UnifiedButton variant="secondary" onClick={onReset}>
             Try Again
-          </button>
+          </UnifiedButton>
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }
 
