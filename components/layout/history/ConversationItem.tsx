@@ -2,7 +2,9 @@
 
 import { useState, useLayoutEffect, useRef } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
+import { useOptimisticNavigation } from '@/hooks/use-optimistic-navigation';
 import { getIconPath } from '@/lib/icon-utils';
 import { useClickOutside } from '@/hooks/use-click-outside';
 import type { ConversationItemProps } from '@/lib/types';
@@ -15,6 +17,8 @@ export default function ConversationItem({
   isMenuOpen,
   onMenuToggle
 }: ConversationItemProps) {
+  const router = useRouter();
+  const { navigateOptimistically } = useOptimisticNavigation();
   const { resolvedTheme, mounted } = useTheme();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(conversation.title);
@@ -37,10 +41,8 @@ export default function ConversationItem({
 
   const handleChatClick = () => {
     if (!isEditing) {
-      // Use window.history.replaceState() for true SPA behavior (0ms, no navigation)
-      // Next.js usePathname() hook automatically detects replaceState() changes
-      // This eliminates 200-500ms navigation delay
-      window.history.replaceState({}, '', `/conversation/${conversation.id}`);
+      // Use optimistic navigation for instant skeleton feedback
+      navigateOptimistically(`/conversation/${conversation.id}`);
       onClose();
     }
   };
@@ -138,6 +140,7 @@ export default function ConversationItem({
       <div 
         className="tree-item-content"
         onClick={handleChatClick}
+        onMouseEnter={() => !isEditing && router.prefetch(`/conversation/${conversation.id}`)}
         style={{ cursor: isEditing ? 'default' : 'pointer' }}
       >
         <div className="tree-item-main">

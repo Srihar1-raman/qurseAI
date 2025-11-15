@@ -19,7 +19,6 @@ export default function GeneralSection({
 
   const handleThemeChange = async (newTheme: 'light' | 'dark' | 'auto') => {
     setTheme(newTheme);
-    console.log('Theme changed to:', newTheme);
   };
 
   return (

@@ -1,14 +1,15 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useSidebar } from '@/lib/contexts/SidebarContext';
+import { useHistorySidebar } from '@/lib/contexts/HistorySidebarContext';
 import { createClient } from '@/lib/supabase/client';
-import { getConversations, deleteConversation, deleteAllConversations, updateConversation, getConversationCount } from '@/lib/db/queries';
+import { deleteConversation, deleteAllConversations, updateConversation } from '@/lib/db/queries';
 import { LoadingSkeleton } from '@/components/ui/LoadingSkeleton';
 import HistoryHeader from './HistoryHeader';
 import HistorySearch from './HistorySearch';
@@ -21,7 +22,49 @@ import type { Conversation, ConversationGroup, HistorySidebarProps } from '@/lib
 
 const logger = createScopedLogger('history-sidebar');
 
-export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
+// Helper function to get date group (moved outside component for performance)
+  const getDateGroup = (timestamp: string) => {
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) {
+      return 'Today';
+    } else if (diffInHours < 24) {
+      return 'Last 24 hours';
+    } else if (diffInHours < 168) {
+      return 'Last 7 days';
+    } else if (diffInHours < 720) {
+      return 'Last 30 days';
+    } else {
+      return 'Older';
+    }
+  };
+
+// Helper function to group conversations (moved outside component for performance)
+  const groupConversations = (conversations: Conversation[]): ConversationGroup[] => {
+    const groups: Record<string, Conversation[]> = {};
+    
+    conversations.forEach(conversation => {
+      const group = getDateGroup(conversation.updated_at);
+      if (!groups[group]) {
+        groups[group] = [];
+      }
+      groups[group].push(conversation);
+    });
+
+    const groupOrder = ['Today', 'Last 24 hours', 'Last 7 days', 'Last 30 days', 'Older'];
+    return groupOrder
+      .filter(group => groups[group])
+      .map(group => ({
+        label: group,
+        conversations: groups[group].sort((a, b) => 
+          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+        )
+      }));
+  };
+
+function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
   const { resolvedTheme, mounted } = useTheme();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { registerHandler } = useSidebar();
@@ -29,92 +72,40 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
   const prevConversationIdRef = useRef<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [chatHistory, setChatHistory] = useState<Conversation[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [hasLoaded, setHasLoaded] = useState(false);
-  const [conversationsOffset, setConversationsOffset] = useState(0); // Start at 0, updated after first load
-  const [hasMoreConversations, setHasMoreConversations] = useState(true); // Assume more until proven otherwise
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [totalConversationCount, setTotalConversationCount] = useState<number | null>(null);
-  const [searchResults, setSearchResults] = useState<Conversation[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const loadConversations = useCallback(async (forceRefresh = false) => {
-    if (!user || !user.id) {
-      setIsLoading(false);
-      return;
-    }
-    
-    // If force refresh, reset hasLoaded to allow reload
-    if (forceRefresh) {
-      setHasLoaded(false);
-    }
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      const { conversations, hasMore } = await getConversations(user.id, { limit: 50 });
-      setChatHistory(conversations || []);
-      setHasLoaded(true);
-      // Set offset to actual count loaded (in case we got fewer than 50)
-      setConversationsOffset(conversations.length);
-      setHasMoreConversations(hasMore); // Use DB result, not inferred
-    } catch (err) {
-      setError('Failed to load conversations');
-      setChatHistory([]);
-      setHasLoaded(false);
-      setHasMoreConversations(false);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [user]);
+  // Get state and actions from context
+  const {
+    chatHistory,
+    hasLoaded,
+    totalConversationCount,
+    searchResults,
+    isLoading,
+    error,
+    conversationsOffset,
+    hasMoreConversations,
+    isLoadingMore,
+    loadConversations,
+    loadMoreConversations,
+    setChatHistory,
+    setTotalConversationCount,
+    setSearchResults,
+    setError,
+  } = useHistorySidebar();
 
-  const loadMoreConversations = useCallback(async () => {
-    if (!user || !user.id || isLoadingMore || !hasMoreConversations || searchQuery.trim()) {
-      return; // Don't load more if searching (server-side search replaces list)
-    }
-
-    setIsLoadingMore(true);
-
-    try {
-      const { conversations: moreConversations, hasMore } = await getConversations(user.id, { 
-        limit: 50, 
-        offset: conversationsOffset 
-      });
-
-      // Update hasMoreConversations based on DB result
-      setHasMoreConversations(hasMore);
-
-      if (moreConversations.length > 0) {
-        // Deduplicate conversations by ID to prevent duplicate keys
-        // This handles edge cases where conversations might appear in multiple pages
-        // (e.g., if a conversation was updated between loads, causing it to shift positions)
-        setChatHistory((prev) => {
-          const existingIds = new Set(prev.map(conv => conv.id));
-          const newConversations = moreConversations.filter(conv => !existingIds.has(conv.id));
-          return [...prev, ...newConversations];
-        });
-        // Increase offset by actual number returned from DB (not deduplicated count)
-        // This ensures correct pagination even if there are duplicates
-        // The deduplication above prevents React key errors, but offset tracks DB queries
-        setConversationsOffset((prev) => prev + moreConversations.length);
-      }
-    } catch (err) {
-      setHasMoreConversations(false); // Stop trying on error
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [user, conversationsOffset, isLoadingMore, hasMoreConversations, searchQuery]);
 
 
   // Infinite scroll detection using hook
   useInfiniteScroll(
     contentRef,
-    loadMoreConversations,
+    () => {
+      // Don't load more if searching (server-side search replaces list)
+    if (!searchQuery.trim()) {
+        loadMoreConversations();
+      }
+    },
     {
       threshold: 200,
       direction: 'bottom',
@@ -128,11 +119,13 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       // Deduplicate: Check if already exists (prevent duplicates from optimistic + real-time)
       if (prev.some(c => c.id === conversation.id)) {
         return prev;
-      }
+    }
       // Add to top (newest first)
       return [conversation, ...prev];
     });
-  }, []);
+    // Increment count optimistically (real-time will also update, but this ensures immediate UI feedback)
+    setTotalConversationCount(prev => (prev !== null ? prev + 1 : null));
+  }, [setChatHistory, setTotalConversationCount]);
 
   // Register optimistic update handler with context
   useEffect(() => {
@@ -145,26 +138,6 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     return registerHandler(() => {});
   }, [user, registerHandler, addConversationOptimistically]);
 
-  // Fetch conversation count when sidebar opens and user is logged in
-  // Reset count when user logs out
-  useEffect(() => {
-    if (!user || !user.id) {
-      setTotalConversationCount(null);
-      return;
-    }
-
-    if (isOpen && !isAuthLoading && totalConversationCount === null) {
-      getConversationCount(user.id)
-        .then(count => {
-          setTotalConversationCount(count);
-          logger.debug('Conversation count fetched', { count });
-        })
-        .catch(err => {
-          logger.error('Failed to fetch conversation count', err);
-          // Fallback to chatHistory.length (will be updated when conversations load)
-        });
-    }
-  }, [isOpen, user, isAuthLoading, totalConversationCount]);
 
   // Load conversations when sidebar opens and user is logged in (only if not already loaded)
   useEffect(() => {
@@ -217,14 +190,14 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
             
             logger.debug('Real-time INSERT detected', { conversationId: newConv.id });
             
-            // Update count
-            setTotalConversationCount(prev => (prev !== null ? prev + 1 : null));
-            
             setChatHistory((prev) => {
               // Deduplicate: Check if already exists (prevent duplicates from optimistic + real-time)
-              if (prev.some(c => c.id === newConv.id)) {
+              const alreadyExists = prev.some(c => c.id === newConv.id);
+              if (alreadyExists) {
                 return prev;
               }
+              // Update count only if conversation is new (not from optimistic update)
+              setTotalConversationCount(prevCount => (prevCount !== null ? prevCount + 1 : null));
               // Add to top (newest first)
               return [newConv, ...prev];
             });
@@ -307,7 +280,7 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       logger.error('Failed to set up real-time subscription', error);
       // Graceful degradation: Don't break UI, cache invalidation will handle updates
     }
-  }, [user, isOpen]);
+  }, [user, isOpen, setChatHistory, setTotalConversationCount]);
 
   // Cache invalidation: Refresh on conversation ID changes (fallback if real-time fails)
   useEffect(() => {
@@ -320,53 +293,12 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     ) {
       // Invalidate cache and refresh
       logger.debug('Cache invalidation triggered', { conversationId });
-      setHasLoaded(false);
       loadConversations(true);
     }
     
     // Update ref to track previous ID
     prevConversationIdRef.current = conversationId;
   }, [conversationId, isOpen, hasLoaded, loadConversations]);
-
-  const getDateGroup = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
-    if (diffInHours < 1) {
-      return 'Today';
-    } else if (diffInHours < 24) {
-      return 'Last 24 hours';
-    } else if (diffInHours < 168) {
-      return 'Last 7 days';
-    } else if (diffInHours < 720) {
-      return 'Last 30 days';
-    } else {
-      return 'Older';
-    }
-  };
-
-  const groupConversations = (conversations: Conversation[]): ConversationGroup[] => {
-    const groups: Record<string, Conversation[]> = {};
-    
-    conversations.forEach(conversation => {
-      const group = getDateGroup(conversation.updated_at);
-      if (!groups[group]) {
-        groups[group] = [];
-      }
-      groups[group].push(conversation);
-    });
-
-    const groupOrder = ['Today', 'Last 24 hours', 'Last 7 days', 'Last 30 days', 'Older'];
-    return groupOrder
-      .filter(group => groups[group])
-      .map(group => ({
-        label: group,
-        conversations: groups[group].sort((a, b) => 
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-        )
-      }));
-  };
 
   // Server-side search with debouncing
   useEffect(() => {
@@ -418,17 +350,23 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
         clearTimeout(searchTimeoutRef.current);
       }
     };
-  }, [searchQuery, user]);
+  }, [searchQuery, user, setSearchResults, setError]);
 
-  // Get conversations to display (search results or paginated list)
-  const getDisplayConversations = () => {
+  // Memoize display conversations (search results vs chatHistory)
+  const displayConversations = useMemo(() => {
     if (searchQuery.trim()) {
       return searchResults;
     }
     return chatHistory;
-  };
+  }, [searchQuery, searchResults, chatHistory]);
 
-  const handleClearHistory = async () => {
+  // Memoize grouped conversations (expensive: loops, sorts, filters)
+  const groupedConversations = useMemo(() => {
+    return groupConversations(displayConversations);
+  }, [displayConversations]);
+
+  // Wrap handleClearHistory with useCallback for stable reference
+  const handleClearHistory = useCallback(async () => {
     if (!user || !user.id) return;
     
     try {
@@ -441,9 +379,10 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       // Error handled by setError state
       setError('Failed to clear history');
     }
-  };
+  }, [user?.id, setChatHistory, setSearchResults, setTotalConversationCount, setError]);
 
-  const handleRename = async (id: string, newTitle: string) => {
+  // Wrap handleRename with useCallback for stable reference
+  const handleRename = useCallback(async (id: string, newTitle: string) => {
     try {
       await updateConversation(id, { title: newTitle });
       setChatHistory(prev => 
@@ -453,7 +392,7 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       );
       // Also update search results if conversation is in search results
       setSearchResults(prev =>
-        prev.map(chat =>
+        prev.map(chat => 
           chat.id === id ? { ...chat, title: newTitle } : chat
         )
       );
@@ -461,9 +400,10 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       // Error handled by component state
       setError('Failed to rename conversation');
     }
-  };
+  }, [setChatHistory, setSearchResults, setError]);
 
-  const handleDelete = async (id: string) => {
+  // Wrap handleDelete with useCallback for stable reference
+  const handleDelete = useCallback(async (id: string) => {
     try {
       await deleteConversation(id);
       setChatHistory(prev => prev.filter(chat => chat.id !== id));
@@ -475,10 +415,7 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
       // Error handled by component state
       setError('Failed to delete conversation');
     }
-  };
-
-  const displayConversations = getDisplayConversations();
-  const groupedConversations = groupConversations(displayConversations);
+  }, [setChatHistory, setSearchResults, setTotalConversationCount, setError]);
 
   return (
     <>
@@ -498,7 +435,7 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
         <div className="history-content" ref={contentRef}>
           {/* Loading State */}
           {isLoading && (
-            <div style={{ padding: '20px' }}>
+            <div className="history-tree-list">
               <LoadingSkeleton variant="conversation" count={5} />
             </div>
           )}
@@ -633,3 +570,14 @@ export default function HistorySidebar({ isOpen, onClose }: HistorySidebarProps)
     </>
   );
 }
+
+// Custom comparison function for React.memo()
+// Only re-render if isOpen or onClose changes
+const areEqual = (prevProps: HistorySidebarProps, nextProps: HistorySidebarProps) => {
+  return (
+    prevProps.isOpen === nextProps.isOpen &&
+    prevProps.onClose === nextProps.onClose
+  );
+};
+
+export default memo(HistorySidebar, areEqual);

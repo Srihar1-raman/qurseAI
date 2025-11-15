@@ -1,7 +1,8 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, useRef, ReactNode } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { getUserLinkedProviders } from '@/lib/db/queries';
 import type { User } from '@/lib/types';
 import type { Session } from '@supabase/supabase-js';
 import { createScopedLogger } from '@/lib/utils/logger';
@@ -13,6 +14,8 @@ interface AuthContextType {
   session: Session | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  linkedProviders: string[];
+  isLoadingProviders: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -22,6 +25,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [linkedProviders, setLinkedProviders] = useState<string[]>([]);
+  const [isLoadingProviders, setIsLoadingProviders] = useState(false);
+  const providersFetchInitiatedRef = useRef(false);
+  const lastUserIdRef = useRef<string | null>(null);
 
   // Check if Supabase env vars are available
   const hasSupabaseConfig = 
@@ -47,12 +54,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (initialSession?.user) {
           // Use session metadata directly (no DB fetch needed)
-          setUser({
+          const userData = {
             id: initialSession.user.id,
             email: initialSession.user.email!,
             name: initialSession.user.user_metadata?.full_name || initialSession.user.user_metadata?.name,
             avatar_url: initialSession.user.user_metadata?.avatar_url,
-          });
+            created_at: initialSession.user.created_at,
+          };
+          setUser(userData);
+          
+          // Reset providers fetch if user changed
+          if (lastUserIdRef.current !== userData.id) {
+            providersFetchInitiatedRef.current = false;
+            lastUserIdRef.current = userData.id;
+          }
+          
+          // Fetch linked providers once when user loads (cached across navigations)
+          if (!providersFetchInitiatedRef.current) {
+            providersFetchInitiatedRef.current = true;
+            setIsLoadingProviders(true);
+            getUserLinkedProviders()
+              .then(providers => {
+                setLinkedProviders(providers);
+                setIsLoadingProviders(false);
+              })
+              .catch(error => {
+                logger.error('Failed to load linked providers', error);
+                setIsLoadingProviders(false);
+                providersFetchInitiatedRef.current = false; // Allow retry
+              });
+          }
         }
       } catch (error) {
         logger.error('Auth initialization error', error);
@@ -71,14 +102,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         if (newSession?.user) {
           // Use session metadata directly (no DB fetch needed)
-          setUser({
+          const userData = {
             id: newSession.user.id,
             email: newSession.user.email!,
             name: newSession.user.user_metadata?.full_name || newSession.user.user_metadata?.name,
             avatar_url: newSession.user.user_metadata?.avatar_url,
-          });
+            created_at: newSession.user.created_at,
+          };
+          setUser(userData);
+          
+          // Reset providers fetch if user changed (handles user switch scenario)
+          if (lastUserIdRef.current !== userData.id) {
+            providersFetchInitiatedRef.current = false;
+            setLinkedProviders([]); // Clear old user's providers
+            lastUserIdRef.current = userData.id;
+          }
+          
+          // Fetch linked providers if not already loaded (user changed)
+          if (!providersFetchInitiatedRef.current) {
+            providersFetchInitiatedRef.current = true;
+            setIsLoadingProviders(true);
+            getUserLinkedProviders()
+              .then(providers => {
+                setLinkedProviders(providers);
+                setIsLoadingProviders(false);
+              })
+              .catch(error => {
+                logger.error('Failed to load linked providers', error);
+                setIsLoadingProviders(false);
+                providersFetchInitiatedRef.current = false; // Allow retry
+              });
+          }
         } else {
           setUser(null);
+          setLinkedProviders([]);
+          providersFetchInitiatedRef.current = false;
+          lastUserIdRef.current = null;
         }
 
         // Set loading to false after auth state change is processed
@@ -98,6 +157,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signOut();
       setUser(null);
       setSession(null);
+      setLinkedProviders([]);
+      providersFetchInitiatedRef.current = false;
+      lastUserIdRef.current = null;
     } catch (error) {
       logger.error('Error signing out', error);
     }
@@ -110,6 +172,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         isLoading,
         isAuthenticated: !!user,
+        linkedProviders,
+        isLoadingProviders,
         signOut
       }}
     >

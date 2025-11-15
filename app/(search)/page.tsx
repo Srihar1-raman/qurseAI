@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Header from '@/components/layout/Header';
@@ -13,7 +13,6 @@ import MainInput from '@/components/homepage/MainInput';
 import HistorySidebar from '@/components/layout/history/HistorySidebar';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversationId } from '@/hooks/use-conversation-id';
-import { SidebarProvider } from '@/lib/contexts/SidebarContext';
 
 // Lazy load ConversationClient to code split AI SDK
 // AI SDK code is only loaded when needed
@@ -48,22 +47,31 @@ export default function HomePage() {
     return !!searchParams.get('message');
   }, [searchParams]);
 
-  // Handle New Chat button click
-  const handleNewChat = () => {
+  // Wrap handleNewChat with useCallback for stable reference
+  const handleNewChat = useCallback(() => {
     // Update URL instantly (no navigation)
     window.history.replaceState({}, '', '/');
     // HomePage will detect URL change via usePathname() and show homepage UI
-  };
+  }, []);
+
+  // Wrap onHistoryClick with useCallback for stable reference
+  const handleHistoryClick = useCallback(() => {
+    setIsHistoryOpen(true);
+  }, []);
+
+  // Wrap onClose with useCallback for stable reference
+  const handleHistoryClose = useCallback(() => {
+    setIsHistoryOpen(false);
+  }, []);
 
   // Always mount ConversationClient (matching Scira's pattern)
   // Conditionally show homepage UI or ConversationClient based on conversationId
   return (
-    <SidebarProvider>
     <div className="homepage-container">
       <Header 
         user={user}
         showHistoryButton={true}
-        onHistoryClick={() => setIsHistoryOpen(true)}
+        onHistoryClick={handleHistoryClick}
         showNewChatButton={!!conversationId}
         onNewChatClick={handleNewChat}
       />
@@ -120,9 +128,8 @@ export default function HomePage() {
       {/* History Sidebar */}
       <HistorySidebar 
         isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
+        onClose={handleHistoryClose}
       />
     </div>
-    </SidebarProvider>
   );
 }

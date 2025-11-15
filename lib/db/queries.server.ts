@@ -201,6 +201,30 @@ export async function updateConversationTitle(
 }
 
 /**
+ * Get total count of conversations for a user (server-side)
+ * Fast COUNT query - no data transfer, just count
+ * @param userId - User ID
+ * @returns Total number of conversations
+ */
+export async function getConversationCountServerSide(userId: string): Promise<number> {
+  const supabase = await createClient();
+
+  const { count, error } = await supabase
+    .from('conversations')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId);
+
+  if (error) {
+    const userMessage = handleDbError(error, 'db/queries.server/getConversationCountServerSide');
+    logger.error('Error fetching conversation count', error, { userId });
+    const dbError = new Error(userMessage);
+    throw dbError;
+  }
+
+  return count || 0;
+}
+
+/**
  * Check conversation access (read-only)
  * Validates if conversation exists and belongs to user
  * Does NOT create conversation (unlike ensureConversationServerSide)

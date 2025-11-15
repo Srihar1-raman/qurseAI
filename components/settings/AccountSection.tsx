@@ -1,10 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
-import { getUserLinkedProviders } from '@/lib/db/queries';
+import { useAuth } from '@/lib/contexts/AuthContext';
 import type { AccountSectionProps } from '@/lib/types';
 
 export default function AccountSection({ 
@@ -15,34 +14,8 @@ export default function AccountSection({
   onDeleteAccount 
 }: AccountSectionProps) {
   const { resolvedTheme, mounted } = useTheme();
-  const [linkedProviders, setLinkedProviders] = useState<string[]>([]);
-  const [isLoadingProviders, setIsLoadingProviders] = useState(true);
-
-  // Fetch linked providers from Supabase on mount
-  useEffect(() => {
-    if (!user) {
-      setIsLoadingProviders(false);
-      return;
-    }
-
-    // Add timeout to prevent hanging
-    const timeoutId = setTimeout(() => {
-      console.error('Timeout loading linked providers');
-      setIsLoadingProviders(false);
-    }, 5000);
-
-    getUserLinkedProviders()
-      .then(providers => {
-        clearTimeout(timeoutId);
-        setLinkedProviders(providers);
-        setIsLoadingProviders(false);
-      })
-      .catch(error => {
-        clearTimeout(timeoutId);
-        console.error('Failed to load linked providers:', error);
-        setIsLoadingProviders(false);
-      });
-  }, [user]);
+  // Get linked providers from AuthContext (cached across navigations)
+  const { linkedProviders, isLoadingProviders } = useAuth();
 
   // Get primary provider (first one) for "Connected via..." text
   const getPrimaryProvider = (): string => {
@@ -174,7 +147,11 @@ export default function AccountSection({
         <div className="settings-item">
           <div className="settings-item-content">
             <h4>Account Created</h4>
-            <p>Recently</p>
+            <p>
+              {user.created_at
+                ? `${new Date(user.created_at).toLocaleDateString()} at ${new Date(user.created_at).toLocaleTimeString()}`
+                : 'Recently'}
+            </p>
           </div>
         </div>
         <div className="settings-item">
