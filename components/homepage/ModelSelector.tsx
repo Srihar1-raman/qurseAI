@@ -272,14 +272,6 @@ export default function ModelSelector() {
                               </div>
                             )}
 
-                            {isDisabled && (
-                              <div 
-                                className="text-[10px] px-1.5 py-0.5 rounded bg-red-500/10 text-red-600 dark:text-red-400 font-semibold"
-                                title={accessCheck.reason}
-                              >
-                                🔒
-                              </div>
-                            )}
                           </div>
                         </div>
                       </div>

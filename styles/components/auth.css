@@ -37,7 +37,7 @@
 .auth-logo {
   font-size: 72px;
   margin-bottom: 40px;
-  font-weight: 800;
+  font-weight: 400;
   color: var(--color-text);
   text-decoration: none;
   cursor: pointer;
