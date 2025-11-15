@@ -41,6 +41,9 @@ export function useTextareaAutoResize(
   const [isMultiline, setIsMultiline] = useState(false);
   const isMobile = useMobile(); // Reuse mobile hook
   
+  // Track previous multiline state to detect changes (replaces fragile padding detection)
+  const prevIsMultilineRef = useRef(false);
+  
   // Store callback in ref to avoid re-subscribing on every render
   const onMultilineChangeRef = useRef(onMultilineChange);
   
@@ -48,6 +51,11 @@ export function useTextareaAutoResize(
   useEffect(() => {
     onMultilineChangeRef.current = onMultilineChange;
   }, [onMultilineChange]);
+  
+  // Initialize prevIsMultilineRef with current state on mount
+  useEffect(() => {
+    prevIsMultilineRef.current = isMultiline;
+  }, []);
   
   useEffect(() => {
     if (!textareaRef.current) return;
@@ -82,6 +90,67 @@ export function useTextareaAutoResize(
         textareaRef.current.style.height = 'auto';
         const scrollHeight = textareaRef.current.scrollHeight;
         
+        // Determine if multiline (only if multilineThreshold is provided)
+        let shouldBeMultiline = false;
+        let willMultilineStateChange = false;
+        
+        if (multilineThreshold !== undefined) {
+          shouldBeMultiline = scrollHeight >= multilineThreshold || isMobile;
+          
+          // Check if multiline state will change using ref (replaces fragile padding detection)
+          willMultilineStateChange = prevIsMultilineRef.current !== shouldBeMultiline;
+          
+          // Update state - this will trigger React re-render with new padding
+          setIsMultiline((prev) => {
+            if (prev !== shouldBeMultiline) {
+              onMultilineChangeRef.current?.(shouldBeMultiline);
+              return shouldBeMultiline;
+            }
+            return prev;
+          });
+        }
+        
+        // If multiline state will change, skip height calculation here
+        // The isMultiline useEffect will recalculate with correct padding after React applies it
+        // This prevents setting height with wrong padding, which causes visual glitches
+        if (willMultilineStateChange) {
+          return; // Skip height calculation - let isMultiline useEffect handle it
+        }
+        
+        // Calculate height with CURRENT padding (multiline state didn't change)
+        const newHeight = Math.min(scrollHeight, maxHeight);
+        const finalHeight = minHeight !== undefined 
+          ? Math.max(newHeight, minHeight)
+          : newHeight;
+        
+        textareaRef.current.style.height = finalHeight + 'px';
+        
+        // Scroll to bottom if content exceeds max height
+        if (scrollHeight > maxHeight) {
+          textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+        }
+      });
+    });
+  }, [value, maxHeight, minHeight, multilineThreshold, isMobile, textareaRef]);
+  
+  // Recalculate height when isMultiline changes (padding change affects scrollHeight)
+  // Recalculate immediately since padding changes are now instant (no transition)
+  // Only recalculate when isMultiline actually changes, not on every render
+  useEffect(() => {
+    if (!textareaRef.current || !value || value.trim() === '') return;
+    
+    // Only recalculate if state actually changed (prevents unnecessary recalculations)
+    if (prevIsMultilineRef.current === isMultiline) return;
+    
+    // Use requestAnimationFrame to ensure DOM has updated with new padding
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (!textareaRef.current) return;
+        
+        // Reset height to auto to get accurate scrollHeight with new padding
+        textareaRef.current.style.height = 'auto';
+        const scrollHeight = textareaRef.current.scrollHeight;
+        
         // Calculate new height (clamped to maxHeight)
         const newHeight = Math.min(scrollHeight, maxHeight);
         
@@ -92,27 +161,16 @@ export function useTextareaAutoResize(
         
         textareaRef.current.style.height = finalHeight + 'px';
         
-        // Determine if multiline (only if multilineThreshold is provided)
-        if (multilineThreshold !== undefined) {
-          const shouldBeMultiline = scrollHeight > multilineThreshold || isMobile;
-          
-          // Update state only if changed to avoid unnecessary re-renders
-          setIsMultiline((prev) => {
-            if (prev !== shouldBeMultiline) {
-              onMultilineChangeRef.current?.(shouldBeMultiline);
-              return shouldBeMultiline;
-            }
-            return prev;
-          });
-        }
-        
         // Scroll to bottom if content exceeds max height
         if (scrollHeight > maxHeight) {
           textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
         }
+        
+        // Update ref to track the new state
+        prevIsMultilineRef.current = isMultiline;
       });
     });
-  }, [value, maxHeight, minHeight, multilineThreshold, isMobile, textareaRef]);
+  }, [isMultiline, maxHeight, minHeight, value]);
   
   return { isMultiline };
 }

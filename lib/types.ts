@@ -9,6 +9,17 @@ import type { UIMessagePart } from 'ai';
 // User & Authentication Types
 // ============================================
 
+/**
+ * Supabase user metadata structure
+ * Based on OAuth provider responses (GitHub, Google, Twitter/X)
+ */
+export interface SupabaseUserMetadata {
+  full_name?: string;
+  name?: string;
+  avatar_url?: string;
+  [key: string]: unknown; // Allow other metadata fields from providers
+}
+
 export interface User {
   id?: string;
   name?: string;

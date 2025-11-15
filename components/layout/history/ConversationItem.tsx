@@ -76,7 +76,7 @@ export default function ConversationItem({
 
   // Close menu when clicking outside (industry standard pattern)
   // Note: enabled flag already ensures callback only fires when menu is open
-  useClickOutside(menuContainerRef as React.RefObject<HTMLElement>, () => {
+  useClickOutside(menuContainerRef, () => {
     onMenuToggle();
   }, isMenuOpen);
 

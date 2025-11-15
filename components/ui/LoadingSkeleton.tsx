@@ -4,7 +4,7 @@
  */
 
 interface LoadingSkeletonProps {
-  variant?: 'message' | 'conversation' | 'text';
+  variant?: 'message' | 'conversation' | 'text' | 'history-search';
   count?: number;
 }
 
@@ -42,6 +42,39 @@ export function LoadingSkeleton({ variant = 'text', count = 1 }: LoadingSkeleton
           </div>
         ))}
       </>
+    );
+  }
+
+  if (variant === 'history-search') {
+    const skeletonBlobStyle = {
+      background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border-hover) 50%, var(--color-bg-secondary) 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'skeleton-pulse 1.5s ease-in-out infinite',
+      borderRadius: '6px',
+    };
+
+    return (
+      <div className="history-search-container">
+        <div className="history-search-input-wrapper">
+          {/* Search input skeleton */}
+          <div 
+            style={{
+              ...skeletonBlobStyle,
+              width: '100%',
+              height: '32px',
+            }} 
+          />
+        </div>
+        {/* Clear button skeleton */}
+        <div 
+          style={{
+            ...skeletonBlobStyle,
+            width: '80px',
+            height: '32px',
+            flexShrink: 0,
+          }} 
+        />
+      </div>
     );
   }
 

@@ -244,13 +244,11 @@ function SettingsPageContent() {
         </div>
       </div>
       
-      {/* Lazy load HistorySidebar only when opened */}
-      {isHistoryOpen && (
-        <HistorySidebar 
-          isOpen={isHistoryOpen}
-          onClose={() => setIsHistoryOpen(false)}
-        />
-      )}
+      {/* History Sidebar - Always mounted for smooth animations */}
+      <HistorySidebar 
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
       
       <main className="settings-main">
         <div className="settings-content">

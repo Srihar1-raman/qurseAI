@@ -5,24 +5,16 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import Header from '@/components/layout/Header';
 import HistorySidebar from '@/components/layout/history/HistorySidebar';
+import { ConversationPageSkeleton } from '@/components/ui/ConversationPageSkeleton';
 import type { User } from '@/lib/types';
 
 // Lazy load ConversationClient to code split AI SDK
 // AI SDK code is only loaded when user navigates to a conversation page
+// Loading state uses same skeleton as NavigationWrapper for seamless transition
 const ConversationClient = dynamic(
   () => import('@/components/conversation/ConversationClient').then(mod => ({ default: mod.ConversationClient })),
   {
-    loading: () => (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh',
-        color: 'var(--color-text)'
-      }}>
-        Loading conversation...
-      </div>
-    ),
+    loading: () => <ConversationPageSkeleton />,
   }
 );
 

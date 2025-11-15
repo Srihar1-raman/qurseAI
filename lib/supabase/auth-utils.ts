@@ -6,6 +6,7 @@
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { createScopedLogger } from '@/lib/utils/logger';
+import type { SupabaseUserMetadata } from '@/lib/types';
 
 const logger = createScopedLogger('supabase/auth-utils');
 
@@ -47,7 +48,7 @@ export const getCachedUser = cache(async () => {
  */
 export async function getUserData(supabase?: Awaited<ReturnType<typeof createClient>>): Promise<{
   lightweightUser: LightweightUser | null;
-  fullUser: { id: string; email?: string; user_metadata?: any } | null;
+  fullUser: { id: string; email?: string; user_metadata?: SupabaseUserMetadata } | null;
   supabaseClient: Awaited<ReturnType<typeof createClient>>;
 }> {
   try {

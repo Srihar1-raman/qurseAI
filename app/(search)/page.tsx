@@ -11,25 +11,17 @@ import DeepSearchButton from '@/components/homepage/DeepSearchButton';
 import WebSearchSelector from '@/components/homepage/WebSearchSelector';
 import MainInput from '@/components/homepage/MainInput';
 import HistorySidebar from '@/components/layout/history/HistorySidebar';
+import { ConversationPageSkeleton } from '@/components/ui/ConversationPageSkeleton';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversationId } from '@/hooks/use-conversation-id';
 
 // Lazy load ConversationClient to code split AI SDK
 // AI SDK code is only loaded when needed
+// Loading state uses same skeleton as NavigationWrapper for seamless transition
 const ConversationClient = dynamic(
   () => import('@/components/conversation/ConversationClient').then(mod => ({ default: mod.ConversationClient })),
   {
-    loading: () => (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '100vh',
-        color: 'var(--color-text)'
-      }}>
-        Loading conversation...
-      </div>
-    ),
+    loading: () => <ConversationPageSkeleton />,
   }
 );
 

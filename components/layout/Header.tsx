@@ -61,7 +61,7 @@ function Header({
   }, [setTheme]);
 
   // Close dropdown when clicking outside using hook
-  useClickOutside(dropdownRef as React.RefObject<HTMLElement>, () => {
+  useClickOutside(dropdownRef, () => {
     setIsDropdownOpen(false);
   }, isDropdownOpen);
 
@@ -452,8 +452,10 @@ function Header({
 
             <DropdownSeparator />
 
-            <DropdownItem onClick={() => {}}>
-              <div className="flex items-center gap-3 opacity-50 cursor-not-allowed">
+            <DropdownItem 
+              onClick={() => window.open('https://github.com/Srihar1-raman/qurseAI', '_blank', 'noopener,noreferrer')}
+            >
+              <div className="flex items-center gap-3">
                 <Image
                   src={getIconPath('github', resolvedTheme, false, mounted)}
                   alt="GitHub"
@@ -464,8 +466,10 @@ function Header({
               </div>
             </DropdownItem>
 
-            <DropdownItem onClick={() => {}}>
-              <div className="flex items-center gap-3 opacity-50 cursor-not-allowed">
+            <DropdownItem 
+              onClick={() => window.open('https://x.com/qursechat', '_blank', 'noopener,noreferrer')}
+            >
+              <div className="flex items-center gap-3">
                 <Image
                   src={getIconPath('x-twitter', resolvedTheme, false, mounted)}
                   alt="X"

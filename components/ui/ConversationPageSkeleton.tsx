@@ -4,35 +4,54 @@
  */
 
 export function ConversationPageSkeleton() {
+  const skeletonBlobStyle = {
+    width: '100%',
+    height: '120px',
+    borderRadius: '8px',
+    background: 'linear-gradient(90deg, var(--color-bg-secondary) 25%, var(--color-border-hover) 50%, var(--color-bg-secondary) 75%)',
+    backgroundSize: '200% 100%',
+    animation: 'skeleton-pulse 1.5s ease-in-out infinite',
+  };
+
+  const aiBlobStyle = {
+    ...skeletonBlobStyle,
+    height: '150px',
+  };
+
   return (
     <div className="homepage-container">
       {/* Conversation Content Skeleton - matches conversation-main-content structure */}
       <main className="conversation-main-content">
         <div className="conversation-container">
           <div className="conversation-thread">
-            {/* Two message blobs: one user, one AI */}
-            {/* User message */}
-            <div className="user-message" style={{ marginBottom: '20px' }}>
-              <div style={{ display: 'flex', gap: '12px', maxWidth: '80%', flexDirection: 'row-reverse', marginLeft: 'auto' }}>
-                <div className="skeleton-avatar" />
-                <div className="skeleton-content" style={{ flex: 1 }}>
-                  <div className="skeleton-line" style={{ width: '70%', height: '16px', marginBottom: '8px' }} />
-                  <div className="skeleton-line" style={{ width: '50%', height: '16px' }} />
-                </div>
+            {/* Three message blobs: user, AI, user */}
+            {/* User message 1 */}
+            <div className="user-message" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ maxWidth: '80%', width: '100%' }}>
+                <div style={skeletonBlobStyle} />
               </div>
             </div>
             
             {/* AI message */}
-            <div className="bot-message" style={{ marginBottom: '20px' }}>
-              <div style={{ display: 'flex', gap: '12px', maxWidth: '80%', flexDirection: 'row' }}>
-                <div className="skeleton-avatar" />
-                <div className="skeleton-content" style={{ flex: 1 }}>
-                  <div className="skeleton-line" style={{ width: '85%', height: '16px', marginBottom: '8px' }} />
-                  <div className="skeleton-line" style={{ width: '90%', height: '16px', marginBottom: '8px' }} />
-                  <div className="skeleton-line" style={{ width: '75%', height: '16px' }} />
-                </div>
+            <div className="bot-message" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-start' }}>
+              <div style={{ maxWidth: '80%', width: '100%' }}>
+                <div style={aiBlobStyle} />
               </div>
             </div>
+            
+            {/* User message 2 */}
+            <div className="user-message" style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+              <div style={{ maxWidth: '80%', width: '100%' }}>
+                <div style={skeletonBlobStyle} />
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        {/* Input area skeleton */}
+        <div className="input-section">
+          <div className="input-section-content">
+            <div className="conversation-input-skeleton" />
           </div>
         </div>
       </main>

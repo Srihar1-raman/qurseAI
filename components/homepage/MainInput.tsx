@@ -150,7 +150,6 @@ export default function MainInput() {
             maxHeight: '200px',
             overflowY: (isMultiline || isMobile) ? 'auto' : 'hidden',
             overflowX: 'hidden',
-            transition: 'padding 0.2s',
             scrollbarWidth: 'none',
             msOverflowStyle: 'none',
             position: 'relative',

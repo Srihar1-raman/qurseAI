@@ -31,11 +31,11 @@ export default async function SettingsPage() {
 
     // Conversation count is now fetched client-side via HistorySidebarContext
     // This eliminates server-side blocking and allows shared caching
-    return (
+  return (
       <Suspense fallback={<SettingsPageSkeleton />}>
         <SettingsPageClient />
-      </Suspense>
-    );
+    </Suspense>
+  );
   } catch (error) {
     // Fail-secure: Redirect on unexpected errors (prevents page crash)
     logger.error('Unexpected error in settings page', error);
