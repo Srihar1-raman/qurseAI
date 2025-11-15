@@ -32,9 +32,13 @@ export function LoadingSkeleton({ variant = 'text', count = 1 }: LoadingSkeleton
     return (
       <>
         {skeletons.map((i) => (
-          <div key={i} className="conversation-skeleton">
+          <div key={i} className="history-tree-item">
+            <div className="tree-item-content conversation-skeleton">
+              <div className="tree-item-main">
             <div className="skeleton-line" style={{ width: '70%' }}></div>
             <div className="skeleton-line skeleton-small" style={{ width: '40%' }}></div>
+              </div>
+            </div>
           </div>
         ))}
       </>

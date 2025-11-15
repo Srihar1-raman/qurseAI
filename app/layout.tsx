@@ -3,7 +3,12 @@ import { Inter, Reenie_Beanie } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/lib/theme-provider";
 import { AuthProvider } from "@/lib/contexts/AuthContext";
+import { HistorySidebarProvider } from "@/lib/contexts/HistorySidebarContext";
+import { SidebarProvider } from "@/lib/contexts/SidebarContext";
+import { NavigationProvider } from "@/lib/contexts/NavigationContext";
 import { ToastProvider } from "@/lib/contexts/ToastContext";
+import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
+import { RoutePrefetcher } from "@/components/layout/RoutePrefetcher";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
@@ -81,10 +86,19 @@ export default function RootLayout({
         <ErrorBoundary>
         <ThemeProvider>
           <AuthProvider>
+            <HistorySidebarProvider>
+              <SidebarProvider>
               <ToastProvider>
+                <NavigationProvider>
+                  <RoutePrefetcher />
+                  <NavigationWrapper>
             {children}
+                  </NavigationWrapper>
+                </NavigationProvider>
                 <Toaster />
               </ToastProvider>
+              </SidebarProvider>
+            </HistorySidebarProvider>
           </AuthProvider>
         </ThemeProvider>
         </ErrorBoundary>

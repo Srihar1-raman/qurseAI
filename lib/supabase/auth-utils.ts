@@ -3,6 +3,7 @@
  * Optimized user fetching - single getUser() call for both lightweight and full data
  */
 
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { createScopedLogger } from '@/lib/utils/logger';
 
@@ -17,6 +18,24 @@ export interface LightweightUser {
   email: string;
   isProUser: boolean;
 }
+
+/**
+ * Cached getUser() call
+ * Uses React cache() to deduplicate getUser() calls within the same React render pass
+ * NOTE: Middleware runs outside React context, so it cannot use this cache.
+ * This cache only works for server components within the same request.
+ */
+export const getCachedUser = cache(async () => {
+  const supabase = await createClient();
+  const { data: { user }, error } = await supabase.auth.getUser();
+  
+  if (error) {
+    logger.error('Error in getCachedUser', error);
+    return { user: null, error };
+  }
+  
+  return { user, error: null };
+});
 
 /**
  * Get user data (single call optimization)

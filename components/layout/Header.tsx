@@ -1,34 +1,36 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { useOptimisticNavigation } from '@/hooks/use-optimistic-navigation';
 import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropdown';
 import { getIconPath, getInvertedIconPath } from '@/lib/icon-utils';
 import { useClickOutside } from '@/hooks/use-click-outside';
 import type { HeaderProps } from '@/lib/types';
 
-export default function Header({
+function Header({
   showNewChatButton = false,
   onNewChatClick,
   showHistoryButton = false,
   onHistoryClick,
   user: propUser = null
-}: HeaderProps = {}) {
+}: HeaderProps) {
   const router = useRouter();
   const { theme, setTheme, resolvedTheme, mounted } = useTheme();
   const { user: authUser, isLoading, signOut } = useAuth();
+  const { navigateOptimistically } = useOptimisticNavigation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Use auth user if available, otherwise fall back to prop user
   const user = authUser || propUser;
 
-  // Get user's first initial
-  const getUserInitial = () => {
+  // Memoize user initial calculation (derived from user.name/email)
+  const userInitial = useMemo(() => {
     if (user?.name) {
       return user.name.charAt(0).toUpperCase();
     }
@@ -36,16 +38,30 @@ export default function Header({
       return user.email.charAt(0).toUpperCase();
     }
     return 'U';
-  };
+  }, [user?.name, user?.email]);
 
-  const handleSignOut = () => {
+  // Wrap handleSignOut with useCallback for stable reference
+  const handleSignOut = useCallback(() => {
     signOut(); // Don't await - let auth state change naturally
     setIsDropdownOpen(false);
     router.push('/');
-  };
+  }, [signOut, router]);
+
+  // Wrap theme handlers with useCallback for stable references
+  const handleThemeAuto = useCallback(() => {
+    setTheme('auto');
+  }, [setTheme]);
+
+  const handleThemeLight = useCallback(() => {
+    setTheme('light');
+  }, [setTheme]);
+
+  const handleThemeDark = useCallback(() => {
+    setTheme('dark');
+  }, [setTheme]);
 
   // Close dropdown when clicking outside using hook
-  useClickOutside(dropdownRef, () => {
+  useClickOutside(dropdownRef as React.RefObject<HTMLElement>, () => {
     setIsDropdownOpen(false);
   }, isDropdownOpen);
 
@@ -257,7 +273,7 @@ export default function Header({
               >
                 {user ? (
                   <span style={{ color: 'var(--color-bg)' }}>
-                    {getUserInitial()}
+                    {userInitial}
                   </span>
                 ) : (
                   <Image
@@ -316,7 +332,7 @@ export default function Header({
               </div>
               <div className="flex items-center gap-1.5">
                 <button
-                  onClick={() => setTheme('auto')}
+                  onClick={handleThemeAuto}
                   className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
                     theme === 'auto' 
                       ? 'bg-primary text-white' 
@@ -332,7 +348,7 @@ export default function Header({
                    />
                 </button>
                 <button
-                  onClick={() => setTheme('light')}
+                  onClick={handleThemeLight}
                   className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
                     theme === 'light' 
                       ? 'bg-primary text-white' 
@@ -348,7 +364,7 @@ export default function Header({
                    />
                 </button>
                 <button
-                  onClick={() => setTheme('dark')}
+                  onClick={handleThemeDark}
                   className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
                     theme === 'dark' 
                       ? 'bg-primary text-white' 
@@ -370,7 +386,10 @@ export default function Header({
             {user && (
               <>
                 <DropdownSeparator />
-                <DropdownItem onClick={() => router.push('/settings')}>
+                <DropdownItem 
+                  onClick={() => navigateOptimistically('/settings')}
+                  onMouseEnter={() => router.prefetch('/settings')}
+                >
                   <div className="flex items-center gap-3">
                     <Image
                       src={getIconPath('settings', resolvedTheme, false, mounted)}
@@ -386,7 +405,10 @@ export default function Header({
 
             <DropdownSeparator />
 
-            <DropdownItem onClick={() => router.push('/info?section=about')}>
+            <DropdownItem 
+              onClick={() => navigateOptimistically('/info?section=about')}
+              onMouseEnter={() => router.prefetch('/info?section=about')}
+            >
               <div className="flex items-center gap-3">
                 <Image
                   src={getIconPath('about', resolvedTheme, false, mounted)}
@@ -398,7 +420,10 @@ export default function Header({
               </div>
             </DropdownItem>
 
-            <DropdownItem onClick={() => router.push('/info?section=terms')}>
+            <DropdownItem 
+              onClick={() => navigateOptimistically('/info?section=terms')}
+              onMouseEnter={() => router.prefetch('/info?section=terms')}
+            >
               <div className="flex items-center gap-3">
                 <Image
                   src={getIconPath('terms', resolvedTheme, false, mounted)}
@@ -410,7 +435,10 @@ export default function Header({
               </div>
             </DropdownItem>
 
-            <DropdownItem onClick={() => router.push('/info?section=privacy')}>
+            <DropdownItem 
+              onClick={() => navigateOptimistically('/info?section=privacy')}
+              onMouseEnter={() => router.prefetch('/info?section=privacy')}
+            >
               <div className="flex items-center gap-3">
                 <Image
                   src={getIconPath('privacy', resolvedTheme, false, mounted)}
@@ -424,8 +452,8 @@ export default function Header({
 
             <DropdownSeparator />
 
-            <DropdownItem onClick={() => console.log('GitHub')}>
-              <div className="flex items-center gap-3">
+            <DropdownItem onClick={() => {}}>
+              <div className="flex items-center gap-3 opacity-50 cursor-not-allowed">
                 <Image
                   src={getIconPath('github', resolvedTheme, false, mounted)}
                   alt="GitHub"
@@ -436,8 +464,8 @@ export default function Header({
               </div>
             </DropdownItem>
 
-            <DropdownItem onClick={() => console.log('X')}>
-              <div className="flex items-center gap-3">
+            <DropdownItem onClick={() => {}}>
+              <div className="flex items-center gap-3 opacity-50 cursor-not-allowed">
                 <Image
                   src={getIconPath('x-twitter', resolvedTheme, false, mounted)}
                   alt="X"
@@ -481,3 +509,24 @@ export default function Header({
     </header>
   );
 }
+
+// Custom comparison function for React.memo()
+// Only re-render if user.id, showNewChatButton, showHistoryButton, or theme changes
+const areEqual = (prevProps: HeaderProps, nextProps: HeaderProps) => {
+  // Compare user by ID (most reliable identifier)
+  const prevUserId = prevProps.user?.id;
+  const nextUserId = nextProps.user?.id;
+  if (prevUserId !== nextUserId) return false;
+
+  // Compare boolean props
+  if (prevProps.showNewChatButton !== nextProps.showNewChatButton) return false;
+  if (prevProps.showHistoryButton !== nextProps.showHistoryButton) return false;
+
+  // Compare function references (if they change, we need to re-render)
+  if (prevProps.onNewChatClick !== nextProps.onNewChatClick) return false;
+  if (prevProps.onHistoryClick !== nextProps.onHistoryClick) return false;
+
+  return true;
+};
+
+export default memo(Header, areEqual);

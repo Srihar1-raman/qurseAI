@@ -1,11 +1,18 @@
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
-import HistorySidebar from '@/components/layout/history/HistorySidebar';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { InfoPageSkeleton } from '@/components/ui/InfoPageSkeleton';
+
+// Lazy load HistorySidebar - only load when sidebar is opened
+const HistorySidebar = dynamic(
+  () => import('@/components/layout/history/HistorySidebar'),
+  { ssr: false }
+);
 
 function InfoPageContent() {
   const [activeSection, setActiveSection] = useState('about');
@@ -22,20 +29,23 @@ function InfoPageContent() {
     }
   }, [searchParams]);
 
-  const sections = [
+  // Memoize sections array (never changes)
+  const sections = useMemo(() => [
     { id: 'about', label: 'About' },
     { id: 'terms', label: 'Terms' },
     { id: 'privacy', label: 'Privacy' },
     { id: 'cookies', label: 'Cookies' }
-  ];
+  ], []);
 
-  const handleNewChatClick = () => {
+  // Wrap handleNewChatClick with useCallback for stable reference
+  const handleNewChatClick = useCallback(() => {
     router.push('/');
-  };
+  }, [router]);
 
-  const handleHistoryClick = () => {
+  // Wrap handleHistoryClick with useCallback for stable reference
+  const handleHistoryClick = useCallback(() => {
     setIsHistoryOpen(true);
-  };
+  }, []);
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
@@ -181,18 +191,20 @@ function InfoPageContent() {
 
       <Footer />
       
-      {/* History Sidebar */}
-      <HistorySidebar 
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-      />
+      {/* Lazy load HistorySidebar only when opened */}
+      {isHistoryOpen && (
+        <HistorySidebar 
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+        />
+      )}
     </div>
   );
 }
 
 export default function InfoPage() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<InfoPageSkeleton />}>
       <InfoPageContent />
     </Suspense>
   );

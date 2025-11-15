@@ -121,8 +121,8 @@ export default async function ConversationPage({ params, searchParams }: PagePro
         initialMessages = messages;
         initialHasMore = hasMore;
         initialDbRowCount = dbRowCount;
-        logger.debug('Messages loaded', {
-          conversationId,
+        logger.debug('Messages loaded', { 
+          conversationId, 
           messageCount: initialMessages.length,
           hasMore: initialHasMore,
           dbRowCount: initialDbRowCount,
