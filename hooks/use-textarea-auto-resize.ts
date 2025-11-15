@@ -137,7 +137,18 @@ export function useTextareaAutoResize(
   // Recalculate immediately since padding changes are now instant (no transition)
   // Only recalculate when isMultiline actually changes, not on every render
   useEffect(() => {
-    if (!textareaRef.current || !value || value.trim() === '') return;
+    if (!textareaRef.current) return;
+    
+    // If value is empty, reset height and multiline state
+    if (!value || value.trim() === '') {
+      textareaRef.current.style.height = 'auto';
+      // Reset multiline state if it was true
+      if (isMultiline) {
+        setIsMultiline(false);
+        prevIsMultilineRef.current = false;
+      }
+      return;
+    }
     
     // Only recalculate if state actually changed (prevents unnecessary recalculations)
     if (prevIsMultilineRef.current === isMultiline) return;
@@ -150,6 +161,20 @@ export function useTextareaAutoResize(
         // Reset height to auto to get accurate scrollHeight with new padding
         textareaRef.current.style.height = 'auto';
         const scrollHeight = textareaRef.current.scrollHeight;
+        
+        // Re-check if should be multiline (in case content changed)
+        // This ensures we properly handle shrinking back to single line
+        if (multilineThreshold !== undefined) {
+          const shouldBeMultiline = scrollHeight >= multilineThreshold || isMobile;
+          
+          // If multiline state doesn't match what it should be, update it
+          if (shouldBeMultiline !== isMultiline) {
+            setIsMultiline(shouldBeMultiline);
+            prevIsMultilineRef.current = shouldBeMultiline;
+            // Don't set height here - let the state change trigger another recalculation
+            return;
+          }
+        }
         
         // Calculate new height (clamped to maxHeight)
         const newHeight = Math.min(scrollHeight, maxHeight);
@@ -170,7 +195,7 @@ export function useTextareaAutoResize(
         prevIsMultilineRef.current = isMultiline;
       });
     });
-  }, [isMultiline, maxHeight, minHeight, value]);
+  }, [isMultiline, maxHeight, minHeight, value, multilineThreshold, isMobile, textareaRef]);
   
   return { isMultiline };
 }
