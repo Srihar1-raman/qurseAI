@@ -5,6 +5,7 @@ import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import type { AccountSectionProps } from '@/lib/types';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 export default function AccountSection({ 
   user, 
@@ -38,7 +39,7 @@ export default function AccountSection({
         <h2>Account Settings</h2>
         <div className="account-signin-prompt">
           <p>Sign in to manage your account settings</p>
-          <button className="settings-btn-primary">Sign In</button>
+          <UnifiedButton variant="primary">Sign In</UnifiedButton>
         </div>
       </div>
     );
@@ -170,27 +171,27 @@ export default function AccountSection({
             <h4>Sign Out</h4>
             <p>Sign out of your account on this device</p>
           </div>
-          <button className="settings-btn-secondary-small" onClick={onSignOut}>
+          <UnifiedButton variant="secondary" onClick={onSignOut}>
             Sign Out
-          </button>
+          </UnifiedButton>
         </div>
         <div className="settings-item danger-item">
           <div className="settings-item-content">
             <h4>Clear All Chats</h4>
             <p>Delete all your conversations and start fresh. This action cannot be undone.</p>
           </div>
-          <button className="settings-btn-danger-small" onClick={onClearChats} title="Clear all conversations">
+          <UnifiedButton variant="danger" onClick={onClearChats} title="Clear all conversations">
             Clear
-          </button>
+          </UnifiedButton>
         </div>
         <div className="settings-item danger-item">
           <div className="settings-item-content">
             <h4>Delete Account</h4>
             <p>Permanently delete your account and all data</p>
           </div>
-          <button className="settings-btn-danger-small" onClick={onDeleteAccount}>
+          <UnifiedButton variant="danger" onClick={onDeleteAccount}>
             Delete
-          </button>
+          </UnifiedButton>
         </div>
       </div>
     </div>

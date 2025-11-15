@@ -19,6 +19,7 @@ import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
 import { useConversationId } from '@/hooks/use-conversation-id';
 import { createScopedLogger } from '@/lib/utils/logger';
 import type { Conversation, ConversationGroup, HistorySidebarProps } from '@/lib/types';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 const logger = createScopedLogger('history-sidebar');
 
@@ -440,8 +441,8 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
               <LoadingSkeleton variant="history-search" />
               {/* Conversation list skeleton */}
               <div className="history-tree-list">
-                <LoadingSkeleton variant="conversation" count={5} />
-              </div>
+              <LoadingSkeleton variant="conversation" count={5} />
+            </div>
             </>
           )}
 
@@ -478,19 +479,10 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
               />
               <p>Sign in to view history</p>
               <span>Your conversations will be saved after signing in</span>
-              <Link 
-                href="/login"
-                style={{
-                  marginTop: '16px',
-                  padding: '8px 24px',
-                  background: 'var(--color-primary)',
-                  color: 'white',
-                  borderRadius: '8px',
-                  textDecoration: 'none',
-                  display: 'inline-block'
-                }}
-              >
-                Sign In
+              <Link href="/login" style={{ marginTop: '16px', display: 'inline-block', textDecoration: 'none' }}>
+                <UnifiedButton variant="success">
+                  Sign In
+                </UnifiedButton>
               </Link>
             </div>
           )}

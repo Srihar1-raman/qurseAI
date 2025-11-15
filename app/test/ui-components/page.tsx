@@ -10,6 +10,9 @@ import AuthButton from '@/components/auth/AuthButton';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
+import { Modal } from '@/components/ui/Modal';
+import { handleClientError } from '@/lib/utils/error-handler';
 
 export default function UIComponentsTestPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
@@ -17,11 +20,13 @@ export default function UIComponentsTestPage() {
   const [clearHistoryModalOpen, setClearHistoryModalOpen] = useState(false);
   const [baseModalOpen, setBaseModalOpen] = useState(false);
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [errorModalOpen, setErrorModalOpen] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
   const [isClearingChats, setIsClearingChats] = useState(false);
   const { resolvedTheme, mounted } = useTheme();
   const { success, error, warning, info } = useToast();
+
 
   const mockUserStats = {
     totalConversations: 42,
@@ -94,6 +99,13 @@ export default function UIComponentsTestPage() {
                   background: 'var(--color-text)',
                   color: 'var(--color-bg)',
                   border: 'none',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.filter = 'brightness(0.9)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.filter = 'brightness(1)';
                 }}
               >
                 Open Base Modal (Custom Content)
@@ -117,6 +129,13 @@ export default function UIComponentsTestPage() {
                   background: 'var(--color-text)',
                   color: 'var(--color-bg)',
                   border: 'none',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.filter = 'brightness(0.9)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.filter = 'brightness(1)';
                 }}
               >
                 Open ConfirmModal (Ready-to-Use)
@@ -138,7 +157,22 @@ export default function UIComponentsTestPage() {
               </p>
               <button
                 onClick={() => setDeleteModalOpen(true)}
-                className="settings-btn-danger-small"
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#dc2626';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444';
+                }}
               >
                 Open Delete Account Modal
               </button>
@@ -151,7 +185,22 @@ export default function UIComponentsTestPage() {
               </p>
               <button
                 onClick={() => setClearChatsModalOpen(true)}
-                className="settings-btn-danger-small"
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#dc2626';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444';
+                }}
               >
                 Open Clear Chats Modal
               </button>
@@ -164,7 +213,22 @@ export default function UIComponentsTestPage() {
               </p>
               <button
                 onClick={() => setClearHistoryModalOpen(true)}
-                className="settings-btn-danger-small"
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#dc2626';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444';
+                }}
               >
                 Open Clear History Modal
               </button>
@@ -190,6 +254,9 @@ export default function UIComponentsTestPage() {
                 <AuthButton provider="google" />
                 <AuthButton provider="twitter" />
               </div>
+              <p style={{ color: 'var(--color-text-secondary)', marginTop: '12px', fontSize: '12px', fontStyle: 'italic' }}>
+                Note: AuthButton keeps its own style (padding: 12px 16px) - these are fine as-is
+              </p>
             </div>
 
             {/* Header Login/Signup Buttons */}
@@ -209,6 +276,13 @@ export default function UIComponentsTestPage() {
                       background: 'var(--color-text)',
                       color: 'var(--color-bg)',
                       border: 'none',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.filter = 'brightness(0.9)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.filter = 'brightness(1)';
                     }}
                   >
                     Log in
@@ -226,7 +300,14 @@ export default function UIComponentsTestPage() {
                       color: 'var(--color-text)',
                       border: '1px solid var(--color-border)',
                     }}
-                    className="hover:bg-bg-hover"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--color-bg-hover)';
+                      e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.borderColor = 'var(--color-border)';
+                    }}
                   >
                     Sign up
                   </button>
@@ -240,7 +321,7 @@ export default function UIComponentsTestPage() {
               <p style={{ color: 'var(--color-text-secondary)', marginBottom: '16px', fontSize: '14px' }}>
                 Used in HistorySidebar - Inline styles, different styling
               </p>
-              <Link 
+              <Link
                 href="/login"
                 style={{
                   marginTop: '16px',
@@ -252,7 +333,14 @@ export default function UIComponentsTestPage() {
                   display: 'inline-block',
                   fontSize: '14px',
                   border: 'none',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.filter = 'brightness(0.9)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.filter = 'brightness(1)';
                 }}
               >
                 Sign In
@@ -274,6 +362,13 @@ export default function UIComponentsTestPage() {
                   background: 'var(--color-text)',
                   color: 'var(--color-bg)',
                   border: 'none',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.filter = 'brightness(0.9)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.filter = 'brightness(1)';
                 }}
               >
                 Sign In
@@ -301,6 +396,13 @@ export default function UIComponentsTestPage() {
                       background: 'var(--color-text)',
                       color: 'var(--color-bg)',
                       border: 'none',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.filter = 'brightness(0.9)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.filter = 'brightness(1)';
                     }}
                   >
                     Primary
@@ -314,6 +416,13 @@ export default function UIComponentsTestPage() {
                       background: 'var(--color-text)',
                       color: 'var(--color-bg)',
                       border: 'none',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.filter = 'brightness(0.9)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.filter = 'brightness(1)';
                     }}
                   >
                     Primary Small
@@ -334,7 +443,14 @@ export default function UIComponentsTestPage() {
                       color: 'var(--color-text)',
                       border: '1px solid var(--color-border)',
                     }}
-                    className="hover:bg-bg-hover"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--color-bg-hover)';
+                      e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.borderColor = 'var(--color-border)';
+                    }}
                   >
                     Secondary
                   </button>
@@ -349,7 +465,14 @@ export default function UIComponentsTestPage() {
                       color: 'var(--color-text)',
                       border: '1px solid var(--color-border)',
                     }}
-                    className="hover:bg-bg-hover"
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--color-bg-hover)';
+                      e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.borderColor = 'var(--color-border)';
+                    }}
                   >
                     Secondary Small
                   </button>
@@ -358,8 +481,41 @@ export default function UIComponentsTestPage() {
               <div>
                 <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Danger Buttons</p>
                 <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                  <button className="settings-btn-danger-small">Danger Small</button>
+                  <button
+                    style={{
+                      padding: '6px 14px',
+                      borderRadius: '6px',
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      background: '#ef4444',
+                      color: 'white',
+                      border: 'none',
+                      transition: 'background 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#dc2626';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#ef4444';
+                    }}
+                  >
+                    Danger Small
+                  </button>
                 </div>
+              </div>
+              <div>
+                <p style={{ fontSize: '14px', fontWeight: 600, marginBottom: '8px' }}>Success Buttons (New)</p>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <UnifiedButton variant="success">
+                    Success
+                  </UnifiedButton>
+                  <UnifiedButton variant="success" disabled>
+                    Success (Disabled)
+                  </UnifiedButton>
+                </div>
+                <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '8px', fontStyle: 'italic' }}>
+                  Used in: History Sidebar "Sign In", Error Boundary "Go Home"
+                </p>
               </div>
             </div>
           </div>
@@ -383,7 +539,14 @@ export default function UIComponentsTestPage() {
                   color: 'var(--color-text)',
                   border: '1px solid var(--color-border)',
                 }}
-                className="hover:bg-bg-hover"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-bg-hover)';
+                  e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                }}
               >
                 Cancel
               </button>
@@ -396,6 +559,13 @@ export default function UIComponentsTestPage() {
                   background: '#ef4444',
                   color: 'white',
                   border: 'none',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#dc2626';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444';
                 }}
               >
                 Delete
@@ -404,10 +574,43 @@ export default function UIComponentsTestPage() {
           </div>
         </section>
 
-        {/* Section 5: Toast System */}
+        {/* Section 5: Error Popup (Error Boundary) */}
         <section>
           <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '30px', paddingBottom: '10px', borderBottom: '2px solid var(--color-border)' }}>
-            5. Toast System (Already Unified ✅)
+            5. Error Popup (Error Boundary)
+          </h2>
+          <div style={{ padding: '20px', border: '1px solid var(--color-border)', borderRadius: '8px', background: 'var(--color-bg-secondary)' }}>
+            <p style={{ color: 'var(--color-text-secondary)', marginBottom: '16px', fontSize: '14px' }}>
+              The error popup that appears when a component crashes. Uses unified Modal and UnifiedButton components.
+            </p>
+            <button
+              onClick={() => setErrorModalOpen(true)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '6px',
+                fontSize: '14px',
+                cursor: 'pointer',
+                background: 'var(--color-text)',
+                color: 'var(--color-bg)',
+                border: 'none',
+                transition: 'all 0.2s',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.filter = 'brightness(0.9)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.filter = 'brightness(1)';
+              }}
+            >
+              Show Error Popup
+            </button>
+          </div>
+        </section>
+
+        {/* Section 6: Toast System (Already Unified ✅) */}
+        <section>
+          <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '30px', paddingBottom: '10px', borderBottom: '2px solid var(--color-border)' }}>
+            6. Toast System (Already Unified ✅)
           </h2>
           <div style={{ padding: '20px', border: '1px solid var(--color-border)', borderRadius: '8px', background: 'var(--color-bg-secondary)' }}>
             <p style={{ color: 'var(--color-text-secondary)', marginBottom: '16px', fontSize: '14px' }}>
@@ -424,13 +627,35 @@ export default function UIComponentsTestPage() {
                   background: 'var(--color-text)',
                   color: 'var(--color-bg)',
                   border: 'none',
+                  transition: 'all 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.filter = 'brightness(0.9)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.filter = 'brightness(1)';
                 }}
               >
                 Show Success Toast
               </button>
               <button 
                 onClick={() => error('Error message!')}
-                className="settings-btn-danger-small"
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#dc2626';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444';
+                }}
               >
                 Show Error Toast
               </button>
@@ -446,7 +671,14 @@ export default function UIComponentsTestPage() {
                   color: 'var(--color-text)',
                   border: '1px solid var(--color-border)',
                 }}
-                className="hover:bg-bg-hover"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-bg-hover)';
+                  e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                }}
               >
                 Show Warning Toast
               </button>
@@ -462,7 +694,14 @@ export default function UIComponentsTestPage() {
                   color: 'var(--color-text)',
                   border: '1px solid var(--color-border)',
                 }}
-                className="hover:bg-bg-hover"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-bg-hover)';
+                  e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                }}
               >
                 Show Info Toast
               </button>
@@ -491,7 +730,14 @@ export default function UIComponentsTestPage() {
                   fontSize: '14px',
                   transition: 'all 0.2s',
                 }}
-                className="hover:bg-bg-hover"
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-bg-hover)';
+                  e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                }}
               >
                 Cancel (Inline)
               </button>
@@ -503,7 +749,14 @@ export default function UIComponentsTestPage() {
                   color: 'white',
                   borderRadius: '6px',
                   cursor: 'pointer',
-                  fontSize: '14px'
+                  fontSize: '14px',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#dc2626';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444';
                 }}
               >
                 Clear All (Inline)
@@ -518,7 +771,7 @@ export default function UIComponentsTestPage() {
       {/* Base Modal - Custom Content */}
       {baseModalOpen && (
         <div className="modal-overlay" onClick={() => setBaseModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" style={{ padding: '16px' }} onClick={(e) => e.stopPropagation()}>
             <h3 className="modal-title">Base Modal Example</h3>
             <p className="modal-text">
               This is a <strong>Base Modal</strong> - just the wrapper. You can put ANY content here.
@@ -531,7 +784,24 @@ export default function UIComponentsTestPage() {
             <div className="modal-actions">
               <button
                 onClick={() => setBaseModalOpen(false)}
-                className="modal-btn modal-btn-cancel"
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  background: 'transparent',
+                  color: 'var(--color-text)',
+                  border: '1px solid var(--color-border)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-bg-hover)';
+                  e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                }}
               >
                 Close
               </button>
@@ -543,7 +813,7 @@ export default function UIComponentsTestPage() {
       {/* ConfirmModal - Ready-to-Use */}
       {confirmModalOpen && (
         <div className="modal-overlay" onClick={() => setConfirmModalOpen(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+          <div className="modal-content" style={{ padding: '16px' }} onClick={(e) => e.stopPropagation()}>
             <h3 className="modal-title danger">Confirm Action</h3>
             <p className="modal-text">
               This is a <strong>ConfirmModal</strong> - ready to use with title, message, and buttons.
@@ -557,7 +827,24 @@ export default function UIComponentsTestPage() {
             <div className="modal-actions">
               <button
                 onClick={() => setConfirmModalOpen(false)}
-                className="modal-btn modal-btn-cancel"
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  background: 'transparent',
+                  color: 'var(--color-text)',
+                  border: '1px solid var(--color-border)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--color-bg-hover)';
+                  e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.borderColor = 'var(--color-border)';
+                }}
               >
                 Cancel
               </button>
@@ -566,7 +853,22 @@ export default function UIComponentsTestPage() {
                   setConfirmModalOpen(false);
                   success('Action confirmed!');
                 }}
-                className="modal-btn modal-btn-danger"
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '6px',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  background: '#ef4444',
+                  color: 'white',
+                  border: 'none',
+                  transition: 'background 0.2s',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#dc2626';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = '#ef4444';
+                }}
               >
                 Confirm
               </button>
@@ -603,6 +905,67 @@ export default function UIComponentsTestPage() {
         onConfirm={handleClearHistory}
       />
 
+      {/* Error Popup Demo */}
+      {errorModalOpen && (
+        <Modal 
+          isOpen={errorModalOpen} 
+          onClose={() => setErrorModalOpen(false)} 
+          maxWidth="600px"
+        >
+          <div style={{ textAlign: 'center' }}>
+            <h1
+              style={{
+                fontSize: '24px',
+                fontWeight: 600,
+                marginBottom: '1rem',
+                color: 'var(--color-text)',
+              }}
+            >
+              Something went wrong
+            </h1>
+            
+            <p
+              style={{
+                fontSize: '16px',
+                color: 'var(--color-text-secondary)',
+                marginBottom: '2rem',
+                lineHeight: '1.5',
+              }}
+            >
+              {handleClientError(new Error('This is a demo error message'), 'error-boundary-ui')}
+            </p>
+
+            <p
+              style={{
+                fontSize: '12px',
+                color: 'var(--color-text-muted)',
+                marginBottom: '2rem',
+                fontFamily: 'monospace',
+              }}
+            >
+              Error ID: error-demo-{Date.now()}
+            </p>
+
+            <div
+              style={{
+                display: 'flex',
+                gap: '1rem',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+              }}
+            >
+              <UnifiedButton variant="success" onClick={() => setErrorModalOpen(false)}>
+                Go Home
+              </UnifiedButton>
+
+              <UnifiedButton variant="secondary" onClick={() => setErrorModalOpen(false)}>
+                Try Again
+              </UnifiedButton>
+            </div>
+          </div>
+        </Modal>
+      )}
+
       <div style={{ marginTop: '60px', padding: '20px', background: 'var(--color-bg-secondary)', borderRadius: '8px', border: '1px solid var(--color-border)' }}>
         <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '12px' }}>Notes</h3>
         <ul style={{ color: 'var(--color-text-secondary)', fontSize: '14px', lineHeight: '1.8', paddingLeft: '20px' }}>
@@ -613,6 +976,7 @@ export default function UIComponentsTestPage() {
           <li>All components are functional - test interactions to see current behavior</li>
         </ul>
       </div>
+
     </div>
   );
 }

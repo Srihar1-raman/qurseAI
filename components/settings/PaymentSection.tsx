@@ -1,5 +1,7 @@
 'use client';
 
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
+
 export default function PaymentSection() {
   return (
     <div className="settings-section">
@@ -12,9 +14,9 @@ export default function PaymentSection() {
             <h4>Free Plan</h4>
             <p>0 messages remaining this month</p>
           </div>
-          <button className="settings-btn-primary">
+          <UnifiedButton variant="primary">
             Upgrade Plan
-          </button>
+          </UnifiedButton>
         </div>
       </div>
 
@@ -25,9 +27,9 @@ export default function PaymentSection() {
             <h4>No payment method</h4>
             <p>Add a payment method to upgrade</p>
           </div>
-          <button className="settings-btn-secondary">
+          <UnifiedButton variant="secondary">
             Add Payment Method
-          </button>
+          </UnifiedButton>
         </div>
       </div>
 

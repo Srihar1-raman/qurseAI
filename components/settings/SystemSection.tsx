@@ -1,5 +1,7 @@
 'use client';
 
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
+
 export default function SystemSection() {
   return (
     <div className="settings-section">
@@ -18,12 +20,12 @@ export default function SystemSection() {
           defaultValue="You are a helpful AI assistant. You are knowledgeable, friendly, and always try to provide accurate and helpful responses."
         />
         <div className="settings-textarea-actions">
-          <button className="settings-btn-secondary-small">
+          <UnifiedButton variant="secondary">
             Reset
-          </button>
-          <button className="settings-btn-primary-small">
+          </UnifiedButton>
+          <UnifiedButton variant="primary">
             Save
-          </button>
+          </UnifiedButton>
         </div>
       </div>
     </div>
