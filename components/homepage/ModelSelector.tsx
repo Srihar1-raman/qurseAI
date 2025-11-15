@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversation } from '@/lib/contexts/ConversationContext';
+import { useToast } from '@/lib/contexts/ToastContext';
 import { getIconPath } from '@/lib/icon-utils';
 import { models, canUseModel, type ModelConfig } from '@/ai/models';
 import { Button } from '@/components/ui/button';
@@ -24,6 +25,7 @@ export default function ModelSelector() {
   const { resolvedTheme, mounted } = useTheme();
   const { user } = useAuth();
   const { selectedModel, setSelectedModel } = useConversation();
+  const { error: showToastError } = useToast();
 
   // Group models by category and filter by search
   const groupedModels = useMemo(() => {
@@ -72,12 +74,14 @@ export default function ModelSelector() {
   }, [isOpen]);
 
   const handleSelectModel = (modelValue: string) => {
-    const accessCheck = canUseModel(modelValue, user, false); // TODO: Get actual Pro status
+    // Pro subscription not yet implemented - always pass false for now
+    // When Pro is implemented, get actual Pro status from user context or subscription service
+    const accessCheck = canUseModel(modelValue, user, false);
     
     if (!accessCheck.canUse) {
-      // Show error or redirect to login
-      console.warn('Cannot use model:', accessCheck.reason);
-      // TODO: Show toast or modal
+      // Show user-friendly error message
+      const errorMessage = accessCheck.reason || 'You do not have access to this model';
+      showToastError(errorMessage);
       return;
     }
 
@@ -167,6 +171,7 @@ export default function ModelSelector() {
 
                   {/* Models */}
                   {group.models.map((model) => {
+                    // Pro subscription not yet implemented - always pass false for now
                     const accessCheck = canUseModel(model.value, user, false);
                     const isSelected = selectedModel === model.value;
                     const isDisabled = !accessCheck.canUse;
@@ -207,15 +212,7 @@ export default function ModelSelector() {
                                     "text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold",
                                     isSelected 
                                       ? "bg-white/20 text-white" 
-                                      : tag === 'fast'
-                                        ? "bg-blue-500/10 text-blue-600 dark:text-blue-400"
-                                        : tag === 'smart'
-                                          ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
-                                          : tag === 'new'
-                                            ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                                            : tag === 'reasoning'
-                                              ? "bg-orange-500/10 text-orange-600 dark:text-orange-400"
-                                              : "bg-muted text-muted-foreground"
+                                      : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]"
                                   )}
                                 >
                                   {tag}

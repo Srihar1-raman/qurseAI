@@ -191,13 +191,11 @@ function InfoPageContent() {
 
       <Footer />
       
-      {/* Lazy load HistorySidebar only when opened */}
-      {isHistoryOpen && (
-        <HistorySidebar 
-          isOpen={isHistoryOpen}
-          onClose={() => setIsHistoryOpen(false)}
-        />
-      )}
+      {/* History Sidebar - Always mounted for smooth animations */}
+      <HistorySidebar 
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+      />
     </div>
   );
 }

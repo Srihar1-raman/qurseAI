@@ -45,6 +45,7 @@ export function ConversationClient({
   const initialMessageSentRef = useRef(false);
   const scrollPositionRef = useRef<{ height: number; top: number } | null>(null);
   const hasInitiallyScrolledRef = useRef(false);
+  const lastUserMessageIdRef = useRef<string | null>(null); // Track last user message ID to detect new messages
   
   // Use optimized scroll hook (Scira pattern)
   const { scrollToBottom, markManualScroll, resetManualScroll } = useOptimizedScroll(conversationEndRef);
@@ -531,6 +532,42 @@ export function ConversationClient({
     }
   }, [messages, status, scrollToBottom]);
 
+  // Scroll to show user message immediately after sending (before streaming starts)
+  // This ensures user sees their message above the input area, following standard chat UX
+  useEffect(() => {
+    // Only scroll if:
+    // 1. We have messages
+    // 2. Last message is from user
+    // 3. It's a NEW user message (not one we've already scrolled to)
+    // 4. We're not currently streaming (streaming has its own scroll logic)
+    // 5. User has interacted (message was sent, not just initial load)
+    // 6. We're not loading older messages (pagination)
+    // 7. We're not loading initial messages
+    const lastMessage = displayMessages[displayMessages.length - 1];
+    const isNewUserMessage = 
+      lastMessage?.role === 'user' && 
+      lastMessage?.id !== lastUserMessageIdRef.current;
+    
+    if (
+      displayMessages.length > 0 &&
+      isNewUserMessage &&
+      status !== 'streaming' &&
+      hasInteracted &&
+      !isLoadingOlderMessages &&
+      !isLoadingInitialMessages
+    ) {
+      // Update ref to track this message (prevents re-scrolling for same message)
+      lastUserMessageIdRef.current = lastMessage.id;
+      
+      // Use requestAnimationFrame to ensure DOM has updated with new message
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scrollToBottom();
+        });
+      });
+    }
+  }, [displayMessages, status, hasInteracted, isLoadingOlderMessages, isLoadingInitialMessages, scrollToBottom]);
+
   // Scroll to bottom when messages are initially loaded (for existing conversations)
   // This ensures users see the latest messages first, not the oldest
   // CRITICAL: Only runs on initial load, not during pagination
@@ -559,9 +596,10 @@ export function ConversationClient({
     }
   }, [loadedMessages.length, hasInteracted, isLoadingOlderMessages, status, isLoadingInitialMessages, scrollToBottom]);
 
-  // Reset scroll flag when conversation changes (so it scrolls for new conversations)
+  // Reset scroll flags when conversation changes (so it scrolls for new conversations)
   useEffect(() => {
     hasInitiallyScrolledRef.current = false;
+    lastUserMessageIdRef.current = null; // Reset tracked message ID for new conversation
   }, [conversationId]);
 
   // Auto-resize textarea using hook

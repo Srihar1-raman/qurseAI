@@ -435,9 +435,14 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
         <div className="history-content" ref={contentRef}>
           {/* Loading State */}
           {isLoading && (
-            <div className="history-tree-list">
-              <LoadingSkeleton variant="conversation" count={5} />
-            </div>
+            <>
+              {/* Search bar skeleton */}
+              <LoadingSkeleton variant="history-search" />
+              {/* Conversation list skeleton */}
+              <div className="history-tree-list">
+                <LoadingSkeleton variant="conversation" count={5} />
+              </div>
+            </>
           )}
 
           {/* Error State */}
