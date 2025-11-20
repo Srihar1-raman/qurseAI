@@ -220,6 +220,7 @@ export async function POST(req: Request) {
     })();
     
     // Await access check (needed to determine if we can proceed)
+    // Start access check promise early (before execute())
     const accessCheck = await accessCheckPromise;
     
     logger.debug('Setup complete', { duration: `${Date.now() - requestStartTime}ms` });
