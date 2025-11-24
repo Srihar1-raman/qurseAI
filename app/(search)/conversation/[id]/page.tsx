@@ -39,7 +39,7 @@ export default async function ConversationPage({ params, searchParams }: PagePro
 
   const validatedParams = searchParamsValidation.data || {};
 
-  let initialMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }> = [];
+  let initialMessages: Array<{ id: string; role: 'user' | 'assistant'; parts: Array<{ type: string; text?: string; [key: string]: any }> }> = [];
   let initialHasMore = false;
   let initialDbRowCount = 0;
   let user: User | null = null;

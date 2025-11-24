@@ -61,7 +61,10 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     faviconLinks.forEach(({ rel, href, sizes }) => {
       const selector = `link[rel="${rel}"]${sizes ? `[sizes="${sizes}"]` : ''}`;
       const existing = document.querySelector(selector);
-      if (existing) existing.remove();
+      // Only remove if element exists and is still in the DOM
+      if (existing && existing.parentNode) {
+        existing.remove();
+      }
       
       const link = document.createElement('link');
       link.rel = rel;
@@ -116,20 +119,28 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     };
 
     mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
-  }, [resolveTheme, applyTheme]);
-
-  // Set initial favicon based on system theme
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
     
-    const getSystemTheme = (): 'light' | 'dark' => {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    // Listen for theme sync events from settings page
+    const handleThemeSync = (e: CustomEvent<{ theme: Theme }>) => {
+      const syncedTheme = e.detail.theme;
+      // Compare against current theme state, not the initial savedTheme from closure
+      setThemeState((currentTheme) => {
+        if (syncedTheme !== currentTheme) {
+          const resolved = resolveTheme(syncedTheme);
+          applyTheme(resolved, syncedTheme);
+          return syncedTheme;
+        }
+        return currentTheme;
+      });
     };
     
-    const systemTheme = getSystemTheme();
-    updateFavicons(systemTheme === 'dark');
-  }, [updateFavicons]);
+    window.addEventListener('theme-sync', handleThemeSync as EventListener);
+    
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+      window.removeEventListener('theme-sync', handleThemeSync as EventListener);
+    };
+  }, [resolveTheme, applyTheme]);
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme, resolvedTheme, mounted }}>

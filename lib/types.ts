@@ -30,9 +30,35 @@ export interface User {
 }
 
 export interface UserPreferences {
+  user_id: string;
   theme: 'light' | 'dark' | 'auto';
   language: string;
-  autoSaveConversations: boolean;
+  auto_save_conversations: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  plan: 'free' | 'pro' | 'premium';
+  status: 'active' | 'cancelled' | 'expired' | 'trial';
+  current_period_start?: string;
+  current_period_end?: string;
+  cancel_at_period_end: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RateLimit {
+  id: string;
+  user_id: string | null;
+  resource_type: 'message' | 'api_call' | 'conversation';
+  count: number;
+  window_start: string;
+  window_end: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface UserStats {
@@ -50,9 +76,13 @@ export interface Message {
   text: string;
   content?: string; // Alternative field name used in some components
   isUser: boolean;
-  role?: 'user' | 'assistant' | 'system';
+  role?: 'user' | 'assistant' | 'system' | 'tool';
   timestamp: string;
   model?: string;
+  input_tokens?: number;
+  output_tokens?: number;
+  total_tokens?: number;
+  completion_time?: number;
   created_at?: string;
 }
 
@@ -97,13 +127,13 @@ export interface ChatMessage {
 
 /**
  * Message structure for useChat hook with parts
- * Supports text, reasoning, and other part types
+ * Uses AI SDK's native UIMessagePart type to support all part types
+ * (text, reasoning, tool parts, step-start, dynamic-tool, etc.)
  */
 export interface QurseMessage {
   id: string;
   role: 'user' | 'assistant';
-  // Using type from message-adapters for consistency with conversion functions
-  parts: Array<{ type: 'text' | 'reasoning'; text: string }>;
+  parts: UIMessagePart[];
   metadata?: StreamMetadata;
 }
 

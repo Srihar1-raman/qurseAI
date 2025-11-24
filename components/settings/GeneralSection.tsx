@@ -5,6 +5,9 @@ import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import type { GeneralSectionProps } from '@/lib/types';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
+import { createScopedLogger } from '@/lib/utils/logger';
+
+const logger = createScopedLogger('components/settings/GeneralSection');
 
 export default function GeneralSection({ 
   autoSaveConversations, 
@@ -20,6 +23,32 @@ export default function GeneralSection({
 
   const handleThemeChange = async (newTheme: 'light' | 'dark' | 'auto') => {
     setTheme(newTheme);
+    
+    // Persist theme to database if user is logged in
+    if (user) {
+      try {
+        const response = await fetch('/api/user/preferences', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            theme: newTheme,
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          logger.warn('Failed to save theme to database', {
+            status: response.status,
+            error: errorData.error || 'Unknown error',
+          });
+        }
+      } catch (error) {
+        // Silently fail - theme is already saved to localStorage
+        logger.error('Error saving theme to database', error);
+      }
+    }
   };
 
   return (

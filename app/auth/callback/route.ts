@@ -33,7 +33,7 @@ export async function GET(request: Request) {
         .eq('id', data.user.id)
         .single();
 
-      // If user doesn't exist in users table, create profile
+      // If user doesn't exist in users table, create profile and default records
       if (fetchError && fetchError.code === 'PGRST116') {
         const { error: insertError } = await supabase
           .from('users')
@@ -46,6 +46,40 @@ export async function GET(request: Request) {
 
         if (insertError) {
           logger.error('Error creating user profile', insertError, { userId: data.user.id });
+        } else {
+          // Create default user preferences
+          const { error: prefsError } = await supabase
+            .from('user_preferences')
+            .insert({
+              user_id: data.user.id,
+              theme: 'auto',
+              language: 'English',
+              auto_save_conversations: true,
+            });
+
+          if (prefsError) {
+            logger.error('Error creating user preferences', prefsError, { userId: data.user.id });
+          }
+
+          // Create default subscription (free plan)
+          // Set period dates for proper validation (1 year free trial)
+          const now = new Date();
+          const oneYearLater = new Date(now);
+          oneYearLater.setFullYear(now.getFullYear() + 1);
+          
+          const { error: subError } = await supabase
+            .from('subscriptions')
+            .insert({
+              user_id: data.user.id,
+              plan: 'free',
+              status: 'active',
+              current_period_start: now.toISOString(),
+              current_period_end: oneYearLater.toISOString(),
+            });
+
+          if (subError) {
+            logger.error('Error creating subscription', subError, { userId: data.user.id });
+          }
         }
       } else if (fetchError) {
         logger.error('Error checking user profile', fetchError, { userId: data.user.id });

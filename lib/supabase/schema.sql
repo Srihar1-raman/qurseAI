@@ -34,9 +34,74 @@ CREATE TABLE IF NOT EXISTS messages (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE NOT NULL,
   role TEXT CHECK (role IN ('user', 'assistant', 'system')) NOT NULL,
-  content TEXT NOT NULL,
+  content TEXT, -- Made nullable: legacy field, new messages use parts array
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
+
+-- =====================================================
+-- MESSAGES TABLE IMPROVEMENTS
+-- =====================================================
+
+-- Add new columns to messages table (if they don't exist)
+DO $$ 
+BEGIN
+  -- Add model field
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name = 'messages' AND column_name = 'model') THEN
+    ALTER TABLE messages ADD COLUMN model TEXT;
+  END IF;
+  
+  -- Add token tracking fields
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name = 'messages' AND column_name = 'input_tokens') THEN
+    ALTER TABLE messages ADD COLUMN input_tokens INTEGER;
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name = 'messages' AND column_name = 'output_tokens') THEN
+    ALTER TABLE messages ADD COLUMN output_tokens INTEGER;
+  END IF;
+  
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name = 'messages' AND column_name = 'total_tokens') THEN
+    ALTER TABLE messages ADD COLUMN total_tokens INTEGER;
+  END IF;
+  
+  -- Add completion time field
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name = 'messages' AND column_name = 'completion_time') THEN
+    ALTER TABLE messages ADD COLUMN completion_time REAL;
+  END IF;
+  
+  -- Add parts JSONB column for AI SDK parts array
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns 
+                 WHERE table_name = 'messages' AND column_name = 'parts') THEN
+    ALTER TABLE messages ADD COLUMN parts JSONB;
+  END IF;
+END $$;
+
+-- Update role CHECK constraint to include 'tool' role
+-- Drop existing constraint and create new one
+DO $$
+DECLARE
+  constraint_name TEXT;
+BEGIN
+  -- Find the actual constraint name (PostgreSQL may auto-generate it)
+  SELECT conname INTO constraint_name
+  FROM pg_constraint
+  WHERE conrelid = 'messages'::regclass
+    AND contype = 'c'
+    AND pg_get_constraintdef(oid) LIKE '%role%IN%';
+  
+  -- Drop old constraint if it exists
+  IF constraint_name IS NOT NULL THEN
+    EXECUTE format('ALTER TABLE messages DROP CONSTRAINT %I', constraint_name);
+  END IF;
+  
+  -- Add new constraint with 'tool' role included
+  ALTER TABLE messages ADD CONSTRAINT messages_role_check 
+    CHECK (role IN ('user', 'assistant', 'system', 'tool'));
+END $$;
 
 -- =====================================================
 -- INDEXES (For Performance)
@@ -52,6 +117,9 @@ CREATE INDEX IF NOT EXISTS idx_conversations_updated_at ON conversations(updated
 -- Messages indexes
 CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
 CREATE INDEX IF NOT EXISTS idx_messages_created_at ON messages(created_at);
+CREATE INDEX IF NOT EXISTS idx_messages_model ON messages(model) WHERE model IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_messages_role ON messages(role);
+CREATE INDEX IF NOT EXISTS idx_messages_parts ON messages USING GIN (parts) WHERE parts IS NOT NULL;
 
 -- =====================================================
 -- FUNCTIONS (Helper Functions)
@@ -194,6 +262,116 @@ CREATE POLICY "Users can delete messages from own conversations"
       AND conversations.user_id = auth.uid()
     )
   );
+
+-- =====================================================
+-- NEW TABLES (Current Features)
+-- =====================================================
+
+-- User Preferences table
+CREATE TABLE IF NOT EXISTS user_preferences (
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE PRIMARY KEY,
+  theme TEXT CHECK (theme IN ('light', 'dark', 'auto')) DEFAULT 'auto' NOT NULL,
+  language TEXT DEFAULT 'English' NOT NULL,
+  auto_save_conversations BOOLEAN DEFAULT true NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+-- Index for user preferences
+CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user_id);
+
+-- Trigger for updated_at
+CREATE TRIGGER update_user_preferences_updated_at
+  BEFORE UPDATE ON user_preferences
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Subscriptions table
+CREATE TABLE IF NOT EXISTS subscriptions (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL UNIQUE,
+  plan TEXT CHECK (plan IN ('free', 'pro', 'premium')) DEFAULT 'free' NOT NULL,
+  status TEXT CHECK (status IN ('active', 'cancelled', 'expired', 'trial')) DEFAULT 'active' NOT NULL,
+  current_period_start TIMESTAMPTZ,
+  current_period_end TIMESTAMPTZ,
+  cancel_at_period_end BOOLEAN DEFAULT false NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+-- Indexes for subscriptions
+CREATE INDEX IF NOT EXISTS idx_subscriptions_user_id ON subscriptions(user_id);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_status ON subscriptions(status);
+CREATE INDEX IF NOT EXISTS idx_subscriptions_period_end ON subscriptions(current_period_end) WHERE current_period_end IS NOT NULL;
+
+-- Trigger for updated_at
+CREATE TRIGGER update_subscriptions_updated_at
+  BEFORE UPDATE ON subscriptions
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Rate Limits table (for tracking usage)
+CREATE TABLE IF NOT EXISTS rate_limits (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+  resource_type TEXT NOT NULL, -- 'message', 'api_call', 'conversation'
+  count INTEGER DEFAULT 0 NOT NULL,
+  window_start TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  window_end TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  UNIQUE(user_id, resource_type, window_start)
+);
+
+-- Indexes for rate_limits
+CREATE INDEX IF NOT EXISTS idx_rate_limits_user_id ON rate_limits(user_id);
+CREATE INDEX IF NOT EXISTS idx_rate_limits_window ON rate_limits(window_start, window_end);
+CREATE INDEX IF NOT EXISTS idx_rate_limits_resource ON rate_limits(resource_type);
+CREATE INDEX IF NOT EXISTS idx_rate_limits_user_resource ON rate_limits(user_id, resource_type, window_start);
+
+-- Trigger for updated_at
+CREATE TRIGGER update_rate_limits_updated_at
+  BEFORE UPDATE ON rate_limits
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- =====================================================
+-- RLS POLICIES FOR NEW TABLES
+-- =====================================================
+
+-- Enable RLS on new tables
+ALTER TABLE user_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE subscriptions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE rate_limits ENABLE ROW LEVEL SECURITY;
+
+-- User Preferences policies
+CREATE POLICY "Users can view own preferences" 
+  ON user_preferences FOR SELECT 
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own preferences" 
+  ON user_preferences FOR UPDATE 
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own preferences" 
+  ON user_preferences FOR INSERT 
+  WITH CHECK (auth.uid() = user_id);
+
+-- Subscriptions policies
+CREATE POLICY "Users can view own subscription" 
+  ON subscriptions FOR SELECT 
+  USING (auth.uid() = user_id);
+
+-- Note: Subscription updates should be server-side only (via webhooks)
+-- No UPDATE/INSERT policies for subscriptions - handled server-side
+
+-- Rate Limits policies
+CREATE POLICY "Users can view own rate limits" 
+  ON rate_limits FOR SELECT 
+  USING (auth.uid() = user_id OR auth.uid() IS NULL);
+
+-- Note: Rate limit updates should be server-side only
+-- No UPDATE/INSERT policies for rate_limits - handled server-side
 
 -- =====================================================
 -- SETUP COMPLETE
