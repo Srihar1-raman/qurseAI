@@ -20,7 +20,7 @@ const ConversationClient = dynamic(
 
 interface ConversationPageClientProps {
   conversationId: string;
-  initialMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }>;
+  initialMessages: Array<{ id: string; role: 'user' | 'assistant'; parts: Array<{ type: string; text?: string; [key: string]: any }> }>;
   initialHasMore: boolean;
   initialDbRowCount: number;
   hasInitialMessageParam: boolean;

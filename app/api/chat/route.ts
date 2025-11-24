@@ -19,6 +19,8 @@ import { sanitizeApiError } from '@/lib/utils/error-sanitizer';
 import { toUIMessageFromZod, type StreamTextProviderOptions } from '@/lib/utils/message-adapters';
 import { generateTitleFromUserMessage } from '@/lib/utils/convo-title-generation';
 import { updateConversationTitle } from '@/lib/db/queries.server';
+import { canSendMessage } from '@/lib/services/rate-limiting';
+import type { User } from '@/lib/types';
 
 const logger = createScopedLogger('api/chat');
 
@@ -104,24 +106,60 @@ async function ensureConversation(
 }
 
 /**
- * Helper: Save user message
+ * Helper: Save user message with parts array
  * Returns true if message was saved, false if skipped (early return)
  */
 async function saveUserMessage(
   conversationId: string,
-  messageText: string,
-  supabase: Awaited<ReturnType<typeof createClient>>
+  userMessage: UIMessage,
+  userId: string | null,
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  isProUserOverride?: boolean
 ): Promise<boolean> {
-  if (!conversationId || conversationId.startsWith('temp-') || !messageText.trim()) {
+  if (!conversationId || conversationId.startsWith('temp-') || !userMessage) {
     return false;
   }
 
+  // Extract text from parts for content field (backward compatibility)
+  const messageText = userMessage.parts
+    ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+    .map((p) => p.text)
+    .join('') || '';
+
+  if (!messageText.trim()) {
+    return false;
+  }
+
+  // Final rate limit check before saving (mitigates race conditions)
+  // This is the actual enforcement point - if we get here, we save the message
+  // NOTE: This is a second check to prevent race conditions, but concurrent requests
+  // could still potentially bypass limits. For production, consider using database-level
+  // constraints or a distributed lock mechanism.
+  if (userId) {
+    const { countMessagesTodayServerSide } = await import('@/lib/db/queries.server');
+    const { isProUser } = await import('@/lib/services/subscription');
+    const { RATE_LIMITS } = await import('@/lib/services/rate-limiting');
+    
+    // Use override if provided to avoid duplicate DB call
+    const isPro = isProUserOverride !== undefined ? isProUserOverride : await isProUser(userId);
+    
+    if (!isPro) {
+      const count = await countMessagesTodayServerSide(userId);
+      if (count >= RATE_LIMITS.free) {
+        logger.warn('Rate limit enforced at save time', { userId, count, limit: RATE_LIMITS.free });
+        throw new Error('Daily limit reached. Please try again tomorrow or upgrade to Pro.');
+      }
+    }
+  }
+
+  // Save with parts array (new format) and content (backward compatibility)
   const { error: msgError } = await supabase
     .from('messages')
     .insert({
       conversation_id: conversationId,
-      content: messageText.trim(),
       role: 'user',
+      parts: userMessage.parts || [{ type: 'text', text: messageText.trim() }],
+      content: messageText.trim(), // Keep for backward compatibility
     });
 
   if (msgError) {
@@ -193,11 +231,36 @@ export async function POST(req: Request) {
       throw new ModelAccessError('Authentication required', 401);
     }
     
-    // TODO: Enable Pro check when subscription logic is implemented
-    // if (requiresProSubscription(model) && !lightweightUser?.isProUser) {
-    //   logger.warn('Early exit: Pro required', { model, userId: lightweightUser?.userId });
-    //   throw new ModelAccessError('Pro subscription required', 403);
-    // }
+    // Check if model requires Pro subscription
+    if (requiresProSubscription(model) && (!lightweightUser || !lightweightUser.isProUser)) {
+      logger.warn('Early exit: Pro required', { model, userId: lightweightUser?.userId });
+      throw new ModelAccessError('Pro subscription required', 403);
+    }
+    
+    // ============================================
+    // RATE LIMITING (Business Logic)
+    // ============================================
+    // Check rate limits before processing request
+    // Pass isProUser to avoid duplicate DB call (already computed in getUserData)
+    const rateLimitCheck = await canSendMessage(
+      lightweightUser?.userId || null,
+      lightweightUser?.isProUser
+    );
+    if (!rateLimitCheck.allowed) {
+      logger.warn('Rate limit exceeded', {
+        userId: lightweightUser?.userId || 'anonymous',
+        reason: rateLimitCheck.reason,
+      });
+      return NextResponse.json(
+        {
+          error: rateLimitCheck.reason || 'Rate limit exceeded',
+          rateLimitInfo: {
+            remaining: rateLimitCheck.remaining ?? 0,
+          },
+        },
+        { status: 429 }
+      );
+    }
     
     // ============================================
     // Stage 3: Start promises early (parallel execution)
@@ -215,7 +278,10 @@ export async function POST(req: Request) {
     const accessCheckPromise = (async () => {
       const isPro = lightweightUser?.isProUser ?? false;
       // Convert lightweight user to User type for canUseModel
-      const userForCheck = lightweightUser ? { id: lightweightUser.userId } : null;
+      const userForCheck: User | null = lightweightUser ? { 
+        id: lightweightUser.userId,
+        email: lightweightUser.email,
+      } : null;
       return canUseModel(model, userForCheck, isPro);
     })();
     
@@ -240,24 +306,22 @@ export async function POST(req: Request) {
     // Convert Zod-validated messages to UIMessage[] format
     const uiMessages = toUIMessageFromZod(messages);
     
-    // Extract user message text early (enables parallel DB operations)
-    let userMessageText = '';
+    // Extract user message for saving (enables parallel DB operations)
+    let lastUserMessage: UIMessage | null = null;
     if (uiMessages.length > 0) {
       const lastMessage = uiMessages[uiMessages.length - 1];
       
       // Verify last message is a user message (critical for data integrity)
       if (lastMessage.role === 'user') {
-        // Extract user message text
-        if (lastMessage?.parts && Array.isArray(lastMessage.parts)) {
-          userMessageText = lastMessage.parts
-            .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
-            .map((p) => p.text)
-            .join('');
-        } else if (lastMessage && 'content' in lastMessage && typeof lastMessage.content === 'string') {
-          userMessageText = lastMessage.content;
-        }
+        lastUserMessage = lastMessage;
       }
     }
+    
+    // Extract user message text for title generation
+    const userMessageText = lastUserMessage?.parts
+      ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+      .map((p) => p.text)
+      .join('') || '';
     
     // Calculate title for conversation creation
     const title = userMessageText.trim().length > 0
@@ -279,26 +343,29 @@ export async function POST(req: Request) {
     // Full user already available (no await needed)
     const dbOperationsPromise = (async () => {
       const user = fullUserData;
-      if (user && conversationId && !conversationId.startsWith('temp-') && userMessageText.trim().length > 0) {
+      if (user && conversationId && !conversationId.startsWith('temp-') && lastUserMessage) {
         return ensureConversation(user, conversationId, title, supabaseClient)
           .then(convId => {
             // After conversation is ensured, save user message
             // Check conditions again (defensive programming - saveUserMessage has its own checks)
-            if (!convId || convId.startsWith('temp-') || !userMessageText.trim()) {
+            if (!convId || convId.startsWith('temp-') || !lastUserMessage) {
               // Shouldn't happen due to outer check, but handle defensively
               return { convId, saveSuccess: false };
             }
             
+            // Extract text for title generation
+            const userMessageText = lastUserMessage.parts
+              ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+              .map((p) => p.text)
+              .join('') || '';
+            
             // Generate better title in BACKGROUND (non-blocking, non-critical)
             // Only generate if message is longer than 50 chars (meaning we truncated it)
             if (userMessageText.trim().length > 50) {
-              // Use the last message directly (already verified as user message above)
-              const lastUserMessage = uiMessages[uiMessages.length - 1];
-              
               if (lastUserMessage && lastUserMessage.role === 'user') {
                 after(async () => {
                   try {
-                    const betterTitle = await generateTitleFromUserMessage({ message: lastUserMessage });
+                    const betterTitle = await generateTitleFromUserMessage({ message: lastUserMessage! });
                     await updateConversationTitle(convId, betterTitle, supabaseClient);
                     logger.debug('Title generated and updated', { conversationId: convId, title: betterTitle });
                   } catch (error) {
@@ -310,7 +377,11 @@ export async function POST(req: Request) {
             }
             
             // Return object with convId and saveSuccess flag
-            return saveUserMessage(convId, userMessageText, supabaseClient)
+            // Final rate limit check happens here (atomic enforcement point)
+            // Pass isProUser to avoid duplicate DB call (already computed in getUserData)
+            // Note: lightweightUser is in outer scope, accessible here
+            const isPro = lightweightUser?.isProUser ?? false;
+            return saveUserMessage(convId, lastUserMessage, user.id, supabaseClient, isPro)
               .then((saved) => ({ convId, saveSuccess: saved })) // Return actual save result
               .catch(error => {
                 // Log error but still return convId so we can use it
@@ -373,50 +444,12 @@ export async function POST(req: Request) {
               );
             }
           },
-          onFinish: async ({ text, reasoning, usage }) => {
-            // Save assistant message in BACKGROUND (non-blocking)
-            // Full user already available (no await needed)
-            const user = fullUserData;
-            if (user && convId && !convId.startsWith('temp-')) {
-              after(async () => {
-                try {
-                  let fullContent = text;
-                  if (reasoning) {
-                    const reasoningText = typeof reasoning === 'string'
-                      ? reasoning
-                      : JSON.stringify(reasoning);
-                    fullContent = `${text}|||REASONING|||${reasoningText}`;
-                  }
-
-                  const { error: assistantMsgError } = await supabaseClient
-                    .from('messages')
-                    .insert({
-                      conversation_id: convId,
-                      content: fullContent,
-                      role: 'assistant',
-                    });
-
-                  if (assistantMsgError) {
-                    logger.error('Background assistant message save failed', assistantMsgError, { conversationId: convId });
-                  } else {
-                    logger.info('Assistant message saved', {
-                      conversationId: convId,
-                      hasReasoning: !!reasoning,
-                      tokens: usage?.totalTokens,
-                      model,
-                    });
-                  }
-                } catch (error) {
-                  logger.error('Background assistant message save error', error, { conversationId: convId });
-                }
-              });
-            }
-
+          onFinish: async ({ usage }) => {
+            // Note: We save messages in createUIMessageStream's onFinish instead
+            // This onFinish is kept for logging purposes
             const processingTime = (Date.now() - requestStartTime) / 1000;
-            logger.info('Request completed', {
+            logger.info('Stream completed', {
               duration: `${processingTime.toFixed(2)}s`,
-              hasReasoning: !!reasoning,
-              reasoningLength: reasoning?.length,
               tokens: usage?.totalTokens || 0,
             });
           },
@@ -435,11 +468,89 @@ export async function POST(req: Request) {
             sendReasoning: shouldSendReasoning,
             messageMetadata: ({ part }) => {
               if (part.type === 'finish') {
-                return { model };
+                const processingTime = (Date.now() - requestStartTime) / 1000;
+                return {
+                  model: model,
+                  completionTime: processingTime,
+                  totalTokens: part.totalUsage?.totalTokens ?? null,
+                  inputTokens: part.totalUsage?.inputTokens ?? null,
+                  outputTokens: part.totalUsage?.outputTokens ?? null,
+                };
               }
             },
           })
         );
+      },
+      onFinish: async ({ messages }) => {
+        // Save assistant messages in BACKGROUND (non-blocking)
+        // Messages array contains all messages including the new assistant message with parts
+        const user = fullUserData;
+        if (user && conversationId && !conversationId.startsWith('temp-')) {
+          after(async () => {
+            try {
+              // Get the last message (should be the assistant response)
+              const lastMessage = messages[messages.length - 1];
+              if (lastMessage && lastMessage.role === 'assistant' && lastMessage.parts) {
+                // Extract text from parts for content field (backward compatibility)
+                const contentText = lastMessage.parts
+                  .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+                  .map((p) => p.text)
+                  .join('') || '';
+
+                // Extract metadata from message if available (set by messageMetadata callback)
+                // Type-safe metadata extraction
+                interface MessageWithMetadata extends UIMessage {
+                  metadata?: {
+                    inputTokens?: number | null;
+                    outputTokens?: number | null;
+                    totalTokens?: number | null;
+                    completionTime?: number;
+                    model?: string;
+                  };
+                }
+                const messageWithMetadata = lastMessage as MessageWithMetadata;
+                const metadata = messageWithMetadata.metadata;
+                const inputTokens = metadata?.inputTokens ?? null;
+                const outputTokens = metadata?.outputTokens ?? null;
+                const totalTokens = metadata?.totalTokens ?? null;
+                const completionTime = metadata?.completionTime ?? ((Date.now() - requestStartTime) / 1000);
+
+                // Validate parts array before saving
+                if (!Array.isArray(lastMessage.parts) || lastMessage.parts.length === 0) {
+                  logger.error('Invalid parts array', { conversationId, parts: lastMessage.parts });
+                  return;
+                }
+
+                const { error: assistantMsgError } = await supabaseClient
+                  .from('messages')
+                  .insert({
+                    conversation_id: conversationId,
+                    role: 'assistant',
+                    parts: lastMessage.parts, // Save AI SDK native parts array
+                    content: contentText || null, // Backward compatibility (nullable)
+                    model: model,
+                    input_tokens: inputTokens,
+                    output_tokens: outputTokens,
+                    total_tokens: totalTokens,
+                    completion_time: completionTime,
+                  });
+
+                if (assistantMsgError) {
+                  logger.error('Background assistant message save failed', assistantMsgError, { conversationId });
+                } else {
+                  logger.info('Assistant message saved', {
+                    conversationId,
+                    partsCount: lastMessage.parts.length,
+                    tokens: totalTokens,
+                    model,
+                  });
+                }
+              }
+            } catch (error) {
+              logger.error('Background assistant message save error', error, { conversationId });
+            }
+          });
+        }
       },
     });
 

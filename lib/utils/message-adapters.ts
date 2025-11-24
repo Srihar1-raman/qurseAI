@@ -6,6 +6,7 @@
 import { type UIMessage, type UIMessagePart, convertToModelMessages, streamText } from 'ai';
 import { createScopedLogger } from './logger';
 import type { ChatRequest } from '@/lib/validation/chat-schema';
+import { convertLegacyContentToParts } from './message-parts-fallback';
 
 const logger = createScopedLogger('message-adapters');
 
@@ -23,12 +24,14 @@ export type StreamTextProviderOptions = Parameters<typeof streamText>[0]['provid
 
 /**
  * Server message format (from database or API responses)
+ * Supports both parts array (new) and content/reasoning (legacy) for backward compatibility
  */
 export interface ServerMessage {
   id: string;
   role: 'user' | 'assistant';
-  content: string;
-  reasoning?: string;
+  content?: string; // Legacy field, kept for backward compatibility
+  reasoning?: string; // Legacy field, kept for backward compatibility
+  parts?: UIMessagePart[]; // New field, AI SDK native parts array
 }
 
 /**
@@ -69,17 +72,30 @@ export function toUIMessageFromZod(messages: ChatRequest['messages']): UIMessage
 
 /**
  * Convert server message format to UIMessage[] format
- * Server messages come from database and always have id, role, and content
+ * Server messages come from database with parts array (new) or content/reasoning (legacy)
  */
 export function toUIMessageFromServer(messages: ServerMessage[]): UIMessage[] {
   return messages.map((msg): UIMessage => {
-    const parts: UIMessageParts = [
-      { type: 'text', text: msg.content } as UIMessageParts[number],
-    ];
+    // Prefer parts array (new format from database)
+    if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
+      return {
+        id: msg.id,
+        role: msg.role,
+        parts: msg.parts as UIMessageParts,
+      };
+    }
 
-    // Add reasoning as a separate part if it exists
-    if (msg.reasoning) {
-      parts.push({ type: 'reasoning', text: msg.reasoning } as UIMessageParts[number]);
+    // Fallback: Convert legacy content/reasoning format to parts array
+    // Use shared utility function for consistency (handles delimiter-based reasoning)
+    let parts: UIMessageParts = convertLegacyContentToParts(msg.content);
+    
+    // If message has separate reasoning field (legacy format), add it as reasoning part
+    if (msg.reasoning && typeof msg.reasoning === 'string') {
+      // Check if reasoning part already exists (from delimiter parsing)
+      const hasReasoning = parts.some(p => p.type === 'reasoning');
+      if (!hasReasoning) {
+        parts.push({ type: 'reasoning', text: msg.reasoning } as UIMessageParts[number]);
+      }
     }
 
     return {

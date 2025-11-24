@@ -310,7 +310,8 @@ export function isFreeUnlimited(modelValue: string): boolean {
  */
 export function shouldBypassRateLimits(modelValue: string, user: User | null): boolean {
   // If model is free unlimited and user is authenticated, bypass limits
-  // TODO: Add actual subscription check when business logic is implemented
+  // Note: This is infrastructure-level check for free unlimited models.
+  // Actual subscription-based rate limiting is handled by business logic layer (rate-limiting service).
   const model = getModelConfig(modelValue);
   return Boolean(user && model?.freeUnlimited);
 }
@@ -366,10 +367,10 @@ export function canUseModel(
     return { canUse: false, reason: 'Authentication required' };
   }
   
-  // TODO: Enable Pro enforcement when business model is ready
-  // if (model.requiresPro && !isPro) {
-  //   return { canUse: false, reason: 'Pro subscription required' };
-  // }
+  // Check Pro subscription requirement
+  if (model.requiresPro && !isPro) {
+    return { canUse: false, reason: 'Pro subscription required' };
+  }
   
   return { canUse: true };
 }

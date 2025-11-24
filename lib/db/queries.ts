@@ -7,9 +7,10 @@
  */
 
 import { createClient } from '@/lib/supabase/client';
-import type { Conversation, Message } from '@/lib/types';
+import type { Conversation, Message, UserPreferences } from '@/lib/types';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { handleDbError } from '@/lib/utils/error-handler';
+import { convertLegacyContentToParts, type MessageParts } from '@/lib/utils/message-parts-fallback';
 
 const logger = createScopedLogger('db/queries');
 
@@ -179,7 +180,16 @@ export async function getOlderMessages(
   limit: number = 50,
   offset: number = 0
 ): Promise<{ 
-  messages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }>;
+  messages: Array<{ 
+    id: string; 
+    role: 'user' | 'assistant' | 'tool'; 
+    parts: MessageParts; 
+    model?: string;
+    input_tokens?: number;
+    output_tokens?: number;
+    total_tokens?: number;
+    completion_time?: number;
+  }>;
   hasMore: boolean;
   dbRowCount: number; // Actual rows queried from DB (for accurate offset calculation)
 }> {
@@ -191,7 +201,7 @@ export async function getOlderMessages(
   // So we skip the offset messages and get the next batch
   let query = supabase
     .from('messages')
-    .select('id, role, content, created_at')
+    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1);
@@ -225,21 +235,25 @@ export async function getOlderMessages(
   });
   
   const messages = reversed.map((msg) => {
-    // Extract reasoning from content if it exists (delimiter: |||REASONING|||)
-    let content = msg.content;
-    let reasoning: string | undefined;
+    let parts: MessageParts = [];
     
-    if (content.includes('|||REASONING|||')) {
-      const parts = content.split('|||REASONING|||');
-      content = parts[0];
-      reasoning = parts[1];
+    // Prefer parts array (new format)
+    if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
+      parts = msg.parts as MessageParts;
+    } else {
+      // Fallback: Convert legacy content/reasoning format to parts array
+      parts = convertLegacyContentToParts(msg.content);
     }
     
     return {
       id: msg.id,
-      role: msg.role as 'user' | 'assistant',
-      content,
-      reasoning,
+      role: msg.role as 'user' | 'assistant' | 'tool',
+      parts: parts,
+      model: msg.model ?? undefined,
+      input_tokens: msg.input_tokens ?? undefined,
+      output_tokens: msg.output_tokens ?? undefined,
+      total_tokens: msg.total_tokens ?? undefined,
+      completion_time: msg.completion_time ?? undefined,
     };
   });
 
@@ -333,7 +347,7 @@ export async function getMessages(conversationId: string): Promise<Message[]> {
   
   const { data, error } = await supabase
     .from('messages')
-    .select('*')
+    .select('id, role, content, created_at, model, input_tokens, output_tokens, total_tokens, completion_time')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true });
 
@@ -349,8 +363,13 @@ export async function getMessages(conversationId: string): Promise<Message[]> {
     text: msg.content,
     content: msg.content,
     isUser: msg.role === 'user',
-    role: msg.role as 'user' | 'assistant' | 'system',
+    role: msg.role as 'user' | 'assistant' | 'system' | 'tool',
     timestamp: msg.created_at,
+    model: msg.model ?? undefined,
+    input_tokens: msg.input_tokens ?? undefined,
+    output_tokens: msg.output_tokens ?? undefined,
+    total_tokens: msg.total_tokens ?? undefined,
+    completion_time: msg.completion_time ?? undefined,
     created_at: msg.created_at,
   }));
 }
@@ -477,6 +496,142 @@ export async function ensureConversation(
   } catch (error) {
     const userMessage = handleDbError(error, 'db/queries/ensureConversation');
     logger.error('Error ensuring conversation', error, { conversationId, userId, title });
+    const dbError = new Error(userMessage);
+    throw dbError;
+  }
+}
+
+/**
+ * Get user preferences (client-side)
+ * Returns default preferences if user has none
+ */
+export async function getUserPreferences(userId: string): Promise<UserPreferences> {
+  const supabase = createClient();
+
+  const { data, error } = await supabase
+    .from('user_preferences')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    const userMessage = handleDbError(error, 'db/queries/getUserPreferences');
+    logger.error('Error fetching user preferences', error, { userId });
+    const dbError = new Error(userMessage);
+    throw dbError;
+  }
+
+  // Return defaults if no preferences exist
+  if (!data) {
+    return {
+      user_id: userId,
+      theme: 'auto',
+      language: 'English',
+      auto_save_conversations: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+  }
+
+  return {
+    user_id: data.user_id,
+    theme: data.theme as 'light' | 'dark' | 'auto',
+    language: data.language,
+    auto_save_conversations: data.auto_save_conversations,
+    created_at: data.created_at,
+    updated_at: data.updated_at,
+  };
+}
+
+/**
+ * Update user preferences (client-side)
+ * Creates preferences if they don't exist
+ */
+export async function updateUserPreferences(
+  userId: string,
+  preferences: Partial<Omit<UserPreferences, 'user_id' | 'created_at' | 'updated_at'>>
+): Promise<UserPreferences> {
+  const supabase = createClient();
+
+  // Check if preferences exist
+  const { data: existing } = await supabase
+    .from('user_preferences')
+    .select('user_id')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (existing) {
+    // Update existing preferences
+    const { data, error } = await supabase
+      .from('user_preferences')
+      .update(preferences)
+      .eq('user_id', userId)
+      .select()
+      .single();
+
+    if (error) {
+      const userMessage = handleDbError(error, 'db/queries/updateUserPreferences');
+      logger.error('Error updating user preferences', error, { userId });
+      const dbError = new Error(userMessage);
+      throw dbError;
+    }
+
+    return {
+      user_id: data.user_id,
+      theme: data.theme as 'light' | 'dark' | 'auto',
+      language: data.language,
+      auto_save_conversations: data.auto_save_conversations,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    };
+  } else {
+    // Create new preferences
+    const { data, error } = await supabase
+      .from('user_preferences')
+      .insert({
+        user_id: userId,
+        theme: preferences.theme ?? 'auto',
+        language: preferences.language ?? 'English',
+        auto_save_conversations: preferences.auto_save_conversations ?? true,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      const userMessage = handleDbError(error, 'db/queries/updateUserPreferences');
+      logger.error('Error creating user preferences', error, { userId });
+      const dbError = new Error(userMessage);
+      throw dbError;
+    }
+
+    return {
+      user_id: data.user_id,
+      theme: data.theme as 'light' | 'dark' | 'auto',
+      language: data.language,
+      auto_save_conversations: data.auto_save_conversations,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+    };
+  }
+}
+
+/**
+ * Update user profile (client-side)
+ */
+export async function updateUserProfile(
+  userId: string,
+  updates: { name?: string; avatar_url?: string }
+): Promise<void> {
+  const supabase = createClient();
+
+  const { error } = await supabase
+    .from('users')
+    .update(updates)
+    .eq('id', userId);
+
+  if (error) {
+    const userMessage = handleDbError(error, 'db/queries/updateUserProfile');
+    logger.error('Error updating user profile', error, { userId });
     const dbError = new Error(userMessage);
     throw dbError;
   }

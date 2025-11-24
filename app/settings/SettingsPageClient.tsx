@@ -50,6 +50,7 @@ function SettingsPageContent() {
   const [language, setLanguage] = useState('English');
   const [isSaving, setIsSaving] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
+  const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
   
   const { resolvedTheme, mounted } = useTheme();
   const { user: mockUser, signOut, isLoading: isAuthLoading } = useAuth();
@@ -94,6 +95,52 @@ function SettingsPageContent() {
     // loadConversations is stable (wrapped in useCallback in context with [user] dependency)
     // We include it in deps for correctness, but effect only runs when user/count changes
   }, [mockUser?.id, totalConversationCount, loadConversations]);
+
+  // Load user preferences on mount
+  useEffect(() => {
+    if (!mockUser?.id) {
+      setIsLoadingPreferences(false);
+      return;
+    }
+
+    async function loadPreferences() {
+      try {
+        setIsLoadingPreferences(true);
+        const response = await fetch('/api/user/preferences');
+        
+        if (!response.ok) {
+          if (response.status === 401) {
+            // Not authenticated - use defaults
+            setIsLoadingPreferences(false);
+            return;
+          }
+          throw new Error('Failed to load preferences');
+        }
+
+        const preferences = await response.json();
+        setAutoSaveConversations(preferences.auto_save_conversations ?? true);
+        setLanguage(preferences.language ?? 'English');
+        
+        // Sync theme from database to theme provider
+        if (preferences.theme && typeof window !== 'undefined') {
+          const currentTheme = localStorage.getItem('theme');
+          if (currentTheme !== preferences.theme) {
+            // Update theme provider if different
+            localStorage.setItem('theme', preferences.theme);
+            // Trigger theme update by dispatching a custom event
+            window.dispatchEvent(new CustomEvent('theme-sync', { detail: { theme: preferences.theme } }));
+          }
+        }
+      } catch (error) {
+        logger.error('Error loading preferences', error);
+        // Use defaults on error
+      } finally {
+        setIsLoadingPreferences(false);
+      }
+    }
+
+    loadPreferences();
+  }, [mockUser?.id]);
   const { error: showToastError, warning: showToastWarning } = useToast();
   const searchParams = useSearchParams();
 
@@ -109,12 +156,32 @@ function SettingsPageContent() {
 
   // Wrap handleSaveSettings with useCallback for stable reference
   const handleSaveSettings = useCallback(async (isAutoSave: boolean = false) => {
+    if (!mockUser?.id) {
+      return;
+    }
+
     if (!isAutoSave) {
       setIsSaving(true);
       setSaveStatus('saving');
     }
+    
     try {
-      // TODO: Implement API call to save settings
+      const response = await fetch('/api/user/preferences', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          auto_save_conversations: autoSaveConversations,
+          language: language,
+          // Note: theme is saved separately when changed via GeneralSection
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save preferences');
+      }
+
       if (!isAutoSave) {
         setSaveStatus('saved');
         setTimeout(() => setSaveStatus('idle'), 3000);
@@ -125,12 +192,13 @@ function SettingsPageContent() {
         setTimeout(() => setSaveStatus('idle'), 3000);
         showToastError('Failed to save settings. Please try again.');
       }
+      logger.error('Error saving preferences', error);
     } finally {
       if (!isAutoSave) {
         setIsSaving(false);
       }
     }
-  }, [showToastError, autoSaveConversations, language]);
+  }, [mockUser?.id, showToastError, autoSaveConversations, language]);
 
   // Auto-save settings when they change (debounced)
   useEffect(() => {
@@ -155,11 +223,27 @@ function SettingsPageContent() {
     
     try {
       setIsDeleting(true);
-      // TODO: Implement API call to delete account
+      
+      const response = await fetch('/api/user/account', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ confirmation: 'DELETE' }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to delete account');
+      }
+
+      // Account deleted successfully - sign out and redirect
       await handleSignOut();
     } catch (error) {
       setIsDeleting(false);
-      showToastError('Failed to delete account. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to delete account. Please try again.';
+      showToastError(errorMessage);
+      logger.error('Error deleting account', error);
     }
   }, [deleteConfirmation, showToastWarning, showToastError, handleSignOut]);
 
@@ -167,7 +251,16 @@ function SettingsPageContent() {
   const handleClearAllChats = useCallback(async () => {
     try {
       setIsClearingChats(true);
-      // TODO: Implement API call to clear chats
+      
+      const response = await fetch('/api/user/conversations', {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || 'Failed to clear conversations');
+      }
+
       // Update both local state and context for consistency
       setUserStats({ totalConversations: 0 });
       setTotalConversationCount(0);
@@ -175,7 +268,9 @@ function SettingsPageContent() {
       router.push('/');
     } catch (error) {
       setIsClearingChats(false);
-      showToastError('Failed to clear chats. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to clear chats. Please try again.';
+      showToastError(errorMessage);
+      logger.error('Error clearing conversations', error);
     }
   }, [showToastError, router, setTotalConversationCount]);
 
@@ -197,8 +292,8 @@ function SettingsPageContent() {
     setIsHistoryOpen(true);
   }, []);
 
-  // Show skeleton while auth is loading (prevents flash of content)
-  if (isAuthLoading) {
+  // Show skeleton while auth is loading or preferences are loading (prevents flash of content)
+  if (isAuthLoading || isLoadingPreferences) {
     return <SettingsPageSkeleton />;
   }
   

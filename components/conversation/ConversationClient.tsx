@@ -2,7 +2,7 @@
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport } from 'ai';
+import { DefaultChatTransport, type UIMessagePart } from 'ai';
 import Image from 'next/image';
 import ChatMessage from '@/components/chat/ChatMessage';
 import ModelSelector from '@/components/homepage/ModelSelector';
@@ -20,7 +20,7 @@ import type { QurseMessage, StreamMetadata } from '@/lib/types';
 
 interface ConversationClientProps {
   conversationId: string;
-  initialMessages: Array<{ id: string; role: 'user' | 'assistant'; content: string; reasoning?: string }>;
+  initialMessages: Array<{ id: string; role: 'user' | 'assistant'; parts: Array<{ type: string; text?: string; [key: string]: any }> }>;
   initialHasMore?: boolean;
   initialDbRowCount?: number;
   hasInitialMessageParam: boolean;
@@ -296,47 +296,25 @@ export function ConversationClient({
     return [...baseMessages, ...newMessages];
   }, [loadedMessages, messages, isLoadingInitialMessages]);
   
-  // Transform server messages to have parts structure that ChatMessage expects
+  // Transform messages to have parts structure that ChatMessage expects
+  // Messages from DB already have parts array, messages from useChat also have parts
   const displayMessages = React.useMemo(() => {
     return rawDisplayMessages.map((msg): QurseMessage => {
-      // If message already has parts (from useChat), filter to only text/reasoning parts
-      if ('parts' in msg && msg.parts && Array.isArray(msg.parts)) {
-        const validParts = msg.parts
-          .filter((part): part is { type: 'text' | 'reasoning'; text: string } => 
-            (part.type === 'text' || part.type === 'reasoning') && 
-            'text' in part && 
-            typeof part.text === 'string'
-          )
-          .map(part => ({
-            type: part.type as 'text' | 'reasoning',
-            text: part.text,
-          }));
-        
+      // If message already has parts (from useChat or DB), use them directly
+      if ('parts' in msg && msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
         return {
           id: msg.id,
           role: msg.role as 'user' | 'assistant',
-          parts: validParts.length > 0 ? validParts : [{ type: 'text', text: '' }],
+          parts: msg.parts as UIMessagePart<any, any>[],
           metadata: ('metadata' in msg && msg.metadata) ? (msg.metadata as StreamMetadata) : undefined,
         };
       }
       
-      // Transform server message format to parts structure
-      const parts: Array<{ type: 'text' | 'reasoning'; text: string }> = [];
-      
-      // Extract content if it exists
-      if ('content' in msg && typeof msg.content === 'string') {
-        parts.push({ type: 'text', text: msg.content });
-      }
-      
-      // Add reasoning as a separate part if it exists
-      if ('reasoning' in msg && msg.reasoning && typeof msg.reasoning === 'string') {
-        parts.push({ type: 'reasoning', text: msg.reasoning });
-      }
-      
+      // Fallback: If no parts, create empty text part (shouldn't happen with new format)
       return {
         id: msg.id,
         role: msg.role as 'user' | 'assistant',
-        parts: parts.length > 0 ? parts : [{ type: 'text', text: '' }],
+        parts: [{ type: 'text', text: '' }],
         metadata: undefined,
       };
     });

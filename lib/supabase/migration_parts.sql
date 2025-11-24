@@ -1,8 +1,23 @@
 -- =====================================================
--- MIGRATION: Add Parts JSONB Column
+-- MIGRATION: Add Parts JSONB Column & Make Content Nullable
 -- Safe to run on existing database
 -- Adds parts column for AI SDK native parts array storage
+-- Makes content column nullable (legacy field, new messages use parts)
 -- =====================================================
+
+-- Make content column nullable (if not already)
+DO $$ 
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.columns 
+             WHERE table_name = 'messages' 
+             AND column_name = 'content' 
+             AND is_nullable = 'NO') THEN
+    ALTER TABLE messages ALTER COLUMN content DROP NOT NULL;
+    RAISE NOTICE 'Made content column nullable';
+  ELSE
+    RAISE NOTICE 'Content column already nullable, skipping';
+  END IF;
+END $$;
 
 -- Add parts JSONB column to messages table (if it doesn't exist)
 DO $$ 
@@ -34,8 +49,15 @@ CREATE INDEX IF NOT EXISTS idx_messages_parts ON messages USING GIN (parts) WHER
 --   { type: 'dynamic-tool', toolName: '...', ... }
 -- ]
 --
--- The content column is kept temporarily for backward compatibility.
+-- The content column is now nullable and kept for backward compatibility.
+-- Old messages will have content (with optional delimiter-based reasoning).
+-- New messages will have parts array (and optionally content for compatibility).
 -- Future migration will remove content column once all messages use parts.
+--
+-- Migration path:
+-- 1. New messages: Save with parts array (and content for compatibility)
+-- 2. Old messages: Load from content (with delimiter parsing fallback)
+-- 3. Future: Migrate old messages to parts format (optional cleanup)
 --
 -- =====================================================
 -- MIGRATION COMPLETE

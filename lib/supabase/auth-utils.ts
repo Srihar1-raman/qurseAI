@@ -6,6 +6,7 @@
 import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { createScopedLogger } from '@/lib/utils/logger';
+import { isProUser } from '@/lib/services/subscription';
 import type { SupabaseUserMetadata } from '@/lib/types';
 
 const logger = createScopedLogger('supabase/auth-utils');
@@ -67,11 +68,14 @@ export async function getUserData(supabase?: Awaited<ReturnType<typeof createCli
       };
     }
     
+    // Check Pro status (async, but we'll await it)
+    const proStatus = await isProUser(user.id);
+    
     // Derive lightweight user from full user (no extra API call)
     const lightweightUser: LightweightUser = {
       userId: user.id,
       email: user.email || '',
-      isProUser: false, // TODO: Get from subscription when implemented
+      isProUser: proStatus,
     };
     
     return {
