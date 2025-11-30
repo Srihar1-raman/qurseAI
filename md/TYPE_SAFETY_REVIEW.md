@@ -14,7 +14,7 @@
 
 ### 1. Fixed `any` Types in `ai/models.ts`
 
-**File:** `ai/models.ts`
+**File:** `ai/models.ts`P
 
 **Changes:**
 - Line 296: `user: any` → `user: User | null` ✅
