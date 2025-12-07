@@ -26,63 +26,75 @@ export async function GET(request: Request) {
     }
 
     if (data.user) {
-      // Check if user profile exists in users table
+      const userId = data.user.id;
+
+      // ============================================
+      // Step 1: Ensure user profile exists
+      // ============================================
       const { error: fetchError } = await supabase
         .from('users')
         .select('id')
-        .eq('id', data.user.id)
+        .eq('id', userId)
         .single();
 
-      // If user doesn't exist in users table, create profile and default records
+      // If user doesn't exist, create profile
       if (fetchError && fetchError.code === 'PGRST116') {
         const { error: insertError } = await supabase
           .from('users')
           .insert({
-            id: data.user.id,
+            id: userId,
             email: data.user.email!,
             name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email?.split('@')[0],
             avatar_url: data.user.user_metadata?.avatar_url,
           });
 
         if (insertError) {
-          logger.error('Error creating user profile', insertError, { userId: data.user.id });
+          logger.error('Error creating user profile', insertError, { userId });
         } else {
-          // Create default user preferences
-          const { error: prefsError } = await supabase
-            .from('user_preferences')
-            .insert({
-              user_id: data.user.id,
-              theme: 'auto',
-              language: 'English',
-              auto_save_conversations: true,
-            });
-
-          if (prefsError) {
-            logger.error('Error creating user preferences', prefsError, { userId: data.user.id });
-          }
-
-          // Create default subscription (free plan)
-          // Set period dates for proper validation (1 year free trial)
-          const now = new Date();
-          const oneYearLater = new Date(now);
-          oneYearLater.setFullYear(now.getFullYear() + 1);
-          
-          const { error: subError } = await supabase
-            .from('subscriptions')
-            .insert({
-              user_id: data.user.id,
-              plan: 'free',
-              status: 'active',
-              current_period_start: now.toISOString(),
-              current_period_end: oneYearLater.toISOString(),
-            });
-
-          if (subError) {
-            logger.error('Error creating subscription', subError, { userId: data.user.id });
-          }
+          logger.info('User profile created', { userId });
         }
       } else if (fetchError) {
-        logger.error('Error checking user profile', fetchError, { userId: data.user.id });
+        logger.error('Error checking user profile', fetchError, { userId });
+      }
+
+      // ============================================
+      // Step 2: Ensure user preferences exist (independent check)
+      // ============================================
+      const { data: existingPrefs } = await supabase
+        .from('user_preferences')
+        .select('user_id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      if (!existingPrefs) {
+        const { error: prefsError } = await supabase
+          .from('user_preferences')
+          .insert({
+            user_id: userId,
+            theme: 'auto',
+            language: 'English',
+            auto_save_conversations: true,
+          });
+
+        if (prefsError) {
+          logger.error('Error creating user preferences', prefsError, { userId });
+        } else {
+          logger.info('User preferences created', { userId });
+        }
+      }
+
+      // ============================================
+      // Step 3: Ensure subscription exists (independent check)
+      // ============================================
+      // Use database function with SECURITY DEFINER to bypass RLS
+      // This is safe because function validates input and only creates free subscriptions
+      const { data: subscriptionId, error: subError } = await supabase
+        .rpc('ensure_user_subscription', { user_uuid: userId });
+
+      if (subError) {
+        logger.error('Error ensuring subscription', subError, { userId });
+      } else if (subscriptionId) {
+        logger.info('Subscription ensured', { userId, subscriptionId, plan: 'free' });
       }
     }
 

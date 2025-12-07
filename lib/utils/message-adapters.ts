@@ -88,13 +88,13 @@ export function toUIMessageFromServer(messages: ServerMessage[]): UIMessage[] {
     // Fallback: Convert legacy content/reasoning format to parts array
     // Use shared utility function for consistency (handles delimiter-based reasoning)
     let parts: UIMessageParts = convertLegacyContentToParts(msg.content);
-    
+
     // If message has separate reasoning field (legacy format), add it as reasoning part
     if (msg.reasoning && typeof msg.reasoning === 'string') {
       // Check if reasoning part already exists (from delimiter parsing)
       const hasReasoning = parts.some(p => p.type === 'reasoning');
       if (!hasReasoning) {
-        parts.push({ type: 'reasoning', text: msg.reasoning } as UIMessageParts[number]);
+      parts.push({ type: 'reasoning', text: msg.reasoning } as UIMessageParts[number]);
       }
     }
 

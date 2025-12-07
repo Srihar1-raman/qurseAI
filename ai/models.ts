@@ -72,7 +72,7 @@ export interface ModelConfig {
   // ============================================
   // UI METADATA
   // ============================================
-  category: 'Free' | 'Pro' | 'Premium';
+  category: 'Free' | 'Pro';
   tags?: Array<'fast' | 'smart' | 'new' | 'reasoning' | 'vision'>;
   
   // ============================================

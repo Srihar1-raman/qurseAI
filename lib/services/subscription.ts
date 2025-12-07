@@ -12,7 +12,7 @@ const logger = createScopedLogger('services/subscription');
 /**
  * Check if user has active Pro subscription
  * @param userId - User ID
- * @returns True if user has active Pro or Premium subscription
+ * @returns True if user has active Pro subscription
  */
 export async function isProUser(userId: string): Promise<boolean> {
   try {
@@ -27,7 +27,7 @@ export async function isProUser(userId: string): Promise<boolean> {
       return false;
     }
 
-    // Check if plan is Pro or Premium
+    // Check if plan is Pro (non-free)
     if (subscription.plan === 'free') {
       return false;
     }

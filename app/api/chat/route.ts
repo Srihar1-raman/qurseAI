@@ -320,7 +320,7 @@ export async function POST(req: Request) {
     // Extract user message text for title generation
     const userMessageText = lastUserMessage?.parts
       ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
-      .map((p) => p.text)
+            .map((p) => p.text)
       .join('') || '';
     
     // Calculate title for conversation creation

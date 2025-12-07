@@ -41,7 +41,7 @@ export interface UserPreferences {
 export interface Subscription {
   id: string;
   user_id: string;
-  plan: 'free' | 'pro' | 'premium';
+  plan: 'free' | 'pro';
   status: 'active' | 'cancelled' | 'expired' | 'trial';
   current_period_start?: string;
   current_period_end?: string;

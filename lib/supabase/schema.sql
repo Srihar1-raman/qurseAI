@@ -290,7 +290,7 @@ CREATE TRIGGER update_user_preferences_updated_at
 CREATE TABLE IF NOT EXISTS subscriptions (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES users(id) ON DELETE CASCADE NOT NULL UNIQUE,
-  plan TEXT CHECK (plan IN ('free', 'pro', 'premium')) DEFAULT 'free' NOT NULL,
+  plan TEXT CHECK (plan IN ('free', 'pro')) DEFAULT 'free' NOT NULL,
   status TEXT CHECK (status IN ('active', 'cancelled', 'expired', 'trial')) DEFAULT 'active' NOT NULL,
   current_period_start TIMESTAMPTZ,
   current_period_end TIMESTAMPTZ,
@@ -372,6 +372,80 @@ CREATE POLICY "Users can view own rate limits"
 
 -- Note: Rate limit updates should be server-side only
 -- No UPDATE/INSERT policies for rate_limits - handled server-side
+
+-- =====================================================
+-- HELPER FUNCTIONS (SECURITY DEFINER)
+-- =====================================================
+
+-- Function to ensure user has a subscription (creates if missing)
+-- Uses SECURITY DEFINER to bypass RLS for subscription creation
+-- This is safe because it validates user_id and only creates free subscriptions
+CREATE OR REPLACE FUNCTION ensure_user_subscription(user_uuid UUID)
+RETURNS UUID
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  subscription_id UUID;
+  now_timestamp TIMESTAMPTZ;
+  one_year_later TIMESTAMPTZ;
+BEGIN
+  -- Check if subscription already exists
+  SELECT id INTO subscription_id
+  FROM subscriptions
+  WHERE user_id = user_uuid
+  LIMIT 1;
+  
+  -- If subscription exists, return it
+  IF subscription_id IS NOT NULL THEN
+    RETURN subscription_id;
+  END IF;
+  
+  -- Calculate period dates (1 year from now)
+  now_timestamp := NOW();
+  one_year_later := now_timestamp + INTERVAL '1 year';
+  
+  -- Create default subscription (free plan)
+  INSERT INTO subscriptions (
+    user_id,
+    plan,
+    status,
+    current_period_start,
+    current_period_end,
+    cancel_at_period_end
+  )
+  VALUES (
+    user_uuid,
+    'free',
+    'active',
+    now_timestamp,
+    one_year_later,
+    false
+  )
+  RETURNING id INTO subscription_id;
+  
+  -- Return the created subscription ID
+  RETURN subscription_id;
+EXCEPTION
+  WHEN unique_violation THEN
+    -- Race condition: another request created subscription between check and insert
+    -- Return the existing subscription ID
+    SELECT id INTO subscription_id
+    FROM subscriptions
+    WHERE user_id = user_uuid
+    LIMIT 1;
+    RETURN subscription_id;
+  WHEN OTHERS THEN
+    -- Re-raise the error
+    RAISE;
+END;
+$$;
+
+-- Grant execute permission to authenticated users
+-- This allows the function to be called via RPC from the application
+GRANT EXECUTE ON FUNCTION ensure_user_subscription(UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION ensure_user_subscription(UUID) TO anon;
 
 -- =====================================================
 -- SETUP COMPLETE

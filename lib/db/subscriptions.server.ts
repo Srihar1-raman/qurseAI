@@ -38,7 +38,7 @@ export async function getUserSubscriptionServerSide(
   return {
     id: data.id,
     user_id: data.user_id,
-    plan: data.plan as 'free' | 'pro' | 'premium',
+    plan: data.plan as 'free' | 'pro',
     status: data.status as 'active' | 'cancelled' | 'expired' | 'trial',
     current_period_start: data.current_period_start ?? undefined,
     current_period_end: data.current_period_end ?? undefined,
@@ -103,7 +103,7 @@ export async function updateSubscriptionServerSide(
     return {
       id: data.id,
       user_id: data.user_id,
-      plan: data.plan as 'free' | 'pro' | 'premium',
+      plan: data.plan as 'free' | 'pro',
       status: data.status as 'active' | 'cancelled' | 'expired' | 'trial',
       current_period_start: data.current_period_start ?? undefined,
       current_period_end: data.current_period_end ?? undefined,
@@ -136,7 +136,7 @@ export async function updateSubscriptionServerSide(
     return {
       id: data.id,
       user_id: data.user_id,
-      plan: data.plan as 'free' | 'pro' | 'premium',
+      plan: data.plan as 'free' | 'pro',
       status: data.status as 'active' | 'cancelled' | 'expired' | 'trial',
       current_period_start: data.current_period_start ?? undefined,
       current_period_end: data.current_period_end ?? undefined,
