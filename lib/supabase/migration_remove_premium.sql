@@ -3,30 +3,36 @@
 -- Idempotent: Safe to run multiple times
 
 DO $$
+DECLARE
+  constraint_name TEXT;
 BEGIN
-  -- Drop existing constraint (if it exists)
-  -- PostgreSQL may have auto-generated a different constraint name
-  -- Try common constraint names
-  IF EXISTS (
-    SELECT 1 FROM pg_constraint 
-    WHERE conrelid = 'subscriptions'::regclass 
+  -- Find the existing constraint name (if it exists)
+  SELECT conname INTO constraint_name
+  FROM pg_constraint
+  WHERE conrelid = 'subscriptions'::regclass
     AND contype = 'c'
     AND pg_get_constraintdef(oid) LIKE '%plan%IN%'
-  ) THEN
-    -- Find and drop the actual constraint
-    EXECUTE (
-      SELECT format('ALTER TABLE subscriptions DROP CONSTRAINT %I', conname)
-      FROM pg_constraint
-      WHERE conrelid = 'subscriptions'::regclass
-        AND contype = 'c'
-        AND pg_get_constraintdef(oid) LIKE '%plan%IN%'
-      LIMIT 1
-    );
+  LIMIT 1;
+  
+  -- Drop existing constraint if it exists
+  IF constraint_name IS NOT NULL THEN
+    EXECUTE format('ALTER TABLE subscriptions DROP CONSTRAINT %I', constraint_name);
+    RAISE NOTICE 'Dropped existing constraint: %', constraint_name;
   END IF;
   
-  -- Add new constraint without 'premium'
-  ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_plan_check 
-    CHECK (plan IN ('free', 'pro'));
+  -- Add new constraint without 'premium' (only if it doesn't already exist)
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint
+    WHERE conrelid = 'subscriptions'::regclass
+      AND contype = 'c'
+      AND conname = 'subscriptions_plan_check'
+  ) THEN
+    ALTER TABLE subscriptions ADD CONSTRAINT subscriptions_plan_check 
+      CHECK (plan IN ('free', 'pro'));
+    RAISE NOTICE 'Added new constraint: subscriptions_plan_check';
+  ELSE
+    RAISE NOTICE 'Constraint subscriptions_plan_check already exists, skipping.';
+  END IF;
 END $$;
 
 -- Verify no subscriptions have 'premium' plan (should be empty)

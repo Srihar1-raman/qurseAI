@@ -56,10 +56,52 @@ export async function getUserData(supabase?: Awaited<ReturnType<typeof createCli
     // Reuse provided client or create new one
     const client = supabase || await createClient();
     
+    // CRITICAL: Check session validity before calling getUser()
+    // This prevents calling getUser() with expired/corrupted sessions that cause "missing destination name oauth_client_id" errors
+    const { data: { session } } = await client.auth.getSession();
+    
+    // If session is invalid or expired, return null (don't call getUser() with corrupted session)
+    if (!session?.access_token || !session?.user) {
+      logger.debug('No valid session for getUserData - returning null');
+      return {
+        lightweightUser: null,
+        fullUser: null,
+        supabaseClient: client,
+      };
+    }
+    
+    // Note: We don't check expires_at here because:
+    // 1. Supabase automatically refreshes expired sessions if refresh token is valid
+    // 2. If refresh token is expired, getUser() will return an error, which we handle below
+    // 3. Checking expires_at here would prevent valid refresh attempts
+    
+    // Session is valid - call getUser()
     // Single getUser() call - use result for both lightweight and full
     const { data: { user }, error } = await client.auth.getUser();
     
-    if (error || !user) {
+    // CRITICAL: If getUser() fails with session-related error, log it but don't sign out
+    // Server-side signOut() clears cookies, but client-side AuthContext will handle sign-out
+    // when it detects the session is invalid. This prevents race conditions.
+    if (error) {
+      // Check if it's a session corruption error
+      if (error.message.includes('oauth_client_id') || 
+          error.message.includes('missing destination') ||
+          error.message.includes('JWT') ||
+          error.message.includes('session')) {
+        logger.debug('Session corruption detected in getUserData', { error: error.message });
+        // Don't sign out here - let client-side AuthContext handle it
+        // Server-side signOut() can cause issues if called from multiple places
+      }
+      
+      // No user (guest mode or session error) - not an error
+      return {
+        lightweightUser: null,
+        fullUser: null,
+        supabaseClient: client,
+      };
+    }
+    
+    if (!user) {
       // No user (guest mode) - not an error
       return {
         lightweightUser: null,

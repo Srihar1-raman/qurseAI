@@ -23,7 +23,7 @@ export default function ModelSelector() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { resolvedTheme, mounted } = useTheme();
-  const { user } = useAuth();
+  const { user, isProUser } = useAuth();
   const { selectedModel, setSelectedModel } = useConversation();
   const { error: showToastError } = useToast();
 
@@ -42,7 +42,7 @@ export default function ModelSelector() {
 
     // Group by category
     const groups: GroupedModels[] = [];
-    const categoryOrder = ['Free', 'Pro', 'Premium'];
+    const categoryOrder = ['Free', 'Pro'];
 
     categoryOrder.forEach(category => {
       const categoryModels = filteredModels.filter(m => m.category === category);
@@ -74,9 +74,8 @@ export default function ModelSelector() {
   }, [isOpen]);
 
   const handleSelectModel = (modelValue: string) => {
-    // Pro subscription not yet implemented - always pass false for now
-    // When Pro is implemented, get actual Pro status from user context or subscription service
-    const accessCheck = canUseModel(modelValue, user, false);
+    // Use actual Pro status from auth context
+    const accessCheck = canUseModel(modelValue, user, isProUser);
     
     if (!accessCheck.canUse) {
       // Show user-friendly error message
@@ -171,8 +170,8 @@ export default function ModelSelector() {
 
                   {/* Models */}
                   {group.models.map((model) => {
-                    // Pro subscription not yet implemented - always pass false for now
-                    const accessCheck = canUseModel(model.value, user, false);
+                    // Use actual Pro status from auth context
+                    const accessCheck = canUseModel(model.value, user, isProUser);
                     const isSelected = selectedModel === model.value;
                     const isDisabled = !accessCheck.canUse;
 

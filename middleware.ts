@@ -36,9 +36,21 @@ export async function middleware(request: NextRequest) {
 
   // Refresh session if expired - required for Server Components
   // https://supabase.com/docs/guides/auth/server-side/nextjs
+  // getUser() automatically refreshes the session if it's expired but refresh token is valid
   const {
     data: { user },
+    error: authError,
   } = await supabase.auth.getUser();
+
+  // Handle auth errors gracefully (expired refresh token, invalid session, etc.)
+  // Don't block the request - let the app handle auth state on client side
+  // This prevents middleware from breaking the app when session expires
+  // Client-side AuthContext will detect the expired session and handle sign-out
+  if (authError && process.env.NODE_ENV === 'development') {
+    // Only log in development to avoid noise in production
+    // Common errors: expired refresh token, invalid session cookie
+    console.debug('[middleware] Auth error (non-blocking):', authError.message);
+  }
 
   // Redirect logged-in users away from auth pages
   if (user && (
