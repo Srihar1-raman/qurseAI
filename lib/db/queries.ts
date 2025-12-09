@@ -65,7 +65,7 @@ export async function getUserLinkedProviders(retryCount = 0): Promise<string[]> 
       if (isSessionError) {
         logger.debug('No valid session for getUserLinkedProviders', { error: error.message });
       } else {
-        logger.error('Error fetching user identities', error);
+      logger.error('Error fetching user identities', error);
       }
       return [];
     }

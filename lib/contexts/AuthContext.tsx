@@ -201,19 +201,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
         
-        // Session is valid - set it
+        // CRITICAL: Test the session by actually using it
+        // A session can pass structure validation but still be corrupted internally
+        // Calling getUser() will reveal if the session is actually usable
+        const { data: { user: testUser }, error: testError } = await supabase.auth.getUser();
+        
+        if (testError) {
+          // Session failed when actually used - it's corrupted
+          const isCorruptionError = 
+            testError.message?.includes('oauth_client_id') ||
+            testError.message?.includes('missing destination');
+          
+          if (isCorruptionError) {
+            logger.debug('Session corruption detected when testing - clearing', {
+              error: testError.message,
+              errorName: testError.name,
+            });
+            // Sign out to clear corrupted cookies
+            if (supabase) {
+              try {
+                await supabase.auth.signOut();
+              } catch (signOutError) {
+                // Ignore sign out errors
+              }
+            }
+          } else {
+            logger.debug('Session test failed (non-corruption error)', {
+              error: testError.message,
+              errorName: testError.name,
+            });
+          }
+          
+          // Clear state for any error
+          setSession(null);
+          sessionRef.current = null;
+          setUser(null);
+          setIsProUser(false);
+          setLinkedProviders([]);
+          providersFetchInitiatedRef.current = false;
+          proStatusFetchInitiatedRef.current = false;
+          lastUserIdRef.current = null;
+          setIsLoading(false);
+          return;
+        }
+        
+        if (!testUser) {
+          // No user from session - treat as guest
+          setSession(null);
+          sessionRef.current = null;
+          setUser(null);
+          setIsProUser(false);
+          setLinkedProviders([]);
+          providersFetchInitiatedRef.current = false;
+          proStatusFetchInitiatedRef.current = false;
+          lastUserIdRef.current = null;
+          setIsLoading(false);
+          return;
+        }
+        
+        // Session passed both structure validation AND actual usage test
+        // It's safe to use
         setSession(initialSession);
         sessionRef.current = initialSession; // Update ref for callbacks
 
-        // At this point, initialSession is guaranteed to be valid (we returned early if null)
-        if (initialSession.user) {
-          // Use session metadata directly (no DB fetch needed)
+        // Use the tested user (from getUser() call) - it's guaranteed to be valid
+        if (testUser) {
           const userData = {
-            id: initialSession.user.id,
-            email: initialSession.user.email!,
-            name: initialSession.user.user_metadata?.full_name || initialSession.user.user_metadata?.name,
-            avatar_url: initialSession.user.user_metadata?.avatar_url,
-            created_at: initialSession.user.created_at,
+            id: testUser.id,
+            email: testUser.email!,
+            name: testUser.user_metadata?.full_name || testUser.user_metadata?.name,
+            avatar_url: testUser.user_metadata?.avatar_url,
+            created_at: testUser.created_at,
           };
           setUser(userData);
           
@@ -233,8 +291,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               .then(providers => {
                 // Verify session is still valid before setting providers (use ref to avoid stale closure)
                 if (isValidSession(sessionRef.current)) {
-                  setLinkedProviders(providers);
-                  setIsLoadingProviders(false);
+                setLinkedProviders(providers);
+                setIsLoadingProviders(false);
                 } else {
                   logger.debug('Session expired during provider fetch - skipping');
                   setIsLoadingProviders(false);
@@ -397,8 +455,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               .then(providers => {
                 // Verify session is still valid before setting providers (use ref to avoid stale closure)
                 if (isValidSession(sessionRef.current)) {
-                  setLinkedProviders(providers);
-                  setIsLoadingProviders(false);
+                setLinkedProviders(providers);
+                setIsLoadingProviders(false);
                 } else {
                   logger.debug('Session expired during provider fetch - skipping');
                   setIsLoadingProviders(false);
