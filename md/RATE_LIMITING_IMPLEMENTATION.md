@@ -756,10 +756,10 @@ Progress
   - Summary: Added hybrid migration (guest staging tables, rate_limits session_hash + bucketed constraint/indexes, increment_rate_limit, transfer_guest_to_user, cleanup_guest_data, pg_cron job 2 AM UTC).
   - Tests: Not yet run (pending RPC checks: guest/free/pro, concurrent increments, transfer, cleanup, cron schedule verification).
   - Findings/Issues: Plan conflict markers resolved; need to execute DB-side tests.
-- [ ] Phase 2: Redis setup (envs set, client, wrapper, unknown IP policy)
-  - Summary:
-  - Tests:
-  - Findings/Issues:
+- [x] Phase 2: Redis setup (envs set, client, wrapper, unknown IP policy)
+  - Summary: Added Upstash Redis client with env validation; IP extractor; Redis guest IP limiter (10/day) and unknown-IP limiter (3/day) with fail-open + degraded flag.
+  - Tests: Not run yet (pending manual checks: IP extraction cases; 10/day; unknown IP 3/day; sliding window; Redis failure → fail-open; latency sanity).
+  - Findings/Issues: None observed in code; tests still pending.
 - [ ] Phase 3: Session/HMAC utils (cookie helper, hmacSessionId, env validation)
   - Summary:
   - Tests:
@@ -786,7 +786,7 @@ Progress
   - Findings/Issues:
 
 Next:
-- Begin Phase 2: Redis setup (env vars, client, wrapper, unknown IP policy); run Redis rate-limit checks after setup.
+- Begin Phase 3: Session/HMAC utils (cookie helper, hmacSessionId, env validation); then run Phase 2 pending tests.
 
 **Execution routine (for you / for AI implementers):**
 - Before a phase: read Decisions, Guardrails, Files for that phase; set “Next.”

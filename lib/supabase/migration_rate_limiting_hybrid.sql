@@ -40,14 +40,19 @@ CREATE INDEX IF NOT EXISTS idx_guest_messages_conv ON guest_messages(guest_conve
 ALTER TABLE rate_limits
   ADD COLUMN IF NOT EXISTS session_hash TEXT;
 
+-- Add bucket columns if missing
+ALTER TABLE rate_limits
+  ADD COLUMN IF NOT EXISTS bucket_start TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS bucket_end TIMESTAMPTZ;
+
 -- Drop old unique constraint if present
 ALTER TABLE rate_limits
   DROP CONSTRAINT IF EXISTS rate_limits_user_resource_window_unique;
 
--- Add bucketed unique constraint (user_id or session_hash, resource_type, bucket_start)
-ALTER TABLE rate_limits
-  ADD CONSTRAINT rate_limits_user_session_resource_bucket_unique
-  UNIQUE (
+-- Add bucketed uniqueness via unique index (expressions not allowed in table constraint)
+DROP INDEX IF EXISTS uq_rate_limits_user_session_resource_bucket;
+CREATE UNIQUE INDEX uq_rate_limits_user_session_resource_bucket
+  ON rate_limits (
     COALESCE(user_id, '00000000-0000-0000-0000-000000000000'::UUID),
     COALESCE(session_hash, 'guest'::TEXT),
     resource_type,
@@ -249,8 +254,10 @@ $$;
 -----------------------------
 -- Schedule cleanup job (daily at 2 AM UTC)
 -----------------------------
--- Unschedule existing job if present to avoid duplicates
-SELECT cron.unschedule('cleanup-guest-data');
+-- Unschedule existing job if present to avoid duplicates (safe if none exist)
+SELECT cron.unschedule(jobid)
+FROM cron.job
+WHERE jobname = 'cleanup-guest-data';
 
 SELECT cron.schedule(
   'cleanup-guest-data',
