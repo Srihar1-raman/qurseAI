@@ -1,4 +1,9 @@
-# Rate Limiting & Message Persistence Implementation Plan
+# Rate Limiting & Message Persistence: Implementation Playbook
+# Plan Changes
+# - use this section to log new information/decisions mid-implementation
+# - include: date, what changed, why, impact on phases, files affected
+# - update Decisions/Guardrails/Files if applicable before starting next phase
+# Rate Limiting & Message Persistence: Implementation Playbook
 
 **Status:** Planning  
 **Priority:** High  
@@ -10,15 +15,40 @@
 ## 📋 Overview
 
 Implement comprehensive rate limiting and message persistence for:
-- **Guest users**: Hybrid (Redis IP-based + DB session-based), 10 messages/day (rolling 24h)
+- **Guest users**: Hybrid (Redis IP-based + DB session-hash-based), 10 messages/day (rolling 24h). Guest data is stored server-side in guest staging tables (no RLS exposure).
 - **Free users**: Database-based, 20 messages/day (rolling 24h)
 - **Pro users**: Unlimited, but track usage in database
-- **Message persistence**: Guest messages persist and transfer to authenticated user
+- **Message persistence**: Guest messages persist and transfer to authenticated user via server-side transfer
+
+### Decisions (quick reference)
+- DB quota: daily buckets, reset at midnight UTC.
+- Redis: sliding 10/day IP; “unknown” IP 3/day + log.
+- HMAC: required, no rotation, fail fast if missing.
+- Transfer: skip-on-conflict + log; no re-ID.
+- RLS: unchanged; guests use staging via service-role only.
+- Headers: add rate-limit headers on JSON/SSE (Limit, Remaining, Reset epoch ms, Layer, Degraded optional).
+- Feature flag: optional `USE_HYBRID_RL`; default ON if not needed.
+
+### Implementation order (one-liner)
+Migrate (pg_cron, staging tables, rate_limits changes, functions, cron job) → Redis env + client/wrapper → session/HMAC helper → DB rate-limit service → hybrid services + chat route → transfer in auth callback → types/env validation/logging → cleanup/deprecations.
+
+### Implementation guardrails
+- Structure: Next.js App Router; keep logic in services/utils/db/redis files. Routes orchestrate, do not inline business logic.
+- Naming/placement: `lib/redis/*`, `lib/utils/session.ts` + `session-hash.ts`, `lib/db/rate-limits.server.ts`, `lib/db/guest-transfer.server.ts`, `lib/services/rate-limiting*.ts`.
+- Types: add/update in `lib/types.ts` (rate-limit result/headers, sessionHash, GuestTransferResult). No `any`.
+- Env validation: fail fast if required envs missing (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `SESSION_HMAC_SECRET`).
+- RLS: do NOT change main-table RLS; guests only via service-role + staging tables.
+- Headers: must include rate-limit headers on JSON and SSE (Limit, Remaining, Reset epoch ms, Layer, Degraded optional).
+- Rollout: optional `USE_HYBRID_RL` flag; remove after monitoring; remove old code once stable.
+- Testing: cover Redis-down (fail open), DB-down (fail open), SSE headers present, session_hash stability, transfer flow, unknown IP policy, conflict logging.
+- Coding hygiene: small functions, typed, no console.log in prod paths, no one-off hacks.
 
 **Why Hybrid?**
-- **Layer 1 (Redis)**: Fast rejection (~1-2ms) for obvious abuse, reduces DB load by ~80%
-- **Layer 2 (DB)**: Accurate per-session limits, enables message persistence
-- **Best of both**: Speed + Accuracy + Features
+- **Layer 1 (Redis, coarse IP)**: Fast rejection (~1-2ms) for obvious abuse, reduces DB load
+- **Layer 2 (DB, per user/session-hash)**: Accurate enforcement, enables persistence
+- **Isolation for guests**: Guest data lives in staging tables, accessed only via server (no RLS loosening)
+- **Best of both**: Speed + Accuracy + Safety
+- **Operationally clear**: Explicit headers, monitoring, and cleanup
 
 ---
 
@@ -29,6 +59,8 @@ Implement comprehensive rate limiting and message persistence for:
 3. **Fair usage**: Accurate limits per user/session
 4. **Message persistence**: Guest messages transfer to authenticated user
 5. **Production-ready**: Scalable, resilient, professional error handling
+6. **Operational clarity**: Clear keys, headers, and monitoring/alerts
+7. **Security**: No RLS weakening; HMAC-based session hashing
 
 ---
 
@@ -63,11 +95,12 @@ Implement comprehensive rate limiting and message persistence for:
                              │
                              ▼
 ┌─────────────────────────────────────────────────────────┐
-│  Layer 2: Accurate Check (DB - Session-based)          │
+│  Layer 2: Accurate Check (DB - Session-hash, daily)    │
 │  ────────────────────────────────────────                │
-│  • Get/Create session_id (cookie/localStorage)          │
-│  • Check rate_limits table: session_id-based            │
-│  • Limit: 10/day (rolling 24h)                          │
+│  • Get/Create session_id (HttpOnly cookie)              │
+│  • Hash/HMAC session_id → session_hash                  │
+│  • Check rate_limits table: session_hash-based          │
+│  • Limit: 10/day (daily bucket, resets at midnight UTC) │
 │  • Latency: ~5-10ms                                      │
 │  • Purpose: Accurate limits, enable persistence         │
 └────────────────────┬────────────────────────────────────┘
@@ -79,14 +112,13 @@ Implement comprehensive rate limiting and message persistence for:
          ▼                       ▼
     Return 429          Process Request
     (Accurate)          Store messages
-    (~6-12ms total)     with session_id
+    (~6-12ms total)     in guest staging (session_hash)
                              │
                              ▼
                     ┌─────────────────┐
                     │  On Auth:       │
-                    │  Transfer       │
-                    │  session_id →   │
-                    │  user_id        │
+                    │  Transfer guest │
+                    │  staging → user │
                     └─────────────────┘
 ```
 
@@ -97,310 +129,190 @@ Implement comprehensive rate limiting and message persistence for:
 - Layer 2 (DB): ~5-10ms (indexed query, atomic)
 - **Total overhead: ~6-12ms** (acceptable for "fastest AI chat app")
 
-**Load Distribution:**
-- 100 requests:
-  - 80 blocked by Redis (no DB call) = **80% reduction in DB load**
-  - 20 pass to DB (accurate check)
-  - 15 allowed, 5 blocked by DB
+**Load Distribution (illustrative):**
+- Redis blocks obvious abusers without DB
+- Only allowed guests/free hit DB bucket check
 
-**Why This Works for Speed:**
-- Most abuse filtered quickly (Redis) - no DB call
-- Only legitimate requests hit DB
-- Single atomic DB query (optimized)
-- Total overhead negligible compared to AI inference time
+**Why This Works for Speed/Safety:**
+- Coarse IP gate reduces waste
+- Accurate DB gate keyed by user_id or session_hash
+- Guest data isolated in staging tables; RLS stays strict for main tables
 
 ---
 
 ## 💾 Database Schema Changes
 
-### 1. Messages Table
+### 1. Main Tables (keep strict)
+- Keep `conversations.user_id` **NOT NULL** (no RLS loosening).
+- Keep `messages` unchanged; they belong to conversations.
 
-**NO CHANGES NEEDED** ✅
+### 2. Guest Staging Tables (new, server-only access)
+Add separate guest tables to avoid touching RLS on main tables. All guest access uses the service-role key, never the anon key.
 
-**Why:**
-- Messages already link to conversations via `conversation_id`
-- Conversations will have `session_id` for guests
-- Messages belong to conversations, conversations belong to users/sessions
-- This is proper normalization (no redundancy)
-
-**For guest messages:**
-- Query via: `SELECT * FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE session_id = ?)`
-- Transfer: Update conversations, messages automatically transfer (foreign key)
-
-**For cleanup:**
-- Delete conversations: `DELETE FROM conversations WHERE session_id = ? AND user_id IS NULL`
-- Messages automatically deleted (CASCADE)
-- Or: `DELETE FROM messages WHERE conversation_id IN (SELECT id FROM conversations WHERE session_id = ? AND user_id IS NULL)`
-
-### 2. Rate Limits Table
-
-**Add `session_id` column for guest rate limiting:**
+**Security note:** This isolation is necessary, not overkill. It prevents guest data from being accessible via the anon client/RLS paths.
 
 ```sql
--- Add session_id column (nullable - only for guests)
-ALTER TABLE rate_limits 
-ADD COLUMN IF NOT EXISTS session_id UUID;
+CREATE TABLE IF NOT EXISTS guest_conversations (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  session_hash TEXT NOT NULL,
+  title TEXT NOT NULL DEFAULT 'New Chat',
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
 
--- Drop old unique constraint
+CREATE TABLE IF NOT EXISTS guest_messages (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  guest_conversation_id UUID REFERENCES guest_conversations(id) ON DELETE CASCADE NOT NULL,
+  role TEXT CHECK (role IN ('user', 'assistant', 'system', 'tool')) NOT NULL,
+  content TEXT,
+  parts JSONB,
+  model TEXT,
+  input_tokens INTEGER,
+  output_tokens INTEGER,
+  total_tokens INTEGER,
+  completion_time REAL,
+  created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_guest_conversations_session_hash ON guest_conversations(session_hash);
+CREATE INDEX IF NOT EXISTS idx_guest_messages_conv ON guest_messages(guest_conversation_id);
+```
+
+**Why:** Guests are isolated; no risk of leaking via RLS. Transfer is explicit and server-side.
+
+### 3. Rate Limits Table
+Add `session_hash` (hashed/HMAC’d session_id) for guest limits, and use bucketed windows for predictable queries.
+
+```sql
+ALTER TABLE rate_limits 
+ADD COLUMN IF NOT EXISTS session_hash TEXT;
+
 ALTER TABLE rate_limits 
 DROP CONSTRAINT IF EXISTS rate_limits_user_resource_window_unique;
 
--- New unique constraint (handles both user_id and session_id)
 ALTER TABLE rate_limits 
 ADD CONSTRAINT rate_limits_user_session_resource_window_unique 
 UNIQUE(
   COALESCE(user_id, '00000000-0000-0000-0000-000000000000'::UUID), 
-  COALESCE(session_id, '00000000-0000-0000-0000-000000000000'::UUID), 
+  COALESCE(session_hash, 'guest'::TEXT), 
   resource_type, 
-  window_start
+  bucket_start
 );
 
--- Index for guest rate limit lookup
-CREATE INDEX IF NOT EXISTS idx_rate_limits_session_id 
-ON rate_limits(session_id) 
-WHERE session_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_rate_limits_session_hash 
+ON rate_limits(session_hash) 
+WHERE session_hash IS NOT NULL;
 
--- Composite index for fast lookups
-CREATE INDEX IF NOT EXISTS idx_rate_limits_session_resource_window 
-ON rate_limits(session_id, resource_type, window_start) 
-WHERE session_id IS NOT NULL;
-
--- Index for cleanup (TTL - old guest rate limits)
-CREATE INDEX IF NOT EXISTS idx_rate_limits_guest_window_end 
-ON rate_limits(window_end) 
-WHERE user_id IS NULL AND session_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_rate_limits_session_resource_bucket 
+ON rate_limits(session_hash, resource_type, bucket_start) 
+WHERE session_hash IS NOT NULL;
 ```
 
-**Why:**
-- `session_id` nullable: authenticated users use `user_id`
-- Unique constraint handles both cases (guest + authenticated)
-- Indexes for fast lookups and cleanup
+### 4. RLS
+- **No changes to existing RLS on main tables.** Guests never touch main tables via anon client; all guest access is server-side using service role and staging tables.
 
-### 3. Conversations Table (REQUIRED - Not Optional)
+### 5. Session Handling
+- Use HttpOnly, SameSite=Lax, Secure cookie for `session_id`.
+- Cookie config: name `session_id`, Path=/, HttpOnly, SameSite=Lax, Secure (prod), Max-Age=30 days. For local dev over http, allow opt-out flag.
+- Derive `session_hash = HMAC(SESSION_HMAC_SECRET, session_id)` (e.g., base64url(sha256)). Store only session_hash in DB/Redis; session_id stays only in HttpOnly cookie.
+- Ensure OAuth redirects preserve cookie domain/path.
+- **Necessity:** Required for security (prevents guessable IDs, keeps secrets out of client storage). Not overkill.
 
-**CRITICAL: Must make `user_id` nullable to support guest conversations**
-
-```sql
--- CRITICAL: Make user_id nullable (required for guest conversations)
--- This is a breaking change - existing conversations have user_id, so safe
-ALTER TABLE conversations 
-ALTER COLUMN user_id DROP NOT NULL;
-
--- Add session_id column (nullable - only for guest conversations)
-ALTER TABLE conversations 
-ADD COLUMN IF NOT EXISTS session_id UUID;
-
--- Add constraint: Either user_id OR session_id must be set (not both null)
-ALTER TABLE conversations 
-ADD CONSTRAINT conversations_user_or_session_check 
-CHECK (user_id IS NOT NULL OR session_id IS NOT NULL);
-
--- Index for guest conversation lookup
-CREATE INDEX IF NOT EXISTS idx_conversations_session_id 
-ON conversations(session_id) 
-WHERE session_id IS NOT NULL;
-
--- Index for cleanup (TTL - old guest conversations)
-CREATE INDEX IF NOT EXISTS idx_conversations_guest_created 
-ON conversations(created_at) 
-WHERE user_id IS NULL AND session_id IS NOT NULL;
-
--- Composite index for transfer lookups
-CREATE INDEX IF NOT EXISTS idx_conversations_session_user 
-ON conversations(session_id, user_id) 
-WHERE session_id IS NOT NULL;
-```
-
-**Why:**
-- **REQUIRED**: Guest conversations need `user_id = NULL`
-- **Constraint**: Ensures either user_id or session_id is set (data integrity)
-- **Better organization**: Conversations linked to session for guests
-- **Easier transfer**: Transfer entire conversation on auth
-- **Cleaner cleanup**: Delete conversation + messages together
-
-**RLS Policy Updates (REQUIRED):**
-
-```sql
--- Drop old policies (they block guests)
-DROP POLICY IF EXISTS "Users can view own conversations" ON conversations;
-DROP POLICY IF EXISTS "Users can insert own conversations" ON conversations;
-DROP POLICY IF EXISTS "Users can update own conversations" ON conversations;
-DROP POLICY IF EXISTS "Users can delete own conversations" ON conversations;
-
--- New policies: Allow authenticated users OR guests (via session_id)
-CREATE POLICY "Users can view own conversations" 
-  ON conversations FOR SELECT 
-  USING (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()) OR
-    (auth.uid() IS NULL AND session_id IS NOT NULL) -- Guest access via session_id
-  );
-
-CREATE POLICY "Users can insert own conversations" 
-  ON conversations FOR INSERT 
-  WITH CHECK (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()) OR
-    (auth.uid() IS NULL AND session_id IS NOT NULL) -- Guest can create with session_id
-  );
-
-CREATE POLICY "Users can update own conversations" 
-  ON conversations FOR UPDATE 
-  USING (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()) OR
-    (auth.uid() IS NULL AND session_id IS NOT NULL) -- Guest can update
-  );
-
-CREATE POLICY "Users can delete own conversations" 
-  ON conversations FOR DELETE 
-  USING (
-    (auth.uid() IS NOT NULL AND user_id = auth.uid()) OR
-    (auth.uid() IS NULL AND session_id IS NOT NULL) -- Guest can delete
-  );
-
--- CRITICAL: Also update messages policies to allow guest access
-DROP POLICY IF EXISTS "Users can view messages from own conversations" ON messages;
-DROP POLICY IF EXISTS "Users can insert messages to own conversations" ON messages;
-DROP POLICY IF EXISTS "Users can delete messages from own conversations" ON messages;
-
-CREATE POLICY "Users can view messages from own conversations" 
-  ON messages FOR SELECT 
-  USING (
-    EXISTS (
-      SELECT 1 FROM conversations 
-      WHERE conversations.id = messages.conversation_id 
-      AND (
-        (auth.uid() IS NOT NULL AND conversations.user_id = auth.uid()) OR
-        (auth.uid() IS NULL AND conversations.session_id IS NOT NULL) -- Guest access
-      )
-    )
-  );
-
-CREATE POLICY "Users can insert messages to own conversations" 
-  ON messages FOR INSERT 
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM conversations 
-      WHERE conversations.id = messages.conversation_id 
-      AND (
-        (auth.uid() IS NOT NULL AND conversations.user_id = auth.uid()) OR
-        (auth.uid() IS NULL AND conversations.session_id IS NOT NULL) -- Guest access
-      )
-    )
-  );
-
-CREATE POLICY "Users can delete messages from own conversations" 
-  ON messages FOR DELETE 
-  USING (
-    EXISTS (
-      SELECT 1 FROM conversations 
-      WHERE conversations.id = messages.conversation_id 
-      AND (
-        (auth.uid() IS NOT NULL AND conversations.user_id = auth.uid()) OR
-        (auth.uid() IS NULL AND conversations.session_id IS NOT NULL) -- Guest access
-      )
-    )
-  );
-```
-
-**Why RLS Updates:**
-- **Current policies block guests**: They check `auth.uid() = user_id`, which fails for guests
-- **Guest access needed**: Guests need to access conversations via `session_id`
-- **Security**: Still enforces ownership (authenticated via user_id, guests via session_id)
+### 6. Rate-limit Buckets (correctness)
+- **Decision:** Use day buckets. `bucket_start = date_trunc('day', now())`, `bucket_end = bucket_start + interval '1 day'`. User-facing copy: “Daily limit resets at midnight UTC.”
+- Parenthesize WHERE clause to bind `resource_type` to both user and session branches.
+- Reset time exposed via headers should match `bucket_end`.
 
 ### 4. Database Functions
 
 **CRITICAL OPTIMIZATION:** Pass limit from application layer (we already know Pro status)
 **Why:** Avoids unnecessary subscription table lookup inside function (faster, cleaner)
 
-**Atomic increment function (optimized for performance):**
+**Atomic increment function (bucketed, session_hash, corrected WHERE):**
 
 ```sql
 -- Function for atomic rate limit increment (guest or authenticated)
--- OPTIMIZED: Limit passed from application (avoids subscription lookup)
+-- Limit passed from application (avoids subscription lookup)
 CREATE OR REPLACE FUNCTION increment_rate_limit(
   p_user_id UUID DEFAULT NULL,
-  p_session_id UUID DEFAULT NULL,
+  p_session_hash TEXT DEFAULT NULL,
   p_resource_type TEXT DEFAULT 'message',
-  p_limit INTEGER DEFAULT 10, -- Pass limit from application (10 for guest, 20 for free, 999999 for pro)
+  p_limit INTEGER DEFAULT 10,
   p_window_hours INTEGER DEFAULT 24
 )
 RETURNS TABLE(
   count INTEGER,
   limit_reached BOOLEAN,
-  window_start TIMESTAMPTZ,
-  window_end TIMESTAMPTZ
+  bucket_start TIMESTAMPTZ,
+  bucket_end TIMESTAMPTZ
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-  v_window_start TIMESTAMPTZ;
-  v_window_end TIMESTAMPTZ;
+  v_bucket_start TIMESTAMPTZ;
+  v_bucket_end TIMESTAMPTZ;
   v_current_count INTEGER;
   v_limit_reached BOOLEAN;
 BEGIN
-  -- Find existing record in rolling window (optimized query with indexes)
-  -- CRITICAL: Correct NULL handling - must match exactly (user_id XOR session_id)
-  SELECT window_start, window_end, count
-  INTO v_window_start, v_window_end, v_current_count
+  -- Bucketed window (day buckets per decision above)
+  v_bucket_start := date_trunc('day', NOW());
+  v_bucket_end := v_bucket_start + (p_window_hours || ' hours')::INTERVAL;
+
+  SELECT bucket_start, bucket_end, count
+  INTO v_bucket_start, v_bucket_end, v_current_count
   FROM rate_limits
   WHERE 
-    -- For authenticated users: match user_id exactly, session_id must be NULL
-    (p_user_id IS NOT NULL AND user_id = p_user_id AND session_id IS NULL)
+    (
+      (p_user_id IS NOT NULL AND user_id = p_user_id AND session_hash IS NULL)
     OR
-    -- For guests: match session_id exactly, user_id must be NULL
-    (p_session_id IS NOT NULL AND session_id = p_session_id AND user_id IS NULL)
+      (p_user_id IS NULL AND p_session_hash IS NOT NULL AND session_hash = p_session_hash AND user_id IS NULL)
+    )
     AND resource_type = p_resource_type
-    AND window_start >= NOW() - (p_window_hours || ' hours')::INTERVAL
-  ORDER BY window_start DESC
+    AND bucket_start = v_bucket_start
+  ORDER BY bucket_start DESC
   LIMIT 1;
   
-  -- If no record exists, create new window
-  IF v_window_start IS NULL THEN
-    v_window_start := NOW();
-    v_window_end := v_window_start + (p_window_hours || ' hours')::INTERVAL;
+  IF v_bucket_start IS NULL THEN
+    v_bucket_start := date_trunc('hour', NOW());
+    v_bucket_end := v_bucket_start + (p_window_hours || ' hours')::INTERVAL;
     v_current_count := 0;
   END IF;
   
-  -- Check if limit reached BEFORE incrementing (fail fast)
   IF v_current_count >= p_limit THEN
-    RETURN QUERY SELECT v_current_count, true, v_window_start, v_window_end;
+    RETURN QUERY SELECT v_current_count, true, v_bucket_start, v_bucket_end;
     RETURN;
   END IF;
   
-  -- Atomic increment (single operation - INSERT or UPDATE)
-  -- This is the critical optimization: single atomic operation, no separate SELECT
-  INSERT INTO rate_limits (user_id, session_id, resource_type, count, window_start, window_end)
-  VALUES (p_user_id, p_session_id, p_resource_type, 1, v_window_start, v_window_end)
+  INSERT INTO rate_limits (user_id, session_hash, resource_type, count, bucket_start, bucket_end)
+  VALUES (p_user_id, p_session_hash, p_resource_type, 1, v_bucket_start, v_bucket_end)
   ON CONFLICT (
     COALESCE(user_id, '00000000-0000-0000-0000-000000000000'::UUID),
-    COALESCE(session_id, '00000000-0000-0000-0000-000000000000'::UUID),
+    COALESCE(session_hash, 'guest'::TEXT),
     resource_type,
-    window_start
+    bucket_start
   )
   DO UPDATE SET 
     count = rate_limits.count + 1,
     updated_at = NOW()
-  RETURNING rate_limits.count, (rate_limits.count >= p_limit), rate_limits.window_start, rate_limits.window_end
-  INTO v_current_count, v_limit_reached, v_window_start, v_window_end;
+  RETURNING rate_limits.count, (rate_limits.count >= p_limit), rate_limits.bucket_start, rate_limits.bucket_end
+  INTO v_current_count, v_limit_reached, v_bucket_start, v_bucket_end;
   
-  RETURN QUERY SELECT v_current_count, v_limit_reached, v_window_start, v_window_end;
+  RETURN QUERY SELECT v_current_count, v_limit_reached, v_bucket_start, v_bucket_end;
 END;
 $$;
 ```
 
 **Why This Is Better:**
-- **Performance**: Limit passed from app (avoids subscription table lookup)
-- **Single atomic operation**: INSERT ... ON CONFLICT handles everything
-- **Fail fast**: Checks limit before incrementing
-- **Cleaner**: Application layer determines limit (single responsibility)
-- **Faster**: One less database query (no subscription check)
+- Bucketed windows (predictable, indexed lookups)
+- Correct WHERE parentheses binding
+- session_hash for guests; user_id for authed
+- Single atomic UPSERT
 
-**Transfer function (guest to authenticated):**
+**Transfer function (guest staging → user):**
 
 ```sql
--- Function to transfer guest data to authenticated user
--- CRITICAL: Messages automatically transfer via conversation foreign key
 CREATE OR REPLACE FUNCTION transfer_guest_to_user(
-  p_session_id UUID,
+  p_session_hash TEXT,
   p_user_id UUID
 )
 RETURNS TABLE(
@@ -413,80 +325,73 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_messages_count INTEGER;
-  v_rate_limits_count INTEGER;
-  v_conversations_count INTEGER;
+  v_messages_count INTEGER := 0;
+  v_rate_limits_count INTEGER := 0;
+  v_conversations_count INTEGER := 0;
 BEGIN
-  -- Count messages before transfer (for return value)
-  SELECT COUNT(*) INTO v_messages_count
-  FROM messages
-  WHERE conversation_id IN (
-    SELECT id FROM conversations 
-    WHERE session_id = p_session_id AND user_id IS NULL
-  );
+  -- Copy guest conversations into main conversations (skip if ID conflict)
+  INSERT INTO conversations (id, user_id, title, created_at, updated_at)
+  SELECT id, p_user_id, title, created_at, updated_at
+  FROM guest_conversations
+  WHERE session_hash = p_session_hash
+  ON CONFLICT (id) DO NOTHING;
   
-  -- Transfer conversations FIRST (messages automatically transfer via foreign key)
-  -- CRITICAL: Handle conversation ID conflicts (guest ID might already exist for user)
-  -- Use ON CONFLICT to merge or skip conflicting conversations
-  FOR v_conv IN 
-    SELECT id, title, created_at, updated_at
-    FROM conversations
-    WHERE session_id = p_session_id AND user_id IS NULL
-  LOOP
-    -- Try to update (transfer)
-    UPDATE conversations
-    SET user_id = p_user_id, session_id = NULL, updated_at = GREATEST(updated_at, v_conv.updated_at)
-    WHERE id = v_conv.id AND user_id IS NULL;
+  GET DIAGNOSTICS v_conversations_count = ROW_COUNT;
+<<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
+  
+=======
     
-    -- If no rows updated, conversation might already exist for user (skip - don't duplicate)
-    -- This handles edge case where guest conversation ID conflicts with user's existing conversation
-    IF NOT FOUND THEN
-      -- Check if conversation already exists for user (ID conflict)
-      SELECT COUNT(*) INTO v_temp_count
-      FROM conversations
-      WHERE id = v_conv.id AND user_id = p_user_id;
-      
-      -- If exists, skip (don't create duplicate)
-      -- If doesn't exist, something else went wrong (log but continue)
-      IF v_temp_count = 0 THEN
-        -- Conversation doesn't exist for user - this shouldn't happen
-        -- Log warning but continue with other conversations
-        RAISE WARNING 'Failed to transfer conversation % - unexpected state', v_conv.id;
-      END IF;
-    END IF;
-  END LOOP;
+>>>>>>> Incoming (Background Agent changes)
+=======
+    
+>>>>>>> Incoming (Background Agent changes)
+=======
+    
+>>>>>>> Incoming (Background Agent changes)
+  -- Copy guest messages into main messages, pointing to transferred conversations
+  INSERT INTO messages (
+    id, conversation_id, role, content, parts, model,
+    input_tokens, output_tokens, total_tokens, completion_time, created_at
+  )
+  SELECT gm.id, gc.id, gm.role, gm.content, gm.parts, gm.model,
+         gm.input_tokens, gm.output_tokens, gm.total_tokens, gm.completion_time, gm.created_at
+  FROM guest_messages gm
+  JOIN guest_conversations gc ON gc.id = gm.guest_conversation_id
+  WHERE gc.session_hash = p_session_hash
+  ON CONFLICT (id) DO NOTHING;
   
-  -- Count transferred conversations
-  SELECT COUNT(*) INTO v_conversations_count
-  FROM conversations
-  WHERE session_id = p_session_id AND user_id = p_user_id;
+  GET DIAGNOSTICS v_messages_count = ROW_COUNT;
   
-  -- Messages automatically belong to transferred conversations (no UPDATE needed)
-  -- Foreign key relationship handles this automatically
-  
-  -- Transfer rate limits
+  -- Transfer rate limits to user
   UPDATE rate_limits
-  SET user_id = p_user_id, session_id = NULL
-  WHERE session_id = p_session_id AND user_id IS NULL;
+  SET user_id = p_user_id, session_hash = NULL
+  WHERE session_hash = p_session_hash AND user_id IS NULL;
   
   GET DIAGNOSTICS v_rate_limits_count = ROW_COUNT;
+  
+  -- Cleanup guest rows
+  DELETE FROM guest_messages USING guest_conversations gc
+  WHERE guest_messages.guest_conversation_id = gc.id
+    AND gc.session_hash = p_session_hash;
+  
+  DELETE FROM guest_conversations WHERE session_hash = p_session_hash;
   
   RETURN QUERY SELECT v_messages_count, v_rate_limits_count, v_conversations_count;
 END;
 $$;
 
 -- Grant execute permission
-GRANT EXECUTE ON FUNCTION transfer_guest_to_user(UUID, UUID) TO authenticated;
-GRANT EXECUTE ON FUNCTION transfer_guest_to_user(UUID, UUID) TO anon;
+GRANT EXECUTE ON FUNCTION transfer_guest_to_user(TEXT, UUID) TO authenticated;
+GRANT EXECUTE ON FUNCTION transfer_guest_to_user(TEXT, UUID) TO anon;
 ```
 
 **Why:**
-- **Order matters**: Conversations first (messages reference them via foreign key)
-- **Messages auto-transfer**: No UPDATE needed - foreign key handles it
-- **Single atomic operation**: All transfers in one transaction
-- **Returns counts**: For logging and monitoring
-- **SECURITY DEFINER**: Bypasses RLS safely (validates inputs)
-- **Proper normalization**: Messages belong to conversations, not directly to users/sessions
+- Staging tables isolate guest data; transfer is explicit and server-side
+- Idempotent with `ON CONFLICT DO NOTHING`
+- Cleans up guest rows after successful copy
+- SECURITY DEFINER for server-side invocation; inputs validated
 
 ---
 
@@ -505,23 +410,23 @@ GRANT EXECUTE ON FUNCTION transfer_guest_to_user(UUID, UUID) TO anon;
    ├─ If exceeded: Return 429 (~1-2ms total)
    └─ If allowed: Continue to Layer 2
 
-3. Layer 2: Accurate Check (DB - Session-based)
-   ├─ Call: increment_rate_limit(NULL, session_id, 'message', 10, 24)
-   ├─ Function checks limit (10/day), increments atomically
+3. Layer 2: Accurate Check (DB - Session-hash-based)
+   ├─ Call: increment_rate_limit(NULL, session_hash, 'message', 10, 24)
+   ├─ Function checks limit (10/day), increments atomically (bucketed)
    ├─ If exceeded: Return 429 (~6-12ms total)
    └─ If allowed: Continue to processing
 
 4. Process Request
-   ├─ Ensure conversation exists (with session_id for guests)
+   ├─ Ensure guest conversation exists in guest_conversations (session_hash)
    ├─ Generate AI response
-   ├─ Store message (links via conversation_id, conversation has session_id)
+   ├─ Store message in guest_messages (fk to guest_conversations)
    └─ Return response with rate limit headers
 
 5. On Authentication
    ├─ Detect: User signs up/logs in
-   ├─ Call: transfer_guest_to_user(session_id, user_id)
-   ├─ Transfer: messages, rate_limits, conversations
-   └─ Clear: session_id cookie/localStorage
+   ├─ Call: transfer_guest_to_user(session_hash, user_id) server-side (auth callback)
+   ├─ Transfer: guest_* → main tables, rate_limits → user
+   └─ Clear: session_id cookie (optional) after transfer
 ```
 
 ### Authenticated User Flow
@@ -814,6 +719,92 @@ lib/
     session.ts                    # Session ID management (cookie/localStorage)
     ip-extraction.ts              # IP extraction from headers
 ```
+
+---
+
+## 🌐 External Setup Checklist
+
+Do these outside of app code before/while rolling out:
+
+- Upstash Redis:
+  - Create a Redis database in Upstash.
+  - Copy REST URL and REST TOKEN.
+  - Set env vars: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`.
+- HMAC Secret:
+  - Generate once: `openssl rand -base64 32`.
+  - Set env var: `SESSION_HMAC_SECRET` (required; fail fast if missing).
+- Feature flags (recommended for rollout safety):
+  - `USE_HYBRID_RL` (toggle new hybrid path on/off).
+  - Optional dev bypass: `RATE_LIMIT_BYPASS` (dev/stage only).
+- Database migrations (run via Supabase migrations/SQL):
+  - Enable `pg_cron` extension (one-time).
+  - Create `guest_conversations`, `guest_messages`.
+  - Alter `rate_limits`: add `session_hash`, update unique constraint to bucket key, add indexes.
+  - Create/replace functions: `increment_rate_limit`, `transfer_guest_to_user`, `cleanup_guest_data`.
+  - Schedule pg_cron job to call `cleanup_guest_data()` daily at 2 AM UTC.
+- RLS: no changes to main tables (stay strict); guests are server-only via staging tables.
+
+---
+
+## ✅ Progress Tracker (use during implementation)
+
+How to use:
+- Before each phase: list “Next” tasks you will do.
+- After each phase: mark checkboxes, add a 3–5 line summary (what changed, tests run, blockers), and update “Next”.
+- Keep “Decisions” visible so you don’t rethink them mid-implementation.
+- Log “Findings/Issues” to fix before moving on.
+- Use the per-phase guardrails and file lists below; do not guess beyond them.
+- If new information arrives: log it in "Plan Changes" (what/why/impact), update Decisions/Guardrails/Files for affected phases, and resolve before starting the next phase.
+
+Decisions (locked):
+- DB buckets: daily reset at midnight UTC (day buckets).
+- Redis guest IP limit: 10/day sliding; “unknown” IPs 3/day + log (adjust if needed).
+- HMAC secret: required, stable, no rotation; fail fast if missing.
+- Transfer conflicts: skip-on-conflict + log counts; no re-ID.
+- Feature flag: optional; if used, `USE_HYBRID_RL` toggles new path.
+
+Progress
+- [ ] Phase 1: Migrations (pg_cron enable, guest tables, rate_limits session_hash, functions, cron schedule)
+  - Summary:
+  - Tests:
+  - Findings/Issues:
+- [ ] Phase 2: Redis setup (envs set, client, wrapper, unknown IP policy)
+  - Summary:
+  - Tests:
+  - Findings/Issues:
+- [ ] Phase 3: Session/HMAC utils (cookie helper, hmacSessionId, env validation)
+  - Summary:
+  - Tests:
+  - Findings/Issues:
+- [ ] Phase 4: DB rate-limit service (checkAndIncrementRateLimit using session_hash, day buckets)
+  - Summary:
+  - Tests:
+  - Findings/Issues:
+- [ ] Phase 5: Hybrid services + chat route (headers JSON/SSE, set cookie before streaming, guest staging writes, feature flag if used)
+  - Summary:
+  - Tests:
+  - Findings/Issues:
+- [ ] Phase 6: Transfer on auth (session_hash from cookie, transfer_guest_to_user, skip/log conflicts)
+  - Summary:
+  - Tests:
+  - Findings/Issues:
+- [ ] Phase 7: Types/env validation/logging (types added, env fail-fast)
+  - Summary:
+  - Tests:
+  - Findings/Issues:
+- [ ] Phase 8: Cleanup/polish (remove old checks, add headers, monitoring, deprecations)
+  - Summary:
+  - Tests:
+  - Findings/Issues:
+
+Next:
+- List the very next small set of tasks you will do before you start coding.
+
+**Execution routine (for you / for AI implementers):**
+- Before a phase: read Decisions, Guardrails, Files for that phase; set “Next.”
+- Implement only the listed files/changes for that phase; no scope creep.
+- After the phase: update Summary/Tests/Findings; adjust “Next.”
+- If issues arise, log them; fix or defer with a note before proceeding.
 
 ---
 
@@ -1143,9 +1134,10 @@ export async function checkGuestRateLimit(
   headers: Record<string, string>;
   sessionId: string;
 }> {
-  // Extract IP and session ID
+  // Extract IP and session ID, derive session_hash
   const ip = getClientIp(request);
   const sessionId = getOrCreateSessionId(request);
+  const sessionHash = hmacSessionId(sessionId);
   
   // Layer 1: Fast check (Redis - IP-based)
   const redisCheck = await checkGuestRateLimitIP(ip);
@@ -1168,10 +1160,10 @@ export async function checkGuestRateLimit(
     };
   }
   
-  // Layer 2: Accurate check (DB - Session-based)
+  // Layer 2: Accurate check (DB - Session-hash-based)
   // Pass limit: 10 for guest users
   const dbCheck = await checkAndIncrementRateLimit({
-    sessionId,
+    sessionHash,
     resourceType: 'message',
     limit: 10, // Guest limit
     windowHours: 24,
@@ -1323,32 +1315,30 @@ export async function checkAuthenticatedRateLimit(
 ```typescript
 import { createClient } from '@/lib/supabase/server';
 import { createScopedLogger } from '@/lib/utils/logger';
+import type { GuestTransferResult } from '@/lib/types';
 
 const logger = createScopedLogger('db/guest-transfer');
 
-import type { GuestTransferResult } from '@/lib/types';
-
 export async function transferGuestToUser(
-  sessionId: string,
+  sessionHash: string,
   userId: string
 ): Promise<GuestTransferResult> {
   const supabase = await createClient();
   
-  // Call database function (atomic operation)
   const { data, error } = await supabase.rpc('transfer_guest_to_user', {
-    p_session_id: sessionId,
+    p_session_hash: sessionHash,
     p_user_id: userId,
   });
   
   if (error) {
-    logger.error('Guest transfer failed', error, { sessionId, userId });
+    logger.error('Guest transfer failed', error, { sessionHash, userId });
     throw error;
   }
   
   const result = data[0];
   
   logger.info('Guest data transferred to user', {
-    sessionId,
+    sessionHash,
     userId,
     messages: result.messages_transferred,
     rateLimits: result.rate_limits_transferred,
@@ -1418,7 +1408,7 @@ export async function checkRateLimit(params: {
 
 **When guest sends message:**
 ```typescript
-// In /api/chat route
+// In /api/chat route (guest path)
 const rateLimitCheck = await checkRateLimit({
   userId: null,
   request,
@@ -1429,15 +1419,12 @@ if (!rateLimitCheck.allowed) {
   return NextResponse.json({ error: rateLimitCheck.reason }, { status: 429 });
 }
 
-// Process request and save message
-// Note: No session_id needed - messages link via conversation_id
-// Conversation already has session_id (set in ensureConversation)
-await saveUserMessage(
-  convId,
+// Process request and save message in guest staging
+await saveGuestMessage({
+  conversationId: guestConversationId,
   userMessage,
-  null, // Guest user_id
-  supabaseClient
-);
+  sessionHash, // HMAC of session_id
+});
 ```
 
 ### Transfer on Authentication
@@ -1445,13 +1432,15 @@ await saveUserMessage(
 **In auth callback (`app/auth/callback/route.ts`):**
 ```typescript
 // After user creation/login (Step 4 in callback)
-// CRITICAL: Parse session_id from cookie (server-side, read-only for transfer)
+// CRITICAL: Parse session_id from cookie (server-side), derive session_hash (HMAC)
 import { getSessionIdFromCookie } from '@/lib/utils/session';
-const sessionId = getSessionIdFromCookie(request); // Returns existing session_id or null
+import { hmacSessionId } from '@/lib/utils/session-hash';
+const sessionId = getSessionIdFromCookie(request);
+const sessionHash = sessionId ? hmacSessionId(sessionId) : null;
 
-if (sessionId) {
+if (sessionHash) {
   try {
-    const transferResult = await transferGuestToUser(sessionId, userId);
+    const transferResult = await transferGuestToUser(sessionHash, userId);
     
     if (transferResult.messagesTransferred > 0) {
       logger.info('Guest data transferred to user', {
@@ -1465,13 +1454,12 @@ if (sessionId) {
       // Frontend can show: "X messages transferred to your account"
     }
   } catch (error) {
-    logger.error('Failed to transfer guest data', error, { sessionId, userId });
+    logger.error('Failed to transfer guest data', error, { sessionHash, userId });
     // Don't block auth flow - transfer can happen later
     // User can still sign in, transfer can be retried
   }
   
-  // Clear session_id cookie after transfer (optional)
-  // Or keep it for potential retry
+  // Clear session_id cookie after transfer (optional), or keep for retry
 }
 ```
 
@@ -1515,50 +1503,31 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  v_messages_count BIGINT;
-  v_rate_limits_count BIGINT;
-  v_conversations_count BIGINT;
+  v_rate_limits_count BIGINT := 0;
+  v_conversations_count BIGINT := 0;
   v_thirty_days_ago TIMESTAMPTZ;
 BEGIN
   v_thirty_days_ago := NOW() - INTERVAL '30 days';
   
-  -- Delete old guest conversations FIRST (CASCADE will delete messages automatically)
-  -- CRITICAL: Delete conversations first, then count messages separately to avoid double-counting
+  -- Delete old guest conversations (CASCADE removes guest_messages)
   WITH deleted_conv AS (
-    DELETE FROM conversations
-    WHERE user_id IS NULL
-      AND session_id IS NOT NULL
-      AND created_at < v_thirty_days_ago
+    DELETE FROM guest_conversations
+    WHERE created_at < v_thirty_days_ago
     RETURNING id
   )
   SELECT COUNT(*) INTO v_conversations_count FROM deleted_conv;
   
-  -- Count messages that were deleted via CASCADE (for logging)
-  -- Note: We can't count them directly since CASCADE happens automatically
-  -- So we count messages in conversations that should have been deleted
-  -- (This is approximate - actual count might be slightly different due to timing)
-  SELECT COUNT(*) INTO v_messages_count
-  FROM messages
-  WHERE conversation_id IN (
-    SELECT id FROM conversations 
-    WHERE user_id IS NULL 
-      AND session_id IS NOT NULL 
-      AND created_at < v_thirty_days_ago
-  );
-  -- Note: This query will return 0 if conversations were already deleted (CASCADE)
-  -- But it's fine - we're just logging approximate counts
-  
   -- Delete old guest rate limits
-  WITH deleted AS (
+  WITH deleted_rl AS (
     DELETE FROM rate_limits
     WHERE user_id IS NULL
-      AND session_id IS NOT NULL
-      AND window_end < v_thirty_days_ago
+      AND session_hash IS NOT NULL
+      AND bucket_end < v_thirty_days_ago
     RETURNING id
   )
-  SELECT COUNT(*) INTO v_rate_limits_count FROM deleted;
+  SELECT COUNT(*) INTO v_rate_limits_count FROM deleted_rl;
   
-  RETURN QUERY SELECT v_messages_count, v_rate_limits_count, v_conversations_count;
+  RETURN QUERY SELECT 0::BIGINT AS messages_deleted, v_rate_limits_count, v_conversations_count;
 END;
 $$;
 
@@ -1591,15 +1560,15 @@ SELECT cron.schedule(
 - **Problem**: Guest users not rate limited, uses message count (slow, not accurate)
 
 **Existing Message Storage:**
-- `saveUserMessage()`: Saves messages (no `session_id` support)
-- `ensureConversation()`: Creates conversations (no `session_id` support)
+- `saveUserMessage()`: Saves messages for authed users
+- `ensureConversation()`: Creates conversations for authed users
 - Guest conversations: Use `temp-` prefix (not stored in DB)
-- **Problem**: Guest messages not stored, can't persist
+- **Problem**: Guest messages not stored, can't persist; must move to server-side guest staging tables
 
 **Existing Code to Update:**
-1. `app/api/chat/route.ts`: Replace `canSendMessage()` with new hybrid rate limiting
-2. `saveUserMessage()`: Add `session_id` parameter
-3. `ensureConversation()`: Add `session_id` parameter for guests
+1. `app/api/chat/route.ts`: Replace `canSendMessage()` with new hybrid rate limiting (IP Redis + DB bucketed session_hash/user)
+2. Add server-side guest staging flow: write guest conversations/messages into `guest_conversations`/`guest_messages` using service-role client; do not expose via anon client.
+3. Keep authed flow on main tables unchanged.
 4. Remove/deprecate: `canSendMessage()`, `getRateLimitInfo()`, `countMessagesTodayServerSide()`
 
 ### Integration Points
@@ -1627,137 +1596,13 @@ Object.entries(rateLimitCheck.headers).forEach(([key, value]) => {
 });
 ```
 
-**2. `saveUserMessage()` Update:**
+**2. Guest message storage:**
 
-```typescript
-// OLD:
-async function saveUserMessage(
-  conversationId: string,
-  userMessage: UIMessage,
-  userId: string | null,
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  isProUserOverride?: boolean
-): Promise<boolean>
+- For guests, store into `guest_messages` (server-side) with fk to `guest_conversations` by `session_hash`.
+- `saveUserMessage()` for authed users stays as-is; guest writes use a separate server helper that targets staging tables (service-role client only).
 
-// NEW:
-async function saveUserMessage(
-  conversationId: string,
-  userMessage: UIMessage,
-  userId: string | null,
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  sessionId?: string | null, // NEW: For guest messages
-  isProUserOverride?: boolean
-): Promise<boolean>
-
-// In function body:
-await supabase.from('messages').insert({
-  conversation_id: conversationId,
-  role: 'user',
-  parts: userMessage.parts,
-  content: messageText.trim(),
-  user_id: userId, // null for guests
-  session_id: sessionId || null, // NEW: Link to session for guests
-});
-```
-
-**3. `ensureConversation()` Update:**
-
-```typescript
-// OLD:
-async function ensureConversation(
-  user: { id: string },
-  conversationId: string,
-  title: string,
-  supabase: Awaited<ReturnType<typeof createClient>>
-): Promise<string>
-
-// NEW:
-async function ensureConversation(
-  user: { id: string } | null, // null for guests
-  conversationId: string,
-  title: string,
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  sessionId?: string | null // NEW: For guest conversations
-): Promise<string>
-
-// In function body:
-// CRITICAL: Handle both guest and authenticated cases
-if (!conversationId || conversationId.startsWith('temp-')) {
-  // Still skip temp conversations (backward compatibility during migration)
-  return conversationId;
-}
-
-// Check if conversation exists
-const { data: existing, error: checkError } = await supabase
-  .from('conversations')
-  .select('id, user_id, session_id')
-  .eq('id', conversationId)
-  .maybeSingle();
-
-if (checkError) {
-  throw new Error('Failed to check conversation');
-}
-
-if (existing) {
-  // Conversation exists - verify ownership
-  if (user) {
-    // Authenticated: Must match user_id
-    if (existing.user_id !== user.id) {
-      throw new Error('Unauthorized: conversation belongs to another user');
-    }
-  } else {
-    // Guest: Must match session_id
-    if (existing.session_id !== sessionId) {
-      throw new Error('Unauthorized: conversation belongs to another session');
-    }
-  }
-  return conversationId;
-}
-
-// Conversation doesn't exist - create it
-if (!user) {
-  // Guest: Create conversation with session_id
-  if (!sessionId) {
-    throw new Error('Session ID required for guest conversations');
-  }
-  const { error: insertError } = await supabase.from('conversations').insert({
-    id: conversationId,
-    user_id: null, // Guest
-    session_id: sessionId,
-    title: title,
-  });
-  if (insertError) {
-    // Handle race condition (duplicate key)
-    if (insertError.code === '23505') {
-      // Another request created it - verify ownership
-      const { data: verify } = await supabase
-        .from('conversations')
-        .select('session_id')
-        .eq('id', conversationId)
-        .maybeSingle();
-      if (verify && verify.session_id === sessionId) {
-        return conversationId; // Created by another request, ownership verified
-      }
-      throw new Error('Conversation ID conflict');
-    }
-    throw insertError;
-  }
-} else {
-  // Authenticated: Existing logic (user_id set)
-  const { error: insertError } = await supabase.from('conversations').insert({
-    id: conversationId,
-    user_id: user.id,
-    session_id: null, // Authenticated users don't need session_id
-    title: title,
-  });
-  if (insertError) {
-    // Handle race condition (same as before)
-    // ...
-  }
-}
-
-return conversationId;
-```
+- For guests, create conversations in `guest_conversations` (session_hash) via a server helper; do not touch main `conversations` or RLS.
+- For authenticated users, keep `ensureConversation` unchanged.
 
 **4. Guest Conversation Handling:**
 
@@ -1838,74 +1683,53 @@ return response;
 
 **Tasks:**
 1. **Create migration file**: `lib/supabase/migration_rate_limiting_hybrid.sql`
-2. **Update conversations table** (REQUIRED - Breaking Change):
-   - `ALTER TABLE conversations ALTER COLUMN user_id DROP NOT NULL` ✅ CRITICAL
-   - `ALTER TABLE conversations ADD COLUMN session_id UUID` ✅
-   - `ALTER TABLE conversations ADD CONSTRAINT conversations_user_or_session_check CHECK (user_id IS NOT NULL OR session_id IS NOT NULL)` ✅
-3. **Add `session_id` to rate_limits**:
-   - `ALTER TABLE rate_limits ADD COLUMN session_id UUID` ✅
-4. **Update unique constraints**:
-   - Drop old constraint on `rate_limits`
-   - Add new constraint with `COALESCE` for user_id/session_id
-5. **Update RLS policies** (REQUIRED):
-   - Drop old policies (they block guests)
-   - Create new policies that allow guest access via session_id
-   - Update conversations policies
-   - Update messages policies
-4. **Create indexes**:
-   - Partial indexes for guest data (WHERE session_id IS NOT NULL)
-   - Composite indexes for fast lookups
-   - Cleanup indexes (WHERE created_at < ...)
-5. **Create `increment_rate_limit()` function**:
-   - Optimized: Pass limit from application (no subscription lookup)
-   - Atomic operation (INSERT ... ON CONFLICT)
-   - Returns count, limit_reached, window
-6. **Create `transfer_guest_to_user()` function**:
-   - Transfers conversations first (messages reference them)
-   - Handles race conditions (ON CONFLICT)
-   - Returns counts for logging
-7. **Create `cleanup_guest_data()` function**:
-   - Deletes old guest messages, rate_limits, conversations
-   - Uses CTEs for efficient deletion
-8. **Set up pg_cron job**:
-   - Enable pg_cron extension
-   - Schedule cleanup job (daily at 2 AM UTC)
-9. **Test database functions**:
-   - Test with various inputs (guest, free, pro)
-   - Test concurrent increments (race conditions)
-   - Test transfer function
-   - Test cleanup function
+2. **Create guest staging tables**: `guest_conversations`, `guest_messages` with indexes.
+3. **Alter `rate_limits`**: add `session_hash`, update unique constraint to bucket key, add indexes.
+4. **Create/replace functions**:
+   - `increment_rate_limit` (day buckets, session_hash, limit passed in).
+   - `transfer_guest_to_user` (staging → main, skip on conflict, cleanup).
+   - `cleanup_guest_data`.
+5. **Enable pg_cron** (one-time) and schedule `cleanup_guest_data()` daily at 2 AM UTC.
+6. **Test database functions**:
+   - Test with guest (session_hash), free (20/day), pro (999999).
+   - Test concurrent increments.
+   - Test transfer function.
+   - Test cleanup function and cron scheduling.
 
 **Files:**
 - `lib/supabase/migration_rate_limiting_hybrid.sql` (NEW)
 
 **SQL Migration Checklist:**
-- [ ] **CRITICAL**: Make conversations.user_id nullable (DROP NOT NULL)
-- [ ] Add session_id columns (rate_limits, conversations) - NOT messages ✅
-- [ ] Add constraint: user_id OR session_id must be set (data integrity)
-- [ ] **CRITICAL**: Update RLS policies (allow guest access via session_id)
-- [ ] Create indexes (partial, composite, cleanup)
-- [ ] Update unique constraints
-- [ ] Create increment_rate_limit() function (with corrected WHERE clause)
-- [ ] Create transfer_guest_to_user() function (with conflict handling)
-- [ ] Create cleanup_guest_data() function (delete conversations first)
-- [ ] Enable pg_cron extension
-- [ ] Schedule cleanup job
-- [ ] Grant permissions (EXECUTE on functions)
+- [ ] Add `session_hash` to rate_limits; update unique constraint and indexes (bucket_start).
+- [ ] Create guest_conversations, guest_messages with indexes.
+- [ ] Create increment_rate_limit() (day buckets, session_hash).
+- [ ] Create transfer_guest_to_user() (staging → main, skip+log conflicts).
+- [ ] Create cleanup_guest_data() and schedule via pg_cron (2 AM UTC).
+- [ ] Enable pg_cron extension (if not already).
+- [ ] Grant EXECUTE on functions.
 
 **Testing:**
-- [ ] Test increment_rate_limit() with guest (session_id)
-- [ ] Test increment_rate_limit() with free user (user_id, limit 20)
-- [ ] Test increment_rate_limit() with pro user (user_id, limit 999999)
-- [ ] Test concurrent increments (same user/session, multiple requests)
-- [ ] Test transfer_guest_to_user() (messages, rate_limits, conversations)
-- [ ] Test cleanup_guest_data() (deletes old data)
-- [ ] Verify pg_cron job is scheduled
+- [ ] Test increment_rate_limit() with guest (session_hash), free (20/day), pro (999999).
+- [ ] Test concurrent increments (same user/session_hash).
+- [ ] Test transfer_guest_to_user() (messages, rate_limits, conversations).
+- [ ] Test cleanup_guest_data() (deletes old guest data).
+- [ ] Verify pg_cron job is scheduled.
 
 **Rollback Plan:**
 - Keep old code until new code is tested
 - Migration is idempotent (IF NOT EXISTS, CREATE OR REPLACE)
-- Can rollback by dropping new columns (data loss for guests only)
+- Can rollback by dropping new columns/tables (guest data only)
+
+**Guardrails (Phase 1):**
+- Use day buckets; keep main RLS untouched; guests only via staging tables.
+- Ensure SQL functions are SECURITY DEFINER with input validation; no raw session_id stored.
+- Validate HMAC/Redis envs exist before running dependent code paths later.
+
+**Verification (Phase 1):**
+- Files limited to migration SQL only; functions and tables created as listed.
+- Tests run (RPCs for guest/free/pro, concurrent increments, transfer, cleanup, cron scheduled).
+- Guardrails satisfied (no main RLS change; session_hash only).
+- Tracker updated (Summary/Tests/Findings, Next set).
 
 ### Phase 2: Redis Setup & Layer 1 (2-3 hours)
 
@@ -1956,6 +1780,20 @@ return response;
 - [ ] Invalid IP format
 - [ ] Redis timeout
 - [ ] Redis connection error
+- [ ] session_hash key rotation impact (old sessions become “new”; acceptable?)
+- [ ] NAT/VPN “unknown” IP stricter handling or logging
+- [ ] Decide unknown IP policy: e.g., allow 3/day and log, or block
+
+**Guardrails (Phase 2):**
+- Default Redis limit: 10/day per IP; “unknown” IPs 3/day + log.
+- Fail-open on Redis errors; add `X-RateLimit-Degraded: true` when degraded.
+- Redis is coarse shield; DB is the source of truth for quotas.
+
+**Verification (Phase 2):**
+- Files limited to redis client/wrapper + IP util; env vars set.
+- Tests run (IP extraction, 10/day, unknown IP policy, fail-open).
+- Guardrails satisfied (degraded header on fail-open; Redis only coarse).
+- Tracker updated.
 
 ### Phase 3: Session Management (1-2 hours)
 
@@ -1978,6 +1816,7 @@ return response;
 
 **Files:**
 - `lib/utils/session.ts` (NEW)
+- `lib/utils/session-hash.ts` (NEW)
 
 **Testing:**
 - [ ] Test session ID generation (UUID v4 format)
@@ -1986,12 +1825,26 @@ return response;
 - [ ] Test session persistence (same session across requests)
 - [ ] Test cookie expiration (30 days)
 - [ ] Test invalid UUID handling
+- [ ] Test HMAC session_hash derivation and stability across requests (no rotation mid-session)
 
 **Security:**
 - [ ] HttpOnly flag (prevents XSS)
 - [ ] SameSite=Lax (prevents CSRF)
 - [ ] Secure flag (HTTPS only)
 - [ ] UUID validation (prevents injection)
+- [ ] HMAC secret required; stable (no rotation mid-session)
+- [ ] Do not store raw session_id in DB/Redis; only session_hash
+
+**Guardrails (Phase 3):**
+- Cookie: HttpOnly, SameSite=Lax, Secure (prod), Max-Age 30d, Path=/.
+- HMAC: required; fail fast if missing; no rotation (stability); only session_hash stored.
+- Keep session_id server-only; never expose to client JS.
+
+**Verification (Phase 3):**
+- Files limited to session/session-hash utils; env validation present.
+- Tests run (cookie parse/set, UUID validity, HMAC stability).
+- Guardrails satisfied (no raw session_id stored).
+- Tracker updated.
 
 ### Phase 4: Database Layer 2 (2-3 hours)
 
@@ -2031,14 +1884,25 @@ return response;
 - [ ] Verify atomic operation (no race conditions)
 - [ ] Verify indexed queries (fast lookups)
 
+**Guardrails (Phase 4):**
+- Day buckets; session_hash for guests, user_id for authed.
+- Pass limit from app; single RPC; fail-open on DB errors but log.
+- Keep queries indexed on bucket_start, session_hash/user_id.
+
+**Verification (Phase 4):**
+- Files limited to `lib/db/rate-limits.server.ts`.
+- Tests run (guest/free/pro, concurrent, fail-open, latency).
+- Guardrails satisfied (day buckets, session_hash).
+- Tracker updated.
+
 ### Phase 5: Hybrid Rate Limiting (3-4 hours)
 
 **Tasks:**
 1. **Create guest rate limiting service** (`lib/services/rate-limiting-guest.ts`):
    - Combine Redis (Layer 1) + DB (Layer 2)
-   - Extract IP and session ID
+   - Extract IP, get/create session_id cookie, derive session_hash
    - Check Redis first (fast rejection)
-   - Check DB second (accurate limit)
+   - Check DB second (accurate limit, day bucket)
    - Return: allowed, reason, remaining, reset, headers, sessionId
 2. **Create authenticated rate limiting service** (`lib/services/rate-limiting-auth.ts`):
    - Check Pro status (use override if available)
@@ -2053,17 +1917,12 @@ return response;
 4. **Integrate into `/api/chat` route**:
    - Replace `canSendMessage()` with `checkRateLimit()`
    - Pass `request` and `response` objects
-   - Add rate limit headers to response
+   - Add rate limit headers to response (JSON + SSE)
    - Handle 429 errors
-   - **CRITICAL**: Add headers to streaming responses too
-5. **Update `saveUserMessage()`**:
-   - NO CHANGES NEEDED ✅
-   - Messages don't need `session_id` (link via `conversation_id`)
-   - Conversations have `session_id` for guests
-6. **Update `ensureConversation()`**:
-   - Add `sessionId` parameter
-   - Handle guest conversations (user_id = null, session_id = sessionId)
-   - Remove `temp-` prefix check (all conversations stored now)
+   - **CRITICAL**: Add headers to streaming responses too; set cookie before streaming
+5. **Guest storage integration**:
+   - For guests, write to `guest_conversations`/`guest_messages` via server (service-role) using session_hash.
+   - For authed users, keep existing conversation/message flow unchanged.
 7. **Test full flow**:
    - Guest: Redis → DB → Process
    - Authenticated: DB → Process
@@ -2075,16 +1934,25 @@ return response;
 - `lib/services/rate-limiting-auth.ts` (NEW)
 - `lib/services/rate-limiting.ts` (UPDATE - replace old)
 - `app/api/chat/route.ts` (UPDATE)
-- `lib/db/messages.server.ts` (UPDATE - add sessionId to saveUserMessage)
+- `lib/db/messages.server.ts` (UPDATE - remove duplicate rate limit check; guest writes now staging)
 
 **Integration Checklist:**
 - [ ] Replace `canSendMessage()` with `checkRateLimit()`
-- [ ] ~~Update `saveUserMessage()` signature~~ ✅ NO CHANGES NEEDED
-- [ ] Update `ensureConversation()` signature (add sessionId)
-- [ ] Remove `temp-` prefix checks (all conversations stored)
 - [ ] Add rate limit headers to JSON responses
 - [ ] Add rate limit headers to streaming responses
+- [ ] Guest writes use staging tables via service-role; authed writes unchanged
 - [ ] Remove duplicate rate limit check in `saveUserMessage()`
+
+**Guardrails (Phase 5):**
+- Set cookie before streaming; attach headers on JSON and SSE.
+- Guest path uses session_hash + staging tables (service-role only); main RLS untouched.
+- Authed path unchanged; no temp- conversations; old `canSendMessage` removed.
+
+**Verification (Phase 5):**
+- Files limited to rate-limiting services + chat route; duplicate check removed from messages server.
+- Tests run (guest/auth flows, headers JSON/SSE, Redis/DB down fail-open, perf).
+- Guardrails satisfied (staging for guests; headers set; cookie before stream).
+- Tracker updated.
 
 **Testing:**
 - [ ] Test guest flow (Redis → DB → Process)
@@ -2104,40 +1972,32 @@ return response;
 ### Phase 6: Message Persistence (3-4 hours)
 
 **Tasks:**
-1. **Update message storage** (NO CHANGES NEEDED):
-   - Messages don't need `session_id` (they link via `conversation_id`)
-   - Conversations have `session_id` for guests
-   - Messages automatically belong to conversations (foreign key)
-2. **Update conversation storage** (already done in Phase 5):
-   - `ensureConversation()` now accepts `sessionId`
-   - Conversations stored with `session_id` for guests
-   - Conversations stored with `user_id` for authenticated
-3. **Create guest transfer service** (`lib/db/guest-transfer.server.ts`):
+1. **Guest storage**: Already covered in Phase 5 (staging tables). No changes to authed storage.
+2. **Create guest transfer service** (`lib/db/guest-transfer.server.ts`):
    - `transferGuestToUser()` function
    - Call `transfer_guest_to_user()` database function
    - Handle errors (don't block auth flow)
    - Return transfer counts
-4. **Integrate transfer on authentication**:
-   - **Location**: In `app/auth/callback/route.ts` (after user creation, Step 4)
+3. **Integrate transfer on authentication**:
+   - **Location**: In `app/auth/callback/route.ts` (after user creation)
    - **Why here**: Server-side, cookie available, happens immediately after auth
    - **Flow**:
      1. User completes OAuth → redirects to `/auth/callback?code=...`
      2. Callback route exchanges code for session (creates user)
-     3. **session_id cookie is present in request** (same domain, persisted through OAuth redirect)
-     4. Read session_id from cookie: `getSessionIdFromCookie(request)`
-     5. Call transfer function: `transferGuestToUser(sessionId, userId)`
+     3. `session_id` cookie is present in request
+     4. Derive `session_hash = hmacSessionId(session_id)`
+     5. Call transfer function: `transferGuestToUser(session_hash, userId)`
      6. Log transfer results
-     7. Don't block auth flow if transfer fails (user still signs in)
+     7. Don't block auth flow if transfer fails (user still signs in; can retry)
    - **Alternative (Not Recommended)**: In `lib/contexts/AuthContext.tsx` on `SIGNED_IN` event
      - Less reliable (client-side, network issues)
-     - Can show UI notification immediately
-     - **Issue**: Cookie might not be accessible client-side (HttpOnly)
-5. **Handle conversation_id updates**:
+     - Cookie might not be accessible client-side (HttpOnly)
+4. **Handle conversation_id updates**:
    - Transfer function handles this (conversations transferred first)
    - Messages reference conversations (foreign key)
    - No manual conversation_id updates needed
-6. **Test message persistence**:
-   - Guest sends messages (stored with session_id)
+5. **Test message persistence**:
+   - Guest sends messages (stored in staging with session_hash)
    - User signs up/logs in
    - Messages transfer to user_id
    - User sees previous conversations
@@ -2149,6 +2009,7 @@ return response;
 
 **Integration Points:**
 - [ ] Get session_id from cookie in auth callback
+- [ ] Derive session_hash via HMAC
 - [ ] Call transfer function after user creation/login
 - [ ] Handle transfer errors (log, don't block)
 - [ ] Show notification to user (X messages transferred)
@@ -2156,19 +2017,37 @@ return response;
 
 **Testing:**
 - [ ] Test guest message storage (via conversation_id)
-- [ ] Test guest conversation storage (session_id set)
+- [ ] Test guest conversation storage (session_hash set)
 - [ ] Test transfer on signup (new user)
 - [ ] Test transfer on login (existing user)
 - [ ] Test multiple conversations (all transfer)
 - [ ] Test transfer failure (doesn't block auth)
-- [ ] Test concurrent transfers (same session_id)
+- [ ] Test concurrent transfers (same session_hash)
 - [ ] Test transfer with no guest data (no error)
 
 **Edge Cases:**
 - [ ] User signs up with no guest data (no transfer needed)
 - [ ] Transfer fails (user still signs in, transfer retries later)
-- [ ] Multiple conversations with same session_id (all transfer)
+- [ ] Multiple conversations with same session_hash (all transfer)
 - [ ] Transfer while user already has conversations (merge)
+- [ ] Conversation/message ID conflict (UUID): skip on conflict and log counts (decision: skip+log, no re-ID)
+
+**Guardrails (Phase 6):**
+- Run transfer in auth callback (server-side); derive session_hash from cookie.
+- Skip-on-conflict + log; do not block auth if transfer fails; can retry.
+- Staging only for guests; main tables unchanged.
+
+**Verification (Phase 6):**
+- Files limited to guest-transfer server helper + auth callback (optional AuthContext).
+- Tests run (guest→auth transfer, conflicts skipped+logged, no-guest-data path, concurrent).
+- Guardrails satisfied (session_hash from cookie; no blocking auth).
+- Tracker updated.
+
+**Verification (Phase 6):**
+- Files limited to guest-transfer server helper + auth callback (optional AuthContext).
+- Tests run (guest→auth transfer, conflicts skipped+logged, no-guest-data path, concurrent).
+- Guardrails satisfied (session_hash from cookie; no blocking auth).
+- Tracker updated.
 
 ### Phase 7: Type Definitions & Environment Validation (1 hour)
 
@@ -2211,6 +2090,11 @@ return response;
 - [ ] Test missing env vars (should fail fast with clear error)
 - [ ] Verify type safety in all new functions
 
+**Guardrails (Phase 7):**
+- All new types live in `lib/types.ts`; no `any`.
+- Env vars validated at startup; fail fast if missing Redis URL/token or HMAC secret.
+- Keep function signatures typed; avoid console.log in prod paths.
+
 ### Phase 8: Cleanup & Polish (3-4 hours)
 
 **Tasks:**
@@ -2221,7 +2105,7 @@ return response;
 2. **Add rate limit headers to responses**:
    - JSON responses: Already done in Phase 5
    - **Streaming responses**: Add headers to initial response
-   - Headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset, X-RateLimit-Layer
+   - Headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset (epoch ms), X-RateLimit-Layer (redis|database), optional X-RateLimit-Degraded
 3. **Add monitoring/logging**:
    - Log rate limit checks (debug level)
    - Log rate limit hits (warn level)
@@ -2281,6 +2165,17 @@ return response;
 - [ ] Monitor for issues
 - [ ] Remove old code after 1-2 weeks
 
+**Guardrails (Phase 8):**
+- Ensure headers present on JSON/SSE; keep degraded header on Redis fail-open.
+- Remove old code/flag after monitoring; keep RLS strict; guests remain staging-only.
+- Monitor pg_cron cleanup success; set alerts on failures/429 spikes/latency.
+
+**Verification (Phase 8):**
+- Files limited to cleanup/removals/headers/monitoring adjustments.
+- Tests run (headers, cleanup job, bypass if present).
+- Guardrails satisfied (old code removed after monitoring; RLS strict).
+- Tracker updated.
+
 ---
 
 ## 🧪 Testing Strategy
@@ -2323,6 +2218,7 @@ return response;
 - Guest message storage count
 - Transfer success rate
 - Cleanup job performance
+- RLS integrity: ensure no guest access via anon client (periodic audit)
 
 ### Alerts
 - Redis down for > 5 minutes
@@ -2391,7 +2287,7 @@ return response;
 **Result:** User can still sign in, transfer happens in background
 
 ### 8. Multiple Guest Conversations
-**Solution:** Transfer all conversations with same session_id
+**Solution:** Transfer all conversations with same session_hash (staging tables)
 **Result:** User sees all their guest conversations
 
 ### 9. Conversation ID Conflict on Transfer
@@ -2406,14 +2302,11 @@ return response;
 **Result:** No data loss, user gets most conversations transferred
 
 ### 10. RLS Policy Blocking Guests
-**Scenario:** Current RLS policies check `auth.uid() = user_id`, blocking guests
+**Scenario:** Main tables enforce `auth.uid() = user_id`; guests would be blocked if they hit anon client.
 
-**Solution:** Update policies to allow guest access via session_id
-- New policies: `(auth.uid() = user_id) OR (auth.uid() IS NULL AND session_id IS NOT NULL)`
-- Applies to conversations and messages tables
-- Still secure (guests can only access their own session_id)
+**Solution:** Keep RLS strict; do not expose guest data via anon client. All guest reads/writes happen through server routes using service-role client and staging tables.
 
-**Result:** Guests can create and access conversations
+**Result:** No RLS weakening; guest data isolated, authenticated users unchanged.
 
 ---
 
