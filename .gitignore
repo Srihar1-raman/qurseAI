@@ -39,6 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+<<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
 
 # docs
 supabaseDOC.md
+=======
+.cursor/worktrees.json
+supabaseDOC.md
+>>>>>>> Incoming (Background Agent changes)
+=======
+
+# docs
+supabaseDOC.md
+>>>>>>> Incoming (Background Agent changes)

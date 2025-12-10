@@ -337,19 +337,7 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
   
   GET DIAGNOSTICS v_conversations_count = ROW_COUNT;
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-  
-=======
-    
->>>>>>> Incoming (Background Agent changes)
-=======
-    
->>>>>>> Incoming (Background Agent changes)
-=======
-    
->>>>>>> Incoming (Background Agent changes)
+
   -- Copy guest messages into main messages, pointing to transferred conversations
   INSERT INTO messages (
     id, conversation_id, role, content, parts, model,
@@ -764,10 +752,10 @@ Decisions (locked):
 - Feature flag: optional; if used, `USE_HYBRID_RL` toggles new path.
 
 Progress
-- [ ] Phase 1: Migrations (pg_cron enable, guest tables, rate_limits session_hash, functions, cron schedule)
-  - Summary:
-  - Tests:
-  - Findings/Issues:
+- [x] Phase 1: Migrations (pg_cron enable, guest tables, rate_limits session_hash, functions, cron schedule)
+  - Summary: Added hybrid migration (guest staging tables, rate_limits session_hash + bucketed constraint/indexes, increment_rate_limit, transfer_guest_to_user, cleanup_guest_data, pg_cron job 2 AM UTC).
+  - Tests: Not yet run (pending RPC checks: guest/free/pro, concurrent increments, transfer, cleanup, cron schedule verification).
+  - Findings/Issues: Plan conflict markers resolved; need to execute DB-side tests.
 - [ ] Phase 2: Redis setup (envs set, client, wrapper, unknown IP policy)
   - Summary:
   - Tests:
@@ -798,7 +786,7 @@ Progress
   - Findings/Issues:
 
 Next:
-- List the very next small set of tasks you will do before you start coding.
+- Begin Phase 2: Redis setup (env vars, client, wrapper, unknown IP policy); run Redis rate-limit checks after setup.
 
 **Execution routine (for you / for AI implementers):**
 - Before a phase: read Decisions, Guardrails, Files for that phase; set “Next.”
