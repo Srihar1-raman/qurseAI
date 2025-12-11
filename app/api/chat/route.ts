@@ -19,7 +19,9 @@ import { sanitizeApiError } from '@/lib/utils/error-sanitizer';
 import { toUIMessageFromZod, type StreamTextProviderOptions } from '@/lib/utils/message-adapters';
 import { generateTitleFromUserMessage } from '@/lib/utils/convo-title-generation';
 import { updateConversationTitle } from '@/lib/db/queries.server';
-import { canSendMessage } from '@/lib/services/rate-limiting';
+import { checkRateLimit } from '@/lib/services/rate-limiting';
+import { ensureGuestConversation, saveGuestMessage } from '@/lib/db/messages.server';
+import { hmacSessionId } from '@/lib/utils/session-hash';
 import type { User } from '@/lib/types';
 
 const logger = createScopedLogger('api/chat');
@@ -130,28 +132,6 @@ async function saveUserMessage(
     return false;
   }
 
-  // Final rate limit check before saving (mitigates race conditions)
-  // This is the actual enforcement point - if we get here, we save the message
-  // NOTE: This is a second check to prevent race conditions, but concurrent requests
-  // could still potentially bypass limits. For production, consider using database-level
-  // constraints or a distributed lock mechanism.
-  if (userId) {
-    const { countMessagesTodayServerSide } = await import('@/lib/db/queries.server');
-    const { isProUser } = await import('@/lib/services/subscription');
-    const { RATE_LIMITS } = await import('@/lib/services/rate-limiting');
-    
-    // Use override if provided to avoid duplicate DB call
-    const isPro = isProUserOverride !== undefined ? isProUserOverride : await isProUser(userId);
-    
-    if (!isPro) {
-      const count = await countMessagesTodayServerSide(userId);
-      if (count >= RATE_LIMITS.free) {
-        logger.warn('Rate limit enforced at save time', { userId, count, limit: RATE_LIMITS.free });
-        throw new Error('Daily limit reached. Please try again tomorrow or upgrade to Pro.');
-      }
-    }
-  }
-
   // Save with parts array (new format) and content (backward compatibility)
   const { error: msgError } = await supabase
     .from('messages')
@@ -238,20 +218,35 @@ export async function POST(req: Request) {
     }
     
     // ============================================
-    // RATE LIMITING (Business Logic)
+    // RATE LIMITING (Hybrid)
     // ============================================
-    // Check rate limits before processing request
-    // Pass isProUser to avoid duplicate DB call (already computed in getUserData)
-    const rateLimitCheck = await canSendMessage(
-      lightweightUser?.userId || null,
-      lightweightUser?.isProUser
-    );
+    const rateLimitResponse = new Response();
+    const rateLimitCheck = await checkRateLimit({
+      userId: lightweightUser?.userId || null,
+      isProUser: lightweightUser?.isProUser,
+      request: req,
+      response: rateLimitResponse,
+    });
+
+    const setCookieHeader = rateLimitResponse.headers.get('set-cookie');
+    const applyRateLimitHeaders = (headers: Headers) => {
+      Object.entries(rateLimitCheck.headers).forEach(([key, value]) => headers.set(key, value));
+      if (setCookieHeader) {
+        headers.append('Set-Cookie', setCookieHeader);
+      }
+    };
+    const applyConversationIdHeader = (headers: Headers, id?: string | null) => {
+      if (id) {
+        headers.set('X-Conversation-Id', id);
+      }
+    };
+
     if (!rateLimitCheck.allowed) {
       logger.warn('Rate limit exceeded', {
-        userId: lightweightUser?.userId || 'anonymous',
+        userId: lightweightUser?.userId || 'guest',
         reason: rateLimitCheck.reason,
       });
-      return NextResponse.json(
+      const denyResponse = NextResponse.json(
         {
           error: rateLimitCheck.reason || 'Rate limit exceeded',
           rateLimitInfo: {
@@ -260,7 +255,13 @@ export async function POST(req: Request) {
         },
         { status: 429 }
       );
+      applyRateLimitHeaders(denyResponse.headers);
+      applyConversationIdHeader(denyResponse.headers, conversationId);
+      return denyResponse;
     }
+
+    const sessionId = rateLimitCheck.sessionId;
+    const sessionHash = sessionId ? hmacSessionId(sessionId) : null;
     
     // ============================================
     // Stage 3: Start promises early (parallel execution)
@@ -327,6 +328,8 @@ export async function POST(req: Request) {
     const title = userMessageText.trim().length > 0
       ? userMessageText.slice(0, 50) + (userMessageText.length > 50 ? '...' : '')
       : 'New Chat';
+
+    let resolvedConversationId = conversationId;
     
     logger.debug('Starting stream', { duration: `${Date.now() - requestStartTime}ms` });
     
@@ -343,24 +346,21 @@ export async function POST(req: Request) {
     // Full user already available (no await needed)
     const dbOperationsPromise = (async () => {
       const user = fullUserData;
+
+      // Authenticated flow
       if (user && conversationId && !conversationId.startsWith('temp-') && lastUserMessage) {
         return ensureConversation(user, conversationId, title, supabaseClient)
-          .then(convId => {
-            // After conversation is ensured, save user message
-            // Check conditions again (defensive programming - saveUserMessage has its own checks)
+          .then((convId) => {
+            resolvedConversationId = convId;
             if (!convId || convId.startsWith('temp-') || !lastUserMessage) {
-              // Shouldn't happen due to outer check, but handle defensively
               return { convId, saveSuccess: false };
             }
             
-            // Extract text for title generation
             const userMessageText = lastUserMessage.parts
               ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
               .map((p) => p.text)
               .join('') || '';
             
-            // Generate better title in BACKGROUND (non-blocking, non-critical)
-            // Only generate if message is longer than 50 chars (meaning we truncated it)
             if (userMessageText.trim().length > 50) {
               if (lastUserMessage && lastUserMessage.role === 'user') {
                 after(async () => {
@@ -369,33 +369,45 @@ export async function POST(req: Request) {
                     await updateConversationTitle(convId, betterTitle, supabaseClient);
                     logger.debug('Title generated and updated', { conversationId: convId, title: betterTitle });
                   } catch (error) {
-                    // Title generation is non-critical - log but don't throw
                     logger.error('Background title generation failed', error, { conversationId: convId });
                   }
                 });
               }
             }
             
-            // Return object with convId and saveSuccess flag
-            // Final rate limit check happens here (atomic enforcement point)
-            // Pass isProUser to avoid duplicate DB call (already computed in getUserData)
-            // Note: lightweightUser is in outer scope, accessible here
             const isPro = lightweightUser?.isProUser ?? false;
             return saveUserMessage(convId, lastUserMessage, user.id, supabaseClient, isPro)
-              .then((saved) => ({ convId, saveSuccess: saved })) // Return actual save result
-              .catch(error => {
-                // Log error but still return convId so we can use it
-                // This allows streaming to start but logs the failure
+              .then((saved) => ({ convId, saveSuccess: saved }))
+              .catch((error) => {
                 logger.error('Failed to save user message', error, { conversationId: convId });
-                return { convId, saveSuccess: false }; // Return failure flag
+                return { convId, saveSuccess: false };
               });
           })
-          .catch(error => {
+          .catch((error) => {
             logger.error('DB operations failed', error, { conversationId });
-            // Return null to allow streaming to continue even if conversation creation fails
             return null;
           });
       }
+
+      // Guest flow
+      if (!user && sessionHash && lastUserMessage) {
+        try {
+          const preferredId = conversationId && !conversationId.startsWith('temp-') ? conversationId : undefined;
+          const guestConversationId = await ensureGuestConversation(sessionHash, title, preferredId);
+          resolvedConversationId = guestConversationId;
+          await saveGuestMessage({
+            conversationId: guestConversationId,
+            message: lastUserMessage,
+            role: 'user',
+            sessionHash,
+          });
+          return { convId: guestConversationId, saveSuccess: true };
+        } catch (error) {
+          logger.error('Guest DB operations failed', error, { sessionHash, conversationId });
+          return null;
+        }
+      }
+
       return null;
     })();
 
@@ -415,6 +427,7 @@ export async function POST(req: Request) {
         let convId = conversationId;
         if (dbResult && typeof dbResult === 'object' && !Array.isArray(dbResult) && 'convId' in dbResult) {
           convId = dbResult.convId;
+          resolvedConversationId = convId || resolvedConversationId;
           if (dbResult.saveSuccess) {
             logger.debug('Conversation validated and user message saved', { conversationId: convId });
           } else {
@@ -483,22 +496,19 @@ export async function POST(req: Request) {
       },
       onFinish: async ({ messages }) => {
         // Save assistant messages in BACKGROUND (non-blocking)
-        // Messages array contains all messages including the new assistant message with parts
         const user = fullUserData;
-        if (user && conversationId && !conversationId.startsWith('temp-')) {
+        const assistantMessage = messages[messages.length - 1];
+
+        // Authenticated assistant save
+        if (user && resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
           after(async () => {
             try {
-              // Get the last message (should be the assistant response)
-              const lastMessage = messages[messages.length - 1];
-              if (lastMessage && lastMessage.role === 'assistant' && lastMessage.parts) {
-                // Extract text from parts for content field (backward compatibility)
-                const contentText = lastMessage.parts
+              if (assistantMessage && assistantMessage.role === 'assistant' && assistantMessage.parts) {
+                const contentText = assistantMessage.parts
                   .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
                   .map((p) => p.text)
                   .join('') || '';
 
-                // Extract metadata from message if available (set by messageMetadata callback)
-                // Type-safe metadata extraction
                 interface MessageWithMetadata extends UIMessage {
                   metadata?: {
                     inputTokens?: number | null;
@@ -508,26 +518,23 @@ export async function POST(req: Request) {
                     model?: string;
                   };
                 }
-                const messageWithMetadata = lastMessage as MessageWithMetadata;
+                const messageWithMetadata = assistantMessage as MessageWithMetadata;
                 const metadata = messageWithMetadata.metadata;
                 const inputTokens = metadata?.inputTokens ?? null;
                 const outputTokens = metadata?.outputTokens ?? null;
                 const totalTokens = metadata?.totalTokens ?? null;
-                const completionTime = metadata?.completionTime ?? ((Date.now() - requestStartTime) / 1000);
+                const completionTime = metadata?.completionTime ?? (Date.now() - requestStartTime) / 1000;
 
-                // Validate parts array before saving
-                if (!Array.isArray(lastMessage.parts) || lastMessage.parts.length === 0) {
-                  logger.error('Invalid parts array', { conversationId, parts: lastMessage.parts });
+                if (!Array.isArray(assistantMessage.parts) || assistantMessage.parts.length === 0) {
+                  logger.error('Invalid parts array', { conversationId: resolvedConversationId, parts: assistantMessage.parts });
                   return;
                 }
 
-                const { error: assistantMsgError } = await supabaseClient
-                  .from('messages')
-                  .insert({
-                    conversation_id: conversationId,
+                const { error: assistantMsgError } = await supabaseClient.from('messages').insert({
+                  conversation_id: resolvedConversationId,
                     role: 'assistant',
-                    parts: lastMessage.parts, // Save AI SDK native parts array
-                    content: contentText || null, // Backward compatibility (nullable)
+                  parts: assistantMessage.parts,
+                  content: contentText || null,
                     model: model,
                     input_tokens: inputTokens,
                     output_tokens: outputTokens,
@@ -536,18 +543,36 @@ export async function POST(req: Request) {
                   });
 
                 if (assistantMsgError) {
-                  logger.error('Background assistant message save failed', assistantMsgError, { conversationId });
+                  logger.error('Background assistant message save failed', assistantMsgError, { conversationId: resolvedConversationId });
                 } else {
                   logger.info('Assistant message saved', {
-                    conversationId,
-                    partsCount: lastMessage.parts.length,
+                    conversationId: resolvedConversationId,
+                    partsCount: assistantMessage.parts.length,
                     tokens: totalTokens,
                     model,
                   });
                 }
               }
             } catch (error) {
-              logger.error('Background assistant message save error', error, { conversationId });
+              logger.error('Background assistant message save error', error, { conversationId: resolvedConversationId });
+            }
+          });
+        }
+
+        // Guest assistant save
+        if (!user && sessionHash && resolvedConversationId) {
+          after(async () => {
+            try {
+              if (assistantMessage && assistantMessage.role === 'assistant') {
+                await saveGuestMessage({
+                  conversationId: resolvedConversationId,
+                  message: assistantMessage,
+                  role: 'assistant',
+                  sessionHash,
+                });
+              }
+            } catch (error) {
+              logger.error('Guest assistant message save error', error, { conversationId: resolvedConversationId, sessionHash });
             }
           });
         }
@@ -555,12 +580,16 @@ export async function POST(req: Request) {
     });
 
     // Return as SSE
-    return new Response(stream.pipeThrough(new JsonToSseTransformStream()), {
-      headers: {
+    const sseHeaders = new Headers({
         'Content-Type': 'text/event-stream; charset=utf-8',
         'Cache-Control': 'no-cache, no-transform',
         'Connection': 'keep-alive',
-      },
+    });
+    applyRateLimitHeaders(sseHeaders);
+    applyConversationIdHeader(sseHeaders, resolvedConversationId ?? conversationId);
+
+    return new Response(stream.pipeThrough(new JsonToSseTransformStream()), {
+      headers: sseHeaders,
     });
     
   } catch (error) {

@@ -767,7 +767,35 @@ Progress
 - [x] Phase 4: DB rate-limit service (checkAndIncrementRateLimit using session_hash, day buckets)
   - Summary: Added server-only DB helper using service-role key; DB function uses day buckets and enforces limits. Unique constraint/column fixes applied (bucket keys, generated cols, nullable legacy cols).
   - Tests: Temp `/api/db-rate-test` route: guest counts increment/block at 10; user counts increment/block at 20; verified bucket_start/end set to day. RPC direct call works.
+<<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
+<<<<<<< Current (Your changes)
   - Findings/Issues: Needed service-role key (anon couldn’t write); fixed SQL ambiguity/legacy NOT NULL columns; temp test route used—remove after use.
+=======
+  - Findings/Issues: Needed service-role key (anon couldn’t write); fixed SQL ambiguity/legacy NOT NULL columns;.
+>>>>>>> Incoming (Background Agent changes)
+=======
+  - Findings/Issues: Needed service-role key (anon couldn’t write); fixed SQL ambiguity/legacy NOT NULL columns;.
+>>>>>>> Incoming (Background Agent changes)
+=======
+  - Findings/Issues: Needed service-role key (anon couldn’t write); fixed SQL ambiguity/legacy NOT NULL columns;.
+>>>>>>> Incoming (Background Agent changes)
+=======
+  - Findings/Issues: Needed service-role key (anon couldn’t write); fixed SQL ambiguity/legacy NOT NULL columns;.
+>>>>>>> Incoming (Background Agent changes)
+=======
+  - Findings/Issues: Needed service-role key (anon couldn’t write); fixed SQL ambiguity/legacy NOT NULL columns;.
+>>>>>>> Incoming (Background Agent changes)
+=======
+  - Findings/Issues: Needed service-role key (anon couldn’t write); fixed SQL ambiguity/legacy NOT NULL columns;.
+>>>>>>> Incoming (Background Agent changes)
+=======
+  - Findings/Issues: Needed service-role key (anon couldn’t write); fixed SQL ambiguity/legacy NOT NULL columns;.
+>>>>>>> Incoming (Background Agent changes)
 - [ ] Phase 5: Hybrid services + chat route (headers JSON/SSE, set cookie before streaming, guest staging writes, feature flag if used)
   - Summary:
   - Tests:

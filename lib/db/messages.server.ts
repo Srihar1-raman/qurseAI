@@ -4,11 +4,22 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { handleDbError } from '@/lib/utils/error-handler';
 import { convertLegacyContentToParts, type MessageParts } from '@/lib/utils/message-parts-fallback';
+import type { UIMessage } from 'ai';
 
 const logger = createScopedLogger('db/messages.server');
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !serviceKey) {
+  throw new Error('Missing Supabase service credentials: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required');
+}
+
+const serviceSupabase = createServiceClient(supabaseUrl, serviceKey);
 
 /**
  * Get messages for a conversation with optional pagination
@@ -160,5 +171,126 @@ export async function countMessagesTodayServerSide(
     // This will be handled by rate_limits table when implemented
     return 0;
   }
+}
+
+type GuestMessagePayload = {
+  conversationId: string;
+  message: UIMessage;
+  role: 'user' | 'assistant' | 'system' | 'tool';
+  sessionHash: string;
+};
+
+function extractMessageText(message: UIMessage): string {
+  return (
+    message.parts
+      ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+      .map((p) => p.text)
+      .join('') || ''
+  );
+}
+
+export async function ensureGuestConversation(
+  sessionHash: string,
+  title: string,
+  conversationId?: string
+): Promise<string> {
+  const supabase = serviceSupabase;
+
+  if (conversationId) {
+    const { data: existing, error } = await supabase
+      .from('guest_conversations')
+      .select('id')
+      .eq('id', conversationId)
+      .eq('session_hash', sessionHash)
+      .maybeSingle();
+
+    if (error) {
+      logger.error('Error checking guest conversation', error, { conversationId, sessionHash });
+      throw error;
+    }
+
+    if (existing?.id) {
+      return existing.id;
+    }
+
+    const { data: inserted, error: insertError } = await supabase
+      .from('guest_conversations')
+      .insert({
+        id: conversationId,
+        session_hash: sessionHash,
+        title: title || 'New Chat',
+      })
+      .select('id')
+      .single();
+
+    if (insertError) {
+      logger.error('Failed to insert guest conversation', insertError, { conversationId, sessionHash });
+      throw insertError;
+    }
+
+    return inserted.id;
+  }
+
+  // No conversationId provided: always create a fresh conversation
+  const { data: created, error: createError } = await supabase
+    .from('guest_conversations')
+    .insert({
+      session_hash: sessionHash,
+      title: title || 'New Chat',
+    })
+    .select('id')
+    .single();
+
+  if (createError) {
+    logger.error('Failed to create guest conversation', createError, { sessionHash });
+    throw createError;
+  }
+
+  return created.id;
+}
+
+export async function saveGuestMessage(payload: GuestMessagePayload): Promise<void> {
+  const { conversationId, message, role, sessionHash } = payload;
+  if (!conversationId || conversationId.startsWith('temp-')) return;
+
+  const supabase = serviceSupabase;
+
+  const contentText = extractMessageText(message).trim();
+  const parts = message.parts;
+
+  if (!parts || parts.length === 0) {
+    logger.warn('Skipping guest message save due to empty parts', { conversationId, role });
+    return;
+  }
+
+  const metadata = (message as UIMessage & { metadata?: Record<string, unknown> }).metadata ?? {};
+  const inputTokens = (metadata as { inputTokens?: number | null }).inputTokens ?? null;
+  const outputTokens = (metadata as { outputTokens?: number | null }).outputTokens ?? null;
+  const totalTokens = (metadata as { totalTokens?: number | null }).totalTokens ?? null;
+  const completionTime = (metadata as { completionTime?: number | null }).completionTime ?? null;
+  const model = (metadata as { model?: string | null }).model ?? null;
+
+  const { error } = await supabase.from('guest_messages').insert({
+    guest_conversation_id: conversationId,
+    role,
+    parts,
+    content: contentText || null,
+    model: model || null,
+    input_tokens: inputTokens,
+    output_tokens: outputTokens,
+    total_tokens: totalTokens,
+    completion_time: completionTime,
+  });
+
+  if (error) {
+    logger.error('Failed to save guest message', error, { conversationId, sessionHash, role });
+    throw error;
+  }
+
+  logger.debug('Guest message saved', {
+    conversationId,
+    sessionHash,
+    role,
+  });
 }
 
