@@ -758,8 +758,8 @@ Progress
   - Findings/Issues: Plan conflict markers resolved; need to execute DB-side tests.
 - [x] Phase 2: Redis setup (envs set, client, wrapper, unknown IP policy)
   - Summary: Added Upstash Redis client with env validation; IP extractor; Redis guest IP limiter (10/day) and unknown-IP limiter (3/day) with fail-open + degraded flag.
-  - Tests: Not run yet (pending manual checks: IP extraction cases; 10/day; unknown IP 3/day; sliding window; Redis failure → fail-open; latency sanity).
-  - Findings/Issues: None observed in code; tests still pending.
+  - Tests: Done via temp `/api/redis-test`: ::1 hit limit at 10/day; unknown IP hit limit at 3/day; degraded=true observed when Redis unavailable (fail-open as expected).
+  - Findings/Issues: Temp test route used for verification; remove after testing. Behavior matches plan.
 - [ ] Phase 3: Session/HMAC utils (cookie helper, hmacSessionId, env validation)
   - Summary:
   - Tests:
@@ -786,7 +786,7 @@ Progress
   - Findings/Issues:
 
 Next:
-- Begin Phase 3: Session/HMAC utils (cookie helper, hmacSessionId, env validation); then run Phase 2 pending tests.
+- Begin Phase 3: Session/HMAC utils (cookie helper, hmacSessionId, env validation).
 
 **Execution routine (for you / for AI implementers):**
 - Before a phase: read Decisions, Guardrails, Files for that phase; set “Next.”
