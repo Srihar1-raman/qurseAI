@@ -1,3 +1,4 @@
+import 'server-only';
 import { cookies } from 'next/headers';
 
 const SESSION_COOKIE_NAME = 'session_id';
@@ -27,8 +28,8 @@ export const setSessionIdCookie = (response: Response, sessionId: string): void 
   response.headers.append('Set-Cookie', cookieValue);
 };
 
-export const setSessionIdCookieNext = (sessionId: string): void => {
-  const cookieStore = cookies();
+export const setSessionIdCookieNext = async (sessionId: string): Promise<void> => {
+  const cookieStore = await cookies();
   cookieStore.set({
     name: SESSION_COOKIE_NAME,
     value: sessionId,

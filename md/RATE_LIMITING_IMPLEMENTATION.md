@@ -337,7 +337,7 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
   
   GET DIAGNOSTICS v_conversations_count = ROW_COUNT;
-
+    
   -- Copy guest messages into main messages, pointing to transferred conversations
   INSERT INTO messages (
     id, conversation_id, role, content, parts, model,
@@ -760,14 +760,14 @@ Progress
   - Summary: Added Upstash Redis client with env validation; IP extractor; Redis guest IP limiter (10/day) and unknown-IP limiter (3/day) with fail-open + degraded flag.
   - Tests: Done via temp `/api/redis-test`: ::1 hit limit at 10/day; unknown IP hit limit at 3/day; degraded=true observed when Redis unavailable (fail-open as expected).
   - Findings/Issues: Temp test route used for verification; remove after testing. Behavior matches plan.
-- [ ] Phase 3: Session/HMAC utils (cookie helper, hmacSessionId, env validation)
-  - Summary:
-  - Tests:
-  - Findings/Issues:
-- [ ] Phase 4: DB rate-limit service (checkAndIncrementRateLimit using session_hash, day buckets)
-  - Summary:
-  - Tests:
-  - Findings/Issues:
+- [x] Phase 3: Session/HMAC utils (cookie helper, hmacSessionId, env validation)
+  - Summary: Added session helpers (cookie set/get with HttpOnly/Lax/Secure, UUID v4 generation/validation) and HMAC helper (session_hash). Marked server-only; fail-fast on missing secret.
+  - Tests: Temp `/api/session-test` route: session_id cookie set/read; same sessionId reused; session_hash derived; missing SESSION_HMAC_SECRET triggers fail-fast.
+  - Findings/Issues: Test route is temporary; remove after use. Ensure SESSION_HMAC_SECRET is set in env.
+- [x] Phase 4: DB rate-limit service (checkAndIncrementRateLimit using session_hash, day buckets)
+  - Summary: Added server-only DB helper using service-role key; DB function uses day buckets and enforces limits. Unique constraint/column fixes applied (bucket keys, generated cols, nullable legacy cols).
+  - Tests: Temp `/api/db-rate-test` route: guest counts increment/block at 10; user counts increment/block at 20; verified bucket_start/end set to day. RPC direct call works.
+  - Findings/Issues: Needed service-role key (anon couldn’t write); fixed SQL ambiguity/legacy NOT NULL columns; temp test route used—remove after use.
 - [ ] Phase 5: Hybrid services + chat route (headers JSON/SSE, set cookie before streaming, guest staging writes, feature flag if used)
   - Summary:
   - Tests:
@@ -786,7 +786,7 @@ Progress
   - Findings/Issues:
 
 Next:
-- Begin Phase 3: Session/HMAC utils (cookie helper, hmacSessionId, env validation).
+- Begin Phase 5: Hybrid services + chat route (headers JSON/SSE, set cookie before streaming, guest staging writes, feature flag if used).
 
 **Execution routine (for you / for AI implementers):**
 - Before a phase: read Decisions, Guardrails, Files for that phase; set “Next.”

@@ -45,19 +45,44 @@ ALTER TABLE rate_limits
   ADD COLUMN IF NOT EXISTS bucket_start TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS bucket_end TIMESTAMPTZ;
 
--- Drop old unique constraint if present
+-- Generated columns to avoid expression ambiguity in constraints
+ALTER TABLE rate_limits
+  ADD COLUMN IF NOT EXISTS user_key UUID GENERATED ALWAYS AS (COALESCE(user_id, '00000000-0000-0000-0000-000000000000'::UUID)) STORED,
+  ADD COLUMN IF NOT EXISTS session_key TEXT GENERATED ALWAYS AS (COALESCE(session_hash, 'guest')) STORED;
+
+-- Make legacy window_start/window_end nullable if they exist (avoid NOT NULL violations)
+DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'rate_limits' AND column_name = 'window_start'
+  ) THEN
+    ALTER TABLE rate_limits ALTER COLUMN window_start DROP NOT NULL;
+  END IF;
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns 
+    WHERE table_name = 'rate_limits' AND column_name = 'window_end'
+  ) THEN
+    ALTER TABLE rate_limits ALTER COLUMN window_end DROP NOT NULL;
+  END IF;
+END$$;
+
+-- Drop old constraint/index if present
 ALTER TABLE rate_limits
   DROP CONSTRAINT IF EXISTS rate_limits_user_resource_window_unique;
-
--- Add bucketed uniqueness via unique index (expressions not allowed in table constraint)
 DROP INDEX IF EXISTS uq_rate_limits_user_session_resource_bucket;
-CREATE UNIQUE INDEX uq_rate_limits_user_session_resource_bucket
-  ON rate_limits (
-    COALESCE(user_id, '00000000-0000-0000-0000-000000000000'::UUID),
-    COALESCE(session_hash, 'guest'::TEXT),
-    resource_type,
-    bucket_start
-  );
+
+-- Add bucketed uniqueness via constraint on generated columns (idempotent)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'rate_limits_user_session_resource_bucket_unique'
+  ) THEN
+    ALTER TABLE rate_limits
+      ADD CONSTRAINT rate_limits_user_session_resource_bucket_unique
+      UNIQUE (user_key, session_key, resource_type, bucket_start);
+  END IF;
+END$$;
 
 -- Indexes to keep lookups fast
 CREATE INDEX IF NOT EXISTS idx_rate_limits_session_hash
@@ -92,22 +117,24 @@ DECLARE
   v_current_count INTEGER;
   v_limit_reached BOOLEAN;
 BEGIN
-  -- Day bucket per plan (reset at midnight UTC)
+  -- Defaults for day bucket (reset at midnight UTC)
   v_bucket_start := date_trunc('day', NOW());
   v_bucket_end := v_bucket_start + INTERVAL '1 day';
+  v_current_count := 0;
 
-  SELECT bucket_start, bucket_end, count
+  SELECT rl.bucket_start, rl.bucket_end, rl.count
   INTO v_bucket_start, v_bucket_end, v_current_count
-  FROM rate_limits
+  FROM rate_limits rl
   WHERE (
           (p_user_id IS NOT NULL AND user_id = p_user_id AND session_hash IS NULL)
        OR (p_user_id IS NULL AND p_session_hash IS NOT NULL AND session_hash = p_session_hash AND user_id IS NULL)
         )
     AND resource_type = p_resource_type
-    AND bucket_start = v_bucket_start
+    AND rl.bucket_start = v_bucket_start
   LIMIT 1;
-
-  IF v_current_count IS NULL THEN
+  IF NOT FOUND THEN
+    v_bucket_start := date_trunc('day', NOW());
+    v_bucket_end := v_bucket_start + INTERVAL '1 day';
     v_current_count := 0;
   END IF;
 
@@ -132,12 +159,7 @@ BEGIN
     v_bucket_start,
     v_bucket_end
   )
-  ON CONFLICT (
-    COALESCE(user_id, '00000000-0000-0000-0000-000000000000'::UUID),
-    COALESCE(session_hash, 'guest'::TEXT),
-    resource_type,
-    bucket_start
-  )
+  ON CONFLICT ON CONSTRAINT rate_limits_user_session_resource_bucket_unique
   DO UPDATE SET
     count = rate_limits.count + 1,
     bucket_end = EXCLUDED.bucket_end
