@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback, useRef, ReactNode } from 'react';
 
 export type Theme = 'light' | 'dark' | 'auto';
 
@@ -30,6 +30,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const [theme, setThemeState] = useState<Theme>('auto');
   const [resolvedTheme, setResolvedTheme] = useState<'light' | 'dark'>('light');
   const [mounted, setMounted] = useState(false);
+  // Use ref to track current theme for event handlers (avoids closure issues)
+  const themeRef = useRef<Theme>('auto');
 
   // Get system theme preference
   const getSystemTheme = useCallback((): 'light' | 'dark' => {
@@ -95,6 +97,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   // Set theme with persistence
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
+    themeRef.current = newTheme; // Update ref for event handlers
     if (typeof window !== 'undefined') {
       localStorage.setItem('theme', newTheme);
     }
@@ -127,7 +130,8 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       // Listen for system theme changes
       const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
       const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-        if (theme === 'auto') {
+        // Use ref to get current theme (avoids closure issues)
+        if (themeRef.current === 'auto') {
           const newResolvedTheme = e.matches ? 'dark' : 'light';
           applyTheme(newResolvedTheme, 'auto');
         }
@@ -136,7 +140,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       mediaQuery.addEventListener('change', handleSystemThemeChange);
       return () => mediaQuery.removeEventListener('change', handleSystemThemeChange);
     }
-  }, [theme, resolveTheme, applyTheme]);
+  }, [resolveTheme, applyTheme]); // Only include stable dependencies
 
   // Update favicons whenever resolved theme changes
   useEffect(() => {

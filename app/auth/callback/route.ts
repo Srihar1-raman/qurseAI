@@ -9,6 +9,7 @@ import { createScopedLogger } from '@/lib/utils/logger';
 import { transferGuestToUser } from '@/lib/db/guest-transfer.server';
 import { parseCookie, isValidUUID } from '@/lib/utils/session';
 import { hmacSessionId } from '@/lib/utils/session-hash';
+import { validateReturnUrl } from '@/lib/utils/validate-return-url';
 
 const logger = createScopedLogger('auth/callback');
 const SESSION_COOKIE_NAME = 'session_id';
@@ -139,8 +140,21 @@ export async function GET(request: Request) {
       }
     }
 
-    // Redirect to homepage after successful auth
-    return NextResponse.redirect(`${origin}/`);
+    // ============================================
+    // Step 5: Redirect to return URL (industry standard: query parameter)
+    // ============================================
+    // Extract callbackUrl from callback URL (preserved through OAuth flow)
+    const callbackUrl = requestUrl.searchParams.get('callbackUrl');
+    const returnUrl = validateReturnUrl(callbackUrl);
+    
+    logger.debug('Redirecting after auth', { 
+      callbackUrl, 
+      returnUrl,
+      userId: data.user?.id 
+    });
+    
+    // Redirect to validated return URL (defaults to '/' if invalid)
+    return NextResponse.redirect(`${origin}${returnUrl}`);
   }
 
   // If no code, redirect to login

@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import AuthButton from '@/components/auth/AuthButton';
 
 interface AuthPageProps {
@@ -9,6 +10,11 @@ interface AuthPageProps {
 
 export default function AuthPage({ mode }: AuthPageProps) {
   const isLogin = mode === 'login';
+  const searchParams = useSearchParams();
+  
+  // Preserve callbackUrl when switching between login/signup pages
+  const callbackUrl = searchParams.get('callbackUrl') || '';
+  const callbackUrlParam = callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : '';
 
   return (
     <div className="auth-container">
@@ -45,14 +51,14 @@ export default function AuthPage({ mode }: AuthPageProps) {
             {isLogin ? (
               <>
                 Don&apos;t have an account?{' '}
-                <Link href="/signup" className="auth-link">
+                <Link href={`/signup${callbackUrlParam}`} className="auth-link">
                   Sign up
                 </Link>
               </>
             ) : (
               <>
                 Already have an account?{' '}
-                <Link href="/login" className="auth-link">
+                <Link href={`/login${callbackUrlParam}`} className="auth-link">
                   Log in
                 </Link>
               </>

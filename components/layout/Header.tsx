@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useOptimisticNavigation } from '@/hooks/use-optimistic-navigation';
@@ -21,6 +21,8 @@ function Header({
   user: propUser = null
 }: HeaderProps) {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const { theme, setTheme, resolvedTheme, mounted } = useTheme();
   const { user: authUser, isLoading, signOut } = useAuth();
   const { navigateOptimistically } = useOptimisticNavigation();
@@ -29,6 +31,16 @@ function Header({
 
   // Use auth user if available, otherwise fall back to prop user
   const user = authUser || propUser;
+
+  // Build callback URL for post-auth redirect (industry standard: query parameter)
+  const callbackUrl = useMemo(() => {
+    const currentUrl = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+    // Only add callbackUrl if not already on login/signup pages (avoid loops)
+    if (currentUrl.startsWith('/login') || currentUrl.startsWith('/signup')) {
+      return '';
+    }
+    return encodeURIComponent(currentUrl);
+  }, [pathname, searchParams]);
 
   // Memoize user initial calculation (derived from user.name/email)
   const userInitial = useMemo(() => {
@@ -159,12 +171,12 @@ function Header({
           <>
             {/* Desktop auth buttons */}
             <div className="hidden md:flex items-center gap-2">
-              <Link href="/login">
+              <Link href={callbackUrl ? `/login?callbackUrl=${callbackUrl}` : '/login'}>
                 <UnifiedButton variant="primary">
                   Log in
                 </UnifiedButton>
               </Link>
-              <Link href="/signup">
+              <Link href={callbackUrl ? `/signup?callbackUrl=${callbackUrl}` : '/signup'}>
                 <UnifiedButton variant="secondary">
                   Sign up
                 </UnifiedButton>
@@ -474,7 +486,10 @@ function Header({
                 </div>
               </DropdownItem>
             ) : (
-              <DropdownItem onClick={() => window.location.href = '/login'}>
+              <DropdownItem onClick={() => {
+                const url = callbackUrl ? `/login?callbackUrl=${callbackUrl}` : '/login';
+                window.location.href = url;
+              }}>
                 <div className="flex items-center gap-3">
                   <Image
                     src={getIconPath('profile', resolvedTheme, false, mounted)}

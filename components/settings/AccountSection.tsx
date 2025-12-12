@@ -33,16 +33,10 @@ export default function AccountSection({
     return linkedProviders.includes(provider);
   };
 
+  // Type guard: This should never happen due to page-level auth check in SettingsPageClient
+  // but satisfies TypeScript's strict null checks
   if (!user) {
-    return (
-      <div className="settings-section">
-        <h2>Account Settings</h2>
-        <div className="account-signin-prompt">
-          <p>Sign in to manage your account settings</p>
-          <UnifiedButton variant="primary">Sign In</UnifiedButton>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   return (

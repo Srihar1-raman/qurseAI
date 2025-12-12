@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
@@ -66,6 +67,18 @@ const logger = createScopedLogger('history-sidebar');
   };
 
 function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  
+  // Build callback URL for post-auth redirect (industry standard: query parameter)
+  const callbackUrl = useMemo(() => {
+    const currentUrl = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+    // Only add callbackUrl if not already on login/signup pages (avoid loops)
+    if (currentUrl.startsWith('/login') || currentUrl.startsWith('/signup')) {
+      return '';
+    }
+    return encodeURIComponent(currentUrl);
+  }, [pathname, searchParams]);
   const { resolvedTheme, mounted } = useTheme();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { registerHandler } = useSidebar();
@@ -478,7 +491,7 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
               />
               <p>Sign in to save history</p>
               <span>Your conversations will be saved after signing in</span>
-              <Link href="/login" style={{ marginTop: '16px', display: 'inline-block', textDecoration: 'none' }}>
+              <Link href={callbackUrl ? `/login?callbackUrl=${callbackUrl}` : '/login'} style={{ marginTop: '16px', display: 'inline-block', textDecoration: 'none' }}>
                 <UnifiedButton variant="success">
                   Sign In
                 </UnifiedButton>

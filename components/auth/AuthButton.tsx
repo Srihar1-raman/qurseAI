@@ -1,7 +1,8 @@
 'use client';
 
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useToast } from '@/lib/contexts/ToastContext';
@@ -32,6 +33,15 @@ export default function AuthButton({ provider, onClick }: AuthButtonProps) {
   const { resolvedTheme, mounted } = useTheme();
   const { error: showToastError } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const searchParams = useSearchParams();
+
+  // Read callbackUrl from current page URL (industry standard: query parameter)
+  // This allows post-auth redirect to the page user was on before login
+  const callbackUrl = useMemo(() => {
+    const url = searchParams.get('callbackUrl') || '/';
+    // Encode to pass through OAuth flow safely
+    return encodeURIComponent(url);
+  }, [searchParams]);
 
   const handleClick = async () => {
     if (onClick) {
@@ -43,10 +53,14 @@ export default function AuthButton({ provider, onClick }: AuthButtonProps) {
       setIsLoading(true);
       const supabase = createClient();
       
+      // Include callbackUrl in redirectTo so it's preserved through OAuth flow
+      // Supabase OAuth preserves query parameters in redirectTo URL
+      const redirectTo = `${window.location.origin}/auth/callback?callbackUrl=${callbackUrl}`;
+      
       const { error } = await supabase.auth.signInWithOAuth({
         provider: provider as 'github' | 'google' | 'twitter',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`,
+          redirectTo,
         },
       });
 
