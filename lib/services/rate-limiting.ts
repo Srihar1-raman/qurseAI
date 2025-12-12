@@ -32,15 +32,7 @@ export async function checkRateLimit(params: CheckRateLimitParams): Promise<Rate
   const { userId, isProUser, request, response } = params;
 
   // Guest: hybrid flow
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
   if (!userId) {
-=======
-    if (!userId) {
->>>>>>> Incoming (Background Agent changes)
-=======
-    if (!userId) {
->>>>>>> Incoming (Background Agent changes)
     const guestResult = await checkGuestRateLimit(request);
 
     // Set session cookie before streaming starts

@@ -7,7 +7,7 @@
 'use client';
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from 'react';
-import { getConversations, getConversationCount } from '@/lib/db/queries';
+import { getConversations, getConversationCount, getGuestConversations } from '@/lib/db/queries';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { useAuth } from './AuthContext';
 import type { Conversation } from '@/lib/types';
@@ -89,11 +89,6 @@ export function HistorySidebarProvider({ children }: HistorySidebarProviderProps
 
   // Load conversations (initial load or force refresh)
   const loadConversations = useCallback(async (forceRefresh = false) => {
-    if (!user || !user.id) {
-      setIsLoading(false);
-      return;
-    }
-
     // If force refresh, reset hasLoaded to allow reload
     if (forceRefresh) {
       setHasLoaded(false);
@@ -103,26 +98,38 @@ export function HistorySidebarProvider({ children }: HistorySidebarProviderProps
     setError(null);
 
     try {
-      const { conversations, hasMore } = await getConversations(user.id, { limit: 50 });
-      setChatHistory(conversations || []);
-      setHasLoaded(true);
-      // Set offset to actual count loaded (in case we got fewer than 50)
-      setConversationsOffset(conversations.length);
-      setHasMoreConversations(hasMore);
+      if (user && user.id) {
+        // Auth user: existing logic
+        const { conversations, hasMore } = await getConversations(user.id, { limit: 50 });
+        setChatHistory(conversations || []);
+        setHasLoaded(true);
+        // Set offset to actual count loaded (in case we got fewer than 50)
+        setConversationsOffset(conversations.length);
+        setHasMoreConversations(hasMore);
 
-      // Fetch total count if not already loaded (use ref to avoid dependency)
-      if (!countFetchInitiatedRef.current && user.id) {
-        countFetchInitiatedRef.current = true;
-        // Fetch count asynchronously (don't await - non-blocking)
-        getConversationCount(user.id)
-          .then((count) => {
-            setTotalConversationCount(count);
-          })
-          .catch((err) => {
-            logger.error('Failed to fetch conversation count', err);
-            // Don't fail the whole load if count fails
-            countFetchInitiatedRef.current = false; // Allow retry on next load
-          });
+        // Fetch total count if not already loaded (use ref to avoid dependency)
+        if (!countFetchInitiatedRef.current && user.id) {
+          countFetchInitiatedRef.current = true;
+          // Fetch count asynchronously (don't await - non-blocking)
+          getConversationCount(user.id)
+            .then((count) => {
+              setTotalConversationCount(count);
+            })
+            .catch((err) => {
+              logger.error('Failed to fetch conversation count', err);
+              // Don't fail the whole load if count fails
+              countFetchInitiatedRef.current = false; // Allow retry on next load
+            });
+        }
+      } else {
+        // Guest: Load from guest_conversations via API
+        const { conversations, hasMore } = await getGuestConversations({ limit: 50 });
+        setChatHistory(conversations || []);
+        setHasLoaded(true);
+        setConversationsOffset(conversations.length);
+        setHasMoreConversations(hasMore);
+        // For guests, set total count to conversations length (API doesn't provide separate count)
+        setTotalConversationCount(conversations.length);
       }
     } catch (err) {
       setError('Failed to load conversations');
@@ -137,29 +144,53 @@ export function HistorySidebarProvider({ children }: HistorySidebarProviderProps
 
   // Load more conversations (pagination)
   const loadMoreConversations = useCallback(async () => {
-    if (!user || !user.id || isLoadingMore || !hasMoreConversations) {
+    if (isLoadingMore || !hasMoreConversations) {
       return;
     }
 
     setIsLoadingMore(true);
 
     try {
-      const { conversations: moreConversations, hasMore } = await getConversations(user.id, {
-        limit: 50,
-        offset: conversationsOffset,
-      });
-
-      setHasMoreConversations(hasMore);
-
-      if (moreConversations.length > 0) {
-        // Deduplicate conversations by ID to prevent duplicate keys
-        setChatHistory((prev) => {
-          const existingIds = new Set(prev.map((conv) => conv.id));
-          const newConversations = moreConversations.filter((conv) => !existingIds.has(conv.id));
-          return [...prev, ...newConversations];
+      if (user && user.id) {
+        // Auth user: existing logic
+        const { conversations: moreConversations, hasMore } = await getConversations(user.id, {
+          limit: 50,
+          offset: conversationsOffset,
         });
-        // Increase offset by actual number returned from DB
-        setConversationsOffset((prev) => prev + moreConversations.length);
+
+        setHasMoreConversations(hasMore);
+
+        if (moreConversations.length > 0) {
+          // Deduplicate conversations by ID to prevent duplicate keys
+          setChatHistory((prev) => {
+            const existingIds = new Set(prev.map((conv) => conv.id));
+            const newConversations = moreConversations.filter((conv) => !existingIds.has(conv.id));
+            return [...prev, ...newConversations];
+          });
+          // Increase offset by actual number returned from DB
+          setConversationsOffset((prev) => prev + moreConversations.length);
+        }
+      } else {
+        // Guest: Load more from guest_conversations via API
+        const { conversations: moreConversations, hasMore } = await getGuestConversations({
+          limit: 50,
+          offset: conversationsOffset,
+        });
+
+        setHasMoreConversations(hasMore);
+
+        if (moreConversations.length > 0) {
+          // Deduplicate conversations by ID to prevent duplicate keys
+          setChatHistory((prev) => {
+            const existingIds = new Set(prev.map((conv) => conv.id));
+            const newConversations = moreConversations.filter((conv) => !existingIds.has(conv.id));
+            return [...prev, ...newConversations];
+          });
+          // Increase offset by actual number returned from API
+          setConversationsOffset((prev) => prev + moreConversations.length);
+          // Update total count (for guests, approximate from loaded conversations)
+          setTotalConversationCount((prev) => (prev ?? 0) + moreConversations.length);
+        }
       }
     } catch (err) {
       setHasMoreConversations(false);

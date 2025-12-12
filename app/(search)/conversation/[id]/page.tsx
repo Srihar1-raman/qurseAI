@@ -1,9 +1,14 @@
 import { getMessagesServerSide, checkConversationAccess } from '@/lib/db/queries.server';
+import { getGuestMessagesServerSide } from '@/lib/db/messages.server';
+import { checkGuestConversationAccess } from '@/lib/db/guest-conversations.server';
 import { createClient } from '@/lib/supabase/server';
 import { getUserData } from '@/lib/supabase/auth-utils';
 import { isValidConversationId, validateUrlSearchParams } from '@/lib/validation/chat-schema';
 import { redirect } from 'next/navigation';
 import { createScopedLogger } from '@/lib/utils/logger';
+import { cookies } from 'next/headers';
+import { isValidUUID } from '@/lib/utils/session';
+import { hmacSessionId } from '@/lib/utils/session-hash';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import ConversationPageClient from './ConversationPageClient';
 import type { User } from '@/lib/types';
@@ -48,39 +53,22 @@ export default async function ConversationPage({ params, searchParams }: PagePro
   // ACCESS CONTROL: Check conversation access before rendering
   // ============================================
 
-  // Check 1: Temp conversations should only be accessible with message param (new guest conversation)
-  if (conversationId.startsWith('temp-')) {
-    if (!validatedParams.message) {
-      // Direct access to temp conversation URL without message param → redirect
-      logger.warn('Direct access to temp conversation without message param', { conversationId });
-      redirect('/');
-    }
-    // Has message param → Allow (new guest conversation flow)
-    // Skip auth check and message loading (handled client-side, conversation created in API route)
+  // Get user (for both auth and guest)
+  // Note: Reusing supabase client from line 24 to avoid creating multiple clients
+  const { fullUser } = await getUserData(supabase);
+  
+  // Map Supabase auth user to our User type
+  if (fullUser) {
+    user = {
+      id: fullUser.id,
+      email: fullUser.email,
+      name: fullUser.user_metadata?.full_name || fullUser.user_metadata?.name,
+      avatar_url: fullUser.user_metadata?.avatar_url,
+    };
   }
-  // Check 2: Real conversations (not temp) - require access control (with or without message param)
-  else {
-    // Get user (required for access check)
-    // Note: Reusing supabase client from line 24 to avoid creating multiple clients
-    const { fullUser } = await getUserData(supabase);
-    
-    // Map Supabase auth user to our User type
-    if (fullUser) {
-      user = {
-        id: fullUser.id,
-        email: fullUser.email,
-        name: fullUser.user_metadata?.full_name || fullUser.user_metadata?.name,
-        avatar_url: fullUser.user_metadata?.avatar_url,
-      };
-    }
 
-    // Check 1: Guest users cannot access real conversations (even with message param)
-    if (!user || !user.id) {
-      logger.warn('Guest user accessing real conversation', { conversationId, hasMessageParam: !!validatedParams.message });
-      redirect('/');
-    }
-
-    // Check 2 & 3: Conversation exists and belongs to user
+  if (user && user.id) {
+    // Auth user: Check conversation access
     const accessCheck = await checkConversationAccess(conversationId, user.id, supabase);
 
     // Security: Fail-secure on database errors (redirect instead of allowing access)
@@ -130,6 +118,59 @@ export default async function ConversationPage({ params, searchParams }: PagePro
       } catch (error) {
         // If message loading fails after access control passes, redirect (conversation exists but inaccessible)
         logger.error('Error loading messages after access control passes', error, { conversationId, userId: user.id });
+        redirect('/');
+      }
+    }
+    // If conversation doesn't exist BUT has message param → Allow (new conversation, will be created in API route)
+    // Skip message loading (no messages yet)
+  } else {
+    // Guest: Check session_hash ownership
+    const cookieStore = await cookies();
+    const sessionIdCookie = cookieStore.get('session_id');
+    const sessionId = sessionIdCookie?.value && isValidUUID(sessionIdCookie.value) 
+      ? sessionIdCookie.value 
+      : null;
+    
+    if (!sessionId) {
+      // No session ID - redirect (guest needs session for access)
+      logger.warn('Guest user accessing conversation without session ID', { conversationId });
+      redirect('/');
+    }
+
+    const sessionHash = hmacSessionId(sessionId);
+    const accessCheck = await checkGuestConversationAccess(conversationId, sessionHash);
+    
+    if (accessCheck.error) {
+      logger.error('Database error during guest access check - failing secure', { conversationId });
+      redirect('/');
+    }
+    
+    if (accessCheck.exists && !accessCheck.belongsToSession) {
+      logger.warn('Unauthorized guest conversation access', { conversationId, sessionHash });
+      redirect('/');
+    }
+    
+    if (!accessCheck.exists && !validatedParams.message) {
+      logger.warn('Accessing non-existent guest conversation without message param', { conversationId });
+      redirect('/');
+    }
+    
+    // Load messages if conversation exists
+    if (accessCheck.exists && accessCheck.belongsToSession) {
+      try {
+        const { messages, hasMore, dbRowCount } = await getGuestMessagesServerSide(conversationId, { limit: 50 });
+        initialMessages = messages;
+        initialHasMore = hasMore;
+        initialDbRowCount = dbRowCount;
+        logger.debug('Guest messages loaded', { 
+          conversationId, 
+          messageCount: initialMessages.length,
+          hasMore: initialHasMore,
+          dbRowCount: initialDbRowCount,
+        });
+      } catch (error) {
+        // If message loading fails after access control passes, redirect (conversation exists but inaccessible)
+        logger.error('Error loading guest messages after access control passes', error, { conversationId });
         redirect('/');
       }
     }

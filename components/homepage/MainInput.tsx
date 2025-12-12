@@ -49,9 +49,8 @@ export default function MainInput() {
     }
     
     // Construct URL with message params
-    const url = user && user.id
-      ? `/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`
-      : `/conversation/temp-${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`;
+    // Same URL format for both auth and guest users
+    const url = `/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`;
     
     // Use window.history.replaceState() for true SPA behavior (0ms, no navigation)
     // Next.js usePathname() hook automatically detects replaceState() changes

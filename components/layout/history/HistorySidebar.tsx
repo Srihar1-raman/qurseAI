@@ -140,13 +140,13 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
   }, [user, registerHandler, addConversationOptimistically]);
 
 
-  // Load conversations when sidebar opens and user is logged in (only if not already loaded)
+  // Load conversations when sidebar opens (for both auth and guest users, only if not already loaded)
   useEffect(() => {
-    if (isOpen && user && !isAuthLoading && !hasLoaded) {
+    if (isOpen && !isAuthLoading && !hasLoaded) {
       loadConversations();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen, user, isAuthLoading, hasLoaded]); // loadConversations intentionally excluded to prevent infinite re-renders
+  }, [isOpen, isAuthLoading, hasLoaded]); // loadConversations intentionally excluded to prevent infinite re-renders
 
   // Real-time subscription: Listen for conversation changes (INSERT, UPDATE, DELETE)
   useEffect(() => {
@@ -289,8 +289,7 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
       conversationId &&
       conversationId !== prevConversationIdRef.current &&
       isOpen &&
-      hasLoaded &&
-      !conversationId.startsWith('temp-')
+      hasLoaded
     ) {
       // Invalidate cache and refresh
       logger.debug('Cache invalidation triggered', { conversationId });
@@ -467,8 +466,8 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
             </div>
           )}
 
-          {/* Guest State */}
-          {!user && !isLoading && !error && (
+          {/* Guest State - Only show if no conversations loaded */}
+          {!user && !isLoading && !error && chatHistory.length === 0 && (
             <div className="history-empty">
               <Image 
                 src={getIconPath("history", resolvedTheme, false, mounted)} 
@@ -477,7 +476,7 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
                 height={48} 
                 className="history-empty-icon" 
               />
-              <p>Sign in to view history</p>
+              <p>Sign in to save history</p>
               <span>Your conversations will be saved after signing in</span>
               <Link href="/login" style={{ marginTop: '16px', display: 'inline-block', textDecoration: 'none' }}>
                 <UnifiedButton variant="success">
@@ -487,7 +486,7 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
             </div>
           )}
 
-          {/* Search Bar - Always show when user is logged in */}
+          {/* Search Bar - Show for auth users only (search not implemented for guests) */}
           {user && !isLoading && !error && (
             <HistorySearch
               searchQuery={searchQuery}
@@ -497,8 +496,8 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
             />
           )}
 
-          {/* Empty State (Logged in, no conversations, not searching) */}
-          {user && chatHistory.length === 0 && !isLoading && !error && !searchQuery.trim() && (
+          {/* Empty State (No conversations, not searching) */}
+          {chatHistory.length === 0 && !isLoading && !error && !searchQuery.trim() && (
             <div className="history-empty">
               <Image 
                 src={getIconPath("history", resolvedTheme, false, mounted)} 
@@ -512,7 +511,7 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
             </div>
           )}
 
-          {/* Searching indicator - Show whenever searching, even if sidebar is blank */}
+          {/* Searching indicator - Show whenever searching, even if sidebar is blank (auth users only) */}
           {user && isSearching && !isLoading && !error && (
             <div style={{ 
               padding: '16px', 
@@ -524,8 +523,8 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
             </div>
           )}
 
-          {/* Conversation List */}
-          {user && displayConversations.length > 0 && !isLoading && !error && (
+          {/* Conversation List - Show for both auth and guest users */}
+          {displayConversations.length > 0 && !isLoading && !error && (
             <>
               <ConversationList
                 groupedConversations={groupedConversations}
@@ -549,7 +548,7 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
             </>
           )}
 
-          {/* No search results message */}
+          {/* No search results message (auth users only) */}
           {user && searchQuery.trim() && !isSearching && displayConversations.length === 0 && !isLoading && !error && (
             <div className="history-empty">
               <p>No conversations found</p>

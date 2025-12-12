@@ -162,6 +162,38 @@ export async function getConversations(
 }
 
 /**
+ * Get guest conversations (client-side)
+ * Calls API route which handles server-side session_hash extraction
+ * Mirror of getConversations for auth users
+ */
+export async function getGuestConversations(
+  options?: { limit?: number; offset?: number }
+): Promise<{ 
+  conversations: Conversation[];
+  hasMore: boolean;
+}> {
+  const limit = options?.limit ?? 50;
+  const offset = options?.offset ?? 0;
+
+  const response = await fetch(
+    `/api/guest/conversations?limit=${limit}&offset=${offset}`
+  );
+
+  if (!response.ok) {
+    const error = await response.json().catch(() => ({ error: 'Failed to fetch guest conversations' }));
+    logger.error('Error fetching guest conversations', { status: response.status, error });
+    throw new Error(error.error || 'Failed to fetch guest conversations');
+  }
+
+  const { conversations, hasMore } = await response.json();
+
+  return {
+    conversations: conversations || [],
+    hasMore: hasMore || false,
+  };
+}
+
+/**
  * Get total count of conversations for a user
  * Fast COUNT query - no data transfer, just count
  * @param userId - User ID

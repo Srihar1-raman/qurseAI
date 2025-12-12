@@ -196,10 +196,12 @@ export async function ensureGuestConversation(
 ): Promise<string> {
   const supabase = serviceSupabase;
 
-  if (conversationId) {
+  // If conversationId provided, validate it belongs to this session_hash
+  if (conversationId && !conversationId.startsWith('temp-')) {
+    // First check if conversation exists and belongs to this session
     const { data: existing, error } = await supabase
       .from('guest_conversations')
-      .select('id')
+      .select('id, session_hash')
       .eq('id', conversationId)
       .eq('session_hash', sessionHash)
       .maybeSingle();
@@ -210,9 +212,34 @@ export async function ensureGuestConversation(
     }
 
     if (existing?.id) {
+      // Conversation exists and belongs to this session - return it
       return existing.id;
     }
 
+    // Conversation doesn't exist or doesn't belong to this session
+    // Check if it exists with different session_hash (security check)
+    const { data: existsWithOtherSession, error: checkError } = await supabase
+      .from('guest_conversations')
+      .select('id, session_hash')
+      .eq('id', conversationId)
+      .maybeSingle();
+
+    if (checkError) {
+      logger.error('Error checking guest conversation existence', checkError, { conversationId });
+      throw checkError;
+    }
+
+    if (existsWithOtherSession?.id) {
+      // Conversation exists but belongs to another session - security violation
+      logger.warn('Attempted to access guest conversation from different session', {
+        conversationId,
+        requestedSessionHash: sessionHash,
+        actualSessionHash: existsWithOtherSession.session_hash,
+      });
+      throw new Error('Conversation belongs to another session');
+    }
+
+    // Conversation doesn't exist - create new one with the provided ID
     const { data: inserted, error: insertError } = await supabase
       .from('guest_conversations')
       .insert({
@@ -224,14 +251,31 @@ export async function ensureGuestConversation(
       .single();
 
     if (insertError) {
-      logger.error('Failed to insert guest conversation', insertError, { conversationId, sessionHash });
+      // Handle race condition (conversation created between check and insert)
+      if (insertError.code === '23505') {
+        // ID already exists - verify ownership (race condition)
+        const { data: verify } = await supabase
+          .from('guest_conversations')
+          .select('id')
+          .eq('id', conversationId)
+          .eq('session_hash', sessionHash)
+          .maybeSingle();
+        
+        if (verify?.id) {
+          logger.debug('Guest conversation created by concurrent request', { conversationId, sessionHash });
+          return verify.id;
+        }
+        // Race condition: conversation created by another session
+        throw new Error('Conversation ID conflict');
+      }
       throw insertError;
     }
 
     return inserted.id;
   }
 
-  // No conversationId provided: always create a fresh conversation
+  // No conversationId provided - create new conversation (NEW CHAT)
+  // This is correct behavior - don't change this
   const { data: created, error: createError } = await supabase
     .from('guest_conversations')
     .insert({
@@ -247,6 +291,95 @@ export async function ensureGuestConversation(
   }
 
   return created.id;
+}
+
+/**
+ * Get guest messages for a conversation (server-side)
+ * Mirror of getMessagesServerSide for auth users
+ * Uses service-role client (required for guest tables)
+ */
+export async function getGuestMessagesServerSide(
+  conversationId: string,
+  options?: { limit?: number; offset?: number }
+): Promise<{ 
+  messages: Array<{ 
+    id: string; 
+    role: 'user' | 'assistant'; 
+    parts: MessageParts; 
+    model?: string; 
+    input_tokens?: number; 
+    output_tokens?: number; 
+    total_tokens?: number; 
+    completion_time?: number;
+  }>;
+  hasMore: boolean;
+  dbRowCount: number;
+}> {
+  const supabase = serviceSupabase;
+  const limit = options?.limit ?? 50;
+  const offset = options?.offset ?? 0;
+
+  let query = supabase
+    .from('guest_messages')
+    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time')
+    .eq('guest_conversation_id', conversationId)
+    .order('created_at', { ascending: false });
+  
+  if (offset > 0) {
+    query = query.range(offset, offset + limit - 1);
+  } else {
+    query = query.range(0, limit - 1);
+  }
+  
+  const { data, error } = await query;
+  
+  if (error) {
+    const userMessage = handleDbError(error, 'db/messages.server/getGuestMessagesServerSide');
+    logger.error('Error fetching guest messages', error, { conversationId, limit, offset });
+    const dbError = new Error(userMessage);
+    throw dbError;
+  }
+  
+  const filtered = (data || []).filter((msg) => msg.role === 'user' || msg.role === 'assistant');
+  const hasMore = (data?.length || 0) >= limit;
+  const actualDbRowCount = data?.length || 0;
+  const reversed = filtered.reverse();
+  
+  logger.debug('Guest messages fetched', { 
+    conversationId, 
+    total: actualDbRowCount, 
+    filtered: filtered.length,
+    hasMore,
+    limit,
+    offset
+  });
+  
+  const messages = reversed.map((msg) => {
+    let parts: MessageParts = [];
+    
+    if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
+      parts = msg.parts as MessageParts;
+    } else {
+      parts = convertLegacyContentToParts(msg.content);
+    }
+    
+    return {
+      id: msg.id,
+      role: msg.role as 'user' | 'assistant',
+      parts: parts,
+      model: msg.model ?? undefined,
+      input_tokens: msg.input_tokens ?? undefined,
+      output_tokens: msg.output_tokens ?? undefined,
+      total_tokens: msg.total_tokens ?? undefined,
+      completion_time: msg.completion_time ?? undefined,
+    };
+  });
+
+  return {
+    messages,
+    hasMore,
+    dbRowCount: actualDbRowCount,
+  };
 }
 
 export async function saveGuestMessage(payload: GuestMessagePayload): Promise<void> {
