@@ -278,6 +278,69 @@ export type Theme = 'light' | 'dark' | 'auto';
 export type ResolvedTheme = 'light' | 'dark';
 
 // ============================================
+// Rate Limiting Types
+// ============================================
+
+/**
+ * Rate limit check result
+ * Returned by all rate limiting functions
+ */
+export interface RateLimitCheckResult {
+  allowed: boolean;
+  reason?: string;
+  remaining: number;
+  reset: number; // Unix timestamp
+  headers: Record<string, string>;
+  sessionId?: string; // Only for guest users
+}
+
+/**
+ * Rate limit response headers
+ * Standard headers for rate limit information
+ */
+export interface RateLimitHeaders {
+  'X-RateLimit-Limit': string;
+  'X-RateLimit-Remaining': string;
+  'X-RateLimit-Reset': string;
+  'X-RateLimit-Layer': 'redis' | 'database';
+  'X-RateLimit-Degraded'?: 'true'; // Only present if Redis is down
+}
+
+/**
+ * Guest to user transfer result
+ * Returned by transfer_guest_to_user function
+ */
+export interface GuestTransferResult {
+  messagesTransferred: number;
+  rateLimitsTransferred: number;
+  conversationsTransferred: number;
+}
+
+/**
+ * Rate limit database record
+ * Extends existing RateLimit type with session_hash
+ */
+export interface RateLimitRecord {
+  id: string;
+  user_id: string | null;
+  session_hash: string | null;
+  resource_type: 'message' | 'api_call' | 'conversation';
+  count: number;
+  window_start: string;
+  window_end: string;
+  created_at: string;
+  updated_at: string;
+}
+
+/**
+ * Conversation with session support
+ * Extends existing Conversation type with session_id
+ */
+export interface ConversationWithSession extends Conversation {
+  session_id?: string | null;
+}
+
+// ============================================
 // Utility Types
 // ============================================
 

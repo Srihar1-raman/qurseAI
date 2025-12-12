@@ -100,26 +100,26 @@ export function HistorySidebarProvider({ children }: HistorySidebarProviderProps
     try {
       if (user && user.id) {
         // Auth user: existing logic
-        const { conversations, hasMore } = await getConversations(user.id, { limit: 50 });
-        setChatHistory(conversations || []);
-        setHasLoaded(true);
-        // Set offset to actual count loaded (in case we got fewer than 50)
-        setConversationsOffset(conversations.length);
-        setHasMoreConversations(hasMore);
+      const { conversations, hasMore } = await getConversations(user.id, { limit: 50 });
+      setChatHistory(conversations || []);
+      setHasLoaded(true);
+      // Set offset to actual count loaded (in case we got fewer than 50)
+      setConversationsOffset(conversations.length);
+      setHasMoreConversations(hasMore);
 
-        // Fetch total count if not already loaded (use ref to avoid dependency)
-        if (!countFetchInitiatedRef.current && user.id) {
-          countFetchInitiatedRef.current = true;
-          // Fetch count asynchronously (don't await - non-blocking)
-          getConversationCount(user.id)
-            .then((count) => {
-              setTotalConversationCount(count);
-            })
-            .catch((err) => {
-              logger.error('Failed to fetch conversation count', err);
-              // Don't fail the whole load if count fails
-              countFetchInitiatedRef.current = false; // Allow retry on next load
-            });
+      // Fetch total count if not already loaded (use ref to avoid dependency)
+      if (!countFetchInitiatedRef.current && user.id) {
+        countFetchInitiatedRef.current = true;
+        // Fetch count asynchronously (don't await - non-blocking)
+        getConversationCount(user.id)
+          .then((count) => {
+            setTotalConversationCount(count);
+          })
+          .catch((err) => {
+            logger.error('Failed to fetch conversation count', err);
+            // Don't fail the whole load if count fails
+            countFetchInitiatedRef.current = false; // Allow retry on next load
+          });
         }
       } else {
         // Guest: Load from guest_conversations via API
@@ -153,22 +153,22 @@ export function HistorySidebarProvider({ children }: HistorySidebarProviderProps
     try {
       if (user && user.id) {
         // Auth user: existing logic
-        const { conversations: moreConversations, hasMore } = await getConversations(user.id, {
-          limit: 50,
-          offset: conversationsOffset,
+      const { conversations: moreConversations, hasMore } = await getConversations(user.id, {
+        limit: 50,
+        offset: conversationsOffset,
+      });
+
+      setHasMoreConversations(hasMore);
+
+      if (moreConversations.length > 0) {
+        // Deduplicate conversations by ID to prevent duplicate keys
+        setChatHistory((prev) => {
+          const existingIds = new Set(prev.map((conv) => conv.id));
+          const newConversations = moreConversations.filter((conv) => !existingIds.has(conv.id));
+          return [...prev, ...newConversations];
         });
-
-        setHasMoreConversations(hasMore);
-
-        if (moreConversations.length > 0) {
-          // Deduplicate conversations by ID to prevent duplicate keys
-          setChatHistory((prev) => {
-            const existingIds = new Set(prev.map((conv) => conv.id));
-            const newConversations = moreConversations.filter((conv) => !existingIds.has(conv.id));
-            return [...prev, ...newConversations];
-          });
-          // Increase offset by actual number returned from DB
-          setConversationsOffset((prev) => prev + moreConversations.length);
+        // Increase offset by actual number returned from DB
+        setConversationsOffset((prev) => prev + moreConversations.length);
         }
       } else {
         // Guest: Load more from guest_conversations via API

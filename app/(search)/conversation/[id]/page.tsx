@@ -54,18 +54,18 @@ export default async function ConversationPage({ params, searchParams }: PagePro
   // ============================================
 
   // Get user (for both auth and guest)
-  // Note: Reusing supabase client from line 24 to avoid creating multiple clients
-  const { fullUser } = await getUserData(supabase);
-  
-  // Map Supabase auth user to our User type
-  if (fullUser) {
-    user = {
-      id: fullUser.id,
-      email: fullUser.email,
-      name: fullUser.user_metadata?.full_name || fullUser.user_metadata?.name,
-      avatar_url: fullUser.user_metadata?.avatar_url,
-    };
-  }
+    // Note: Reusing supabase client from line 24 to avoid creating multiple clients
+    const { fullUser } = await getUserData(supabase);
+    
+    // Map Supabase auth user to our User type
+    if (fullUser) {
+      user = {
+        id: fullUser.id,
+        email: fullUser.email,
+        name: fullUser.user_metadata?.full_name || fullUser.user_metadata?.name,
+        avatar_url: fullUser.user_metadata?.avatar_url,
+      };
+    }
 
   if (user && user.id) {
     // Auth user: Check conversation access

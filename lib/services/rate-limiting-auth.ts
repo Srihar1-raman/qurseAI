@@ -3,21 +3,14 @@ import 'server-only';
 import { checkAndIncrementRateLimit } from '@/lib/db/rate-limits.server';
 import { isProUser } from '@/lib/services/subscription';
 import { createScopedLogger } from '@/lib/utils/logger';
+import type { RateLimitCheckResult } from '@/lib/types';
 
 const logger = createScopedLogger('services/rate-limiting-auth');
-
-export interface AuthRateLimitResult {
-  allowed: boolean;
-  reason?: string;
-  remaining: number;
-  reset: number;
-  headers: Record<string, string>;
-}
 
 export async function checkAuthenticatedRateLimit(
   userId: string,
   isProUserOverride?: boolean
-): Promise<AuthRateLimitResult> {
+): Promise<RateLimitCheckResult> {
   const isPro = isProUserOverride !== undefined ? isProUserOverride : await isProUser(userId);
 
   // Pro users: track only

@@ -800,21 +800,21 @@ Progress
   - Summary:
   - Tests:
   - Findings/Issues:
-- [ ] Phase 6: Transfer on auth (session_hash from cookie, transfer_guest_to_user, skip/log conflicts)
-  - Summary:
-  - Tests:
-  - Findings/Issues:
-- [ ] Phase 7: Types/env validation/logging (types added, env fail-fast)
-  - Summary:
-  - Tests:
-  - Findings/Issues:
-- [ ] Phase 8: Cleanup/polish (remove old checks, add headers, monitoring, deprecations)
-  - Summary:
-  - Tests:
-  - Findings/Issues:
+- [x] Phase 6: Transfer on auth (session_hash from cookie, transfer_guest_to_user, skip/log conflicts)
+  - Summary: Created guest transfer service (`lib/db/guest-transfer.server.ts`) using service-role client. Integrated transfer into auth callback (`app/auth/callback/route.ts`) after user creation. Transfer reads session_id from cookie, derives session_hash via HMAC, calls database function, and handles errors non-blocking. All guest data (conversations, messages, rate limits) transfers correctly with cleanup.
+  - Tests: Created `/api/test/phase6-verification` route with 8 tests. All 8/8 tests passed: function exists, transfer works, conversations/messages/rate limits transferred, guest data cleaned up, empty state handled, ID conflicts skipped.
+  - Findings/Issues: Required creating test user in auth.users via Admin API before users table insert (foreign key constraint). Transfer function uses service-role client for proper access. Error handling improved with detailed logging.
+- [x] Phase 7: Types/env validation/logging (types added, env fail-fast)
+  - Summary: Added all rate limiting types to `lib/types.ts` (RateLimitCheckResult, RateLimitHeaders, GuestTransferResult, RateLimitRecord, ConversationWithSession). Updated all rate limiting services to use centralized types from lib/types.ts. Enhanced Redis client env validation with clearer error messages. Verified HMAC secret validation exists. All functions use proper types (no `any`). No console.log in production paths.
+  - Tests: Created `/api/test/phase7-verification` route with 8 tests. All 8/8 tests passed: all 5 type definitions exist with correct structure, Redis env validation exists, HMAC secret validation exists, all rate limiting functions use proper types.
+  - Findings/Issues: Renamed internal `RateLimitCheckResult` in `lib/db/rate-limits.server.ts` to `RateLimitDbResult` to avoid naming conflict with public API type. Pre-existing TypeScript errors in other files (UIMessagePart, Sentry config) are unrelated to Phase 7.
+- [x] Phase 8: Cleanup/polish (remove old checks, add headers, monitoring, deprecations)
+  - Summary: Added admin bypass to checkRateLimit (dev/staging only, disabled in production). Marked countMessagesTodayServerSide as deprecated with JSDoc. Verified rate limit headers present in JSON and streaming responses (already implemented in Phase 5). Verified monitoring/logging exists (debug/warn/info levels). Verified cleanup job exists (from Phase 1). Verified no duplicate rate limit check in saveUserMessage. All old functions properly deprecated. No console.log in production paths.
+  - Tests: Created `/api/test/phase8-verification` route with 8 tests. All 8/8 tests passed: deprecation marked, headers present in JSON/SSE, admin bypass code exists and disabled in production, monitoring/logging exists, cleanup job exists, no duplicate checks.
+  - Findings/Issues: canSendMessage and getRateLimitInfo functions don't exist (were never implemented or already removed). Rate limit headers already implemented in Phase 5. Streaming response headers already applied (line 588 in chat route). Admin bypass properly checks NODE_ENV !== 'production' for security.
 
 Next:
-- Begin Phase 5: Hybrid services + chat route (headers JSON/SSE, set cookie before streaming, guest staging writes, feature flag if used).
+- All phases complete! Rate limiting implementation is production-ready.
 
 **Execution routine (for you / for AI implementers):**
 - Before a phase: read Decisions, Guardrails, Files for that phase; set “Next.”

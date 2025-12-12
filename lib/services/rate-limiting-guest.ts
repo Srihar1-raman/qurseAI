@@ -6,19 +6,11 @@ import { getClientIp } from '@/lib/utils/ip-extraction';
 import { getOrCreateSessionId } from '@/lib/utils/session';
 import { hmacSessionId } from '@/lib/utils/session-hash';
 import { createScopedLogger } from '@/lib/utils/logger';
+import type { RateLimitCheckResult } from '@/lib/types';
 
 const logger = createScopedLogger('services/rate-limiting-guest');
 
-export interface GuestRateLimitResult {
-  allowed: boolean;
-  reason?: string;
-  remaining: number;
-  reset: number;
-  headers: Record<string, string>;
-  sessionId: string;
-}
-
-export async function checkGuestRateLimit(request: Request): Promise<GuestRateLimitResult> {
+export async function checkGuestRateLimit(request: Request): Promise<RateLimitCheckResult> {
   const ip = getClientIp(request);
   const sessionId = getOrCreateSessionId(request);
   const sessionHash = hmacSessionId(sessionId);

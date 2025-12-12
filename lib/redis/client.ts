@@ -4,12 +4,14 @@ import { createScopedLogger } from '@/lib/utils/logger';
 
 const logger = createScopedLogger('redis/client');
 
+// CRITICAL: Validate environment variables at startup (fail fast)
 const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
 const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
 if (!redisUrl || !redisToken) {
   throw new Error(
-    'Missing Upstash Redis environment variables. Please set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN.'
+    'Missing Upstash Redis environment variables. ' +
+    'Please add UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN to your .env.local file.'
   );
 }
 

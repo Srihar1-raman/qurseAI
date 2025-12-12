@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGuestConversations } from '@/lib/db/queries';
-import { createScopedLogger } from '@/lib/utils/logger';
-import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { transferGuestToUser } from '@/lib/db/guest-transfer.server';
 import { hmacSessionId } from '@/lib/utils/session-hash';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
+import { createScopedLogger } from '@/lib/utils/logger';
 
 const logger = createScopedLogger('test/phase6-verification');
 
@@ -17,7 +17,7 @@ const serviceSupabase = createServiceClient(supabaseUrl, serviceKey);
 
 /**
  * Phase 6 Verification Tests
- * Tests history sidebar integration for guest conversations
+ * Tests guest to user transfer functionality
  */
 export async function GET(request: NextRequest) {
   const results: Array<{ test: string; passed: boolean; error?: string }> = [];
@@ -26,260 +26,365 @@ export async function GET(request: NextRequest) {
     // Setup: Create test data
     const sessionId = crypto.randomUUID();
     const sessionHash = hmacSessionId(sessionId);
+    const testUserId = crypto.randomUUID();
 
-    // Create multiple test conversations for pagination
-    const conversationIds: string[] = [];
-    for (let i = 0; i < 3; i++) {
-      conversationIds.push(crypto.randomUUID());
-    }
+    // Create test guest conversations and messages
+    const conversationId1 = crypto.randomUUID();
+    const conversationId2 = crypto.randomUUID();
 
-    await serviceSupabase.from('guest_conversations').insert(
-      conversationIds.map((id, index) => ({
-        id,
-        session_hash: sessionHash,
-        title: `Test Conversation ${index + 1}`,
-      }))
-    );
-
-    // Create messages for first conversation
-    await serviceSupabase.from('guest_messages').insert([
+    await serviceSupabase.from('guest_conversations').insert([
       {
-        id: crypto.randomUUID(),
-        guest_conversation_id: conversationIds[0],
-        role: 'user',
-        content: 'Test message',
-        parts: [{ type: 'text', text: 'Test message' }],
+        id: conversationId1,
+        session_hash: sessionHash,
+        title: 'Test Conversation 1',
+      },
+      {
+        id: conversationId2,
+        session_hash: sessionHash,
+        title: 'Test Conversation 2',
       },
     ]);
 
-    // Test 1: getGuestConversations function exists (client-side function, API route tested in Phase 2)
+    const messageId1 = crypto.randomUUID();
+    const messageId2 = crypto.randomUUID();
+    const messageId3 = crypto.randomUUID();
+
+    await serviceSupabase.from('guest_messages').insert([
+      {
+        id: messageId1,
+        guest_conversation_id: conversationId1,
+        role: 'user',
+        content: 'Test message 1',
+        parts: [{ type: 'text', text: 'Test message 1' }],
+      },
+      {
+        id: messageId2,
+        guest_conversation_id: conversationId1,
+        role: 'assistant',
+        content: 'Test response 1',
+        parts: [{ type: 'text', text: 'Test response 1' }],
+      },
+      {
+        id: messageId3,
+        guest_conversation_id: conversationId2,
+        role: 'user',
+        content: 'Test message 2',
+        parts: [{ type: 'text', text: 'Test message 2' }],
+      },
+    ]);
+
+    // Create test user in auth.users and users table
+    // Note: In production, this is handled by the auth callback
+    // For testing, we need to create the user in auth.users first (via Admin API)
+    // Then create the profile in users table
     try {
-      // Import and verify function exists
-      if (typeof getGuestConversations === 'function') {
-        results.push({ test: 'getGuestConversations function exists', passed: true });
+      // Create user in auth.users using Admin API
+      const { data: authUser, error: authError } = await serviceSupabase.auth.admin.createUser({
+        id: testUserId,
+        email: 'test@example.com',
+        email_confirm: true,
+        user_metadata: { name: 'Test User' },
+      });
+      
+      if (authError && !authError.message.includes('already exists')) {
+        logger.error('Error creating auth user', authError);
+      }
+      
+      // Create user profile in users table
+      const { error: userInsertError } = await serviceSupabase.from('users').insert({
+        id: testUserId,
+        email: 'test@example.com',
+        name: 'Test User',
+      });
+      
+      if (userInsertError && userInsertError.code !== '23505') {
+        // If not a duplicate key error, log it
+        logger.error('Error creating user profile', userInsertError);
+      }
+    } catch (error) {
+      logger.error('Error setting up test user', error);
+      // Continue with test - might fail but we'll see the actual error
+    }
+
+    // Create test rate limit entry for guest
+    await serviceSupabase.from('rate_limits').insert({
+      user_id: null,
+      session_hash: sessionHash,
+      resource_type: 'message',
+      count: 5,
+      bucket_start: new Date().toISOString(),
+      bucket_end: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+    });
+
+    // Test 1: Transfer function exists and is callable
+    try {
+      if (typeof transferGuestToUser === 'function') {
+        results.push({ test: 'transferGuestToUser function exists', passed: true });
       } else {
         results.push({
-          test: 'getGuestConversations function exists',
+          test: 'transferGuestToUser function exists',
           passed: false,
-          error: 'getGuestConversations is not a function',
+          error: 'transferGuestToUser is not a function',
         });
       }
     } catch (error) {
       results.push({
-        test: 'getGuestConversations function exists',
+        test: 'transferGuestToUser function exists',
         passed: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
 
-    // Test 2: Guest conversations query structure matches expected format
+    // Test 2: Transfer guest data to user
     try {
-      // Query directly to verify structure matches what getGuestConversations should return
-      const { data, error } = await serviceSupabase
-        .from('guest_conversations')
-        .select('id, title, created_at, updated_at, session_hash')
-        .eq('session_hash', sessionHash)
-        .order('updated_at', { ascending: false })
-        .range(0, 1); // Test pagination range
+      const transferResult = await transferGuestToUser(sessionHash, testUserId);
 
-      if (error) {
-        results.push({
-          test: 'Guest conversations query structure matches expected format',
-          passed: false,
-          error: `Database error: ${error.message}`,
-        });
-      } else if (data && data.length > 0) {
-        // Verify structure
-        const conv = data[0];
-        if (conv.id && conv.title && conv.created_at && conv.updated_at && conv.session_hash) {
-          results.push({ test: 'Guest conversations query structure matches expected format', passed: true });
-        } else {
-          results.push({
-            test: 'Guest conversations query structure matches expected format',
-            passed: false,
-            error: 'Missing required fields in conversation object',
-          });
-        }
-      } else {
-        results.push({
-          test: 'Guest conversations query structure matches expected format',
-          passed: false,
-          error: 'No conversations returned',
-        });
-      }
-    } catch (error) {
-      results.push({
-        test: 'Guest conversations query structure matches expected format',
-        passed: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-
-    // Test 3: Conversations are returned in correct format
-    try {
-      // Query directly to verify format
-      const { data, error } = await serviceSupabase
-        .from('guest_conversations')
-        .select('id, title, created_at, updated_at, session_hash')
-        .eq('session_hash', sessionHash)
-        .order('updated_at', { ascending: false })
-        .limit(50);
-
-      if (error) {
-        results.push({
-          test: 'Conversations returned in correct format',
-          passed: false,
-          error: `Database error: ${error.message}`,
-        });
-      } else if (data && data.length === 3) {
-        // Verify format matches Conversation type
-        const firstConv = data[0];
-        if (
-          firstConv.id &&
-          firstConv.title &&
-          firstConv.created_at &&
-          firstConv.updated_at
-        ) {
-          results.push({ test: 'Conversations returned in correct format', passed: true });
-        } else {
-          results.push({
-            test: 'Conversations returned in correct format',
-            passed: false,
-            error: 'Missing required fields in conversation object',
-          });
-        }
-      } else {
-        results.push({
-          test: 'Conversations returned in correct format',
-          passed: false,
-          error: `Expected 3 conversations, got ${data?.length || 0}`,
-        });
-      }
-    } catch (error) {
-      results.push({
-        test: 'Conversations returned in correct format',
-        passed: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-
-    // Test 4: Message counts can be calculated (same logic as API route)
-    try {
-      // Get message counts for conversations (same logic as /api/guest/conversations)
-      const { data: messages } = await serviceSupabase
-        .from('guest_messages')
-        .select('guest_conversation_id')
-        .in('guest_conversation_id', conversationIds);
-
-      const messageCounts: Record<string, number> = {};
-      if (messages) {
-        messages.forEach((msg) => {
-          messageCounts[msg.guest_conversation_id] = (messageCounts[msg.guest_conversation_id] || 0) + 1;
-        });
-      }
-
-      // Verify message counts are calculated correctly
-      // Conversation 0 should have 1 message, conversation 1 and 2 should have 0
       if (
-        messageCounts[conversationIds[0]] === 1 &&
-        (messageCounts[conversationIds[1]] === 0 || !messageCounts[conversationIds[1]]) &&
-        (messageCounts[conversationIds[2]] === 0 || !messageCounts[conversationIds[2]])
+        transferResult.conversationsTransferred === 2 &&
+        transferResult.messagesTransferred === 3 &&
+        transferResult.rateLimitsTransferred === 1
       ) {
-        results.push({ test: 'Message counts calculated correctly', passed: true });
+        results.push({ test: 'Transfer guest data to user', passed: true });
       } else {
         results.push({
-          test: 'Message counts calculated correctly',
+          test: 'Transfer guest data to user',
           passed: false,
-          error: `Expected conversation 0 to have 1 message (got ${messageCounts[conversationIds[0]] || 0}), conversation 1 to have 0 (got ${messageCounts[conversationIds[1]] || 0})`,
+          error: `Expected 2 conversations, 3 messages, 1 rate limit. Got ${transferResult.conversationsTransferred} conversations, ${transferResult.messagesTransferred} messages, ${transferResult.rateLimitsTransferred} rate limits`,
+        });
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorStack = error instanceof Error ? error.stack : undefined;
+      logger.error('Transfer test failed', { error: errorMessage, stack: errorStack });
+      results.push({
+        test: 'Transfer guest data to user',
+        passed: false,
+        error: errorMessage,
+      });
+    }
+
+    // Test 3: Verify conversations transferred to main table
+    try {
+      const { data: conversations, error: convError } = await serviceSupabase
+        .from('conversations')
+        .select('id, user_id')
+        .in('id', [conversationId1, conversationId2])
+        .eq('user_id', testUserId);
+
+      if (convError) {
+        results.push({
+          test: 'Conversations transferred to main table',
+          passed: false,
+          error: `Database error: ${convError.message}`,
+        });
+      } else if (conversations && conversations.length === 2) {
+        results.push({ test: 'Conversations transferred to main table', passed: true });
+      } else {
+        results.push({
+          test: 'Conversations transferred to main table',
+          passed: false,
+          error: `Expected 2 conversations, got ${conversations?.length || 0}`,
         });
       }
     } catch (error) {
       results.push({
-        test: 'Message counts calculated correctly',
+        test: 'Conversations transferred to main table',
         passed: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
 
-    // Test 5: hasMore flag works correctly for pagination
+    // Test 4: Verify messages transferred to main table
     try {
-      // Query with limit less than total conversations
-      const { data, error } = await serviceSupabase
-        .from('guest_conversations')
-        .select('id')
-        .eq('session_hash', sessionHash)
-        .order('updated_at', { ascending: false })
-        .range(0, 1); // Limit to 2 items (0-1 inclusive)
+      const { data: messages, error: msgError } = await serviceSupabase
+        .from('messages')
+        .select('id, conversation_id')
+        .in('id', [messageId1, messageId2, messageId3]);
 
-      if (error) {
+      if (msgError) {
         results.push({
-          test: 'hasMore flag works correctly for pagination',
+          test: 'Messages transferred to main table',
           passed: false,
-          error: `Database error: ${error.message}`,
+          error: `Database error: ${msgError.message}`,
         });
-      } else if (data && data.length === 2 && data.length < 3) {
-        // If we got 2 items but there are 3 total, hasMore should be true
-        results.push({ test: 'hasMore flag works correctly for pagination', passed: true });
+      } else if (messages && messages.length === 3) {
+        // Verify messages point to correct conversations
+        const conv1Messages = messages.filter((m) => m.conversation_id === conversationId1);
+        const conv2Messages = messages.filter((m) => m.conversation_id === conversationId2);
+        if (conv1Messages.length === 2 && conv2Messages.length === 1) {
+          results.push({ test: 'Messages transferred to main table', passed: true });
+        } else {
+          results.push({
+            test: 'Messages transferred to main table',
+            passed: false,
+            error: `Message conversation mapping incorrect. Conv1: ${conv1Messages.length}, Conv2: ${conv2Messages.length}`,
+          });
+        }
       } else {
         results.push({
-          test: 'hasMore flag works correctly for pagination',
+          test: 'Messages transferred to main table',
           passed: false,
-          error: `Expected 2 items for pagination test, got ${data?.length || 0}`,
+          error: `Expected 3 messages, got ${messages?.length || 0}`,
         });
       }
     } catch (error) {
       results.push({
-        test: 'hasMore flag works correctly for pagination',
+        test: 'Messages transferred to main table',
         passed: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
 
-    // Test 6: Empty state handled correctly
+    // Test 5: Verify rate limits transferred to user
     try {
-      // Create empty session (no conversations)
-      const emptySessionId = crypto.randomUUID();
-      const emptySessionHash = hmacSessionId(emptySessionId);
+      const { data: rateLimits, error: rlError } = await serviceSupabase
+        .from('rate_limits')
+        .select('user_id, session_hash')
+        .eq('user_id', testUserId)
+        .is('session_hash', null);
 
-      // Query for empty session
-      const { data, error } = await serviceSupabase
-        .from('guest_conversations')
-        .select('id')
-        .eq('session_hash', emptySessionHash)
-        .limit(50);
-
-      if (error) {
+      if (rlError) {
         results.push({
-          test: 'Empty state handled correctly',
+          test: 'Rate limits transferred to user',
           passed: false,
-          error: `Database error: ${error.message}`,
+          error: `Database error: ${rlError.message}`,
         });
-      } else if (data && data.length === 0) {
-        results.push({ test: 'Empty state handled correctly', passed: true });
+      } else if (rateLimits && rateLimits.length >= 1) {
+        results.push({ test: 'Rate limits transferred to user', passed: true });
       } else {
         results.push({
-          test: 'Empty state handled correctly',
+          test: 'Rate limits transferred to user',
           passed: false,
-          error: `Expected empty array, got ${data?.length || 0} items`,
+          error: `Expected at least 1 rate limit, got ${rateLimits?.length || 0}`,
         });
       }
     } catch (error) {
       results.push({
-        test: 'Empty state handled correctly',
+        test: 'Rate limits transferred to user',
+        passed: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+
+    // Test 6: Verify guest data cleaned up
+    try {
+      const { data: guestConversations, error: gcError } = await serviceSupabase
+        .from('guest_conversations')
+        .select('id')
+        .eq('session_hash', sessionHash);
+
+      if (gcError) {
+        results.push({
+          test: 'Guest data cleaned up after transfer',
+          passed: false,
+          error: `Database error: ${gcError.message}`,
+        });
+      } else if (guestConversations && guestConversations.length === 0) {
+        results.push({ test: 'Guest data cleaned up after transfer', passed: true });
+      } else {
+        results.push({
+          test: 'Guest data cleaned up after transfer',
+          passed: false,
+          error: `Expected 0 guest conversations, got ${guestConversations?.length || 0}`,
+        });
+      }
+    } catch (error) {
+      results.push({
+        test: 'Guest data cleaned up after transfer',
+        passed: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+
+    // Test 7: Transfer with no guest data (should not error)
+    try {
+      const emptySessionHash = hmacSessionId(crypto.randomUUID());
+      const transferResult = await transferGuestToUser(emptySessionHash, testUserId);
+
+      if (
+        transferResult.conversationsTransferred === 0 &&
+        transferResult.messagesTransferred === 0 &&
+        transferResult.rateLimitsTransferred === 0
+      ) {
+        results.push({ test: 'Transfer with no guest data (no error)', passed: true });
+      } else {
+        results.push({
+          test: 'Transfer with no guest data (no error)',
+          passed: false,
+          error: `Expected all zeros, got ${transferResult.conversationsTransferred} conversations, ${transferResult.messagesTransferred} messages, ${transferResult.rateLimitsTransferred} rate limits`,
+        });
+      }
+    } catch (error) {
+      results.push({
+        test: 'Transfer with no guest data (no error)',
+        passed: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+
+    // Test 8: Transfer handles ID conflicts (skip on conflict)
+    try {
+      // Create a conversation that already exists for the user (ID conflict)
+      const conflictConversationId = crypto.randomUUID();
+      
+      // First, create it in main conversations table
+      await serviceSupabase.from('conversations').insert({
+        id: conflictConversationId,
+        user_id: testUserId,
+        title: 'Existing Conversation',
+      });
+
+      // Then create it in guest_conversations
+      await serviceSupabase.from('guest_conversations').insert({
+        id: conflictConversationId,
+        session_hash: sessionHash,
+        title: 'Guest Conversation',
+      });
+
+      // Transfer should skip the conflict and continue
+      const conflictSessionHash = hmacSessionId(crypto.randomUUID());
+      await serviceSupabase.from('guest_conversations').insert({
+        id: conflictConversationId,
+        session_hash: conflictSessionHash,
+        title: 'Guest Conversation',
+      });
+
+      const transferResult = await transferGuestToUser(conflictSessionHash, testUserId);
+
+      // Should complete without error (conflict skipped)
+      if (transferResult.conversationsTransferred === 0) {
+        // Conflict was skipped (ON CONFLICT DO NOTHING)
+        results.push({ test: 'Transfer handles ID conflicts (skip on conflict)', passed: true });
+      } else {
+        results.push({
+          test: 'Transfer handles ID conflicts (skip on conflict)',
+          passed: false,
+          error: `Expected 0 conversations (conflict skipped), got ${transferResult.conversationsTransferred}`,
+        });
+      }
+
+      // Cleanup
+      await serviceSupabase.from('conversations').delete().eq('id', conflictConversationId);
+      await serviceSupabase.from('guest_conversations').delete().eq('session_hash', conflictSessionHash);
+    } catch (error) {
+      results.push({
+        test: 'Transfer handles ID conflicts (skip on conflict)',
         passed: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
 
     // Cleanup test data
-    await serviceSupabase.from('guest_messages').delete().in('guest_conversation_id', conversationIds);
-    await serviceSupabase.from('guest_conversations').delete().in('id', conversationIds);
+    await serviceSupabase.from('messages').delete().in('id', [messageId1, messageId2, messageId3]);
+    await serviceSupabase.from('conversations').delete().in('id', [conversationId1, conversationId2]);
+    await serviceSupabase.from('rate_limits').delete().eq('user_id', testUserId);
+    await serviceSupabase.from('users').delete().eq('id', testUserId);
 
     const passedCount = results.filter((r) => r.passed).length;
     const totalCount = results.length;
 
     return NextResponse.json({
-      phase: 'Phase 6: History Sidebar Integration',
+      phase: 'Phase 6: Message Persistence',
       summary: `${passedCount}/${totalCount} tests passed`,
       allPassed: passedCount === totalCount,
       results,
@@ -288,7 +393,7 @@ export async function GET(request: NextRequest) {
     logger.error('Error running Phase 6 verification tests', error);
     return NextResponse.json(
       {
-        phase: 'Phase 6: History Sidebar Integration',
+        phase: 'Phase 6: Message Persistence',
         summary: 'Test execution failed',
         allPassed: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -298,4 +403,3 @@ export async function GET(request: NextRequest) {
     );
   }
 }
-

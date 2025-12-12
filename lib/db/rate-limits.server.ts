@@ -14,7 +14,12 @@ if (!supabaseUrl || !serviceKey) {
 
 const supabase = createSupabaseClient(supabaseUrl, serviceKey);
 
-export interface RateLimitCheckResult {
+/**
+ * Internal rate limit check result (database layer)
+ * Different from RateLimitCheckResult in lib/types.ts which is the public API
+ * This is the internal result from the database function
+ */
+export interface RateLimitDbResult {
   allowed: boolean;
   count: number;
   limit: number;
@@ -31,7 +36,7 @@ type CheckParams = {
   windowHours?: number;
 };
 
-export async function checkAndIncrementRateLimit(params: CheckParams): Promise<RateLimitCheckResult> {
+export async function checkAndIncrementRateLimit(params: CheckParams): Promise<RateLimitDbResult> {
   const {
     userId = null,
     sessionHash = null,

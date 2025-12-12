@@ -6,8 +6,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { createScopedLogger } from '@/lib/utils/logger';
+import { transferGuestToUser } from '@/lib/db/guest-transfer.server';
+import { parseCookie, isValidUUID } from '@/lib/utils/session';
+import { hmacSessionId } from '@/lib/utils/session-hash';
 
 const logger = createScopedLogger('auth/callback');
+const SESSION_COOKIE_NAME = 'session_id';
 
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
@@ -95,6 +99,43 @@ export async function GET(request: Request) {
         logger.error('Error ensuring subscription', subError, { userId });
       } else if (subscriptionId) {
         logger.info('Subscription ensured', { userId, subscriptionId, plan: 'free' });
+      }
+
+      // ============================================
+      // Step 4: Transfer guest data to user (if session exists)
+      // ============================================
+      // Get session_id from cookie (server-side)
+      const cookieHeader = request.headers.get('cookie') ?? '';
+      const sessionId = parseCookie(cookieHeader, SESSION_COOKIE_NAME);
+      
+      if (sessionId && isValidUUID(sessionId)) {
+        try {
+          // Derive session_hash from session_id (HMAC)
+          const sessionHash = hmacSessionId(sessionId);
+          
+          // Transfer guest data to user (non-blocking)
+          const transferResult = await transferGuestToUser(sessionHash, userId);
+          
+          if (transferResult.messagesTransferred > 0 || transferResult.conversationsTransferred > 0) {
+            logger.info('Guest data transferred to user', {
+              userId,
+              messages: transferResult.messagesTransferred,
+              conversations: transferResult.conversationsTransferred,
+              rateLimits: transferResult.rateLimitsTransferred,
+            });
+            
+            // Optional: Store transfer result for UI notification
+            // Frontend can show: "X messages transferred to your account"
+          } else {
+            logger.debug('No guest data to transfer', { userId, sessionHash });
+          }
+        } catch (error) {
+          // Don't block auth flow if transfer fails
+          // User can still sign in, transfer can be retried later
+          logger.error('Failed to transfer guest data (non-blocking)', error, { userId });
+        }
+      } else {
+        logger.debug('No session_id cookie found, skipping guest transfer', { userId });
       }
     }
 

@@ -115,6 +115,11 @@ export async function getMessagesServerSide(
 
 /**
  * Count messages for a user today (for rate limiting)
+ * 
+ * @deprecated Use checkRateLimit() from @/lib/services/rate-limiting instead.
+ * This function is kept for backward compatibility during migration period.
+ * Will be removed after monitoring period (1-2 weeks).
+ * 
  * @param userId - User ID (null for anonymous)
  * @returns Number of messages sent today
  */

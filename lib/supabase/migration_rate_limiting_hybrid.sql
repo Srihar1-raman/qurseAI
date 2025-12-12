@@ -212,11 +212,48 @@ BEGIN
   ON CONFLICT (id) DO NOTHING;
   GET DIAGNOSTICS v_messages_count = ROW_COUNT;
 
-  -- Transfer rate limits to user
-  UPDATE rate_limits
-    SET user_id = p_user_id, session_hash = NULL
+  -- Transfer rate limits to user (merge if user already has record for same bucket)
+  -- Strategy: 
+  -- 1. For guest records where user has NO existing record: UPDATE guest to user
+  -- 2. For guest records where user HAS existing record: MERGE counts, then DELETE guest
+  
+  -- Count guest rate limit records before transfer (for return value)
+  SELECT COUNT(*) INTO v_rate_limits_count
+  FROM rate_limits
   WHERE session_hash = p_session_hash AND user_id IS NULL;
-  GET DIAGNOSTICS v_rate_limits_count = ROW_COUNT;
+  
+  -- Step 1: Update non-conflicting guest records to user
+  UPDATE rate_limits rl_guest
+    SET user_id = p_user_id, session_hash = NULL
+  WHERE rl_guest.session_hash = p_session_hash 
+    AND rl_guest.user_id IS NULL
+    AND NOT EXISTS (
+      SELECT 1 FROM rate_limits rl_user
+      WHERE rl_user.user_id = p_user_id
+        AND rl_user.session_hash IS NULL
+        AND rl_user.resource_type = rl_guest.resource_type
+        AND rl_user.bucket_start = rl_guest.bucket_start
+    );
+  
+  -- Step 2: Merge conflicting records (user already has record for same bucket)
+  -- Add guest count to user's existing count, then delete guest record
+  WITH guest_to_merge AS (
+    SELECT resource_type, bucket_start, count as guest_count
+    FROM rate_limits
+    WHERE session_hash = p_session_hash AND user_id IS NULL
+  )
+  UPDATE rate_limits rl_user
+    SET count = rl_user.count + gtm.guest_count,
+        updated_at = NOW()
+  FROM guest_to_merge gtm
+  WHERE rl_user.user_id = p_user_id
+    AND rl_user.session_hash IS NULL
+    AND rl_user.resource_type = gtm.resource_type
+    AND rl_user.bucket_start = gtm.bucket_start;
+  
+  -- Step 3: Delete guest rate limit records (already merged or transferred)
+  DELETE FROM rate_limits
+  WHERE session_hash = p_session_hash AND user_id IS NULL;
 
   -- Cleanup guest rows
   DELETE FROM guest_messages
