@@ -46,18 +46,14 @@ export function ConversationClient({
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const conversationThreadRef = useRef<HTMLDivElement>(null);
+  const conversationContainerRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
   const scrollPositionRef = useRef<{ height: number; top: number } | null>(null);
   const hasInitiallyScrolledRef = useRef(false);
   const lastUserMessageIdRef = useRef<string | null>(null); // Track last user message ID to detect new messages
   
   // Use optimized scroll hook (Scira pattern)
-  // Pass both end ref (for fallback) and scroll container ref (for direct scrolling)
-  // This ensures messages scroll correctly and aren't hidden under fixed headers
-  const { scrollToBottom, markManualScroll, resetManualScroll } = useOptimizedScroll(
-    conversationEndRef,
-    conversationThreadRef
-  );
+  const { scrollToBottom, markManualScroll, resetManualScroll } = useOptimizedScroll(conversationEndRef);
   
   // Track if we've had any user interaction (useChat bug workaround)
   const [hasInteracted, setHasInteracted] = useState(false);
@@ -146,14 +142,6 @@ export function ConversationClient({
       return;
     }
     
-    // CRITICAL: Don't load if this is a new conversation (hasInitialMessageParam)
-    // New conversations don't exist in DB yet - they're created in the API route
-    // Loading will fail with 404, which is expected and should not show error
-    if (hasInitialMessageParam) {
-      logger.debug('Skipping loadInitialMessages for new conversation', { id });
-      return;
-    }
-    
     try {
       setIsLoadingInitialMessages(true); // Use separate state for initial loading
       
@@ -165,17 +153,8 @@ export function ConversationClient({
         : `/api/guest/conversation/${id}/messages?limit=50&offset=0`;
       
       const response = await fetch(apiRoute);
-      
-      // Handle 404 gracefully - conversation doesn't exist yet (new conversation)
-      // This can happen if the conversation hasn't been created in DB yet
-      // Don't show error - this is expected for new conversations
-      if (response.status === 404) {
-        logger.debug('Conversation not found (likely new conversation)', { id });
-        return;
-      }
-      
       if (!response.ok) {
-        throw new Error(`Failed to load messages: ${response.status}`);
+        throw new Error('Failed to load messages');
       }
       const { messages, hasMore, dbRowCount } = await response.json();
       
@@ -189,18 +168,9 @@ export function ConversationClient({
       setHasMoreMessages(hasMore);
     } catch (error) {
       // Only show error if conversationId still matches (don't show error for stale requests)
-      // AND if it's not a 404 (which we handle above)
       if (conversationIdRef.current === id) {
-        // Check if it's a 404 error (conversation doesn't exist)
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        const is404 = errorMessage.includes('404') || errorMessage.includes('not found');
-        
-        if (!is404) {
-          const userMessage = handleClientError(error as Error, 'conversation/loadInitialMessages');
-          showToastError(userMessage);
-        } else {
-          logger.debug('Conversation not found (likely new conversation)', { id });
-        }
+        const userMessage = handleClientError(error as Error, 'conversation/loadInitialMessages');
+        showToastError(userMessage);
       }
     } finally {
       // Only update loading state if conversationId still matches
@@ -208,7 +178,7 @@ export function ConversationClient({
         setIsLoadingInitialMessages(false);
       }
     }
-  }, [showToastError, user, hasInitialMessageParam]);
+  }, [showToastError, user]);
 
   // Handle conversationId prop changes (for conversation switching and direct URL access)
   useEffect(() => {
@@ -245,8 +215,7 @@ export function ConversationClient({
       setHasMoreMessages(false);
       
       // Load messages client-side if needed (for both auth and guest users)
-      // CRITICAL: Don't load for new conversations (hasInitialMessageParam) - conversation doesn't exist yet
-      // New conversations are created in the API route, so loading will fail with 404
+      // Remove user check - loadInitialMessages handles auth vs guest routing
       if (
         conversationId && 
         !conversationId.startsWith('temp-') && 
@@ -417,7 +386,6 @@ export function ConversationClient({
     const newMessages = messages.filter(m => {
       // Skip if ID already exists
       if (messageIds.has(m.id)) {
-        logger.debug('Filtering duplicate message by ID', { id: m.id, role: m.role });
         return false;
       }
       
@@ -430,7 +398,6 @@ export function ConversationClient({
       const contentKey = `${m.role}:${content}`;
       
       if (messageContentSet.has(contentKey)) {
-        logger.debug('Filtering duplicate message by content', { id: m.id, role: m.role, content: content.substring(0, 50) });
         return false;
       }
       
@@ -474,13 +441,14 @@ export function ConversationClient({
       return;
     }
 
-    const threadElement = conversationThreadRef.current;
-    if (!threadElement) return;
+    // CRITICAL: Use conversationContainerRef (the actual scroll container) instead of conversationThreadRef
+    const containerElement = conversationContainerRef.current;
+    if (!containerElement) return;
 
     // Save current scroll position and height before loading
     scrollPositionRef.current = {
-      height: threadElement.scrollHeight,
-      top: threadElement.scrollTop,
+      height: containerElement.scrollHeight,
+      top: containerElement.scrollTop,
     };
 
     setIsLoadingOlderMessages(true);
@@ -530,10 +498,11 @@ export function ConversationClient({
   }, [conversationId, messagesOffset, isLoadingOlderMessages, hasMoreMessages, showToastError]);
 
   // Restore scroll position after older messages are loaded and DOM is updated
+  // CRITICAL: Use conversationContainerRef (the actual scroll container) instead of conversationThreadRef
   useEffect(() => {
     if (!isLoadingOlderMessages && scrollPositionRef.current) {
-      const threadElement = conversationThreadRef.current;
-      if (!threadElement) {
+      const containerElement = conversationContainerRef.current;
+      if (!containerElement) {
         scrollPositionRef.current = null;
         return;
       }
@@ -542,11 +511,11 @@ export function ConversationClient({
       
       // Use requestAnimationFrame to wait for DOM to update
       requestAnimationFrame(() => {
-        if (threadElement && saved) {
-          const scrollHeightAfter = threadElement.scrollHeight;
+        if (containerElement && saved) {
+          const scrollHeightAfter = containerElement.scrollHeight;
           const heightDifference = scrollHeightAfter - saved.height;
           // Adjust scroll position to maintain visual position
-          threadElement.scrollTop = saved.top + heightDifference;
+          containerElement.scrollTop = saved.top + heightDifference;
           scrollPositionRef.current = null;
         }
       });
@@ -628,33 +597,14 @@ export function ConversationClient({
         const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
         window.history.replaceState({}, '', newUrl);
 
-        // CRITICAL: Reset manual scroll flag so auto-scroll works for new message
-        resetManualScroll();
-        
         // Send message immediately (don't wait for displayMessages)
         // Note: sendMessage is stable now (memoized transport prevents useChat reset)
         sendMessage({
           role: 'user',
           parts: [{ type: 'text', text: messageText }],
         });
-        
-        // CRITICAL: Scroll immediately after sending to show user message
-        // Don't wait for displayMessages to update - scroll right away
-        // Use multiple attempts to ensure scroll happens even if DOM hasn't updated yet
-        // Attempt 1: Immediate (optimistic)
-        scrollToBottom();
-        
-        // Attempt 2: After first RAF (DOM might be updating)
-        requestAnimationFrame(() => {
-          scrollToBottom();
-          
-          // Attempt 3: After second RAF (DOM should be updated)
-          requestAnimationFrame(() => {
-            scrollToBottom();
-          });
-        });
     }
-  }, [hasInitialMessageParam, sendMessage, conversationId, scrollToBottom, resetManualScroll]); // Added scrollToBottom and resetManualScroll to deps
+  }, [hasInitialMessageParam, sendMessage, conversationId]); // Added conversationId to deps for visibility check
 
   // Listen for manual scroll (wheel and touch) - Scira pattern
   useEffect(() => {
@@ -684,17 +634,15 @@ export function ConversationClient({
 
   // Scroll to show user message immediately after sending (before streaming starts)
   // This ensures user sees their message above the input area, following standard chat UX
-  // CRITICAL: Scroll immediately when user message appears, regardless of streaming status
-  // The streaming scroll logic will handle AI responses separately
   useEffect(() => {
     // Only scroll if:
     // 1. We have messages
     // 2. Last message is from user
     // 3. It's a NEW user message (not one we've already scrolled to)
-    // 4. User has interacted (message was sent, not just initial load)
-    // 5. We're not loading older messages (pagination)
-    // 6. We're not loading initial messages
-    // NOTE: Removed status !== 'streaming' check - we want to scroll immediately when user message appears
+    // 4. We're not currently streaming (streaming has its own scroll logic)
+    // 5. User has interacted (message was sent, not just initial load)
+    // 6. We're not loading older messages (pagination)
+    // 7. We're not loading initial messages
     const lastMessage = displayMessages[displayMessages.length - 1];
     const isNewUserMessage = 
       lastMessage?.role === 'user' && 
@@ -703,6 +651,7 @@ export function ConversationClient({
     if (
       displayMessages.length > 0 &&
       isNewUserMessage &&
+      status !== 'streaming' &&
       hasInteracted &&
       !isLoadingOlderMessages &&
       !isLoadingInitialMessages
@@ -711,14 +660,13 @@ export function ConversationClient({
       lastUserMessageIdRef.current = lastMessage.id;
       
       // Use requestAnimationFrame to ensure DOM has updated with new message
-      // Double RAF ensures layout is complete (header height accounted for)
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           scrollToBottom();
         });
       });
     }
-  }, [displayMessages, hasInteracted, isLoadingOlderMessages, isLoadingInitialMessages, scrollToBottom]);
+  }, [displayMessages, status, hasInteracted, isLoadingOlderMessages, isLoadingInitialMessages, scrollToBottom]);
 
   // Scroll to bottom when messages are initially loaded (for existing conversations)
   // This ensures users see the latest messages first, not the oldest
@@ -778,31 +726,12 @@ export function ConversationClient({
     setInput('');
     setHasInteracted(true); // Mark that user has interacted
     
-    // CRITICAL: Reset manual scroll flag so auto-scroll works for new message
-    resetManualScroll();
-    
     // Send message (useChat handles optimistic updates natively)
     sendMessage({
       role: 'user',
       parts: [{ type: 'text', text: messageText }],
     });
-    
-    // CRITICAL: Scroll immediately after sending to show user message
-    // Don't wait for displayMessages to update - scroll right away
-    // Use multiple attempts to ensure scroll happens even if DOM hasn't updated yet
-    // Attempt 1: Immediate (optimistic)
-    scrollToBottom();
-    
-    // Attempt 2: After first RAF (DOM might be updating)
-    requestAnimationFrame(() => {
-      scrollToBottom();
-      
-      // Attempt 3: After second RAF (DOM should be updated)
-      requestAnimationFrame(() => {
-        scrollToBottom();
-      });
-    });
-  }, [input, isLoading, sendMessage, scrollToBottom, resetManualScroll]);
+  }, [input, isLoading, sendMessage]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -812,41 +741,23 @@ export function ConversationClient({
       if (!messageText || isLoading) return;
       setInput('');
       setHasInteracted(true);
-      
-      // CRITICAL: Reset manual scroll flag so auto-scroll works for new message
-      resetManualScroll();
-      
       sendMessage({
         role: 'user',
         parts: [{ type: 'text', text: messageText }],
       });
-      
-      // CRITICAL: Scroll immediately after sending to show user message
-      // Don't wait for displayMessages to update - scroll right away
-      // Use multiple attempts to ensure scroll happens even if DOM hasn't updated yet
-      // Attempt 1: Immediate (optimistic)
-      scrollToBottom();
-      
-      // Attempt 2: After first RAF (DOM might be updating)
-      requestAnimationFrame(() => {
-        scrollToBottom();
-        
-        // Attempt 3: After second RAF (DOM should be updated)
-        requestAnimationFrame(() => {
-          scrollToBottom();
-        });
-      });
     }
-  }, [input, isLoading, sendMessage, scrollToBottom, resetManualScroll]);
+  }, [input, isLoading, sendMessage]);
 
   return (
     <div className="homepage-container">
       <main className="conversation-main-content">
-        <div className="conversation-container">
+        <div 
+          ref={conversationContainerRef}
+          className="conversation-container"
+        >
           <div 
             ref={conversationThreadRef}
             className="conversation-thread"
-            style={{ overflowY: 'auto', height: '100%' }}
           >
             {/* Loading indicator for older messages - only show when actually paginating */}
             {isLoadingOlderMessages && hasMoreMessages && (
