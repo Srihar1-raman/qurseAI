@@ -46,6 +46,7 @@ export function ConversationClient({
   const conversationEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const conversationThreadRef = useRef<HTMLDivElement>(null);
+  const conversationContainerRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
   const scrollPositionRef = useRef<{ height: number; top: number } | null>(null);
   const hasInitiallyScrolledRef = useRef(false);
@@ -368,7 +369,39 @@ export function ConversationClient({
     // Merge: start with loadedMessages (database), add new useChat messages that aren't duplicates
     // This preserves all messages: old (from DB) + new (from useChat)
     const messageIds = new Set(baseMessages.map(m => m.id));
-    const newMessages = messages.filter(m => !messageIds.has(m.id));
+    
+    // Also create a content-based deduplication set for messages with same content but different IDs
+    // This handles cases where useChat creates optimistic messages with different IDs
+    const messageContentSet = new Set(
+      baseMessages.map(m => {
+        // Create a unique key from role + content
+        const content = 'parts' in m && Array.isArray(m.parts) 
+          ? m.parts.map(p => 'text' in p ? p.text : '').join('')
+          : 'content' in m ? m.content : '';
+        return `${m.role}:${content}`;
+      })
+    );
+    
+    const newMessages = messages.filter(m => {
+      // Skip if ID already exists
+      if (messageIds.has(m.id)) {
+        return false;
+      }
+      
+      // Skip if content already exists (handles optimistic updates with different IDs)
+      // This prevents duplicate messages when useChat creates optimistic messages
+      // that get replaced by database messages with different IDs
+      const content = 'parts' in m && Array.isArray(m.parts)
+        ? m.parts.map(p => 'text' in p ? p.text : '').join('').trim()
+        : 'content' in m ? String(m.content).trim() : '';
+      const contentKey = `${m.role}:${content}`;
+      
+      if (messageContentSet.has(contentKey)) {
+        return false;
+      }
+      
+      return true;
+    });
     
     // Always include loadedMessages first, then new messages
     // This ensures database messages never disappear
@@ -407,13 +440,14 @@ export function ConversationClient({
       return;
     }
 
-    const threadElement = conversationThreadRef.current;
-    if (!threadElement) return;
+    // CRITICAL: Use conversationContainerRef (the actual scroll container) instead of conversationThreadRef
+    const containerElement = conversationContainerRef.current;
+    if (!containerElement) return;
 
     // Save current scroll position and height before loading
     scrollPositionRef.current = {
-      height: threadElement.scrollHeight,
-      top: threadElement.scrollTop,
+      height: containerElement.scrollHeight,
+      top: containerElement.scrollTop,
     };
 
     setIsLoadingOlderMessages(true);
@@ -463,10 +497,11 @@ export function ConversationClient({
   }, [conversationId, messagesOffset, isLoadingOlderMessages, hasMoreMessages, showToastError]);
 
   // Restore scroll position after older messages are loaded and DOM is updated
+  // CRITICAL: Use conversationContainerRef (the actual scroll container) instead of conversationThreadRef
   useEffect(() => {
     if (!isLoadingOlderMessages && scrollPositionRef.current) {
-      const threadElement = conversationThreadRef.current;
-      if (!threadElement) {
+      const containerElement = conversationContainerRef.current;
+      if (!containerElement) {
         scrollPositionRef.current = null;
         return;
       }
@@ -475,11 +510,11 @@ export function ConversationClient({
       
       // Use requestAnimationFrame to wait for DOM to update
       requestAnimationFrame(() => {
-        if (threadElement && saved) {
-          const scrollHeightAfter = threadElement.scrollHeight;
+        if (containerElement && saved) {
+          const scrollHeightAfter = containerElement.scrollHeight;
           const heightDifference = scrollHeightAfter - saved.height;
           // Adjust scroll position to maintain visual position
-          threadElement.scrollTop = saved.top + heightDifference;
+          containerElement.scrollTop = saved.top + heightDifference;
           scrollPositionRef.current = null;
         }
       });
@@ -715,11 +750,13 @@ export function ConversationClient({
   return (
     <div className="homepage-container">
       <main className="conversation-main-content">
-        <div className="conversation-container">
+        <div 
+          ref={conversationContainerRef}
+          className="conversation-container"
+        >
           <div 
             ref={conversationThreadRef}
             className="conversation-thread"
-            style={{ overflowY: 'auto', height: '100%' }}
           >
             {/* Loading indicator for older messages - only show when actually paginating */}
             {isLoadingOlderMessages && hasMoreMessages && (
