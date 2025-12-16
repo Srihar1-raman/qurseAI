@@ -76,8 +76,6 @@ export function ConversationClient({
 
   // Track previous conversationId to detect actual switches
   const previousConversationIdRef = useRef<string | null>(null);
-  // Track previous conversationId for browser back navigation detection (separate from main useEffect)
-  const browserBackConversationIdRef = useRef<string | null>(null);
   
   // Track previous user to detect logout
   const previousUserRef = useRef<typeof user>(null);
@@ -153,9 +151,18 @@ export function ConversationClient({
         : `/api/guest/conversation/${id}/messages?limit=50&offset=0`;
       
       const response = await fetch(apiRoute);
+      
+      // Handle 404 gracefully - conversation doesn't exist yet (new conversation being created)
+      if (response.status === 404) {
+        logger.debug('Conversation not found (likely new conversation)', { conversationId: id });
+        // Don't show error for 404 - this is expected for new conversations
+        return;
+      }
+      
       if (!response.ok) {
         throw new Error('Failed to load messages');
       }
+      
       const { messages, hasMore, dbRowCount } = await response.json();
       
       // Double-check conversationId hasn't changed during fetch (race condition guard)
@@ -168,7 +175,8 @@ export function ConversationClient({
       setHasMoreMessages(hasMore);
     } catch (error) {
       // Only show error if conversationId still matches (don't show error for stale requests)
-      if (conversationIdRef.current === id) {
+      // Also skip if it's a 404 (handled above) or if we're sending initial message
+      if (conversationIdRef.current === id && !initialMessageSentRef.current) {
         const userMessage = handleClientError(error as Error, 'conversation/loadInitialMessages');
         showToastError(userMessage);
       }
@@ -259,42 +267,6 @@ export function ConversationClient({
       setIsLoadingInitialMessages(false);
     }
   }, [conversationId, initialMessages, initialHasMore, initialDbRowCount]);
-
-  // Handle browser back navigation edge case:
-  // Same conversationId + empty initialMessages + not loading = server cache issue
-  // Load messages client-side as fallback (for both auth and guest users)
-  // Only triggers when conversationId hasn't changed (browser back scenario)
-  useEffect(() => {
-    // Update ref to track previous conversationId for browser back detection
-    const previousId = browserBackConversationIdRef.current;
-    const hasConversationChanged = previousId !== conversationId;
-    browserBackConversationIdRef.current = conversationId;
-    
-    // Only trigger if:
-    // 1. ConversationId exists and is valid
-    // 2. ConversationId hasn't changed (browser back scenario - main useEffect won't handle this)
-    // 3. InitialMessages is empty (server cache returned empty)
-    // 4. Not a new conversation (no message param)
-    // 5. Not currently loading messages
-    // 6. ConversationId matches current ref (prevents stale loads)
-    // 7. No messages already loaded (prevents duplicate loads)
-    // 8. Not on initial mount (previousId is null on first render)
-    if (
-      conversationId &&
-      !conversationId.startsWith('temp-') &&
-      !hasConversationChanged && // Only handle browser back (conversationId hasn't changed)
-      previousId !== null && // Not initial mount
-      initialMessages.length === 0 &&
-      !hasInitialMessageParam &&
-      !isLoadingInitialMessages &&
-      conversationIdRef.current === conversationId &&
-      loadedMessages.length === 0 // Only load if we don't have any messages
-    ) {
-      logger.debug('Browser back navigation detected - loading messages client-side', { conversationId });
-      setIsLoadingInitialMessages(true);
-      loadInitialMessages(conversationId);
-    }
-  }, [conversationId, initialMessages.length, hasInitialMessageParam, isLoadingInitialMessages, loadedMessages.length, loadInitialMessages]);
 
   // Memoize transport to prevent useChat reset on re-render
   // CRITICAL: Transport recreation causes useChat to reset, breaking streaming
@@ -433,6 +405,33 @@ export function ConversationClient({
   }, [rawDisplayMessages]);
 
   const isLoading = status === 'submitted';
+
+  // Load messages if needed (covers all cases: direct URL, browser back, conversation switch)
+  // Simple rule: Load if we have conversationId, no message param, no messages, and not sending
+  // NOTE: Must be after useChat declaration to access status
+  useEffect(() => {
+    // Only load if:
+    // 1. Valid conversationId (not temp-)
+    // 2. Not a new conversation (no message param)
+    // 3. No messages loaded yet
+    // 4. Not currently loading
+    // 5. Not sending initial message (initialMessageSentRef prevents false triggers)
+    // 6. Not actively sending/streaming (status check)
+    if (
+      conversationId &&
+      !conversationId.startsWith('temp-') &&
+      !hasInitialMessageParam && // Not a new conversation with message param
+      loadedMessages.length === 0 && // No messages loaded yet
+      !isLoadingInitialMessages && // Not currently loading
+      !initialMessageSentRef.current && // Not sending initial message (prevents false triggers when URL params are cleaned)
+      status !== 'submitted' && status !== 'streaming' && // Not actively sending/streaming
+      conversationIdRef.current === conversationId // Guard against race conditions
+    ) {
+      logger.debug('Loading messages for conversation', { conversationId });
+      setIsLoadingInitialMessages(true);
+      loadInitialMessages(conversationId);
+    }
+  }, [conversationId, hasInitialMessageParam, loadedMessages.length, isLoadingInitialMessages, status, loadInitialMessages]);
 
   // Load older messages when user scrolls to top
   const loadOlderMessages = useCallback(async () => {
@@ -598,6 +597,7 @@ export function ConversationClient({
 
         // Send message immediately (don't wait for displayMessages)
         // Note: sendMessage is stable now (memoized transport prevents useChat reset)
+        // initialMessageSentRef is already set to true (line 580) - this prevents message loading from triggering
         sendMessage({
           role: 'user',
           parts: [{ type: 'text', text: messageText }],
