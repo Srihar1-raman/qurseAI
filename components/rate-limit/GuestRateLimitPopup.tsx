@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import Image from 'next/image';
+import React, { useEffect, useMemo, useState } from 'react';
+import { usePathname, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import AuthButton from '@/components/auth/AuthButton';
 import { HeroBlock } from '@/components/rate-limit/HeroBlock';
 import { formatResetTime, getPopupBackgroundStyle } from '@/components/rate-limit/utils';
 import { RATE_LIMIT_CONSTANTS } from '@/components/rate-limit/constants';
@@ -21,45 +21,116 @@ export function GuestRateLimitPopup({
   reset,
   layer = 'database',
 }: GuestRateLimitPopupProps) {
-  const { resolvedTheme, mounted } = useTheme();
+  const { resolvedTheme } = useTheme();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const backgroundStyle = getPopupBackgroundStyle(resolvedTheme);
   const resetTime = formatResetTime(reset);
+  
+  // Local state to control popup visibility (allows wait button to close it)
+  const [isVisible, setIsVisible] = useState(false);
+  
+  // Tooltip state (rendered at root level outside modal)
+  const [hoveredIconName, setHoveredIconName] = useState<string | null>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  // Show popup when isOpen becomes true (new rate limit detected)
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+    }
+  }, [isOpen]);
+  
+  // Global mouse move listener for tooltip positioning
+  useEffect(() => {
+    if (!isOpen || !isVisible || !hoveredIconName) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: e.clientX,
+        y: e.clientY,
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [isOpen, isVisible, hoveredIconName]);
+  
+  // Handle icon hover callback from carousel
+  const handleIconHover = (iconName: string | null, mouseX: number, mouseY: number) => {
+    setHoveredIconName(iconName);
+    if (iconName) {
+      setMousePosition({ x: mouseX, y: mouseY });
+    }
+  };
+
+  // Preserve current URL as callback
+  const callbackUrl = useMemo(() => {
+    const search = searchParams.toString();
+    return `${pathname}${search ? `?${search}` : ''}`;
+  }, [pathname, searchParams]);
 
   // Auto-close if limit has reset
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !isVisible) return;
 
     const interval = setInterval(() => {
       if (Date.now() >= reset) {
+        setIsVisible(false);
         onClose();
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isOpen, reset, onClose]);
+  }, [isOpen, isVisible, reset, onClose]);
 
-  // Handle escape key and body overflow
+  // Handle body overflow (popup is non-dismissible when rate limited)
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !isVisible) {
+      document.body.style.overflow = '';
+      return;
+    }
 
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
     document.body.style.overflow = 'hidden';
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, isVisible]);
 
-  if (!isOpen) return null;
+  // Handle wait button click - close popup but keep rate limit state
+  const handleWait = () => {
+    setIsVisible(false);
+    // Don't call onClose - rate limit state should remain
+  };
+
+  if (!isOpen || !isVisible) return null;
 
   return (
+    <>
+      {/* Tooltip at cursor position - rendered at root level outside modal */}
+      {hoveredIconName && (
+        <div
+          style={{
+            position: 'fixed',
+            left: `${mousePosition.x + RATE_LIMIT_CONSTANTS.TOOLTIP_OFFSET}px`,
+            top: `${mousePosition.y + RATE_LIMIT_CONSTANTS.TOOLTIP_OFFSET}px`,
+            pointerEvents: 'none',
+            zIndex: 10001,
+            fontSize: RATE_LIMIT_CONSTANTS.TOOLTIP_FONT_SIZE,
+            color: 'var(--color-text-secondary)',
+            backgroundColor: 'var(--color-bg)',
+            padding: RATE_LIMIT_CONSTANTS.TOOLTIP_PADDING,
+            borderRadius: RATE_LIMIT_CONSTANTS.TOOLTIP_BORDER_RADIUS,
+            border: '1px solid var(--color-border)',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+          }}
+        >
+          {hoveredIconName}
+        </div>
+      )}
+      
     <div
       style={{
         position: 'fixed',
@@ -71,7 +142,7 @@ export function GuestRateLimitPopup({
         zIndex: 9999,
         padding: RATE_LIMIT_CONSTANTS.CONTAINER_PADDING,
       }}
-      onClick={onClose}
+      // Popup is non-dismissible - user must authenticate or wait
     >
       <div
         className="form-content"
@@ -99,9 +170,10 @@ export function GuestRateLimitPopup({
         </p>
 
         {/* Hero block with background, logo, carousel, and auth buttons */}
-        <HeroBlock isOpen={isOpen}>
-          {/* Auth buttons row */}
+        <HeroBlock isOpen={isOpen} logoPaddingTop="10px" onIconHover={handleIconHover}>
+          {/* Auth buttons row - icon only */}
           <div
+            className="auth-buttons"
             style={{
               display: 'grid',
               gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
@@ -109,43 +181,9 @@ export function GuestRateLimitPopup({
               marginTop: '10px',
             }}
           >
-            {[
-              { name: 'Google', icon: 'google' },
-              { name: 'X (Twitter)', icon: 'x-twitter' },
-              { name: 'GitHub', icon: 'github' },
-            ].map((item) => (
-              <button
-                key={item.icon}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: RATE_LIMIT_CONSTANTS.AUTH_BUTTON_PADDING,
-                  border: '1px solid var(--color-border)',
-                  borderRadius: '8px',
-                  background: 'var(--color-bg)',
-                  transition: 'all 0.2s',
-                  cursor: 'pointer',
-                  width: '100%',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--color-bg-hover)';
-                  e.currentTarget.style.borderColor = 'var(--color-border-hover)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'var(--color-bg)';
-                  e.currentTarget.style.borderColor = 'var(--color-border)';
-                }}
-              >
-                <Image
-                  src={getIconPath(item.icon, resolvedTheme, false, mounted)}
-                  alt={item.name}
-                  width={RATE_LIMIT_CONSTANTS.AUTH_BUTTON_ICON_SIZE}
-                  height={RATE_LIMIT_CONSTANTS.AUTH_BUTTON_ICON_SIZE}
-                  style={{ opacity: 0.9 }}
-                />
-              </button>
-            ))}
+            <AuthButton provider="google" callbackUrl={callbackUrl} iconOnly />
+            <AuthButton provider="twitter" callbackUrl={callbackUrl} iconOnly />
+            <AuthButton provider="github" callbackUrl={callbackUrl} iconOnly />
           </div>
 
           {/* Terms */}
@@ -172,7 +210,7 @@ export function GuestRateLimitPopup({
 
         {/* Wait button */}
         <button
-          onClick={onClose}
+          onClick={handleWait}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -202,5 +240,7 @@ export function GuestRateLimitPopup({
         </button>
       </div>
     </div>
+    </>
   );
 }
+

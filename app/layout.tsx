@@ -7,6 +7,7 @@ import { HistorySidebarProvider } from "@/lib/contexts/HistorySidebarContext";
 import { SidebarProvider } from "@/lib/contexts/SidebarContext";
 import { NavigationProvider } from "@/lib/contexts/NavigationContext";
 import { ToastProvider } from "@/lib/contexts/ToastContext";
+import { RateLimitProvider } from "@/lib/contexts/RateLimitContext";
 import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { RoutePrefetcher } from "@/components/layout/RoutePrefetcher";
 import { Toaster } from "@/components/ui/toaster";
@@ -86,19 +87,21 @@ export default function RootLayout({
         <ErrorBoundary>
         <ThemeProvider>
           <AuthProvider>
-            <HistorySidebarProvider>
-              <SidebarProvider>
-              <ToastProvider>
-                <NavigationProvider>
-                  <RoutePrefetcher />
-                  <NavigationWrapper>
-            {children}
-                  </NavigationWrapper>
-                </NavigationProvider>
-                <Toaster />
-              </ToastProvider>
-              </SidebarProvider>
-            </HistorySidebarProvider>
+            <RateLimitProvider>
+              <HistorySidebarProvider>
+                <SidebarProvider>
+                <ToastProvider>
+                  <NavigationProvider>
+                    <RoutePrefetcher />
+                    <NavigationWrapper>
+              {children}
+                    </NavigationWrapper>
+                  </NavigationProvider>
+                  <Toaster />
+                </ToastProvider>
+                </SidebarProvider>
+              </HistorySidebarProvider>
+            </RateLimitProvider>
           </AuthProvider>
         </ThemeProvider>
         </ErrorBoundary>

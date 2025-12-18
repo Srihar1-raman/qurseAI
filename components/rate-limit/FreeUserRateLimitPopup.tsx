@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '@/lib/theme-provider';
 import { HeroBlock } from '@/components/rate-limit/HeroBlock';
 import { formatResetTime, getPopupBackgroundStyle } from '@/components/rate-limit/utils';
@@ -22,42 +22,105 @@ export function FreeUserRateLimitPopup({
   const { resolvedTheme } = useTheme();
   const backgroundStyle = getPopupBackgroundStyle(resolvedTheme);
   const resetTime = formatResetTime(reset);
+  
+  // Local state to control popup visibility (allows wait button to close it)
+  const [isVisible, setIsVisible] = useState(false);
+  
+  // Tooltip state (rendered at root level outside modal)
+  const [hoveredIconName, setHoveredIconName] = useState<string | null>(null);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  
+  // Show popup when isOpen becomes true (new rate limit detected)
+  useEffect(() => {
+    if (isOpen) {
+      setIsVisible(true);
+    }
+  }, [isOpen]);
+  
+  // Global mouse move listener for tooltip positioning
+  useEffect(() => {
+    if (!isOpen || !isVisible || !hoveredIconName) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({
+        x: e.clientX,
+        y: e.clientY,
+      });
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [isOpen, isVisible, hoveredIconName]);
+  
+  // Handle icon hover callback from carousel
+  const handleIconHover = (iconName: string | null, mouseX: number, mouseY: number) => {
+    setHoveredIconName(iconName);
+    if (iconName) {
+      setMousePosition({ x: mouseX, y: mouseY });
+    }
+  };
 
   // Auto-close if limit has reset
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !isVisible) return;
 
     const interval = setInterval(() => {
       if (Date.now() >= reset) {
+        setIsVisible(false);
         onClose();
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [isOpen, reset, onClose]);
+  }, [isOpen, isVisible, reset, onClose]);
 
-  // Handle escape key and body overflow
+  // Handle body overflow (popup is non-dismissible when rate limited)
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || !isVisible) {
+      document.body.style.overflow = '';
+      return;
+    }
 
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-
-    document.addEventListener('keydown', handleEscape);
     document.body.style.overflow = 'hidden';
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, isVisible]);
 
-  if (!isOpen) return null;
+  // Handle wait button click - close popup but keep rate limit state
+  const handleWait = () => {
+    setIsVisible(false);
+    // Don't call onClose - rate limit state should remain
+  };
+
+  if (!isOpen || !isVisible) return null;
 
   return (
+    <>
+      {/* Tooltip at cursor position - rendered at root level outside modal */}
+      {hoveredIconName && (
+        <div
+          style={{
+            position: 'fixed',
+            left: `${mousePosition.x + RATE_LIMIT_CONSTANTS.TOOLTIP_OFFSET}px`,
+            top: `${mousePosition.y + RATE_LIMIT_CONSTANTS.TOOLTIP_OFFSET}px`,
+            pointerEvents: 'none',
+            zIndex: 10001,
+            fontSize: RATE_LIMIT_CONSTANTS.TOOLTIP_FONT_SIZE,
+            color: 'var(--color-text-secondary)',
+            backgroundColor: 'var(--color-bg)',
+            padding: RATE_LIMIT_CONSTANTS.TOOLTIP_PADDING,
+            borderRadius: RATE_LIMIT_CONSTANTS.TOOLTIP_BORDER_RADIUS,
+            border: '1px solid var(--color-border)',
+            whiteSpace: 'nowrap',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+          }}
+        >
+          {hoveredIconName}
+        </div>
+      )}
+      
     <div
       style={{
         position: 'fixed',
@@ -69,7 +132,7 @@ export function FreeUserRateLimitPopup({
         zIndex: 9999,
         padding: RATE_LIMIT_CONSTANTS.CONTAINER_PADDING,
       }}
-      onClick={onClose}
+      // Popup is non-dismissible - user must upgrade or wait
     >
       <div
         className="form-content"
@@ -97,7 +160,7 @@ export function FreeUserRateLimitPopup({
         </p>
 
         {/* Hero block with background, logo, pricing, carousel, and upgrade button */}
-        <HeroBlock isOpen={isOpen} showPricing>
+        <HeroBlock isOpen={isOpen} showPricing onIconHover={handleIconHover}>
           {/* Upgrade button */}
           <div className="auth-buttons">
             <button 
@@ -155,7 +218,7 @@ export function FreeUserRateLimitPopup({
 
         {/* Wait button */}
         <button 
-          onClick={onClose}
+          onClick={handleWait}
           style={{
             display: 'flex',
             alignItems: 'center',
@@ -185,5 +248,7 @@ export function FreeUserRateLimitPopup({
         </button>
       </div>
     </div>
+    </>
   );
 }
+

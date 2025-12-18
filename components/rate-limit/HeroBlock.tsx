@@ -7,6 +7,8 @@ import { RATE_LIMIT_CONSTANTS } from './constants';
 export interface HeroBlockProps {
   isOpen: boolean;
   showPricing?: boolean;
+  logoPaddingTop?: string; // Optional padding for logo (guest popup only)
+  onIconHover?: (iconName: string | null, mouseX: number, mouseY: number) => void;
   children?: React.ReactNode;
 }
 
@@ -14,7 +16,7 @@ export interface HeroBlockProps {
  * Shared hero block component for rate limit popups
  * Handles background image, logo, pricing, and carousel
  */
-export function HeroBlock({ isOpen, showPricing = false, children }: HeroBlockProps) {
+export function HeroBlock({ isOpen, showPricing = false, logoPaddingTop, onIconHover, children }: HeroBlockProps) {
   return (
     <div
       style={{
@@ -58,6 +60,7 @@ export function HeroBlock({ isOpen, showPricing = false, children }: HeroBlockPr
             right: 0,
             textAlign: 'center',
             pointerEvents: 'none',
+            ...(logoPaddingTop && { paddingTop: logoPaddingTop }),
           }}
         >
           <h2
@@ -80,6 +83,7 @@ export function HeroBlock({ isOpen, showPricing = false, children }: HeroBlockPr
                 color: 'var(--color-text-secondary)',
                 letterSpacing: RATE_LIMIT_CONSTANTS.PRICING_LETTER_SPACING,
                 wordSpacing: RATE_LIMIT_CONSTANTS.PRICING_WORD_SPACING,
+                
               }}
             >
               $9/month ₹800/month
@@ -88,7 +92,7 @@ export function HeroBlock({ isOpen, showPricing = false, children }: HeroBlockPr
         </div>
 
         {/* Carousel */}
-        <ModelIconCarousel isOpen={isOpen} />
+        <ModelIconCarousel isOpen={isOpen} onIconHover={onIconHover} />
 
         {/* Custom content (auth buttons, upgrade button, terms, etc.) */}
         {children}

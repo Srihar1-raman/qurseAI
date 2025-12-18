@@ -11,6 +11,8 @@ import { createClient } from '@/lib/supabase/client';
 interface AuthButtonProps {
   provider: 'github' | 'google' | 'twitter';
   onClick?: () => void;
+  callbackUrl?: string; // Override callback URL
+  iconOnly?: boolean; // Show only icon, no text
 }
 
 const providerConfig = {
@@ -28,20 +30,20 @@ const providerConfig = {
   }
 };
 
-export default function AuthButton({ provider, onClick }: AuthButtonProps) {
+export default function AuthButton({ provider, onClick, callbackUrl: callbackUrlProp, iconOnly = false }: AuthButtonProps) {
   const config = providerConfig[provider];
   const { resolvedTheme, mounted } = useTheme();
   const { error: showToastError } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const searchParams = useSearchParams();
 
-  // Read callbackUrl from current page URL (industry standard: query parameter)
+  // Read callbackUrl from prop, current page URL, or default to '/'
   // This allows post-auth redirect to the page user was on before login
   const callbackUrl = useMemo(() => {
-    const url = searchParams.get('callbackUrl') || '/';
+    const url = callbackUrlProp || searchParams.get('callbackUrl') || '/';
     // Encode to pass through OAuth flow safely
     return encodeURIComponent(url);
-  }, [searchParams]);
+  }, [callbackUrlProp, searchParams]);
 
   const handleClick = async () => {
     if (onClick) {
@@ -83,8 +85,8 @@ export default function AuthButton({ provider, onClick }: AuthButtonProps) {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        gap: '12px',
-        padding: '12px 16px',
+        gap: iconOnly ? '0' : '12px',
+        padding: iconOnly ? '10px 12px' : '12px 16px',
         border: '1px solid var(--color-border)',
         borderRadius: '8px',
         background: 'var(--color-bg)',
@@ -95,6 +97,7 @@ export default function AuthButton({ provider, onClick }: AuthButtonProps) {
         transition: 'all 0.2s',
         textDecoration: 'none',
         opacity: isLoading ? 0.6 : 1,
+        width: iconOnly ? '100%' : 'auto',
       }}
       onMouseEnter={(e) => {
         if (!isLoading) {
@@ -112,24 +115,25 @@ export default function AuthButton({ provider, onClick }: AuthButtonProps) {
       {isLoading ? (
         <>
           <span style={{ 
-            width: '20px', 
-            height: '20px', 
+            width: iconOnly ? '24px' : '20px', 
+            height: iconOnly ? '24px' : '20px', 
             border: '2px solid currentColor',
             borderTopColor: 'transparent',
             borderRadius: '50%',
             animation: 'spin 0.6s linear infinite',
           }} />
-          Signing in...
+          {!iconOnly && 'Signing in...'}
         </>
       ) : (
         <>
           <Image 
             src={getIconPath(config.icon, resolvedTheme, false, mounted)}
             alt={config.name} 
-            width={20} 
-            height={20} 
+            width={iconOnly ? 24 : 20} 
+            height={iconOnly ? 24 : 20} 
+            style={{ opacity: 0.9 }}
           />
-          {config.name}
+          {!iconOnly && config.name}
         </>
       )}
     </button>

@@ -7,6 +7,9 @@ import { getIconPath } from '@/lib/icon-utils';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useSidebar } from '@/lib/contexts/SidebarContext';
+import { useRateLimit } from '@/lib/contexts/RateLimitContext';
+import { GuestRateLimitPopup, FreeUserRateLimitPopup } from '@/components/rate-limit';
+import { useRouter } from 'next/navigation';
 import { useMobile } from '@/hooks/use-mobile';
 import { useAutoFocus } from '@/hooks/use-auto-focus';
 import { useTextareaAutoResize } from '@/hooks/use-textarea-auto-resize';
@@ -19,10 +22,15 @@ export default function MainInput() {
   const { selectedModel, chatMode } = useConversation();
   const { user } = useAuth();
   const { addConversationOptimistically } = useSidebar();
+  const { state: rateLimitState } = useRateLimit();
+  const router = useRouter();
+  
+  // Track send attempts while rate limited to show popup again
+  const [sendAttemptCount, setSendAttemptCount] = useState(0);
 
   // Use hooks for mobile detection, auto-focus, and textarea auto-resize
   const isMobile = useMobile();
-  useAutoFocus(inputRef);
+  useAutoFocus(inputRef as React.RefObject<HTMLTextAreaElement>);
   const { isMultiline } = useTextareaAutoResize(inputRef, inputValue, {
     multilineThreshold: 60,
     maxHeight: 200,
@@ -31,6 +39,13 @@ export default function MainInput() {
   const handleSend = () => {
     const messageText = inputValue.trim();
     if (!messageText) return;
+    
+    // Check rate limit first
+    if (rateLimitState.isRateLimited) {
+      // Increment send attempt count to trigger popup to show again
+      setSendAttemptCount(prev => prev + 1);
+      return;
+    }
     
     // Generate conversation ID
     const chatId = crypto.randomUUID();
@@ -274,6 +289,33 @@ export default function MainInput() {
           </>
         )}
       </div>
+      
+      {/* Rate limit popups */}
+      {rateLimitState.isRateLimited && !user && (
+        <GuestRateLimitPopup
+          key={sendAttemptCount}
+          isOpen={true}
+          onClose={() => {
+            // Don't clear state - user is still rate limited
+          }}
+          reset={rateLimitState.resetTime || Date.now()}
+          layer={rateLimitState.layer || 'database'}
+        />
+      )}
+      
+      {rateLimitState.isRateLimited && user && (
+        <FreeUserRateLimitPopup
+          key={sendAttemptCount}
+          isOpen={true}
+          onClose={() => {
+            // Don't clear state - user is still rate limited
+          }}
+          onUpgrade={() => {
+            router.push('/pricing');
+          }}
+          reset={rateLimitState.resetTime || Date.now()}
+        />
+      )}
     </div>
   );
 }
