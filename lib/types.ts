@@ -133,7 +133,7 @@ export interface ChatMessage {
 export interface QurseMessage {
   id: string;
   role: 'user' | 'assistant';
-  parts: UIMessagePart[];
+  parts: UIMessagePart<any, any>[];
   metadata?: StreamMetadata;
 }
 

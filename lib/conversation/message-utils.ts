@@ -12,7 +12,7 @@ import type { QurseMessage, StreamMetadata } from '@/lib/types';
 interface BaseMessage {
   id: string;
   role: 'user' | 'assistant' | 'system' | 'tool';
-  parts?: UIMessagePart[];
+  parts?: UIMessagePart<any, any>[];
   content?: string;
   metadata?: StreamMetadata;
   createdAt?: string;
@@ -92,7 +92,7 @@ export function transformToQurseMessage(messages: BaseMessage[]): QurseMessage[]
       return {
         id: msg.id,
         role: msg.role as 'user' | 'assistant',
-        parts: msg.parts as UIMessagePart[],
+        parts: msg.parts as UIMessagePart<any, any>[],
         metadata: 'metadata' in msg && msg.metadata ? (msg.metadata as StreamMetadata) : undefined,
       };
     }

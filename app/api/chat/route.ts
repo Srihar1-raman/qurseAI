@@ -561,18 +561,21 @@ export async function POST(req: Request) {
 
         // Guest assistant save
         if (!user && sessionHash && resolvedConversationId) {
+          // Capture values in local constants for type narrowing
+          const guestConversationId = resolvedConversationId;
+          const guestSessionHash = sessionHash;
           after(async () => {
             try {
               if (assistantMessage && assistantMessage.role === 'assistant') {
                 await saveGuestMessage({
-                  conversationId: resolvedConversationId,
+                  conversationId: guestConversationId,
                   message: assistantMessage,
                   role: 'assistant',
-                  sessionHash,
+                  sessionHash: guestSessionHash,
                 });
               }
             } catch (error) {
-              logger.error('Guest assistant message save error', error, { conversationId: resolvedConversationId, sessionHash });
+              logger.error('Guest assistant message save error', error, { conversationId: guestConversationId, sessionHash: guestSessionHash });
             }
           });
         }

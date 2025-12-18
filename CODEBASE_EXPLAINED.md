@@ -273,14 +273,19 @@ Hooks are reusable pieces of logic that components can "hook into". Instead of w
 - **Used in:** Dropdowns, modals
 
 **`use-infinite-scroll.ts`** - Detects scroll to edge
-- **What it does:** Calls callback when user scrolls near top/bottom
-- **Why needed:** Load more content automatically
-- **Used in:** Could be used for pagination
+- **What it does:** Calls callback when user scrolls near top/bottom of a container
+- **Why needed:** Automatically load more content when user scrolls (infinite scroll pattern)
+- **Used in:** `HistorySidebar.tsx` - loads more conversations when user scrolls to bottom
+- **Difference from `use-optimized-scroll`:** 
+  - `use-infinite-scroll`: Detects when user reaches edge → triggers loading more data
+  - `use-optimized-scroll`: Prevents auto-scroll if user manually scrolled up (different purpose)
 
 **`use-conversation-id.ts`** - Extracts conversation ID from URL
-- **What it does:** Gets conversation ID from `/conversation/[id]` URL
-- **Why needed:** Reusable URL parsing
-- **Used in:** Homepage
+- **What it does:** Gets conversation ID from `/conversation/[id]` URL using Next.js `usePathname()` hook
+- **Why needed:** Part of SPA (Single Page App) implementation - reads URL without page reload
+- **Used in:** `Homepage` and `HistorySidebar` to know which conversation is active
+- **NOT legacy:** This is the modern SPA way - URL changes but no page reload happens
+- **How it works:** Uses `window.location.pathname` to extract ID, React detects URL change and updates UI
 
 **`use-optimistic-navigation.ts`** - Fast navigation
 - **What it does:** Updates URL instantly without page reload
@@ -384,22 +389,270 @@ Client receives chunks and displays them
 - Uses different database tables
 - **Runs:** When guest user loads conversation
 
-#### `app/api/user/` - User Management
+#### `app/api/user/` - User Management API Routes
 
-- **`conversations/route.ts`** - Get user's conversations list
-- **`preferences/route.ts`** - Get/update user preferences
-- **`profile/route.ts`** - Get/update user profile
-- **`account/route.ts`** - Account management
-- **`subscription/route.ts`** - Subscription management
+**Purpose:** All endpoints for managing user account, profile, preferences, and data
 
-#### `app/api/auth/callback/route.ts` - OAuth Callback
+**All routes require authentication** (return 401 if not logged in)
 
-**What it does:** Handles redirect after OAuth login
-- Google/Twitter/GitHub redirect here after login
-- Exchanges code for session
-- Transfers guest data to user account
-- Redirects user back to app
-- **Runs:** After OAuth provider redirects
+##### `app/api/user/subscription/route.ts` - Pro Subscription Status
+
+**What it does:** Returns whether user has Pro subscription
+
+**Endpoint:** `GET /api/user/subscription`
+
+**Returns:**
+```json
+{
+  "isPro": true  // or false
+}
+```
+
+**Used by:** 
+- `AuthContext.tsx` (line 314, 478, 601) - Checks Pro status when user loads
+- Settings page - Shows Pro badge
+- Rate limit popups - Determines which popup to show
+
+**Example:**
+```typescript
+// In AuthContext
+fetch('/api/user/subscription')
+  .then(res => res.json())
+  .then(data => setIsProUser(data.isPro ?? false));
+```
+
+##### `app/api/user/profile/route.ts` - User Profile
+
+**What it does:** Get and update user profile (name, avatar, email)
+
+**Endpoints:**
+- `GET /api/user/profile` - Get current user's profile
+- `PUT /api/user/profile` - Update profile
+
+**GET Returns:**
+```json
+{
+  "id": "user-uuid",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "avatar_url": "https://...",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+```
+
+**PUT Body:**
+```json
+{
+  "name": "New Name",  // optional, 1-100 chars
+  "avatar_url": "https://..."  // optional, valid URL or empty string
+}
+```
+
+**Used by:** Settings page - Profile section
+
+**Example:**
+```typescript
+// Get profile
+const response = await fetch('/api/user/profile');
+const profile = await response.json();
+
+// Update profile
+await fetch('/api/user/profile', {
+  method: 'PUT',
+  body: JSON.stringify({ name: 'New Name' })
+});
+```
+
+##### `app/api/user/preferences/route.ts` - User Preferences
+
+**What it does:** Get and update user preferences (theme, language, auto-save)
+
+**Endpoints:**
+- `GET /api/user/preferences` - Get preferences
+- `PUT /api/user/preferences` - Update preferences
+
+**GET Returns:**
+```json
+{
+  "user_id": "user-uuid",
+  "theme": "auto",  // "light" | "dark" | "auto"
+  "language": "English",
+  "auto_save_conversations": true
+}
+```
+
+**PUT Body:**
+```json
+{
+  "theme": "dark",  // optional
+  "language": "Spanish",  // optional
+  "auto_save_conversations": false  // optional
+}
+```
+
+**Used by:** 
+- Settings page - General section
+- Theme provider - Applies theme preference
+
+**Example:**
+```typescript
+// Get preferences
+const response = await fetch('/api/user/preferences');
+const prefs = await response.json();
+
+// Update theme
+await fetch('/api/user/preferences', {
+  method: 'PUT',
+  body: JSON.stringify({ theme: 'dark' })
+});
+```
+
+##### `app/api/user/conversations/route.ts` - Clear Conversations
+
+**What it does:** Delete all conversations for current user
+
+**Endpoint:** `DELETE /api/user/conversations`
+
+**Returns:**
+```json
+{
+  "success": true,
+  "message": "All conversations cleared successfully"
+}
+```
+
+**Used by:** Settings page - Clear chats button
+
+**Example:**
+```typescript
+// Clear all conversations
+await fetch('/api/user/conversations', {
+  method: 'DELETE'
+});
+```
+
+##### `app/api/user/account/route.ts` - Account Management
+
+**What it does:** Delete user account (permanently removes all data)
+
+**Endpoint:** `DELETE /api/user/account`
+
+**Body Required:**
+```json
+{
+  "confirmation": "DELETE"  // Must be exactly "DELETE"
+}
+```
+
+**Returns:**
+```json
+{
+  "success": true,
+  "message": "Account deleted successfully"
+}
+```
+
+**Used by:** Settings page - Delete account button
+
+**Example:**
+```typescript
+// Delete account (requires confirmation)
+await fetch('/api/user/account', {
+  method: 'DELETE',
+  body: JSON.stringify({ confirmation: 'DELETE' })
+});
+```
+
+**Security:** Requires explicit confirmation to prevent accidental deletion
+
+#### `app/auth/callback/route.ts` - OAuth Callback Handler
+
+**What it does:** Handles redirect after OAuth login (Google, Twitter, GitHub)
+
+**Endpoint:** `GET /auth/callback?code=...&callbackUrl=...`
+
+**Flow:**
+```
+1. User clicks "Sign in with Google" on login page
+   ↓
+2. Redirects to Google OAuth page
+   ↓
+3. User authorizes on Google
+   ↓
+4. Google redirects to: /auth/callback?code=abc123...
+   ↓
+5. This route runs:
+   - Exchanges code for session (Supabase)
+   - Creates user profile in database (if new user)
+   - Creates user preferences (defaults)
+   - Creates subscription (free plan)
+   - Transfers guest data to user account (if guest session exists)
+   - Redirects back to app (or callbackUrl)
+```
+
+**What it does step-by-step:**
+
+1. **Exchange Code for Session:**
+   ```typescript
+   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+   // Gets session token from OAuth provider
+   ```
+
+2. **Create User Profile:**
+   ```typescript
+   // Checks if user exists in 'users' table
+   // If not, creates profile with email, name, avatar from OAuth provider
+   ```
+
+3. **Create User Preferences:**
+   ```typescript
+   // Creates default preferences:
+   // - theme: 'auto'
+   // - language: 'English'
+   // - auto_save_conversations: true
+   ```
+
+4. **Create Subscription:**
+   ```typescript
+   // Calls database function to ensure free subscription exists
+   // Uses SECURITY DEFINER to bypass RLS safely
+   ```
+
+5. **Transfer Guest Data:**
+   ```typescript
+   // If user was guest before login:
+   // - Reads session_id from cookie
+   // - Derives session_hash (HMAC)
+   // - Transfers all guest conversations, messages, rate limits to user account
+   // - Merges rate limit counts (adds together, doesn't reset)
+   ```
+
+6. **Redirect Back:**
+   ```typescript
+   // Validates callbackUrl (prevents open redirect attacks)
+   // Redirects to callbackUrl or homepage (/)
+   ```
+
+**Used by:** 
+- `AuthButton.tsx` (line 60) - Sets redirect URL
+- OAuth providers (Google, Twitter, GitHub) - Redirect here after login
+
+**Example:**
+```typescript
+// In AuthButton.tsx
+const redirectTo = `${window.location.origin}/auth/callback?callbackUrl=${callbackUrl}`;
+await supabase.auth.signInWithOAuth({
+  provider: 'google',
+  options: { redirectTo }
+});
+// User goes to Google → authorizes → redirects to /auth/callback
+```
+
+**Security Features:**
+- Validates return URL (prevents redirect attacks)
+- Non-blocking guest transfer (doesn't break auth if transfer fails)
+- Error handling (redirects to login on error)
 
 #### `app/api/conversations/search/route.ts` - Search Conversations
 
@@ -448,12 +701,18 @@ Client receives chunks and displays them
   - **Why needed:** Model/mode selection persists across pages
   - **Used by:** ModelSelector, WebSearchSelector, ConversationClient
 
-- **`SidebarContext.tsx`** - Sidebar state
-  - **What it stores:** Is sidebar open? What conversations to show?
-  - **Why needed:** Sidebar state shared across components
-  - **Used by:** HistorySidebar, Header
+- **`SidebarContext.tsx`** - Optimistic updates for sidebar
+  - **What it stores:** Function to add conversations optimistically (before API confirms)
+  - **Why needed:** When user creates new conversation, show it in sidebar immediately (before server confirms)
+  - **Used by:** `MainInput` (adds conversation optimistically), `HistorySidebar` (receives the update)
+  - **Key function:** `addConversationOptimistically()` - adds conversation to sidebar instantly
 
-- **`HistorySidebarContext.tsx`** - History sidebar specific state
+- **`HistorySidebarContext.tsx`** - History sidebar data and state
+  - **What it stores:** List of conversations, loading state, search results, pagination state
+  - **Why needed:** Manages all the data for the history sidebar (conversations list, loading, searching)
+  - **Used by:** `HistorySidebar` component
+  - **Key functions:** `loadConversations()`, `loadMoreConversations()`, `setSearchResults()`
+  - **Difference:** `SidebarContext` = optimistic updates only, `HistorySidebarContext` = full data management
 - **`NavigationContext.tsx`** - Navigation state
 - **`ToastContext.tsx`** - Toast notification state
   - **What it stores:** Current toast messages
@@ -550,9 +809,11 @@ Client receives chunks and displays them
 **Purpose:** Helper functions for conversation management
 
 - **`message-utils.ts`** - Message processing
-  - `mergeMessages()` - Combines database messages with new messages
-  - `transformToQurseMessage()` - Converts messages to app format
-  - **Used by:** use-conversation-messages hook
+  - `mergeMessages()` - Combines database messages with new messages from `useChat` hook
+  - `transformToQurseMessage()` - Converts messages to app format (QurseMessage)
+  - **Used by:** `use-conversation-messages` hook (line 9, 247, 251)
+  - **Why needed:** Database messages and streaming messages need to be merged without duplicates
+  - **Example:** User has 10 old messages in DB, sends new message → merge them into one list
 
 - **`rate-limit-utils.ts`** - Rate limit error handling
   - `isRateLimitError()` - Detects if error is rate limit
@@ -560,9 +821,11 @@ Client receives chunks and displays them
   - **Used by:** use-chat-transport hook
 
 - **`chat-mode-utils.ts`** - Chat mode mapping
-  - `getOptionFromChatMode()` - Converts mode to display name
-  - `getChatModeFromOption()` - Converts display name to mode
-  - **Used by:** WebSearchSelector, ConversationInput
+  - `getOptionFromChatMode()` - Converts mode string ('web') to display name ('Web Search (Exa)')
+  - `getChatModeFromOption()` - Converts display name back to mode string
+  - **Used by:** `ConversationInput.tsx` (lines 12, 61, 63) - maps between UI dropdown and internal mode IDs
+  - **Why needed:** UI shows friendly names, but backend needs mode IDs ('chat', 'web', 'arxiv')
+  - **Example:** User selects "Web Search (Exa)" → converts to 'web' → sends to API
 
 ### `lib/redis/` - Redis (Caching) Setup
 
@@ -616,12 +879,70 @@ Client receives chunks and displays them
 - **`message-parts-fallback.ts`** - Handles old message formats
 - **`toast.ts`** - Toast notification helpers
 - **`validate-return-url.ts`** - Validates redirect URLs for security
+  - **What it does:** Ensures redirect URLs after OAuth login are safe (no open redirect attacks)
+  - **Used by:** `app/auth/callback/route.ts` (line 12, 148) - after Google/Twitter/GitHub login
+  - **Why needed:** Security - prevents attackers from redirecting users to malicious sites
+  - **Example:** User logs in from `/conversation/abc?message=hi` → validates URL → redirects back safely
+  - **What it checks:** Must be relative path (/...), no external URLs, no path traversal (../), max length
 
 ### `lib/validation/` - Input Validation
 
 - **`chat-schema.ts`** - Validates chat API requests
-  - **What it does:** Ensures request data is correct format
-  - **Used by:** `/api/chat` route
+  - **What it does:** Uses Zod to validate incoming requests to `/api/chat` (messages, model, conversationId)
+  - **Used by:** `app/api/chat/route.ts` (line 15, 181) - validates request before processing
+  - **Why needed:** Security and data integrity - rejects invalid/malicious requests
+  - **What it validates:** 
+    - Conversation ID format (UUID)
+    - Message structure (must have parts or content)
+    - Model name (must exist in registry)
+    - Message length (max 10,000 chars)
+  - **Example:** Invalid model name → returns 400 error before calling AI
+
+### What is Zod?
+
+**Zod** is a TypeScript-first validation library. Think of it as a "data checker" that ensures data matches what you expect.
+
+**Simple Explanation:**
+- Like a bouncer at a club checking IDs
+- Before your code uses data, Zod checks if it's valid
+- If invalid → throws error (doesn't let bad data through)
+- If valid → data is safe to use
+
+**Example from codebase:**
+
+```typescript
+// Define what a valid message looks like
+const messageSchema = z.object({
+  role: z.enum(['user', 'assistant']),  // Must be 'user' or 'assistant'
+  parts: z.array(z.object({
+    type: z.string(),
+    text: z.string().optional(),
+  })),
+});
+
+// Validate incoming data
+const result = messageSchema.safeParse(incomingData);
+
+if (!result.success) {
+  // Data is invalid - reject it
+  return error('Invalid message format');
+}
+
+// Data is valid - use it safely
+const validMessage = result.data;
+```
+
+**Why use Zod?**
+1. **Security:** Prevents malicious/invalid data from breaking your app
+2. **Type Safety:** TypeScript knows the data structure after validation
+3. **Clear Errors:** Shows exactly what's wrong with invalid data
+4. **Documentation:** Schema serves as documentation of expected data
+
+**Real example from codebase:**
+- User sends message to `/api/chat`
+- Zod checks: Is conversationId a valid UUID? Is message text under 10,000 chars?
+- If invalid → API returns 400 error immediately (doesn't even call AI)
+- If valid → API processes the request
 
 ### `lib/errors.ts` - Custom Error Types
 
@@ -641,10 +962,228 @@ Client receives chunks and displays them
 
 ### `lib/types.ts` - TypeScript Types
 
-**What it does:** Defines all data structures
-- User, Message, Conversation types
-- API request/response types
+**What it does:** Defines all data structures used throughout the app
+- **User, Message, Conversation types** - Core data structures
+- **API request/response types** - What API routes expect/return
+- **QurseMessage type** - Message format with parts array (for AI SDK)
 - **Used by:** Entire codebase for type safety
+- **Why needed:** TypeScript catches errors before code runs, ensures data matches expected format
+- **Example:** If you try to use `message.content` but message has `message.parts`, TypeScript shows error
+
+---
+
+## 💾 Caching Explained
+
+**What is caching?** Storing data temporarily so you don't have to fetch it again.
+
+**Why use caching?** Makes app faster by avoiding repeated database/API calls.
+
+### Types of Caching in This App
+
+#### 1. **Context-Based Caching (React State)**
+
+**Where:** `lib/contexts/` folder
+
+**How it works:** React Context stores data in memory, persists across page navigations
+
+**Examples:**
+
+**`AuthContext.tsx` - Caches User Data:**
+```typescript
+// Fetches once when user loads, then caches in state
+// Comment says: "cached across navigations"
+if (!providersFetchInitiatedRef.current) {
+  providersFetchInitiatedRef.current = true;
+  getUserLinkedProviders().then(providers => {
+    setLinkedProviders(providers); // Cached in state
+  });
+}
+```
+
+**What it caches:**
+- Linked OAuth providers (Google, Twitter, GitHub)
+- Pro subscription status
+- User profile data
+
+**Why:** These don't change often, so fetch once and reuse
+
+**`HistorySidebarContext.tsx` - Caches Conversations:**
+```typescript
+const [chatHistory, setChatHistory] = useState<Conversation[]>([]);
+const [hasLoaded, setHasLoaded] = useState(false);
+
+// Only loads if not already loaded
+if (!hasLoaded) {
+  loadConversations(); // Fetches from database
+  setHasLoaded(true); // Marks as loaded
+}
+```
+
+**What it caches:**
+- List of conversations
+- Total conversation count
+- Search results
+
+**Why:** Don't reload conversations every time user opens sidebar
+
+**How it works:**
+1. First time: Fetches from database, stores in `chatHistory` state
+2. Next time: Uses cached `chatHistory` (doesn't fetch again)
+3. Reset: When user logs out, clears cache
+
+#### 2. **In-Memory Cache (Map-Based)**
+
+**Where:** `ai/models.ts` (line 268-328)
+
+**How it works:** JavaScript `Map` object stores model configs in memory
+
+```typescript
+// Create cache when server starts
+const modelConfigCache = new Map<string, ModelConfig>();
+
+// Fill cache once at startup
+models.forEach((model) => {
+  modelConfigCache.set(model.value, model);
+});
+
+// Fast lookup (O(1) - instant)
+export function getModelConfig(modelValue: string): ModelConfig | undefined {
+  return modelConfigCache.get(modelValue); // ✅ Instant lookup
+}
+```
+
+**What it caches:**
+- Model configurations (names, providers, capabilities)
+- Model access rules (free vs Pro)
+
+**Why:** 
+- **Before:** Used `Array.find()` - searched through all models every time (slow)
+- **After:** Uses `Map.get()` - instant lookup (fast)
+- Called 3-4 times per API request, so speed matters
+
+**Performance:**
+- **Before:** O(n) - searches 10 models, 4 times = 40 operations per request
+- **After:** O(1) - instant lookup, 4 times = 4 operations per request
+- **Improvement:** 10x faster
+
+#### 3. **Next.js Built-in Caching**
+
+**Where:** Server components and API routes
+
+**How it works:** Next.js automatically caches server-side data
+
+**Examples:**
+
+**Server Components:**
+```typescript
+// app/(search)/conversation/[id]/page.tsx
+// Next.js caches this page on the server
+export default async function ConversationPage() {
+  const messages = await getMessagesServerSide(...); // Cached by Next.js
+}
+```
+
+**What Next.js caches:**
+- Server component renders
+- Database queries (if using `fetch` with cache options)
+- Static assets
+
+**Cache Duration:**
+- Default: Until you redeploy
+- Can configure with `revalidate` option
+
+#### 4. **Redis Cache (Rate Limiting)**
+
+**Where:** `lib/redis/client.ts`
+
+**How it works:** Redis (external cache server) stores rate limit data
+
+```typescript
+// Redis stores IP addresses and message counts
+export const ipRateLimit = new Ratelimit({
+  redis: redis,
+  limiter: Ratelimit.slidingWindow(10, '24 h'), // 10 messages per 24 hours
+});
+```
+
+**What it caches:**
+- IP addresses and message counts (for guest rate limiting)
+- Sliding window timestamps
+
+**Why:** 
+- Fast lookups (Redis is super fast)
+- Persists across server restarts
+- Shared across multiple server instances
+
+**Not really caching:** More like a fast database for rate limiting
+
+### Cache Invalidation (When to Clear Cache)
+
+**Context Caches:**
+- **AuthContext:** Clears when user logs out
+- **HistorySidebarContext:** Clears when user logs out, or when `forceRefresh` is called
+
+**Model Config Cache:**
+- Never clears (models don't change at runtime)
+- Only resets when server restarts
+
+**Next.js Cache:**
+- Clears on deployment
+- Can manually clear with `revalidatePath()` or `revalidateTag()`
+
+### Cache Strategy Summary
+
+| Cache Type | Location | What It Caches | When It Clears |
+|------------|----------|----------------|----------------|
+| **Context State** | `lib/contexts/` | User data, conversations | On logout or manual refresh |
+| **In-Memory Map** | `ai/models.ts` | Model configs | Never (server restart only) |
+| **Next.js Cache** | Server components | Page renders, queries | On deployment |
+| **Redis** | `lib/redis/` | Rate limit data | Automatic (sliding window) |
+
+### Why Caching Matters
+
+**Without caching:**
+- Every page load = fetch user data again
+- Every API request = search through all models
+- Every sidebar open = reload all conversations
+- **Result:** Slow, expensive, bad UX
+
+**With caching:**
+- User data fetched once, reused everywhere
+- Model lookups instant (Map-based)
+- Conversations loaded once, reused
+- **Result:** Fast, cheap, great UX
+
+### Example: User Opens Sidebar
+
+**Without caching:**
+```
+User clicks sidebar
+  ↓
+Fetch conversations from database (200ms)
+  ↓
+Render list
+Total: 200ms
+```
+
+**With caching:**
+```
+User clicks sidebar (first time)
+  ↓
+Fetch conversations from database (200ms)
+  ↓
+Store in HistorySidebarContext
+  ↓
+Render list
+Total: 200ms
+
+User closes and reopens sidebar
+  ↓
+Use cached conversations (0ms)
+  ↓
+Render list
+Total: 0ms (instant!)
+```
 
 ---
 
@@ -682,6 +1221,323 @@ Client receives chunks and displays them
 
 ---
 
+## 🚀 AI SDK Usage - Complete Guide
+
+### What is AI SDK?
+
+AI SDK is a library from Vercel that makes it easy to build AI chat apps. It handles:
+- Streaming responses (showing text as it arrives)
+- Message management
+- Tool calling (AI can use functions)
+- Multiple providers (OpenAI, Anthropic, etc.)
+
+### Current AI SDK Usage
+
+#### 1. **Client-Side: `useChat` Hook**
+
+**File:** `hooks/use-chat-transport.ts` (line 84-88)
+
+**What it does:**
+- Manages message state (automatically updates as AI responds)
+- Handles streaming (receives chunks and updates UI)
+- Provides `sendMessage()` function
+- Tracks loading status (`idle`, `streaming`, `submitted`)
+
+**Returns:**
+- `messages` - Array of all messages
+- `sendMessage` - Function to send new message
+- `status` - Current state ('idle' | 'streaming' | 'submitted')
+- `error` - Any errors that occurred
+
+**Used by:** `ConversationClient.tsx` (line 40)
+
+#### 2. **Server-Side: `streamText` Function**
+
+**File:** `app/api/chat/route.ts` (line 441-469)
+
+**What it does:**
+- Calls the AI provider (OpenAI, Anthropic, etc.)
+- Streams response back chunk by chunk
+- Handles tool calling (if tools are provided)
+- Manages retries on errors
+
+**Parameters:**
+- `model` - Which AI model to use
+- `messages` - Conversation history
+- `system` - System prompt (instructions for AI)
+- `tools` - Functions AI can call (web search, etc.)
+
+#### 3. **Server-Side: `createUIMessageStream`**
+
+**File:** `app/api/chat/route.ts` (line 414-496)
+
+**What it does:**
+- Wraps `streamText` to format response for UI
+- Handles reasoning (AI's thinking process) - shows/hides based on model
+- Converts to UI message format (parts array)
+- Returns stream that `useChat` can consume
+
+#### 4. **Message Format Conversion**
+
+**File:** `app/api/chat/route.ts` (line 443)
+
+**What it does:**
+- Converts UI message format (with parts array) to model format (content string)
+- Different providers need different formats
+- AI SDK handles this conversion automatically
+
+### Future AI SDK Features
+
+#### 1. **Tool Calling (Functions AI Can Use)**
+
+**Current State:** Infrastructure ready, no tools registered yet
+
+**Files:**
+- `lib/tools/registry.ts` - Tool registry system
+- `ai/config.ts` - Chat modes define which tools they can use
+
+**How it will work:**
+- Register tools using `registerTool()` function
+- Pass tools to `streamText()` in API route
+- AI decides when to call tools based on user request
+
+**Future Tools:**
+- Web search (Exa, Tavily)
+- Code execution
+- File reading
+- Database queries
+- Custom business logic
+
+#### 2. **More Chat Modes**
+
+**Current:** Basic chat mode only
+
+**Future Modes:**
+- **Web Search Mode:** AI can search the web for current information
+- **arXiv Mode:** AI can search and read research papers
+- **Code Mode:** AI can execute code and show results
+- **Analysis Mode:** AI can analyze data and create visualizations
+
+#### 3. **More Models**
+
+**Current:** ~10 models from various providers
+
+**Future:**
+- Add more models as they're released
+- Support new providers
+- Custom fine-tuned models
+
+#### 4. **AI Agents (Advanced Tool Calling)**
+
+**Future Feature:** AI agents that can:
+- Chain multiple tool calls
+- Make decisions based on tool results
+- Iterate until goal is achieved
+
+### AI SDK Flow Diagram
+
+```
+User types message
+  ↓
+useChat.sendMessage() called
+  ↓
+POST to /api/chat
+  ↓
+Server: streamText() calls AI provider
+  ↓
+AI provider streams response
+  ↓
+createUIMessageStream formats for UI
+  ↓
+Server sends chunks via SSE (Server-Sent Events)
+  ↓
+useChat receives chunks
+  ↓
+messages state updates automatically
+  ↓
+UI re-renders with new chunks
+  ↓
+User sees response streaming in
+```
+
+### Key AI SDK Concepts
+
+**1. Streaming:** Response comes in chunks, not all at once
+- User sees text appear word by word
+- Better UX (feels faster)
+- Lower latency (first chunk arrives quickly)
+
+**2. Parts Array:** Messages have multiple parts
+- Text parts: The actual message
+- Tool call parts: When AI wants to use a function
+- Reasoning parts: AI's thinking process (for reasoning models)
+
+**3. Transport:** How messages are sent/received
+- `DefaultChatTransport` - Standard HTTP POST/SSE
+- Can be customized for different protocols
+
+**4. Tools:** Functions AI can call
+- Defined using `tool()` function
+- AI decides when to call them
+- Results fed back to AI
+
+---
+
+## 🎣 React Hooks Explained
+
+### What are Hooks?
+
+Hooks are special functions in React that let you "hook into" React features. They always start with `use`.
+
+### Built-in React Hooks
+
+#### `useState` - Store Data
+
+**What it does:** Stores a value that can change, and re-renders component when it changes
+
+**Example:**
+```typescript
+const [count, setCount] = useState(0);
+// count = 0 (initial value)
+// setCount(5) → count becomes 5, component re-renders
+```
+
+**Used everywhere:** Almost every component that has changing data
+
+#### `useEffect` - Run Code After Render
+
+**What it does:** Runs code after component renders (or when dependencies change)
+
+**Example:**
+```typescript
+useEffect(() => {
+  // This runs after component renders
+  console.log('Component rendered');
+  
+  // Cleanup function (runs when component unmounts)
+  return () => {
+    console.log('Component unmounting');
+  };
+}, [dependency]); // Only runs when dependency changes
+```
+
+**Used for:**
+- Fetching data
+- Setting up event listeners
+- Cleanup (removing listeners, canceling requests)
+
+**Example in codebase:** `use-conversation-lifecycle.ts` (line 40-54) - redirects on logout
+
+#### `useRef` - Store Value Without Re-render
+
+**What it does:** Stores a value that persists across renders but doesn't cause re-render when changed
+
+**Example:**
+```typescript
+const inputRef = useRef<HTMLInputElement>(null);
+// Later: inputRef.current.focus() - doesn't cause re-render
+```
+
+**Used for:**
+- DOM element references
+- Storing values that shouldn't trigger re-renders
+- Previous value tracking
+
+**Example in codebase:** `use-conversation-scroll.ts` - stores scroll position
+
+#### `useMemo` - Remember Calculated Value
+
+**What it does:** Remembers a calculated value, only recalculates when dependencies change
+
+**Example:**
+```typescript
+const expensiveValue = useMemo(() => {
+  return heavyCalculation(data);
+}, [data]); // Only recalculates when data changes
+```
+
+**Used for:** Performance - avoid recalculating expensive operations
+
+#### `useCallback` - Remember Function
+
+**What it does:** Remembers a function, only recreates when dependencies change
+
+**Example:**
+```typescript
+const handleClick = useCallback(() => {
+  doSomething(value);
+}, [value]); // Only recreates when value changes
+```
+
+**Used for:** Performance - avoid recreating functions on every render
+
+### AI SDK Hook: `useChat`
+
+**What it does:** Special hook from AI SDK for chat functionality
+
+**What it provides:**
+- `messages` - Array of all messages
+- `sendMessage` - Function to send message
+- `status` - Current state ('idle' | 'streaming' | 'submitted')
+- `error` - Any errors
+
+**How it works:**
+- Automatically manages message state
+- Handles streaming (updates as chunks arrive)
+- Manages loading states
+- Handles errors
+
+**Example:**
+```typescript
+const { messages, sendMessage, status } = useChat({
+  api: '/api/chat',
+});
+
+// Send message
+sendMessage({
+  role: 'user',
+  parts: [{ type: 'text', text: 'Hello' }],
+});
+
+// messages automatically updates as AI responds
+```
+
+**Used in:** `hooks/use-chat-transport.ts` (wraps `useChat` for our app)
+
+### Custom Hooks (Our App)
+
+**What they are:** Hooks we created to reuse logic
+
+**Examples:**
+- `useConversationMessages` - Manages message loading and merging
+- `useConversationScroll` - Manages scroll behavior
+- `useChatTransport` - Wraps `useChat` with our custom logic
+
+**Why create custom hooks:**
+- Reuse logic across components
+- Keep components clean
+- Easier to test
+
+### Hook Rules
+
+1. **Only call hooks at top level** (not inside if statements)
+2. **Only call hooks from React components or other hooks**
+3. **Hooks must be called in same order every render**
+
+### Hook Comparison
+
+| Hook | Purpose | When to Use |
+|------|---------|-------------|
+| `useState` | Store changing data | Need to store value that changes |
+| `useEffect` | Run code after render | Fetch data, setup listeners, cleanup |
+| `useRef` | Store value without re-render | DOM refs, previous values |
+| `useMemo` | Remember calculated value | Expensive calculations |
+| `useCallback` | Remember function | Pass function to child components |
+| `useChat` | AI chat functionality | Building chat interface |
+| Custom hooks | Reuse logic | Logic used in multiple places |
+
+---
+
 ## 🔄 How Everything Fits Together
 
 ### The Complete User Journey
@@ -716,7 +1572,11 @@ MainInput checks rate limit (via RateLimitContext)
   ↓
 MainInput generates conversation ID
   ↓
-MainInput updates URL: /conversation/[id]?message=...
+MainInput updates URL: /conversation/[id]?message=...&model=...&mode=...
+  - **NOT legacy:** This is part of SPA implementation
+  - **Why:** Passes initial message, model, and mode via URL params (no page reload)
+  - **How:** Uses `window.history.replaceState()` - updates URL instantly (0ms delay)
+  - **What happens:** `useConversationLifecycle` hook reads `?message=` param and auto-sends it
   ↓
 Homepage detects URL change
   - Hides homepage UI
@@ -731,8 +1591,16 @@ ConversationClient mounts
 
 ```
 ConversationClient calls sendMessage()
+  - **What is `sendMessage()`?** Function returned by `useChat` hook from AI SDK
+  - **Where is it?** `hooks/use-chat-transport.ts` (line 84-88) - wraps `useChat` hook
+  - **What it does:** Sends message to `/api/chat` endpoint
   ↓
 POST request to /api/chat
+  - **What does this mean?** HTTP POST request = browser sends data to server
+  - **Easy explanation:** Like mailing a letter - browser "mails" the message to server
+  - **What's sent:** Message text, conversation ID, model name, chat mode
+  - **Where it goes:** `app/api/chat/route.ts` receives it
+  - **Example:** User types "Hello" → POST request with {message: "Hello", conversationId: "abc-123", ...}
   ↓
 app/api/chat/route.ts runs (server-side)
   1. Checks authentication
@@ -754,10 +1622,16 @@ Server streams AI response
 useChatTransport hook receives chunks
   ↓
 useConversationMessages merges with existing messages
+  - **Where defined:** `hooks/use-conversation-messages.ts` (line 247) - `mergeMessages()` function
+  - **What it does:** Combines old messages from database with new streaming messages
   ↓
 ConversationThread displays new message
+  - **Where defined:** `components/conversation/ConversationThread.tsx` (line 901-908)
+  - **What it does:** Renders the message list using `ChatMessage` component
   ↓
 useConversationScroll auto-scrolls to bottom
+  - **Where defined:** `hooks/use-conversation-scroll.ts` (line 7-14) - `scrollToBottom()` function
+  - **What it does:** Scrolls chat container to show latest message
 ```
 
 #### 5. User Continues Conversation
@@ -783,23 +1657,41 @@ AuthPage shows OAuth buttons
   ↓
 User clicks "Google" (for example)
   ↓
-Redirects to Google
+AuthButton.tsx calls supabase.auth.signInWithOAuth()
+  ↓
+Redirects to Google OAuth page
   ↓
 User logs in with Google
   ↓
-Google redirects to /auth/callback
+Google redirects to /auth/callback?code=abc123&callbackUrl=/conversation/xyz
   ↓
-app/api/auth/callback/route.ts runs
-  1. Exchanges code for session
-  2. Gets user info from Google
-  3. Creates/updates user in database
-  4. Transfers guest data to user (lib/db/guest-transfer.server.ts)
-  5. Redirects back to app
+app/auth/callback/route.ts runs:
+  1. Exchanges code for session (Supabase)
+  2. Gets user info from Google (email, name, avatar)
+  3. Creates user profile in 'users' table (if new user)
+  4. Creates user preferences in 'user_preferences' table (defaults)
+  5. Creates subscription in 'subscriptions' table (free plan)
+  6. Transfers guest data to user (lib/db/guest-transfer.server.ts):
+     - Reads session_id from cookie
+     - Derives session_hash (HMAC)
+     - Transfers guest_conversations → conversations
+     - Transfers guest_messages → messages
+     - Merges rate_limits (adds counts together)
+  7. Validates callbackUrl (security check)
+  8. Redirects back to app (callbackUrl or homepage)
   ↓
-AuthContext updates with new user
+AuthContext detects new session
   ↓
-UI updates (shows user name, etc.)
+Fetches Pro status from /api/user/subscription
+  ↓
+UI updates (shows user name, avatar, Pro badge if applicable)
 ```
+
+**Key Files:**
+- `components/auth/AuthButton.tsx` - Initiates OAuth flow
+- `app/auth/callback/route.ts` - Handles OAuth callback
+- `lib/db/guest-transfer.server.ts` - Transfers guest data
+- `lib/contexts/AuthContext.tsx` - Manages auth state
 
 ### Rate Limiting Flow
 
