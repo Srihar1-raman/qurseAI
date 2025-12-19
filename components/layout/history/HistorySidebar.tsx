@@ -172,16 +172,11 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
     setTotalConversationCount(prev => (prev !== null ? prev + 1 : null));
   }, [setChatHistory, setTotalConversationCount]);
 
-  // Register optimistic update handler with context
+  // Register optimistic update handler with context (for both auth and guest users)
   useEffect(() => {
-    if (user && user.id) {
-      const unregister = registerHandler(addConversationOptimistically);
-      return unregister;
-    }
-    // If no user, unregister by registering a no-op handler
-    // This ensures the handler is cleared when user logs out
-    return registerHandler(() => {});
-  }, [user, registerHandler, addConversationOptimistically]);
+    const unregister = registerHandler(addConversationOptimistically);
+    return unregister;
+  }, [registerHandler, addConversationOptimistically]);
 
 
   // Load conversations when sidebar opens (for both auth and guest users, only if not already loaded)
@@ -191,6 +186,25 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, isAuthLoading, hasLoaded]); // loadConversations intentionally excluded to prevent infinite re-renders
+
+  // For guest users: Refresh conversations when sidebar opens if current conversation is not in list
+  // (Authenticated users have real-time subscriptions, but guests don't)
+  useEffect(() => {
+    if (isOpen && !user && hasLoaded && conversationId) {
+      // Check if current conversation is in the list
+      const conversationExists = chatHistory.some(c => c.id === conversationId);
+      
+      // If conversation not in list, refresh to pick up newly created conversations
+      if (!conversationExists) {
+        // Small delay to ensure DB operations have completed
+        const timeoutId = setTimeout(() => {
+          loadConversations(true); // Force refresh
+        }, 500);
+        return () => clearTimeout(timeoutId);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, user, hasLoaded, conversationId, chatHistory]); // Refresh when sidebar opens for guests if conversation missing
 
   // Real-time subscription: Listen for conversation changes (INSERT, UPDATE, DELETE)
   useEffect(() => {

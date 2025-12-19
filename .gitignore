@@ -30,7 +30,7 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
+# env files (opt-in for committing if needed)
 .env*
 
 # vercel
@@ -39,131 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
-<<<<<<< Current (Your changes)
 
 # docs
 supabaseDOC.md
-=======
+
+# cursor
 .cursor/worktrees.json
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)
-=======
-
-# docs
-supabaseDOC.md
->>>>>>> Incoming (Background Agent changes)

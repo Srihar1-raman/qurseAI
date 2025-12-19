@@ -132,8 +132,8 @@ export function ConversationClient({
         />
       </main>
 
-      {/* Rate limit popups */}
-      {rateLimitState.isRateLimited && !user && (
+      {/* Rate limit popups - only show when user tries to send */}
+      {rateLimitState.isRateLimited && sendAttemptCount > 0 && !user && (
         <GuestRateLimitPopup
           key={sendAttemptCount}
           isOpen={true}
@@ -145,7 +145,7 @@ export function ConversationClient({
         />
       )}
 
-      {rateLimitState.isRateLimited && user && (
+      {rateLimitState.isRateLimited && sendAttemptCount > 0 && user && (
         <FreeUserRateLimitPopup
           key={sendAttemptCount}
           isOpen={true}

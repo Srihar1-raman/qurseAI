@@ -33,17 +33,35 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
   // Track previous values to detect changes
   const previousUserRef = useRef<typeof user>(null);
   const previousIsProUserRef = useRef<boolean>(false);
+  const hasCheckedOnMountRef = useRef(false);
 
   const setRateLimitState = useCallback((newState: RateLimitState) => {
-    setState(newState);
+    setState(prevState => {
+      // Only update if state actually changed to prevent unnecessary re-renders
+      if (
+        prevState.isRateLimited === newState.isRateLimited &&
+        prevState.resetTime === newState.resetTime &&
+        prevState.userType === newState.userType &&
+        prevState.layer === newState.layer
+      ) {
+        return prevState; // No change, return previous state
+      }
+      return newState;
+    });
   }, []);
 
   const clearRateLimitState = useCallback(() => {
-    setState({
-      isRateLimited: false,
-      resetTime: null,
-      userType: null,
-      layer: null,
+    setState(prevState => {
+      // Only update if state actually changed
+      if (!prevState.isRateLimited) {
+        return prevState; // Already cleared
+      }
+      return {
+        isRateLimited: false,
+        resetTime: null,
+        userType: null,
+        layer: null,
+      };
     });
   }, []);
 
@@ -55,10 +73,10 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
 
     // User changed from null to a user object (guest → authenticated)
     if (!previousUser && user && state.isRateLimited) {
-      logger.debug('User authenticated - clearing rate limit state', { userId: user.id });
       clearRateLimitState();
     }
-  }, [user, state.isRateLimited, clearRateLimitState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]); // Only depend on user - check state inside effect
 
   // Clear rate limit state when user upgrades to Pro (free → pro)
   // This is necessary because Pro users have unlimited messages
@@ -68,10 +86,49 @@ export function RateLimitProvider({ children }: { children: React.ReactNode }) {
 
     // isProUser changed from false to true (free → pro)
     if (!previousIsPro && isProUser && state.isRateLimited && state.userType === 'free') {
-      logger.debug('User upgraded to Pro - clearing rate limit state', { userId: user?.id });
       clearRateLimitState();
     }
-  }, [isProUser, state.isRateLimited, state.userType, user, clearRateLimitState]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isProUser]); // Only depend on isProUser - check state inside effect
+
+  // Pre-flight check: Check rate limit status on app load
+  useEffect(() => {
+    // Only check once on mount - don't re-run on user changes
+    if (hasCheckedOnMountRef.current) return;
+    hasCheckedOnMountRef.current = true;
+
+    const checkRateLimitStatus = async () => {
+      try {
+        const response = await fetch('/api/rate-limit/status', {
+          method: 'GET',
+          credentials: 'include', // Include cookies for session
+        });
+
+        if (!response.ok) {
+          return; // Silently fail - don't log to avoid console spam
+        }
+
+        const data = await response.json();
+
+        if (data.isRateLimited) {
+          // Get current user value at time of API response (not closure)
+          const currentUser = user;
+          setState({
+            isRateLimited: true,
+            resetTime: data.resetTime,
+            userType: currentUser ? 'free' : 'guest',
+            layer: data.layer || 'database',
+          });
+        }
+      } catch (error) {
+        // Fail silently - don't log to avoid console spam
+      }
+    };
+
+    // Run immediately - lightweight check won't block render
+    checkRateLimitStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty deps - only run once on mount
 
   // Auto-clear when reset time passes
   useEffect(() => {

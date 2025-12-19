@@ -182,16 +182,8 @@ export function useConversationMessages({
         setIsLoadingInitialMessages(false);
       }
     }
-  }, [
-    conversationId,
-    initialMessages,
-    initialHasMore,
-    initialDbRowCount,
-    hasInitialMessageParam,
-    loadInitialMessages,
-    initialMessageSentRef,
-    conversationIdRef,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversationId]); // Only depend on conversationId - other values are initial props that shouldn't change
 
   useEffect(() => {
     if (conversationIdRef.current !== conversationId) {

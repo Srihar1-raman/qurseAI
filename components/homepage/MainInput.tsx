@@ -22,7 +22,7 @@ export default function MainInput() {
   const { selectedModel, chatMode } = useConversation();
   const { user } = useAuth();
   const { addConversationOptimistically } = useSidebar();
-  const { state: rateLimitState } = useRateLimit();
+  const { state: rateLimitState, setRateLimitState } = useRateLimit();
   const router = useRouter();
   
   // Track send attempts while rate limited to show popup again
@@ -40,7 +40,8 @@ export default function MainInput() {
     const messageText = inputValue.trim();
     if (!messageText) return;
     
-    // Check rate limit first
+    // Check rate limit state (client-side check - instant, zero latency)
+    // This state is set by pre-flight check on app load or by error handler
     if (rateLimitState.isRateLimited) {
       // Increment send attempt count to trigger popup to show again
       setSendAttemptCount(prev => prev + 1);
@@ -50,18 +51,16 @@ export default function MainInput() {
     // Generate conversation ID
     const chatId = crypto.randomUUID();
     
-    // OPTIMISTIC UPDATE: Add conversation to sidebar immediately (only for logged-in users)
-    if (user && user.id) {
-      const truncatedTitle = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
-      const optimisticConversation: Conversation = {
-        id: chatId,
-        title: truncatedTitle,
-        updated_at: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        message_count: 0,
-      };
-      addConversationOptimistically(optimisticConversation);
-    }
+    // OPTIMISTIC UPDATE: Add conversation to sidebar immediately (for both auth and guest users)
+    const truncatedTitle = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
+    const optimisticConversation: Conversation = {
+      id: chatId,
+      title: truncatedTitle,
+      updated_at: new Date().toISOString(),
+      created_at: new Date().toISOString(),
+      message_count: 0,
+    };
+    addConversationOptimistically(optimisticConversation);
     
     // Construct URL with message params
     // Same URL format for both auth and guest users
@@ -290,8 +289,8 @@ export default function MainInput() {
         )}
       </div>
       
-      {/* Rate limit popups */}
-      {rateLimitState.isRateLimited && !user && (
+      {/* Rate limit popups - only show when user tries to send */}
+      {rateLimitState.isRateLimited && sendAttemptCount > 0 && !user && (
         <GuestRateLimitPopup
           key={sendAttemptCount}
           isOpen={true}
@@ -303,7 +302,7 @@ export default function MainInput() {
         />
       )}
       
-      {rateLimitState.isRateLimited && user && (
+      {rateLimitState.isRateLimited && sendAttemptCount > 0 && user && (
         <FreeUserRateLimitPopup
           key={sendAttemptCount}
           isOpen={true}
