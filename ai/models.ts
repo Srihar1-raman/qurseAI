@@ -225,8 +225,8 @@ export const models: ModelConfig[] = [
     structuredOutput: false,
     
     // Access
-    requiresAuth: false,
-    requiresPro: false,
+    requiresAuth: true,  // Requires authentication (no guests)
+    requiresPro: false,   // Free for authenticated users
     free: true,
     freeUnlimited: true,
     

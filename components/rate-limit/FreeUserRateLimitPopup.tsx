@@ -11,6 +11,8 @@ export interface FreeUserRateLimitPopupProps {
   onClose: () => void;
   onUpgrade: () => void;
   reset: number; // Unix timestamp
+  customTitle?: string; // Optional custom title
+  customMessage?: string; // Optional custom message
 }
 
 export function FreeUserRateLimitPopup({
@@ -18,6 +20,8 @@ export function FreeUserRateLimitPopup({
   onClose,
   onUpgrade,
   reset,
+  customTitle,
+  customMessage,
 }: FreeUserRateLimitPopupProps) {
   const { resolvedTheme } = useTheme();
   const backgroundStyle = getPopupBackgroundStyle(resolvedTheme);
@@ -151,12 +155,16 @@ export function FreeUserRateLimitPopup({
         onClick={(e) => e.stopPropagation()}
       >
         <h1 className="auth-title" style={{ color: 'var(--color-primary)' }}>
-          Upgrade to Pro
+          {customTitle || 'Upgrade to Pro'}
         </h1>
         
         <p className="auth-subtitle">
-          Upgrade to Pro for unlimited messages and access to premium models like Claude, Grok and more, or wait until{' '}
-          <strong style={{ color: 'var(--color-primary)' }}>{resetTime}</strong>.
+          {customMessage || (
+            <>
+              Upgrade to Pro for unlimited messages and access to premium models like Claude, Grok and more, or wait until{' '}
+              <strong style={{ color: 'var(--color-primary)' }}>{resetTime}</strong>.
+            </>
+          )}
         </p>
 
         {/* Hero block with background, logo, pricing, carousel, and upgrade button */}

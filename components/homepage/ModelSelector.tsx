@@ -6,11 +6,13 @@ import { useTheme } from '@/lib/theme-provider';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useToast } from '@/lib/contexts/ToastContext';
+import { useRouter } from 'next/navigation';
 import { getIconPath } from '@/lib/icon-utils';
-import { models, canUseModel, type ModelConfig } from '@/ai/models';
+import { models, canUseModel, type ModelConfig, getModelConfig } from '@/ai/models';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useClickOutside } from '@/hooks/use-click-outside';
+import { GuestRateLimitPopup, FreeUserRateLimitPopup } from '@/components/rate-limit';
 
 interface GroupedModels {
   category: string;
@@ -26,6 +28,13 @@ export default function ModelSelector() {
   const { user, isProUser } = useAuth();
   const { selectedModel, setSelectedModel } = useConversation();
   const { error: showToastError } = useToast();
+  const router = useRouter();
+  
+  // Popup states
+  const [showGuestPopup, setShowGuestPopup] = useState(false);
+  const [showUpgradePopup, setShowUpgradePopup] = useState(false);
+  const [modelClickCount, setModelClickCount] = useState(0);
+  const [selectedModelForPopup, setSelectedModelForPopup] = useState<ModelConfig | null>(null);
 
   // Group models by category and filter by search
   const groupedModels = useMemo(() => {
@@ -74,11 +83,45 @@ export default function ModelSelector() {
   }, [isOpen]);
 
   const handleSelectModel = (modelValue: string) => {
+    const model = getModelConfig(modelValue);
+    if (!model) {
+      showToastError('Model not found');
+      return;
+    }
+
     // Use actual Pro status from auth context
     const accessCheck = canUseModel(modelValue, user, isProUser);
     
     if (!accessCheck.canUse) {
-      // Show user-friendly error message
+      setModelClickCount(prev => prev + 1);
+      
+      // Guest user clicking on Pro model - show sign in popup (they need to sign in first, then can upgrade)
+      if (!user && model.requiresPro) {
+        setSelectedModelForPopup(model);
+        setShowGuestPopup(true);
+        setIsOpen(false);
+        setSearchQuery('');
+        return;
+      }
+      
+      // Guest user clicking on free model that requires auth - show sign in popup
+      if (!user && model.requiresAuth) {
+        setSelectedModelForPopup(model);
+        setShowGuestPopup(true);
+        setIsOpen(false);
+        setSearchQuery('');
+        return;
+      }
+      
+      // Free user clicking on Pro model - show upgrade popup
+      if (user && model.requiresPro && !isProUser) {
+        setShowUpgradePopup(true);
+        setIsOpen(false);
+        setSearchQuery('');
+        return;
+      }
+      
+      // Fallback: show toast for other cases
       const errorMessage = accessCheck.reason || 'You do not have access to this model';
       showToastError(errorMessage);
       return;
@@ -281,6 +324,48 @@ export default function ModelSelector() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Guest popup - for guests clicking on models */}
+      {showGuestPopup && modelClickCount > 0 && selectedModelForPopup && (
+        <GuestRateLimitPopup
+          key={modelClickCount}
+          isOpen={true}
+          onClose={() => {
+            setShowGuestPopup(false);
+            setModelClickCount(0);
+            setSelectedModelForPopup(null);
+          }}
+          reset={Date.now() + 24 * 60 * 60 * 1000}
+          layer="database"
+          customTitle="Sign in to continue"
+          customMessage={
+            selectedModelForPopup.requiresPro
+              ? "Upgrade to Pro after signing in to unlock premium models like Claude, Grok, and more."
+              : "Sign in to unlock access to this model and other features."
+          }
+          showPricing={selectedModelForPopup.requiresPro}
+        />
+      )}
+
+      {/* Upgrade popup - for free users clicking on Pro models */}
+      {showUpgradePopup && modelClickCount > 0 && (
+        <FreeUserRateLimitPopup
+          key={modelClickCount}
+          isOpen={true}
+          onClose={() => {
+            setShowUpgradePopup(false);
+            setModelClickCount(0);
+          }}
+          onUpgrade={() => {
+            router.push('/settings?tab=pricing');
+            setShowUpgradePopup(false);
+            setModelClickCount(0);
+          }}
+          reset={Date.now() + 24 * 60 * 60 * 1000}
+          customTitle="Upgrade to Pro"
+          customMessage="Upgrade to Pro to unlock access to premium models like Claude, Grok, and more advanced AI capabilities."
+        />
       )}
     </div>
   );

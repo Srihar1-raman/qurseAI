@@ -504,6 +504,39 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
     });
   }, [setChatHistory, setSearchResults]);
 
+  // Handle share - check if guest, show popup, otherwise call share API
+  const handleShare = useCallback(async (id: string) => {
+    // Check if user is guest - show popup instead of attempting share
+    if (!user) {
+      setShowGuestActionPopup(true);
+      return;
+    }
+
+    // Call share API directly
+    try {
+      const response = await fetch(`/api/conversations/${id}/share`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Failed to share conversation' }));
+        logger.error('Error sharing conversation', { status: response.status, error: errorData.error });
+        setError('Failed to share conversation');
+        return;
+      }
+
+      const data = await response.json();
+      // Copy share URL to clipboard
+      await navigator.clipboard.writeText(data.shareUrl);
+      // Show success message (you might want to use a toast here)
+      logger.info('Conversation shared', { conversationId: id, shareUrl: data.shareUrl });
+    } catch (err) {
+      logger.error('Error sharing conversation', err, { conversationId: id });
+      setError('Failed to share conversation');
+    }
+  }, [user, setError]);
+
   return (
     <>
       {/* Backdrop */}
@@ -617,6 +650,7 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
                 groupedConversations={groupedConversations}
                 onRename={handleRename}
                 onDelete={handleDelete}
+                onShare={handleShare}
                 onClose={onClose}
                 isSidebarOpen={isOpen}
                 activeConversationId={conversationId}

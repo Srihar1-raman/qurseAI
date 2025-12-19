@@ -14,6 +14,8 @@ import { useChatTransport } from '@/hooks/use-chat-transport';
 import { useConversationLifecycle } from '@/hooks/use-conversation-lifecycle';
 import { ConversationThread } from './ConversationThread';
 import { ConversationInput } from './ConversationInput';
+import { ShareConversationModal } from './ShareConversationModal';
+import { useShareConversation } from '@/hooks/use-share-conversation';
 import { createScopedLogger } from '@/lib/utils/logger';
 import type { ConversationClientProps } from './types';
 
@@ -28,9 +30,16 @@ export function ConversationClient({
 }: ConversationClientProps) {
   const { selectedModel, chatMode, setChatMode } = useConversation();
   const { user, isLoading: isAuthLoading } = useAuth();
-  const { error: showToastError } = useToast();
+  const { error: showToastError, success: showToastSuccess } = useToast();
   const { state: rateLimitState, setRateLimitState } = useRateLimit();
   const router = useRouter();
+  const { shareConversation, unshareConversation, isSharing } = useShareConversation();
+  
+  const [shareModalOpen, setShareModalOpen] = React.useState(false);
+  const [shareUrl, setShareUrl] = React.useState<string>('');
+  const [isShared, setIsShared] = React.useState(false);
+  const [showGuestSharePopup, setShowGuestSharePopup] = React.useState(false);
+  const [shareAttemptCount, setShareAttemptCount] = React.useState(0);
 
   const conversationIdRef = useRef(conversationId);
   const initialMessageSentRef = useRef(false);
@@ -118,6 +127,47 @@ export function ConversationClient({
     },
     onInteract: () => setHasInteracted(true),
   });
+
+  const handleShare = React.useCallback(async () => {
+    // Check if user is guest - show login popup
+    if (!user || !user.id) {
+      setShareAttemptCount(prev => prev + 1);
+      setShowGuestSharePopup(true);
+      return;
+    }
+
+    if (!conversationId || conversationId.startsWith('temp-')) {
+      showToastError('Cannot share this conversation');
+      return;
+    }
+
+    try {
+      const response = await shareConversation(conversationId);
+      setShareUrl(response.shareUrl);
+      setIsShared(true);
+      setShareModalOpen(true);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to share conversation';
+      showToastError(errorMessage);
+    }
+  }, [conversationId, shareConversation, showToastError, user]);
+
+  const handleUnshare = React.useCallback(async () => {
+    if (!conversationId || conversationId.startsWith('temp-')) {
+      return;
+    }
+
+    try {
+      await unshareConversation(conversationId);
+      setIsShared(false);
+      setShareUrl('');
+      setShareModalOpen(false);
+      showToastSuccess('Conversation unshared');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to unshare conversation';
+      showToastError(errorMessage);
+    }
+  }, [conversationId, unshareConversation, showToastError, showToastSuccess]);
 
   const handleStop = React.useCallback(() => {
     if (hasStoppedRef.current) {
@@ -230,6 +280,8 @@ export function ConversationClient({
           conversationEndRef={conversationEndRef}
           conversationContainerRef={conversationContainerRef}
           conversationThreadRef={conversationThreadRef}
+          onShare={handleShare}
+          user={user?.id ? { id: user.id } : null}
         />
 
         <ConversationInput
@@ -270,6 +322,27 @@ export function ConversationClient({
             router.push('/settings?tab=pricing');
           }}
           reset={rateLimitState.resetTime || Date.now()}
+        />
+      )}
+
+      {/* Share conversation modal */}
+      <ShareConversationModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        shareUrl={shareUrl}
+        onUnshare={isShared ? handleUnshare : undefined}
+      />
+
+      {/* Guest share popup - same as rename/delete */}
+      {showGuestSharePopup && shareAttemptCount > 0 && (
+        <GuestRateLimitPopup
+          key={shareAttemptCount}
+          isOpen={true}
+          onClose={() => setShowGuestSharePopup(false)}
+          reset={Date.now() + 24 * 60 * 60 * 1000}
+          layer="database"
+          customTitle="Sign in to continue"
+          customMessage="Sign in to unlock this feature and access more capabilities."
         />
       )}
     </div>

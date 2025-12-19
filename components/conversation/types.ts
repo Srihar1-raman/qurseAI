@@ -30,6 +30,8 @@ export interface ConversationThreadProps {
   conversationEndRef: React.RefObject<HTMLDivElement | null>;
   conversationContainerRef: React.RefObject<HTMLDivElement | null>;
   conversationThreadRef: React.RefObject<HTMLDivElement | null>;
+  onShare?: () => void | Promise<void>;
+  user?: { id: string } | null;
 }
 
 export interface ConversationInputProps {

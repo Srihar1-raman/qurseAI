@@ -4,10 +4,22 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { handleDbError } from '@/lib/utils/error-handler';
+import { getSharedMessagesServerSide } from '@/lib/db/messages.server';
 
 const logger = createScopedLogger('db/conversations.server');
+
+// Service role client for public/shared data access (bypasses RLS)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !serviceKey) {
+  throw new Error('Missing Supabase service credentials: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required');
+}
+
+const serviceSupabase = createServiceClient(supabaseUrl, serviceKey);
 
 /**
  * Ensure conversation exists (server-side)
@@ -210,5 +222,145 @@ export async function clearAllConversationsServerSide(
   }
 
   logger.info('All conversations cleared', { userId });
+}
+
+/**
+ * Get shared conversation by share token
+ * Uses service role client to bypass RLS for public access
+ * @param shareToken - Share token (UUID)
+ * @returns Conversation data and message count, or null if not found
+ */
+export async function getSharedConversationByToken(
+  shareToken: string
+): Promise<{
+  conversation: {
+    id: string;
+    title: string;
+    updated_at: string;
+    created_at: string | null;
+    user_id: string;
+    share_token: string | null;
+    shared_at: string | null;
+    is_shared: boolean;
+    shared_message_count: number | null;
+  } | null;
+  messageCount: number;
+} | null> {
+  // Use service role client to bypass RLS for public shared conversations
+  try {
+    const { data: conversation, error } = await serviceSupabase
+      .from('conversations')
+      .select('id, title, updated_at, created_at, user_id, share_token, shared_at, is_shared, shared_message_count')
+      .eq('share_token', shareToken)
+      .eq('is_shared', true)
+      .maybeSingle();
+
+    if (error) {
+      const userMessage = handleDbError(error, 'db/conversations.server/getSharedConversationByToken');
+      logger.error('Error fetching shared conversation', error, { shareToken });
+      throw new Error(userMessage);
+    }
+
+    if (!conversation || !conversation.is_shared) {
+      return null;
+    }
+
+    return {
+      conversation,
+      messageCount: conversation.shared_message_count || 0,
+    };
+  } catch (error) {
+    logger.error('Error in getSharedConversationByToken', error, { shareToken });
+    throw error;
+  }
+}
+
+/**
+ * Fork shared conversation - create new conversation with copied messages
+ * @param shareToken - Share token (UUID)
+ * @param userId - User ID to create conversation for
+ * @param supabaseClient - Optional Supabase client
+ * @returns New conversation ID
+ */
+export async function forkSharedConversation(
+  shareToken: string,
+  userId: string,
+  supabaseClient?: Awaited<ReturnType<typeof createClient>>
+): Promise<string> {
+  const supabase = supabaseClient || await createClient();
+
+  try {
+    // Get shared conversation (uses service role client internally)
+    const sharedData = await getSharedConversationByToken(shareToken);
+    if (!sharedData || !sharedData.conversation) {
+      throw new Error('Shared conversation not found');
+    }
+
+    const { conversation: sharedConv, messageCount } = sharedData;
+
+    // Get messages up to shared_message_count (uses service role client internally)
+    const sharedMessages = await getSharedMessagesServerSide(sharedConv.id, messageCount);
+
+    // Create new conversation with title appended with " (Shared)"
+    const newTitle = `${sharedConv.title} (Shared)`;
+    const { data: newConversation, error: createError } = await supabase
+      .from('conversations')
+      .insert({
+        user_id: userId,
+        title: newTitle,
+      })
+      .select('id')
+      .single();
+
+    if (createError) {
+      const userMessage = handleDbError(createError, 'db/conversations.server/forkSharedConversation');
+      logger.error('Error creating forked conversation', createError, { userId, shareToken });
+      throw new Error(userMessage);
+    }
+
+    const newConversationId = newConversation.id;
+
+    // Copy all messages to new conversation
+    // Note: We don't copy the message ID - let the database generate new IDs
+    // We preserve created_at to maintain chronological order
+    if (sharedMessages && sharedMessages.length > 0) {
+      // Extract text content from parts for legacy content field
+      const messagesToInsert = sharedMessages.map((msg) => {
+        const contentText = msg.parts
+          ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+          .map((p) => p.text)
+          .join('') || '';
+
+        return {
+          conversation_id: newConversationId,
+          role: msg.role,
+          content: contentText,
+          parts: msg.parts,
+          model: msg.model || null,
+          input_tokens: msg.input_tokens || null,
+          output_tokens: msg.output_tokens || null,
+          total_tokens: msg.total_tokens || null,
+          completion_time: msg.completion_time || null,
+          created_at: msg.created_at, // Preserve original timestamp for correct ordering
+        };
+      });
+
+      const { error: insertError } = await supabase
+        .from('messages')
+        .insert(messagesToInsert);
+
+      if (insertError) {
+        const userMessage = handleDbError(insertError, 'db/conversations.server/forkSharedConversation');
+        logger.error('Error copying messages to forked conversation', insertError, { newConversationId });
+        throw new Error(userMessage);
+      }
+    }
+
+    logger.info('Shared conversation forked', { shareToken, newConversationId, messageCount: sharedMessages?.length || 0 });
+    return newConversationId;
+  } catch (error) {
+    logger.error('Error in forkSharedConversation', error, { shareToken, userId });
+    throw error;
+  }
 }
 

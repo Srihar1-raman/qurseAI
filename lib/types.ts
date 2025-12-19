@@ -146,6 +146,10 @@ export interface Conversation {
   user_id?: string;
   model?: string;
   pinned?: boolean;
+  share_token?: string | null;
+  shared_at?: string | null;
+  is_shared?: boolean;
+  shared_message_count?: number | null;
 }
 
 export interface ConversationGroup {
@@ -187,6 +191,8 @@ export interface ChatMessageProps {
   isUser: boolean;
   model?: string;
   onRedo?: () => void | Promise<void>;
+  onShare?: () => void | Promise<void>;
+  user?: { id: string } | null;
 }
 
 export interface ModelSelectorProps {
@@ -204,6 +210,7 @@ export interface ConversationItemProps {
   conversation: Conversation;
   onRename: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
+  onShare?: (id: string) => void | Promise<void>; // New: Share handler
   onClose: () => void;
   isMenuOpen: boolean;
   onMenuToggle: () => void;
@@ -215,6 +222,7 @@ export interface ConversationListProps {
   groupedConversations: ConversationGroup[];
   onRename: (id: string, newTitle: string) => void;
   onDelete: (id: string) => void;
+  onShare?: (id: string) => void | Promise<void>; // New: Share handler
   onClose: () => void;
   isSidebarOpen: boolean;
   activeConversationId?: string | null; // ID of currently active conversation (for highlighting)
@@ -351,4 +359,21 @@ export interface ConversationWithSession extends Conversation {
 
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'error';
 export type LoadingState = 'idle' | 'loading' | 'success' | 'error';
+
+// ============================================
+// Shareable Conversation Types
+// ============================================
+
+export interface SharedConversationData {
+  conversation: Conversation;
+  messages: QurseMessage[];
+  isShared: boolean;
+  canContinue: boolean;
+  shareToken: string;
+}
+
+export interface ShareConversationResponse {
+  shareToken: string;
+  shareUrl: string;
+}
 

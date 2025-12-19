@@ -8,6 +8,7 @@ export default function ConversationList({
   groupedConversations, 
   onRename, 
   onDelete, 
+  onShare,
   onClose,
   isSidebarOpen,
   activeConversationId,
@@ -110,6 +111,7 @@ export default function ConversationList({
                   conversation={conversation}
                   onRename={onRename}
                   onDelete={handleDelete}
+                  onShare={onShare}
                   onClose={onClose}
                   isMenuOpen={openMenuId === conversation.id}
                   onMenuToggle={menuToggleMap.get(conversation.id) || (() => {})}

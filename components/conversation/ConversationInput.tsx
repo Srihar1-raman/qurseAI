@@ -22,6 +22,8 @@ interface ConversationInputProps {
   onChatModeChange: (mode: string) => void;
   onStop?: () => void;
   showStopButton?: boolean;
+  disabled?: boolean;
+  onDisabledClick?: () => void; // Handler for when disabled input is clicked/focused
 }
 
 export function ConversationInput({
@@ -35,6 +37,8 @@ export function ConversationInput({
   onChatModeChange,
   onStop,
   showStopButton = false,
+  disabled = false,
+  onDisabledClick,
 }: ConversationInputProps) {
   const { resolvedTheme, mounted } = useTheme();
 
@@ -42,16 +46,75 @@ export function ConversationInput({
     <div className="input-section">
       <div className="input-section-content">
         <form onSubmit={onSubmit} className="input-container conversation-input-container">
-          <textarea
-            ref={textareaRef}
-            value={input}
-            onChange={(e) => onInputChange(e.target.value)}
-            onKeyPress={onKeyPress}
-            placeholder="Message Qurse..."
-            className="main-input conversation-input"
-            rows={1}
-            disabled={isLoading}
-          />
+          <div
+            onClick={(e) => {
+              if (disabled && onDisabledClick) {
+                e.preventDefault();
+                e.stopPropagation();
+                onDisabledClick();
+              }
+            }}
+            onMouseDown={(e) => {
+              if (disabled && onDisabledClick) {
+                e.preventDefault();
+                e.stopPropagation();
+                onDisabledClick();
+              }
+            }}
+            onTouchStart={(e) => {
+              if (disabled && onDisabledClick) {
+                e.preventDefault();
+                e.stopPropagation();
+                onDisabledClick();
+              }
+            }}
+            style={{ 
+              position: 'relative', 
+              width: '100%', 
+              cursor: disabled ? 'not-allowed' : 'text',
+              pointerEvents: disabled ? 'auto' : 'auto',
+            }}
+          >
+            <textarea
+              ref={textareaRef}
+              value={input}
+              onChange={(e) => onInputChange(e.target.value)}
+              onKeyPress={onKeyPress}
+              onClick={(e) => {
+                if (disabled && onDisabledClick) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDisabledClick();
+                }
+              }}
+              onFocus={(e) => {
+                if (disabled && onDisabledClick) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDisabledClick();
+                }
+              }}
+              onKeyDown={(e) => {
+                if (disabled && onDisabledClick) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDisabledClick();
+                }
+              }}
+              onMouseDown={(e) => {
+                if (disabled && onDisabledClick) {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onDisabledClick();
+                }
+              }}
+              placeholder="Message Qurse..."
+              className="main-input conversation-input"
+              rows={1}
+              disabled={isLoading || disabled}
+              style={disabled ? { pointerEvents: 'none' } : undefined}
+            />
+          </div>
 
           <div className="input-buttons-background" />
 

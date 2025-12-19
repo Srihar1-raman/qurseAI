@@ -16,6 +16,8 @@ export interface GuestRateLimitPopupProps {
   // Optional custom title and message (for guest actions like rename/delete)
   customTitle?: string;
   customMessage?: string;
+  // Optional: show pricing (for Pro model access prompts)
+  showPricing?: boolean;
 }
 
 export function GuestRateLimitPopup({
@@ -25,6 +27,7 @@ export function GuestRateLimitPopup({
   layer = 'database',
   customTitle,
   customMessage,
+  showPricing = false,
 }: GuestRateLimitPopupProps) {
   const { resolvedTheme } = useTheme();
   const pathname = usePathname();
@@ -103,11 +106,20 @@ export function GuestRateLimitPopup({
     };
   }, [isOpen, isVisible]);
 
-  // Handle wait button click - close popup but keep rate limit state
+  // Handle wait/close button click
+  // For rate limit popups: close but keep rate limit state
+  // For custom popups (sign in prompts): close and call onClose
   const handleWait = () => {
     setIsVisible(false);
-    // Don't call onClose - rate limit state should remain
+    // If custom title/message is provided, it's not a rate limit popup, so call onClose
+    if (customTitle || customMessage) {
+      onClose();
+    }
+    // Otherwise, don't call onClose - rate limit state should remain
   };
+
+  // Determine button text based on whether it's a rate limit popup or custom popup
+  const buttonText = (customTitle || customMessage) ? 'Close' : 'Wait';
 
   if (!isOpen || !isVisible) return null;
 
@@ -178,8 +190,8 @@ export function GuestRateLimitPopup({
           )}
         </p>
 
-        {/* Hero block with background, logo, carousel, and auth buttons */}
-        <HeroBlock isOpen={isOpen} logoPaddingTop="10px" onIconHover={handleIconHover}>
+        {/* Hero block with background, logo, pricing, carousel, and auth buttons */}
+        <HeroBlock isOpen={isOpen} showPricing={showPricing} logoPaddingTop={showPricing ? undefined : "10px"} onIconHover={handleIconHover}>
           {/* Auth buttons row - icon only */}
           <div
             className="auth-buttons"
@@ -217,7 +229,7 @@ export function GuestRateLimitPopup({
           }}
         />
 
-        {/* Wait button */}
+        {/* Wait/Close button */}
         <button
           onClick={handleWait}
           style={{
@@ -245,7 +257,7 @@ export function GuestRateLimitPopup({
             e.currentTarget.style.borderColor = 'var(--color-border)';
           }}
         >
-          Wait
+          {buttonText}
         </button>
       </div>
     </div>

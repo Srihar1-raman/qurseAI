@@ -14,6 +14,7 @@ export default function ConversationItem({
   conversation, 
   onRename, 
   onDelete, 
+  onShare,
   onClose,
   isMenuOpen,
   onMenuToggle,
@@ -294,6 +295,28 @@ export default function ConversationItem({
                   className="icon-sm" 
                 />
                 <span>Rename</span>
+              </div>
+              <div className="chat-menu-item" onClick={(e) => {
+                e.stopPropagation();
+                // Check if user is guest - trigger popup immediately
+                if (!user && onShare) {
+                  onShare(conversation.id); // This will trigger popup in HistorySidebar
+                  onMenuToggle(); // Close menu
+                  return;
+                }
+                if (onShare) {
+                  onShare(conversation.id);
+                }
+                onMenuToggle(); // Close menu
+              }}>
+                <Image 
+                  src={getIconPath("share", resolvedTheme, false, mounted)} 
+                  alt="Share" 
+                  width={14} 
+                  height={14} 
+                  className="icon-sm" 
+                />
+                <span>Share</span>
               </div>
               <div className="chat-menu-item" onClick={(e) => {
                 e.stopPropagation();

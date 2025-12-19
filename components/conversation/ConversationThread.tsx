@@ -6,19 +6,7 @@
 import React from 'react';
 import ChatMessage from '@/components/chat/ChatMessage';
 import type { QurseMessage } from '@/lib/types';
-
-interface ConversationThreadProps {
-  messages: QurseMessage[];
-  isLoading: boolean;
-  isLoadingOlderMessages: boolean;
-  hasMoreMessages: boolean;
-  error: Error | undefined;
-  isRateLimited: boolean;
-  selectedModel: string;
-  conversationEndRef: React.RefObject<HTMLDivElement | null>;
-  conversationContainerRef: React.RefObject<HTMLDivElement | null>;
-  conversationThreadRef: React.RefObject<HTMLDivElement | null>;
-}
+import type { ConversationThreadProps } from './types';
 
 function ConversationThreadComponent({
   messages,
@@ -31,6 +19,8 @@ function ConversationThreadComponent({
   conversationEndRef,
   conversationContainerRef,
   conversationThreadRef,
+  onShare,
+  user,
 }: ConversationThreadProps) {
   return (
     <div ref={conversationContainerRef} className="conversation-container">
@@ -54,6 +44,8 @@ function ConversationThreadComponent({
             message={message}
             isUser={message.role === 'user'}
             model={selectedModel}
+            onShare={onShare}
+            user={user}
           />
         ))}
 
@@ -109,7 +101,7 @@ function ConversationThreadComponent({
           </div>
         )}
 
-        <div ref={conversationEndRef} />
+        <div ref={conversationEndRef} style={{ height: '1px', minHeight: '1px' }} />
       </div>
     </div>
   );
@@ -147,10 +139,14 @@ export const ConversationThread = React.memo(ConversationThreadComponent, (prevP
     prevProps.hasMoreMessages !== nextProps.hasMoreMessages ||
     prevProps.isRateLimited !== nextProps.isRateLimited ||
     prevProps.selectedModel !== nextProps.selectedModel ||
-    prevProps.error?.message !== nextProps.error?.message
+    prevProps.error?.message !== nextProps.error?.message ||
+    prevProps.user?.id !== nextProps.user?.id
   ) {
     return false; // Re-render
   }
+  
+  // Note: onShare is a function, so we don't compare it (functions are always different references)
+  // This is fine - the share button will only show for authenticated users anyway
   
   // Props are equal - skip re-render
   return true;

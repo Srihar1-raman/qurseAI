@@ -4,12 +4,23 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { handleDbError } from '@/lib/utils/error-handler';
 import { convertLegacyContentToParts, type MessageParts } from '@/lib/utils/message-parts-fallback';
 import type { UIMessage } from 'ai';
 
 const logger = createScopedLogger('db/messages.server');
+
+// Service role client for public/shared data access (bypasses RLS)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !serviceKey) {
+  throw new Error('Missing Supabase service credentials: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required');
+}
+
+const serviceSupabase = createServiceClient(supabaseUrl, serviceKey);
 
 /**
  * Save user message (server-side)
@@ -149,6 +160,63 @@ export async function getMessagesServerSide(
     hasMore,
     dbRowCount: actualDbRowCount, // Return actual DB rows queried for accurate offset calculation
   };
+}
+
+/**
+ * Get messages for a shared conversation (up to shared_message_count)
+ * Uses service role client to bypass RLS for public access
+ * @param conversationId - Conversation ID
+ * @param messageCountLimit - Maximum number of messages to return (shared_message_count)
+ * @returns Messages array (ordered ascending by created_at)
+ */
+export async function getSharedMessagesServerSide(
+  conversationId: string,
+  messageCountLimit: number
+): Promise<Array<{ id: string; role: 'user' | 'assistant'; parts: MessageParts; model?: string; input_tokens?: number; output_tokens?: number; total_tokens?: number; completion_time?: number; created_at: string }>> {
+  // Use service role client to bypass RLS for public shared conversations
+  // Query messages in ascending order, limit to messageCountLimit
+  const { data, error } = await serviceSupabase
+    .from('messages')
+    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time')
+    .eq('conversation_id', conversationId)
+    .order('created_at', { ascending: true })
+    .limit(messageCountLimit);
+
+  if (error) {
+    const userMessage = handleDbError(error, 'db/messages.server/getSharedMessagesServerSide');
+    logger.error('Error fetching shared messages', error, { conversationId, messageCountLimit });
+    const dbError = new Error(userMessage);
+    throw dbError;
+  }
+
+  const filtered = (data || [])
+    .filter((msg) => msg.role === 'user' || msg.role === 'assistant');
+
+  const messages = filtered.map((msg) => {
+    let parts: MessageParts = [];
+    
+    // Prefer parts array (new format)
+    if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
+      parts = msg.parts as MessageParts;
+    } else {
+      // Fallback: Convert legacy content/reasoning format to parts array
+      parts = convertLegacyContentToParts(msg.content);
+    }
+    
+    return {
+      id: msg.id,
+      role: msg.role as 'user' | 'assistant',
+      parts: parts,
+      model: msg.model ?? undefined,
+      input_tokens: msg.input_tokens ?? undefined,
+      output_tokens: msg.output_tokens ?? undefined,
+      total_tokens: msg.total_tokens ?? undefined,
+      completion_time: msg.completion_time ?? undefined,
+      created_at: msg.created_at, // Preserve original timestamp
+    };
+  });
+
+  return messages;
 }
 
 

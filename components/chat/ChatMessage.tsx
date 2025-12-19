@@ -7,7 +7,7 @@ import Image from 'next/image';
 import { getIconPath } from '@/lib/icon-utils';
 import type { ChatMessageProps } from '@/lib/types';
 
-function ChatMessageComponent({ message, isUser, onRedo }: ChatMessageProps) {
+function ChatMessageComponent({ message, isUser, onRedo, onShare, user }: ChatMessageProps) {
   const { resolvedTheme, mounted } = useTheme();
 
   // Extract text content from message parts
@@ -89,9 +89,24 @@ function ChatMessageComponent({ message, isUser, onRedo }: ChatMessageProps) {
         
         {!isUser && (
           <div className="message-actions">
-            <button onClick={copyToClipboard} className="action-btn">
+            <button onClick={copyToClipboard} className="action-btn" title="Copy message">
               <Image src={getIconPath('copy', resolvedTheme, false, mounted)} alt="Copy" width={16} height={16} className="icon" />
             </button>
+            {onShare && (
+              <button 
+                onClick={async () => {
+                  try {
+                    await onShare();
+                  } catch {
+                    // Silently handle error
+                  }
+                }} 
+                className="action-btn" 
+                title="Share conversation"
+              >
+                <Image src={getIconPath('share', resolvedTheme, false, mounted)} alt="Share" width={16} height={16} className="icon" />
+              </button>
+            )}
             {onRedo && (
               <button 
                 onClick={async () => {
