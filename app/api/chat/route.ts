@@ -304,6 +304,18 @@ export async function POST(req: Request) {
         // ============================================
         // START STREAMING (after user message is saved)
         // ============================================
+        // Create abort controller for stop functionality
+        const abortController = new AbortController();
+
+        // Forward abort signal from request if available
+        if (req.signal) {
+          const abortHandler = () => {
+            abortController.abort();
+          };
+          req.signal.addEventListener('abort', abortHandler);
+          // Note: Cleanup handled by request lifecycle
+        }
+
         const result = streamText({
           model: qurse.languageModel(model),
           messages: convertToModelMessages(uiMessages),
@@ -312,6 +324,7 @@ export async function POST(req: Request) {
           ...getModelParameters(model),
           providerOptions: getProviderOptions(model) as StreamTextProviderOptions,
           tools: Object.keys(tools).length > 0 ? tools : undefined,
+          abortSignal: abortController.signal,
           onError: (err) => {
             logger.error('Stream error', err.error, { model });
             const errorMessage = err.error instanceof Error ? err.error.message : String(err.error);
@@ -322,6 +335,12 @@ export async function POST(req: Request) {
                 false
               );
             }
+          },
+          onAbort: ({ steps }) => {
+            logger.debug('Stream aborted', { 
+              stepsCount: steps.length,
+              hasSteps: steps.length > 0
+            });
           },
           onFinish: async ({ usage }) => {
             // Note: We save messages in createUIMessageStream's onFinish instead

@@ -3,7 +3,7 @@
  * Handles transport creation, error handling, and rate limit detection
  */
 
-import { useMemo, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessagePart } from 'ai';
 import { isRateLimitError, extractRateLimitInfo } from '@/lib/conversation/rate-limit-utils';
@@ -24,6 +24,8 @@ interface UseChatTransportReturn {
   sendMessage: (message: { role: 'user'; parts: UIMessagePart<any, any>[] }) => void;
   status: ReturnType<typeof useChat>['status'];
   error: ReturnType<typeof useChat>['error'];
+  stop: () => void;
+  setMessages: ReturnType<typeof useChat>['setMessages'];
 }
 
 export function useChatTransport({
@@ -38,7 +40,7 @@ export function useChatTransport({
   const selectedModelRef = useRef(selectedModel);
   const chatModeRef = useRef(chatMode);
 
-  useMemo(() => {
+  useEffect(() => {
     conversationIdRef.current = conversationId;
     selectedModelRef.current = selectedModel;
     chatModeRef.current = chatMode;
@@ -130,6 +132,8 @@ export function useChatTransport({
     sendMessage: chatResult.sendMessage,
     status: chatResult.status,
     error: chatResult.error,
+    stop: chatResult.stop,
+    setMessages: chatResult.setMessages,
   };
 }
 

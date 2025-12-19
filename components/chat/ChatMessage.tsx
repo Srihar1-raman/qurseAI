@@ -22,6 +22,16 @@ function ChatMessageComponent({ message, isUser, onRedo }: ChatMessageProps) {
     .map(p => p.text)
     .join('\n\n') || null;
 
+  // Check if message contains stop text and split it
+  const stopTextPattern = '*User stopped this message here*';
+  const hasStopText = content.includes(stopTextPattern);
+  let mainContent = content;
+  if (hasStopText) {
+    // Split on the pattern and take everything before it as main content
+    const parts = content.split(stopTextPattern);
+    mainContent = parts[0].trimEnd(); // Remove trailing whitespace/newlines
+  }
+
   const copyToClipboard = React.useCallback(() => {
     navigator.clipboard.writeText(content);
     // You could add a toast notification here
@@ -64,7 +74,15 @@ function ChatMessageComponent({ message, isUser, onRedo }: ChatMessageProps) {
             content
           ) : (
             <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              {content}
+              {mainContent}
+              {hasStopText && (
+                <>
+                  {'\n\n'}
+                  <span className="stop-message-indicator">
+                    User stopped this message here
+                  </span>
+                </>
+              )}
             </div>
           )}
         </div>

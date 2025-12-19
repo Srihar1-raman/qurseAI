@@ -45,13 +45,20 @@ export function useConversationScroll({
   const hasInitiallyScrolledRef = useRef(false);
   const lastUserMessageIdRef = useRef<string | null>(null);
   const isScrollTopDetectedRef = useRef(false);
+  const previousScrollTopRef = useRef<number>(0);
 
-  const { scrollToBottom, markManualScroll, resetManualScroll } = useOptimizedScroll(conversationEndRef);
+  const { scrollToBottom, markManualScroll, resetManualScroll } = useOptimizedScroll(conversationContainerRef);
 
+  // Reset state when conversation changes
   useEffect(() => {
     hasInitiallyScrolledRef.current = false;
     lastUserMessageIdRef.current = null;
-  }, [conversationId]);
+    resetManualScroll();
+    const containerElement = conversationContainerRef.current;
+    if (containerElement) {
+      previousScrollTopRef.current = containerElement.scrollTop;
+    }
+  }, [conversationId, resetManualScroll]);
 
   useEffect(() => {
     if (!isLoadingOlderMessages && scrollPositionRef.current) {
@@ -75,16 +82,17 @@ export function useConversationScroll({
   }, [loadedMessagesLength, isLoadingOlderMessages, scrollPositionRef]);
 
   useEffect(() => {
-    const threadElement = conversationThreadRef.current;
-    if (!threadElement) return;
+    // conversationContainerRef is the scrollable container, not conversationThreadRef
+    const containerElement = conversationContainerRef.current;
+    if (!containerElement) return;
 
     const handleScroll = () => {
-      if (threadElement.scrollTop > 200) {
+      if (containerElement.scrollTop > 200) {
         isScrollTopDetectedRef.current = false;
       }
 
       if (
-        threadElement.scrollTop < 100 &&
+        containerElement.scrollTop < 100 &&
         !isScrollTopDetectedRef.current &&
         hasMoreMessages &&
         !isLoadingOlderMessages
@@ -94,33 +102,91 @@ export function useConversationScroll({
       }
     };
 
-    threadElement.addEventListener('scroll', handleScroll);
-    return () => threadElement.removeEventListener('scroll', handleScroll);
+    containerElement.addEventListener('scroll', handleScroll, { passive: true });
+    return () => containerElement.removeEventListener('scroll', handleScroll);
   }, [loadOlderMessages, hasMoreMessages, isLoadingOlderMessages]);
 
+  // Detect manual scroll - works even when container isn't scrollable yet (first message case)
   useEffect(() => {
-    const handleManualScroll = () => markManualScroll();
-    window.addEventListener('wheel', handleManualScroll);
-    window.addEventListener('touchmove', handleManualScroll);
-    return () => {
-      window.removeEventListener('wheel', handleManualScroll);
-      window.removeEventListener('touchmove', handleManualScroll);
-    };
-  }, [markManualScroll]);
+    const containerElement = conversationContainerRef.current;
+    if (!containerElement) return;
 
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = containerElement;
+      const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+      const threshold = 100;
+      const previousScrollTop = previousScrollTopRef.current;
+
+      // Mark as manual scroll if user scrolled UP and is away from bottom
+      if (scrollTop < previousScrollTop && distanceFromBottom > threshold) {
+        markManualScroll();
+      } else if (distanceFromBottom <= threshold) {
+        // User is near bottom - allow autoscroll
+        resetManualScroll();
+      }
+
+      previousScrollTopRef.current = scrollTop;
+    };
+
+    // Detect wheel events (works even when container isn't scrollable yet)
+    const handleWheel = (e: WheelEvent) => {
+      if (e.deltaY < 0) {
+        markManualScroll();
+      }
+    };
+
+    // Detect touch events (mobile, works even when container isn't scrollable yet)
+    let touchStartY = 0;
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartY = e.touches[0].clientY;
+    };
+    const handleTouchMove = (e: TouchEvent) => {
+      if (touchStartY === 0) return;
+      const touchDelta = touchStartY - e.touches[0].clientY;
+      if (touchDelta < -10) {
+        markManualScroll();
+      }
+    };
+
+    containerElement.addEventListener('scroll', handleScroll, { passive: true });
+    containerElement.addEventListener('wheel', handleWheel, { passive: true });
+    containerElement.addEventListener('touchstart', handleTouchStart, { passive: true });
+    containerElement.addEventListener('touchmove', handleTouchMove, { passive: true });
+    
+    return () => {
+      containerElement.removeEventListener('scroll', handleScroll);
+      containerElement.removeEventListener('wheel', handleWheel);
+      containerElement.removeEventListener('touchstart', handleTouchStart);
+      containerElement.removeEventListener('touchmove', handleTouchMove);
+    };
+  }, [markManualScroll, resetManualScroll]);
+
+  // Reset manual scroll when streaming starts (only if user is near bottom)
   useEffect(() => {
     if (status === 'streaming') {
-      resetManualScroll();
-      scrollToBottom();
+      const containerElement = conversationContainerRef.current;
+      if (containerElement) {
+        const { scrollTop, scrollHeight, clientHeight } = containerElement;
+        const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+        if (distanceFromBottom <= 100) {
+          resetManualScroll();
+          requestAnimationFrame(() => scrollToBottom());
+        }
+      } else {
+        // Container not ready yet (first message case) - reset manual scroll anyway
+        resetManualScroll();
+      }
     }
   }, [status, resetManualScroll, scrollToBottom]);
 
+  // Auto-scroll during streaming when messages change
   useEffect(() => {
     if (status === 'streaming') {
-      scrollToBottom();
+      requestAnimationFrame(() => scrollToBottom());
     }
   }, [displayMessages, status, scrollToBottom]);
 
+  // Reset manual scroll when user sends a new message (allows auto-scroll for AI response)
   useEffect(() => {
     const lastMessage = displayMessages[displayMessages.length - 1];
     const isNewUserMessage =
@@ -129,18 +195,16 @@ export function useConversationScroll({
     if (
       displayMessages.length > 0 &&
       isNewUserMessage &&
-      status !== 'streaming' &&
       hasInteracted &&
       !isLoadingOlderMessages &&
       !isLoadingInitialMessages
     ) {
       lastUserMessageIdRef.current = lastMessage.id;
+      resetManualScroll();
 
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          scrollToBottom();
-        });
-      });
+      if (status !== 'streaming') {
+        requestAnimationFrame(() => scrollToBottom());
+      }
     }
   }, [
     displayMessages,
@@ -149,6 +213,7 @@ export function useConversationScroll({
     isLoadingOlderMessages,
     isLoadingInitialMessages,
     scrollToBottom,
+    resetManualScroll,
   ]);
 
   useEffect(() => {

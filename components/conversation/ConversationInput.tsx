@@ -18,9 +18,10 @@ interface ConversationInputProps {
   onKeyPress: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   isLoading: boolean;
-  isRateLimited: boolean;
   chatMode: string;
   onChatModeChange: (mode: string) => void;
+  onStop?: () => void;
+  showStopButton?: boolean;
 }
 
 export function ConversationInput({
@@ -30,9 +31,10 @@ export function ConversationInput({
   onKeyPress,
   textareaRef,
   isLoading,
-  isRateLimited,
   chatMode,
   onChatModeChange,
+  onStop,
+  showStopButton = false,
 }: ConversationInputProps) {
   const { resolvedTheme, mounted } = useTheme();
 
@@ -85,21 +87,43 @@ export function ConversationInput({
           </div>
 
           <div className="input-actions-right">
-            <button
-              type="submit"
-              className={`send-btn ${input.trim() ? 'active' : ''}`}
-              title="Send message"
-              disabled={!input.trim() || isLoading}
-            >
-              <div style={{ opacity: 1 }}>
-                <Image
-                  src={input.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                  alt="Send"
-                  width={16}
-                  height={16}
-                />
-              </div>
-            </button>
+            {showStopButton && onStop ? (
+              <button
+                type="button"
+                className="send-btn active"
+                title="Stop generation"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onStop();
+                }}
+              >
+                <div style={{ opacity: 1 }}>
+                  <Image
+                    src={getIconPath('stop', resolvedTheme, true, mounted)}
+                    alt="Stop"
+                    width={16}
+                    height={16}
+                  />
+                </div>
+              </button>
+            ) : (
+              <button
+                type="submit"
+                className={`send-btn ${input.trim() ? 'active' : ''}`}
+                title="Send message"
+                disabled={!input.trim() || isLoading}
+              >
+                <div style={{ opacity: 1 }}>
+                  <Image
+                    src={input.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
+                    alt="Send"
+                    width={16}
+                    height={16}
+                  />
+                </div>
+              </button>
+            )}
           </div>
         </form>
       </div>
