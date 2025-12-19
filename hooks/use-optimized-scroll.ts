@@ -13,10 +13,10 @@ export function useOptimizedScroll(targetRef: React.RefObject<HTMLElement | null
         container.scrollTop = container.scrollHeight;
       } else {
         // Fallback to scrollIntoView for other browsers
-        targetRef.current.scrollIntoView({
-          behavior: 'smooth',
-          block: 'end',
-        });
+      targetRef.current.scrollIntoView({
+        behavior: 'smooth',
+        block: 'end',
+      });
       }
     }
   }, [targetRef]);

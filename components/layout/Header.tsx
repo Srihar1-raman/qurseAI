@@ -228,7 +228,7 @@ function Header({
             resolvedTheme={resolvedTheme}
             mounted={mounted}
             userInitial={userInitial}
-          />
+                  />
         </div>
       </div>
     </header>

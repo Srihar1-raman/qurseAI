@@ -92,6 +92,7 @@ export function ConversationClient({
     });
 
   const isLoading = status === 'submitted' || status === 'streaming';
+  const isThinking = status === 'submitted'; // Only show thinking animation before streaming starts
 
   const { input, setInput, textareaRef, handleSubmit, handleKeyPress } = useConversationInput({
     sendMessage,
@@ -108,7 +109,7 @@ export function ConversationClient({
       <main className="conversation-main-content">
         <ConversationThread
           messages={displayMessages}
-          isLoading={isLoading}
+          isLoading={isThinking} // Only show thinking animation during 'submitted' status
           isLoadingOlderMessages={isLoadingOlderMessages}
           hasMoreMessages={hasMoreMessages}
           error={error}

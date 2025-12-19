@@ -174,8 +174,8 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
 
   // Register optimistic update handler with context (for both auth and guest users)
   useEffect(() => {
-    const unregister = registerHandler(addConversationOptimistically);
-    return unregister;
+      const unregister = registerHandler(addConversationOptimistically);
+      return unregister;
   }, [registerHandler, addConversationOptimistically]);
 
 

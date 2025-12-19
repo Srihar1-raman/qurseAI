@@ -91,12 +91,14 @@ export function ConversationInput({
               title="Send message"
               disabled={!input.trim() || isLoading}
             >
-              <Image
-                src={input.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                alt="Send"
-                width={16}
-                height={16}
-              />
+              <div style={{ opacity: 1 }}>
+                <Image
+                  src={input.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
+                  alt="Send"
+                  width={16}
+                  height={16}
+                />
+              </div>
             </button>
           </div>
         </form>

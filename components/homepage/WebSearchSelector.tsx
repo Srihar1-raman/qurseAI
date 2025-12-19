@@ -81,14 +81,29 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
                 onClick={() => handleSelectOption(option.name)}
                 className={cn(
                   "flex items-center justify-between gap-2 cursor-pointer transition-colors",
-                  isSelected && "bg-primary text-white hover:bg-primary/90",
-                  !isSelected && !isDisabled && "hover:bg-muted"
+                  isSelected && "bg-primary text-white"
                 )}
                 style={{
                   padding: '8px 12px',
                   fontSize: '13px',
                   fontWeight: 500,
                   color: isSelected ? 'white' : 'var(--color-text)',
+                  backgroundColor: isSelected ? 'var(--color-primary)' : 'transparent',
+                  opacity: isDisabled && !isSelected ? 0.6 : 1,
+                }}
+                onMouseEnter={(e) => {
+                  if (!isSelected) {
+                    e.currentTarget.style.backgroundColor = 'var(--color-bg-hover)';
+                  } else {
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary-hover)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (isSelected) {
+                    e.currentTarget.style.backgroundColor = 'var(--color-primary)';
+                  } else {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
                 }}
               >
                 <span>{option.name}</span>

@@ -97,9 +97,14 @@
 }
 
 .send-btn:disabled {
-  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  background: var(--color-bg-secondary) !important;
+  border-color: var(--color-border) !important;
+}
+
+.send-btn:disabled img {
+  opacity: 1 !important;
 }
 
 .input-dropdown-menu {

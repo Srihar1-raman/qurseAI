@@ -213,16 +213,17 @@ export default function MainInput() {
                 background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
                 border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
                 padding: '0',
-                opacity: inputValue.trim() ? 1 : 0.5,
                 cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
               }}
             >
-              <Image
-                src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                alt="Send"
-                width={16}
-                height={16}
-              />
+              <div style={{ opacity: 1 }}>
+                <Image
+                  src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
+                  alt="Send"
+                  width={16}
+                  height={16}
+                />
+              </div>
             </button>
           </div>
         ) : (
@@ -273,16 +274,17 @@ export default function MainInput() {
                   background: inputValue.trim() ? 'var(--color-primary)' : 'var(--color-bg-secondary)',
                   border: `1px solid ${inputValue.trim() ? 'var(--color-primary)' : 'var(--color-border)'}`,
                   padding: '0',
-                  opacity: inputValue.trim() ? 1 : 0.5,
                   cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
-                <Image
-                  src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                  alt="Send"
-                  width={16}
-                  height={16}
-                />
+                <div style={{ opacity: 1 }}>
+                  <Image
+                    src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
+                    alt="Send"
+                    width={16}
+                    height={16}
+                  />
+                </div>
               </button>
             </div>
           </>

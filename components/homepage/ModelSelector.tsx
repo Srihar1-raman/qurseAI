@@ -95,7 +95,7 @@ export default function ModelSelector() {
       <Button
         variant="secondary"
         className={cn(
-          "min-w-[160px] justify-between rounded-md border px-2.5 py-1.5 h-auto text-sm font-normal model-selector-mobile",
+          "justify-center rounded-md border px-2.5 py-1.5 h-auto text-sm font-normal model-selector-mobile",
           isOpen && "border-primary"
         )}
         onClick={() => setIsOpen(!isOpen)}
@@ -110,14 +110,14 @@ export default function ModelSelector() {
           <span className="model-selector-text">
             {selectedModelConfig?.label || selectedModel}
           </span>
+          <Image
+            src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
+            alt="Dropdown"
+            width={12}
+            height={12}
+            className={cn("transition-transform", isOpen && "rotate-180")}
+          />
         </div>
-        <Image
-          src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-          alt="Dropdown"
-          width={12}
-          height={12}
-          className={cn("transition-transform", isOpen && "rotate-180")}
-        />
       </Button>
 
       {/* Dropdown Menu */}
