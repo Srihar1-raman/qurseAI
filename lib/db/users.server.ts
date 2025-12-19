@@ -4,10 +4,21 @@
  */
 
 import { createClient } from '@/lib/supabase/server';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { handleDbError } from '@/lib/utils/error-handler';
 
 const logger = createScopedLogger('db/users.server');
+
+// Service role client for admin operations (auth.users deletion)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !serviceKey) {
+  throw new Error('Missing Supabase service credentials: NEXT_PUBLIC_SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required');
+}
+
+const serviceSupabase = createServiceClient(supabaseUrl, serviceKey);
 
 /**
  * Update user profile (server-side)
@@ -35,42 +46,33 @@ export async function updateUserProfileServerSide(
 
 /**
  * Delete user account and all related data (server-side only)
- * Uses CASCADE DELETE to remove all related records
  * 
- * NOTE: This only deletes from the `users` table, which cascades to:
- * - conversations (via user_id FK)
- * - messages (via conversation_id FK)
- * - user_preferences (via user_id FK)
- * - subscriptions (via user_id FK)
- * - rate_limits (via user_id FK)
+ * This function performs a complete account deletion:
+ * 1. Deletes from auth.users (using service role) - this triggers CASCADE DELETE
+ * 2. CASCADE DELETE automatically removes:
+ *    - users table (via auth.users FK with ON DELETE CASCADE)
+ *    - conversations (via user_id FK with ON DELETE CASCADE)
+ *    - messages (via conversation_id FK with ON DELETE CASCADE)
+ *    - user_preferences (via user_id FK with ON DELETE CASCADE)
+ *    - subscriptions (via user_id FK with ON DELETE CASCADE)
+ *    - rate_limits (via user_id FK with ON DELETE CASCADE)
  * 
- * The user record in `auth.users` is NOT deleted by this function.
- * To fully delete from auth.users, you need:
- * 1. Service role key (SUPABASE_SERVICE_ROLE_KEY)
- * 2. Admin API call: supabase.auth.admin.deleteUser(userId)
- * 
- * This is intentional - auth.users deletion should be handled separately
- * for security and audit purposes.
+ * Root cause fix: Deletes from auth.users first, which cascades to everything else.
  */
 export async function deleteUserAccountServerSide(
   userId: string
 ): Promise<void> {
-  const supabase = await createClient();
+  // Delete from auth.users using service role (bypasses RLS)
+  // This will CASCADE DELETE to users table, which cascades to all related tables
+  const { error: authError } = await serviceSupabase.auth.admin.deleteUser(userId);
 
-  // Delete user from users table (this will CASCADE delete all related data)
-  // Note: auth.users deletion requires service role key and should be handled separately
-  const { error } = await supabase
-    .from('users')
-    .delete()
-    .eq('id', userId);
-
-  if (error) {
-    const userMessage = handleDbError(error, 'db/users.server/deleteUserAccountServerSide');
-    logger.error('Error deleting user account', error, { userId });
+  if (authError) {
+    const userMessage = handleDbError(authError, 'db/users.server/deleteUserAccountServerSide');
+    logger.error('Error deleting user from auth.users', authError, { userId });
     const dbError = new Error(userMessage);
     throw dbError;
   }
 
-  logger.info('User account deleted (from users table)', { userId });
+  logger.info('User account deleted completely (auth.users + all related data)', { userId });
 }
 

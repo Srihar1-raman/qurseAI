@@ -1,163 +1,103 @@
 /**
- * Rate limit utility functions for error handling
- * Extracts rate limit information from API errors
+ * Rate Limit Utility Functions
+ * Handles detection and extraction of rate limit information from errors
  */
 
-import { createScopedLogger } from '@/lib/utils/logger';
-
-const logger = createScopedLogger('conversation/rate-limit-utils');
-
-/**
- * Error type that may contain rate limit information
- */
-interface RateLimitError extends Error {
-  status?: number;
-  response?: Response;
-  cause?: {
-    headers?: Headers;
-  };
-}
-
-/**
- * Rate limit information extracted from error
- */
 export interface RateLimitInfo {
   resetTime: number;
   layer: 'redis' | 'database';
-  extractedFrom: string;
 }
 
 /**
  * Check if an error is a rate limit error
+ * @param error - Error object that may contain rate limit information
+ * @returns True if the error is a rate limit error (status 429)
  */
-export function isRateLimitError(error: unknown): boolean {
-  if (!error || typeof error !== 'object') {
-    return false;
-  }
-
-  const err = error as RateLimitError;
-  const errorMessage = err.message || '';
-  const errorLower = errorMessage.toLowerCase();
-
-  if (err.status === 429) {
+export function isRateLimitError(
+  error: Error & { status?: number; cause?: any; response?: Response }
+): boolean {
+  // Check status code directly
+  if (error.status === 429) {
     return true;
   }
 
-  if (errorLower.includes('rate limit') || errorLower.includes('daily limit')) {
+  // Check response status if available
+  if (error.response && error.response.status === 429) {
     return true;
   }
 
-  if (errorMessage.includes('rateLimitInfo')) {
+  // Check cause response status
+  if (error.cause && error.cause instanceof Response && error.cause.status === 429) {
     return true;
   }
 
-  try {
-    const parsedError = JSON.parse(errorMessage);
-    if (parsedError) {
-      return (
-        parsedError.error?.toLowerCase().includes('daily limit') ||
-        parsedError.error?.toLowerCase().includes('rate limit') ||
-        parsedError.rateLimitInfo !== undefined
-      );
+  // Check error message for rate limit indicators
+  const message = error.message?.toLowerCase() || '';
+  if (
+    message.includes('rate limit') || 
+    message.includes('429') ||
+    message.includes('daily limit') ||
+    message.includes('limit reached') ||
+    message.includes('upgrade to pro')
+  ) {
+    return true;
+  }
+
+  // Check if error has rateLimitInfo in the error object or cause
+  if (error.cause && typeof error.cause === 'object') {
+    const cause = error.cause as any;
+    if (cause.rateLimitInfo || cause.error?.includes('limit')) {
+      return true;
     }
-  } catch {
-    // Not JSON, continue
   }
 
   return false;
 }
 
 /**
- * Extract rate limit headers from Response object
+ * Extract rate limit information from an error
+ * Reads reset time and layer from response headers
+ * @param error - Rate limit error with response headers
+ * @returns Rate limit information (resetTime, layer)
  */
-function extractFromHeaders(headers: Headers): { resetTime: number | null; layer: 'redis' | 'database' } {
-  const reset = headers.get('X-RateLimit-Reset');
-  const layerHeader = headers.get('X-RateLimit-Layer');
-
-  return {
-    resetTime: reset ? parseInt(reset, 10) : null,
-    layer: (layerHeader as 'redis' | 'database') || 'database',
-  };
-}
-
-/**
- * Calculate fallback reset time based on layer type
- */
-function calculateResetTimeFallback(layer: 'redis' | 'database'): number {
-  const now = Date.now();
-
-  if (layer === 'database') {
-    const utcNow = new Date();
-    const utcMidnight = new Date(
-      Date.UTC(
-        utcNow.getUTCFullYear(),
-        utcNow.getUTCMonth(),
-        utcNow.getUTCDate() + 1,
-        0,
-        0,
-        0,
-        0
-      )
-    );
-    return utcMidnight.getTime();
-  }
-
-  return now + 24 * 60 * 60 * 1000;
-}
-
-/**
- * Extract rate limit information from error
- * Tries multiple sources: response headers, error cause, then fallback calculation
- */
-export function extractRateLimitInfo(error: RateLimitError): RateLimitInfo {
-  let resetTime: number | null = null;
+export function extractRateLimitInfo(
+  error: Error & { status?: number; cause?: any; response?: Response }
+): RateLimitInfo {
+  // Default values
+  let resetTime = Date.now() + 24 * 60 * 60 * 1000; // Default: 24 hours from now
   let layer: 'redis' | 'database' = 'database';
-  let extractedFrom = 'none';
 
-  if (error.response && error.response instanceof Response) {
-    const result = extractFromHeaders(error.response.headers);
-    if (result.resetTime) {
-      resetTime = result.resetTime;
-      layer = result.layer;
-      extractedFrom = 'response.headers';
-    } else if (result.layer) {
-      layer = result.layer;
-    }
+  // Try multiple sources for the response object
+  let response: Response | null = null;
+  
+  if (error.response) {
+    response = error.response;
+  } else if (error.cause && error.cause instanceof Response) {
+    response = error.cause;
+  } else if (error.cause && typeof error.cause === 'object' && 'response' in error.cause) {
+    response = (error.cause as any).response;
   }
 
-  if (!resetTime && error.cause && typeof error.cause === 'object' && 'headers' in error.cause) {
-    const headers = (error.cause as { headers: Headers }).headers;
-    const result = extractFromHeaders(headers);
-    if (result.resetTime) {
-      resetTime = result.resetTime;
-      layer = result.layer;
-      extractedFrom = 'error.cause.headers';
-    } else if (result.layer) {
-      layer = result.layer;
-    }
-  }
+  // Extract from response headers
+  if (response) {
+    const resetHeader = response.headers.get('X-RateLimit-Reset');
+    const layerHeader = response.headers.get('X-RateLimit-Layer');
 
-  if (!resetTime) {
-    resetTime = calculateResetTimeFallback(layer);
-    extractedFrom = layer === 'database' ? 'fallback.database.midnight-utc' : 'fallback.redis.24h-from-now';
-    logger.debug('Rate limit reset time not found in headers, using fallback', {
-      layer,
-      resetTime,
-      extractedFrom,
-      errorStatus: error.status,
-    });
-  } else {
-    logger.debug('Rate limit reset time extracted from headers', {
-      layer,
-      resetTime,
-      extractedFrom,
-    });
+    if (resetHeader) {
+      const parsed = parseInt(resetHeader, 10);
+      if (!isNaN(parsed)) {
+        resetTime = parsed;
+      }
+    }
+
+    if (layerHeader === 'redis' || layerHeader === 'database') {
+      layer = layerHeader;
+    }
   }
 
   return {
     resetTime,
     layer,
-    extractedFrom,
   };
 }
 

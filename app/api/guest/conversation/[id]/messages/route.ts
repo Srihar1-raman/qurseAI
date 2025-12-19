@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGuestMessagesServerSide } from '@/lib/db/messages.server';
+import { getGuestMessagesServerSide } from '@/lib/db/guest-messages.server';
 import { checkGuestConversationAccess } from '@/lib/db/guest-conversations.server';
 import { isValidConversationId } from '@/lib/validation/chat-schema';
 import { parseCookie, isValidUUID } from '@/lib/utils/session';

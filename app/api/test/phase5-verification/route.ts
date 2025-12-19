@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkGuestConversationAccess } from '@/lib/db/guest-conversations.server';
-import { getGuestMessagesServerSide } from '@/lib/db/messages.server';
+import { getGuestMessagesServerSide } from '@/lib/db/guest-messages.server';
 import { hmacSessionId } from '@/lib/utils/session-hash';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
 import { createScopedLogger } from '@/lib/utils/logger';

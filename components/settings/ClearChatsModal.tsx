@@ -42,6 +42,7 @@ export default function ClearChatsModal({
       warning="This action cannot be undone."
       confirmText={isClearingChats ? 'Clearing...' : 'Clear All Chats'}
       disabled={isClearingChats}
+      preventClose={isClearingChats}
     />
   );
 }

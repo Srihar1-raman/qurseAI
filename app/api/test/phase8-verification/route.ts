@@ -12,26 +12,25 @@ export async function GET(request: NextRequest) {
   const results: Array<{ test: string; passed: boolean; error?: string }> = [];
 
   try {
-    // Test 1: countMessagesTodayServerSide is marked as deprecated
+    // Test 1: countMessagesTodayServerSide has been removed (deprecated function cleanup)
     try {
       const messagesModule = await import('@/lib/db/messages.server');
-      const func = messagesModule.countMessagesTodayServerSide;
+      const func = (messagesModule as any).countMessagesTodayServerSide;
       
-      // Check if function exists and is callable
-      if (typeof func === 'function') {
-        // Function exists - deprecation is marked in JSDoc
-        // We can't easily check JSDoc at runtime, but we verify it exists
-        results.push({ test: 'countMessagesTodayServerSide marked as deprecated', passed: true });
+      // Check if function has been removed (should be undefined)
+      if (typeof func === 'undefined') {
+        // Function has been removed as planned - cleanup complete
+        results.push({ test: 'countMessagesTodayServerSide removed (deprecated cleanup)', passed: true });
       } else {
         results.push({
-          test: 'countMessagesTodayServerSide marked as deprecated',
+          test: 'countMessagesTodayServerSide removed (deprecated cleanup)',
           passed: false,
-          error: 'Function not found',
+          error: 'Function still exists - should have been removed',
         });
       }
     } catch (error) {
       results.push({
-        test: 'countMessagesTodayServerSide marked as deprecated',
+        test: 'countMessagesTodayServerSide removed (deprecated cleanup)',
         passed: false,
         error: error instanceof Error ? error.message : 'Unknown error',
       });

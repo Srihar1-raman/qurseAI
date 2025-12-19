@@ -113,9 +113,22 @@ qurse/
 
 **Purpose:** The frame around all pages (header, footer, sidebar)
 
-- **`Header.tsx`** - Top navigation bar
+- **`Header.tsx`** - Top navigation bar (257 lines, refactored)
   - Shows user info, new chat button, history button
+  - Orchestrates header components
   - Where it's used: Every page (via NavigationWrapper)
+
+- **`HeaderDropdown.tsx`** - User dropdown menu (248 lines, extracted)
+  - User profile section
+  - Theme selector integration
+  - Settings, About, Terms, Privacy links
+  - Sign out/Sign in button
+  - Where it's used: Inside Header.tsx
+
+- **`AuthButtons.tsx`** - Login and signup buttons (26 lines, extracted)
+  - Shows "Log in" and "Sign up" buttons
+  - Handles callback URL preservation
+  - Where it's used: Inside Header.tsx (when user not logged in)
 
 - **`Footer.tsx`** - Bottom footer
   - Links, copyright, etc.
@@ -197,6 +210,10 @@ qurse/
 - **`ErrorMessage.tsx`** - Error message display
 - **`ConfirmModal.tsx`** - Confirmation popup
 - **`UnifiedButton.tsx`** - Enhanced button with more features
+- **`ThemeSelector.tsx`** - Theme selection component (83 lines, extracted)
+  - Auto, Light, Dark theme buttons
+  - Shows current theme selection
+  - Where it's used: HeaderDropdown.tsx
 - **`ModelIconCarousel.tsx`** - Reusable carousel (used in rate limit popups and pricing page)
 - **`*Skeleton.tsx`** - Loading placeholders (shows while content loads)
 
@@ -292,6 +309,29 @@ Hooks are reusable pieces of logic that components can "hook into". Instead of w
 - **Why needed:** Makes app feel faster (SPA behavior)
 - **Used in:** MainInput
 
+### Auth Hooks (User Management)
+
+**`use-pro-status.ts`** - Pro subscription status management (225 lines, extracted)
+- **What it does:** Fetches and manages user's Pro subscription status
+- **Why needed:** Complex logic with realtime updates - extracted from AuthContext
+- **Returns:** `isProUser`, `isLoadingProStatus`
+- **Features:**
+  - Fetches Pro status once when user loads
+  - Subscribes to realtime database updates
+  - Handles session validation
+  - Caches status across navigations
+- **Used in:** AuthContext.tsx
+
+**`use-linked-providers.ts`** - OAuth provider management (80 lines, extracted)
+- **What it does:** Fetches user's linked OAuth providers (Google, Twitter, GitHub)
+- **Why needed:** Extracted from AuthContext for better organization
+- **Returns:** `linkedProviders`, `isLoadingProviders`
+- **Features:**
+  - Retry logic for race conditions
+  - Handles session validation
+  - Caches providers across navigations
+- **Used in:** AuthContext.tsx
+
 ---
 
 ## 📱 App Folder - Pages and API Routes
@@ -346,7 +386,7 @@ Hooks are reusable pieces of logic that components can "hook into". Instead of w
 
 **Purpose:** Server-side endpoints that handle requests
 
-#### `app/api/chat/route.ts` - Main AI Chat Endpoint
+#### `app/api/chat/route.ts` - Main AI Chat Endpoint (515 lines, refactored)
 
 **What it does:**
 1. Checks if user is authenticated
@@ -360,6 +400,14 @@ Hooks are reusable pieces of logic that components can "hook into". Instead of w
 9. Updates conversation title
 
 **Runs:** When user sends a message (POST request)
+
+**Refactoring notes:**
+- Uses `ensureConversationServerSide` from `conversations.server.ts`
+- Uses `saveUserMessageServerSide` from `messages.server.ts`
+- Uses `ensureGuestConversation` from `guest-conversations.server.ts`
+- Uses `saveGuestMessage` from `guest-messages.server.ts`
+- Uses `applyRateLimitHeaders` and `applyConversationIdHeader` from `rate-limit-headers.ts`
+- Reduced from 651 lines to 515 lines (21% reduction)
 
 **Flow:**
 ```
@@ -686,10 +734,15 @@ await supabase.auth.signInWithOAuth({
 
 **What are contexts?** React Context provides a way to share data across components without passing props down manually.
 
-- **`AuthContext.tsx`** - User authentication state
+- **`AuthContext.tsx`** - User authentication state (350 lines, refactored)
   - **What it stores:** Current user, session, login status
   - **Why needed:** Many components need to know if user is logged in
   - **Used by:** Header, ConversationClient, rate limit popups, etc.
+  - **Refactoring notes:**
+    - Uses `use-pro-status` hook for Pro subscription management
+    - Uses `use-linked-providers` hook for OAuth provider management
+    - Uses `session-validation` utility for session validation
+    - Reduced from 736 lines to 350 lines (52% reduction)
 
 - **`RateLimitContext.tsx`** - Rate limit state
   - **What it stores:** Is user rate limited? When does it reset?
@@ -723,27 +776,79 @@ await supabase.auth.signInWithOAuth({
 
 **Purpose:** All code that talks to the database
 
-#### Client-Side Queries (`queries.ts`)
-- **What it does:** Functions that run in the browser to fetch data
-- **Used by:** Components that need to load data client-side
+**Organization:** Code is split by domain (conversations, messages, preferences, users, auth) for better maintainability.
+
+#### Client-Side Queries (Domain-Specific Files)
+
+**`queries.ts`** - Barrel export (48 lines, refactored)
+- **What it does:** Re-exports all client-side query functions for backward compatibility
+- **Note:** New code should import directly from domain-specific files
+- **Used by:** Existing code (maintains backward compatibility)
+
+**`conversations.ts`** - Conversation operations (268 lines)
+- **What it does:** Client-side conversation queries
+- **Functions:**
+  - `getConversations()` - Get user's conversations with pagination
+  - `getGuestConversations()` - Get guest conversations (via API)
+  - `getConversationCount()` - Get total conversation count
+  - `searchConversations()` - Search conversation titles
+  - `createConversation()` - Create new conversation
+  - `updateConversation()` - Update conversation title
+  - `deleteConversation()` - Delete a conversation
+  - `deleteAllConversations()` - Delete all user conversations
+- **Used by:** HistorySidebar, ConversationClient
+
+**`messages.ts`** - Message operations (109 lines)
+- **What it does:** Client-side message queries
 - **Functions:**
   - `getOlderMessages()` - Load older messages for pagination
-  - `getUserLinkedProviders()` - Get user's OAuth providers
-  - `searchConversations()` - Search conversation titles
+- **Used by:** use-conversation-messages hook
+
+**`preferences.ts`** - User preference operations (126 lines)
+- **What it does:** Client-side preference queries
+- **Functions:**
+  - `getUserPreferences()` - Get user preferences (with defaults)
+  - `updateUserPreferences()` - Update preferences (creates if missing)
+- **Used by:** Settings page, Theme provider
+
+**`users.ts`** - User profile operations (33 lines)
+- **What it does:** Client-side user profile queries
+- **Functions:**
+  - `updateUserProfile()` - Update user name/avatar
+- **Used by:** Settings page
+
+**`auth.ts`** - Authentication operations (99 lines)
+- **What it does:** Client-side auth-related queries
+- **Functions:**
+  - `getUserLinkedProviders()` - Get user's linked OAuth providers (with retry logic)
+- **Used by:** AuthContext, Settings page
 
 #### Server-Side Queries (`*.server.ts` files)
-- **What it does:** Functions that run on the server (more secure)
-- **Used by:** API routes, server components
-- **Files:**
-  - `conversations.server.ts` - Create/update/delete conversations
-  - `messages.server.ts` - Save messages
-  - `guest-conversations.server.ts` - Guest conversation management
-  - `guest-transfer.server.ts` - Transfer guest data to user account
-  - `preferences.server.ts` - User preferences
-  - `rate-limits.server.ts` - Rate limit tracking
-  - `subscriptions.server.ts` - Subscription management
-  - `users.server.ts` - User management
-  - `queries.server.ts` - General server queries
+
+**What it does:** Functions that run on the server (more secure)
+**Used by:** API routes, server components
+
+**Authenticated User Operations:**
+- **`conversations.server.ts`** - Create/update/delete conversations
+- **`messages.server.ts`** - Authenticated message operations (154 lines, refactored)
+  - `getMessagesServerSide()` - Get messages for authenticated users
+  - `saveUserMessageServerSide()` - Save user messages
+- **`preferences.server.ts`** - User preferences
+- **`users.server.ts`** - User management
+- **`subscriptions.server.ts`** - Subscription management
+- **`rate-limits.server.ts`** - Rate limit tracking
+
+**Guest Operations:**
+- **`guest-conversations.server.ts`** - Guest conversation management (177 lines, updated)
+  - `ensureGuestConversation()` - Create/validate guest conversations
+  - `checkGuestConversationAccess()` - Verify conversation ownership
+- **`guest-messages.server.ts`** - Guest message operations (180 lines, extracted)
+  - `getGuestMessagesServerSide()` - Get messages for guest users
+  - `saveGuestMessage()` - Save guest messages
+- **`guest-transfer.server.ts`** - Transfer guest data to user account
+
+**Barrel Exports:**
+- **`queries.server.ts`** - Re-exports all server-side queries for backward compatibility
 
 ### `lib/services/` - Business Logic
 
@@ -869,6 +974,22 @@ await supabase.auth.signInWithOAuth({
 - **`session-hash.ts`** - Session hashing
   - **What it does:** Creates secure hash of session ID
   - **Why needed:** Security - don't store raw session IDs
+
+- **`session-validation.ts`** - Session validation utility (52 lines, extracted)
+  - **What it does:** Validates Supabase session integrity
+  - **Why needed:** Prevents using corrupted sessions that cause errors
+  - **Functions:**
+    - `isValidSession()` - Checks if session has required fields and valid structure
+  - **Used by:** AuthContext, use-pro-status, use-linked-providers hooks
+  - **Why extracted:** Reusable validation logic used in multiple places
+
+- **`rate-limit-headers.ts`** - Rate limit header utilities (36 lines, extracted)
+  - **What it does:** Applies rate limit headers to HTTP responses
+  - **Functions:**
+    - `applyRateLimitHeaders()` - Sets rate limit headers (remaining, limit, reset)
+    - `applyConversationIdHeader()` - Sets conversation ID header
+  - **Used by:** `app/api/chat/route.ts`
+  - **Why extracted:** Centralized header logic for consistency
 
 - **`ip-extraction.ts`** - IP address extraction
   - **What it does:** Gets user's IP from request
@@ -2035,4 +2156,47 @@ This structure makes the code:
 - **Testable:** Each piece can be tested separately
 - **Reusable:** Hooks and components can be reused
 - **Scalable:** Easy to add new features
+
+---
+
+## 🔄 Recent Refactoring (2025-01-18)
+
+**What changed:** Large files were split into smaller, focused modules following single responsibility principle.
+
+### File Size Reductions
+- `Header.tsx`: 530 → 257 lines (51% reduction)
+- `AuthContext.tsx`: 736 → 350 lines (52% reduction)
+- `app/api/chat/route.ts`: 651 → 515 lines (21% reduction)
+- `queries.ts`: 737 → 48 lines (93% reduction, now barrel export)
+- `messages.server.ts`: 434 → 154 lines (64% reduction)
+
+### New Files Created
+
+**Components:**
+- `components/layout/HeaderDropdown.tsx` (248 lines) - Extracted dropdown menu
+- `components/layout/AuthButtons.tsx` (26 lines) - Extracted auth buttons
+- `components/ui/ThemeSelector.tsx` (83 lines) - Extracted theme selector
+
+**Hooks:**
+- `hooks/use-pro-status.ts` (225 lines) - Pro subscription management
+- `hooks/use-linked-providers.ts` (80 lines) - OAuth provider management
+
+**Utilities:**
+- `lib/utils/session-validation.ts` (52 lines) - Session validation
+- `lib/utils/rate-limit-headers.ts` (36 lines) - Rate limit header utilities
+
+**Database (Domain-Specific):**
+- `lib/db/conversations.ts` (268 lines) - Client-side conversation queries
+- `lib/db/messages.ts` (109 lines) - Client-side message queries
+- `lib/db/preferences.ts` (126 lines) - Client-side preference queries
+- `lib/db/users.ts` (33 lines) - Client-side user queries
+- `lib/db/auth.ts` (99 lines) - Client-side auth queries
+- `lib/db/guest-messages.server.ts` (180 lines) - Guest message operations
+
+**Benefits:**
+- ✅ All files under 600 lines
+- ✅ Clear domain separation
+- ✅ Better code organization
+- ✅ Easier to maintain and test
+- ✅ Backward compatible (barrel exports)
 

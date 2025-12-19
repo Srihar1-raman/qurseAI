@@ -12,13 +12,29 @@ import type { QurseMessage } from '@/lib/types';
 
 const logger = createScopedLogger('hooks/use-conversation-messages');
 
+import type { UIMessagePart } from 'ai';
+
 interface BaseMessage {
   id: string;
   role: 'user' | 'assistant' | 'system' | 'tool';
-  parts?: Array<{ type: string; text?: string; [key: string]: any }>;
+  parts?: UIMessagePart<any, any>[];
   content?: string;
   metadata?: any;
   createdAt?: string;
+}
+
+// Helper to extract message content for deep equality comparison
+function extractMessageContent(message: BaseMessage): string {
+  if (message.parts && Array.isArray(message.parts) && message.parts.length > 0) {
+    return message.parts
+      .map((p) => ('text' in p ? p.text : ''))
+      .join('')
+      .trim();
+  }
+  if (message.content) {
+    return String(message.content).trim();
+  }
+  return '';
 }
 
 interface UseConversationMessagesProps {
@@ -59,6 +75,12 @@ export function useConversationMessages({
   status,
 }: UseConversationMessagesProps): UseConversationMessagesReturn {
   const [loadedMessages, setLoadedMessages] = useState<BaseMessage[]>(initialMessages);
+  const useChatMessagesRef = useRef(useChatMessages);
+  
+  // Keep ref in sync with useChatMessages
+  useEffect(() => {
+    useChatMessagesRef.current = useChatMessages;
+  }, [useChatMessages]);
   const [messagesOffset, setMessagesOffset] = useState(initialDbRowCount || initialMessages.length);
   const [isLoadingOlderMessages, setIsLoadingOlderMessages] = useState(false);
   const [isLoadingInitialMessages, setIsLoadingInitialMessages] = useState(false);
@@ -83,6 +105,7 @@ export function useConversationMessages({
 
         if (response.status === 404) {
           logger.debug('Conversation not found (likely new conversation)', { conversationId: id });
+          setIsLoadingInitialMessages(false);
           return;
         }
 
@@ -96,9 +119,22 @@ export function useConversationMessages({
           return;
         }
 
-        setLoadedMessages(messages);
-        setMessagesOffset(dbRowCount);
-        setHasMoreMessages(hasMore);
+        // Don't update loadedMessages if useChatMessages already has messages
+        // This prevents flashing when messages are already streaming via useChat
+        // The mergeMessages function will handle merging when needed
+        if (useChatMessagesRef.current.length === 0) {
+          setLoadedMessages(messages);
+          setMessagesOffset(dbRowCount);
+          setHasMoreMessages(hasMore);
+        } else {
+          // Still update offset and hasMore for future pagination, but don't replace messages
+          setMessagesOffset(dbRowCount);
+          setHasMoreMessages(hasMore);
+          logger.debug('Skipped updating loadedMessages - useChatMessages already has messages', {
+            conversationId: id,
+            useChatMessagesCount: useChatMessagesRef.current.length,
+          });
+        }
       } catch (error) {
         if (conversationIdRef.current === id && !initialMessageSentRef.current) {
           const userMessage = handleClientError(error as Error, 'conversation/loadInitialMessages');
@@ -180,6 +216,7 @@ export function useConversationMessages({
       !initialMessageSentRef.current &&
       status !== 'submitted' &&
       status !== 'streaming' &&
+      useChatMessages.length === 0 && // Don't load if messages are already streaming via useChat
       conversationIdRef.current === conversationId
     ) {
       logger.debug('Loading messages for conversation', { conversationId });
@@ -192,6 +229,7 @@ export function useConversationMessages({
     loadedMessages.length,
     isLoadingInitialMessages,
     status,
+    useChatMessages.length, // Add dependency
     loadInitialMessages,
     initialMessageSentRef,
     conversationIdRef,
@@ -243,13 +281,40 @@ export function useConversationMessages({
     }
   }, [conversationId, messagesOffset, isLoadingOlderMessages, hasMoreMessages, showToastError]);
 
-  const rawDisplayMessages = useMemo(() => {
-    return mergeMessages(loadedMessages, useChatMessages, isLoadingInitialMessages);
-  }, [loadedMessages, useChatMessages, isLoadingInitialMessages]);
+  // Create a content-based key for useChatMessages to detect actual content changes (not just reference)
+  const useChatMessagesKey = useMemo(() => {
+    return useChatMessages.map(m => `${m.id}:${m.role}:${extractMessageContent(m)}`).join('|');
+  }, [useChatMessages]);
 
-  const displayMessages = useMemo(() => {
-    return transformToQurseMessage(rawDisplayMessages);
+  // Memoize useChatMessages to prevent unnecessary recalculations when reference changes but content is same
+  const stableUseChatMessages = useMemo(() => {
+    return useChatMessages;
+  }, [useChatMessagesKey]);
+
+  const rawDisplayMessages = useMemo(() => {
+    return mergeMessages(loadedMessages, stableUseChatMessages, isLoadingInitialMessages);
+  }, [loadedMessages, stableUseChatMessages, isLoadingInitialMessages]);
+
+  // Create a content-based key for rawDisplayMessages to detect actual content changes
+  const rawDisplayMessagesKey = useMemo(() => {
+    return rawDisplayMessages.map(m => `${m.id}:${m.role}:${extractMessageContent(m)}`).join('|');
   }, [rawDisplayMessages]);
+
+  // Memoize transformToQurseMessage to prevent creating new objects when content hasn't changed
+  // Use ref to store previous result and only recalculate when key actually changes
+  const displayMessagesRef = useRef<{ messages: QurseMessage[]; key: string }>({ messages: [], key: '' });
+  
+  const displayMessages = useMemo(() => {
+    // Only recalculate if content actually changed (key-based comparison)
+    if (rawDisplayMessagesKey === displayMessagesRef.current.key && displayMessagesRef.current.messages.length > 0) {
+      return displayMessagesRef.current.messages;
+    }
+    
+    // Content changed - recalculate
+    const transformed = transformToQurseMessage(rawDisplayMessages);
+    displayMessagesRef.current = { messages: transformed, key: rawDisplayMessagesKey };
+    return transformed;
+  }, [rawDisplayMessagesKey]); // Only depend on key, not rawDisplayMessages array reference
 
   return {
     displayMessages,

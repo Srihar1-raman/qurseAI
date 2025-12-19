@@ -10,7 +10,7 @@
 // Re-export all queries from domain-specific modules
 export {
   getMessagesServerSide,
-  countMessagesTodayServerSide,
+  saveUserMessageServerSide,
 } from './messages.server';
 
 export {
@@ -20,6 +20,16 @@ export {
   checkConversationAccess,
   clearAllConversationsServerSide,
 } from './conversations.server';
+
+export {
+  ensureGuestConversation,
+  checkGuestConversationAccess,
+} from './guest-conversations.server';
+
+export {
+  getGuestMessagesServerSide,
+  saveGuestMessage,
+} from './guest-messages.server';
 
 export {
   updateUserProfileServerSide,

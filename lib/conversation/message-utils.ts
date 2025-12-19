@@ -53,33 +53,45 @@ export function mergeMessages(
   useChatMessages: BaseMessage[],
   isLoadingInitialMessages: boolean
 ): BaseMessage[] {
-  const baseMessages = loadedMessages.length > 0 ? loadedMessages : [];
-
-  if (isLoadingInitialMessages) {
-    return baseMessages;
-  }
-
-  if (useChatMessages.length === 0) {
-    return baseMessages;
-  }
-
-  const messageIds = new Set(baseMessages.map((m) => m.id));
-  const messageContentSet = new Set(baseMessages.map(createMessageContentKey));
-
-  const newMessages = useChatMessages.filter((m) => {
-    if (messageIds.has(m.id)) {
-      return false;
+  // If we have streaming messages, prioritize them to prevent flashing
+  // This is the source of truth when messages are actively streaming
+  if (useChatMessages.length > 0) {
+    // If loadedMessages is empty, just return useChatMessages directly (no merge needed)
+    if (loadedMessages.length === 0) {
+      return useChatMessages;
     }
 
-    const contentKey = createMessageContentKey(m);
-    if (messageContentSet.has(contentKey)) {
-      return false;
+    // Both have messages - merge and deduplicate
+    const messageIds = new Set(loadedMessages.map((m) => m.id));
+    const messageContentSet = new Set(loadedMessages.map(createMessageContentKey));
+
+    const newMessages = useChatMessages.filter((m) => {
+      if (messageIds.has(m.id)) {
+        return false;
+      }
+
+      const contentKey = createMessageContentKey(m);
+      if (messageContentSet.has(contentKey)) {
+        return false;
+      }
+
+      return true;
+    });
+
+    // Only create new array if there are actually new messages to add
+    if (newMessages.length === 0) {
+      return loadedMessages; // Return loadedMessages as-is if no new messages
     }
 
-    return true;
-  });
+    return [...loadedMessages, ...newMessages];
+  }
 
-  return [...baseMessages, ...newMessages];
+  // No streaming messages - return loaded messages (or empty if still loading)
+  if (isLoadingInitialMessages && loadedMessages.length === 0) {
+    return [];
+  }
+
+  return loadedMessages;
 }
 
 /**

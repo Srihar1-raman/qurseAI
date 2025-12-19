@@ -18,140 +18,16 @@ import { handleApiError } from '@/lib/utils/error-handler';
 import { sanitizeApiError } from '@/lib/utils/error-sanitizer';
 import { toUIMessageFromZod, type StreamTextProviderOptions } from '@/lib/utils/message-adapters';
 import { generateTitleFromUserMessage } from '@/lib/utils/convo-title-generation';
-import { updateConversationTitle } from '@/lib/db/queries.server';
+import { updateConversationTitle, ensureConversationServerSide } from '@/lib/db/queries.server';
 import { checkRateLimit } from '@/lib/services/rate-limiting';
-import { ensureGuestConversation, saveGuestMessage } from '@/lib/db/messages.server';
+import { saveUserMessageServerSide } from '@/lib/db/messages.server';
+import { ensureGuestConversation } from '@/lib/db/guest-conversations.server';
+import { saveGuestMessage } from '@/lib/db/guest-messages.server';
 import { hmacSessionId } from '@/lib/utils/session-hash';
+import { applyRateLimitHeaders, applyConversationIdHeader } from '@/lib/utils/rate-limit-headers';
 import type { User } from '@/lib/types';
 
 const logger = createScopedLogger('api/chat');
-
-/**
- * region Helper Functions
- * Helper: Ensure conversation exists (creates if needed)
- * Optimized: Check first, then insert (faster than insert-then-select pattern)
- * Handles race conditions (duplicate key errors)
- */
-async function ensureConversation(
-  user: { id: string },
-  conversationId: string,
-  title: string,
-  supabase: Awaited<ReturnType<typeof createClient>>
-): Promise<string> {
-  if (!conversationId || conversationId.startsWith('temp-')) {
-    return conversationId;
-  }
-
-  // Optimized: Check if conversation exists FIRST (fast - single SELECT)
-  // This avoids unnecessary INSERT attempts for existing conversations
-  const { data: existing, error: checkError } = await supabase
-    .from('conversations')
-    .select('id, user_id')
-    .eq('id', conversationId)
-    .maybeSingle();
-
-  if (checkError) {
-    logger.error('Error checking conversation', checkError, { conversationId });
-    throw new Error('Failed to check conversation');
-  }
-
-  // If conversation exists, verify ownership immediately (no extra query needed)
-  if (existing) {
-    if (existing.user_id !== user.id) {
-      throw new Error('Unauthorized: conversation belongs to another user');
-    }
-    // Conversation exists and ownership verified - return immediately
-    logger.debug('Conversation already exists', { conversationId });
-    return conversationId;
-  }
-
-  // Conversation doesn't exist - create it
-  const { error: insertError } = await supabase
-    .from('conversations')
-    .insert({
-      id: conversationId,
-      user_id: user.id,
-      title: title,
-    });
-
-  if (insertError) {
-    // Handle race condition (duplicate key - another request created it between our check and insert)
-    if (insertError.code === '23505') {
-      // Another request created it - verify ownership
-      const { data: verify } = await supabase
-        .from('conversations')
-        .select('user_id')
-        .eq('id', conversationId)
-        .maybeSingle();
-
-      if (!verify) {
-        // Conversation doesn't exist after duplicate key error - shouldn't happen
-        logger.error('Conversation not found after duplicate key error', { conversationId });
-        throw new Error('Conversation creation failed');
-      }
-
-      if (verify.user_id !== user.id) {
-        throw new Error('Unauthorized: conversation belongs to another user');
-      }
-
-      // Conversation created by another request - that's OK
-      logger.debug('Conversation created by concurrent request', { conversationId });
-    } else {
-      logger.error('Failed to create conversation', insertError, { conversationId });
-      throw insertError;
-    }
-  } else {
-    logger.debug('Conversation created', { conversationId });
-  }
-
-  return conversationId;
-}
-
-/**
- * Helper: Save user message with parts array
- * Returns true if message was saved, false if skipped (early return)
- */
-async function saveUserMessage(
-  conversationId: string,
-  userMessage: UIMessage,
-  userId: string | null,
-  supabase: Awaited<ReturnType<typeof createClient>>,
-  isProUserOverride?: boolean
-): Promise<boolean> {
-  if (!conversationId || conversationId.startsWith('temp-') || !userMessage) {
-    return false;
-  }
-
-  // Extract text from parts for content field (backward compatibility)
-  const messageText = userMessage.parts
-    ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
-    .map((p) => p.text)
-    .join('') || '';
-
-  if (!messageText.trim()) {
-    return false;
-  }
-
-  // Save with parts array (new format) and content (backward compatibility)
-  const { error: msgError } = await supabase
-    .from('messages')
-    .insert({
-      conversation_id: conversationId,
-      role: 'user',
-      parts: userMessage.parts || [{ type: 'text', text: messageText.trim() }],
-      content: messageText.trim(), // Keep for backward compatibility
-    });
-
-  if (msgError) {
-    logger.error('Failed to save user message', msgError, {
-      conversationId,
-      messageLength: messageText.length
-    });
-    throw new Error('Failed to save user message');
-  }
-
-  return true;
-}
 
 /**
  * POST /api/chat
@@ -229,17 +105,6 @@ export async function POST(req: Request) {
     });
 
     const setCookieHeader = rateLimitResponse.headers.get('set-cookie');
-    const applyRateLimitHeaders = (headers: Headers) => {
-      Object.entries(rateLimitCheck.headers).forEach(([key, value]) => headers.set(key, value));
-      if (setCookieHeader) {
-        headers.append('Set-Cookie', setCookieHeader);
-      }
-    };
-    const applyConversationIdHeader = (headers: Headers, id?: string | null) => {
-      if (id) {
-        headers.set('X-Conversation-Id', id);
-      }
-    };
 
     if (!rateLimitCheck.allowed) {
       logger.warn('Rate limit exceeded', {
@@ -251,11 +116,13 @@ export async function POST(req: Request) {
           error: rateLimitCheck.reason || 'Rate limit exceeded',
           rateLimitInfo: {
             remaining: rateLimitCheck.remaining ?? 0,
+            resetTime: rateLimitCheck.reset,
+            layer: rateLimitCheck.headers['X-RateLimit-Layer'] || 'database',
           },
         },
         { status: 429 }
       );
-      applyRateLimitHeaders(denyResponse.headers);
+      applyRateLimitHeaders(denyResponse.headers, rateLimitCheck.headers, setCookieHeader);
       applyConversationIdHeader(denyResponse.headers, conversationId);
       return denyResponse;
     }
@@ -340,8 +207,8 @@ export async function POST(req: Request) {
     // Tools are loaded synchronously when needed (getToolsByIds is fast)
     
     // Create DB operations promise (runs in parallel with other operations)
-    // CRITICAL: ensureConversation must complete before saveUserMessage
-    // CRITICAL: User message must be saved BEFORE streaming starts (for conversation history integrity)
+    // ensureConversation must complete before saveUserMessage
+    // User message must be saved BEFORE streaming starts (for conversation history integrity)
     // We chain them to ensure proper order while still parallelizing with other operations
     // Full user already available (no await needed)
     const dbOperationsPromise = (async () => {
@@ -349,11 +216,11 @@ export async function POST(req: Request) {
 
       // Authenticated flow
       if (user && conversationId && !conversationId.startsWith('temp-') && lastUserMessage) {
-        return ensureConversation(user, conversationId, title, supabaseClient)
-          .then((convId) => {
-            resolvedConversationId = convId;
-            if (!convId || convId.startsWith('temp-') || !lastUserMessage) {
-              return { convId, saveSuccess: false };
+        return ensureConversationServerSide(conversationId, user.id, title, supabaseClient)
+          .then(() => {
+            resolvedConversationId = conversationId;
+            if (!conversationId || conversationId.startsWith('temp-') || !lastUserMessage) {
+              return { convId: conversationId, saveSuccess: false };
             }
             
             const userMessageText = lastUserMessage.parts
@@ -366,21 +233,20 @@ export async function POST(req: Request) {
                 after(async () => {
                   try {
                     const betterTitle = await generateTitleFromUserMessage({ message: lastUserMessage! });
-                    await updateConversationTitle(convId, betterTitle, supabaseClient);
-                    logger.debug('Title generated and updated', { conversationId: convId, title: betterTitle });
+                    await updateConversationTitle(conversationId, betterTitle, supabaseClient);
+                    logger.debug('Title generated and updated', { conversationId, title: betterTitle });
                   } catch (error) {
-                    logger.error('Background title generation failed', error, { conversationId: convId });
+                    logger.error('Background title generation failed', error, { conversationId });
                   }
                 });
               }
             }
             
-            const isPro = lightweightUser?.isProUser ?? false;
-            return saveUserMessage(convId, lastUserMessage, user.id, supabaseClient, isPro)
-              .then((saved) => ({ convId, saveSuccess: saved }))
+            return saveUserMessageServerSide(conversationId, lastUserMessage, supabaseClient)
+              .then((saved) => ({ convId: conversationId, saveSuccess: saved }))
               .catch((error) => {
-                logger.error('Failed to save user message', error, { conversationId: convId });
-                return { convId, saveSuccess: false };
+                logger.error('Failed to save user message', error, { conversationId });
+                return { convId: conversationId, saveSuccess: false };
               });
           })
           .catch((error) => {
@@ -588,7 +454,7 @@ export async function POST(req: Request) {
         'Cache-Control': 'no-cache, no-transform',
         'Connection': 'keep-alive',
     });
-    applyRateLimitHeaders(sseHeaders);
+    applyRateLimitHeaders(sseHeaders, rateLimitCheck.headers, setCookieHeader);
     applyConversationIdHeader(sseHeaders, resolvedConversationId ?? conversationId);
 
     return new Response(stream.pipeThrough(new JsonToSseTransformStream()), {

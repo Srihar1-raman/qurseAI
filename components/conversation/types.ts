@@ -12,7 +12,7 @@ export interface ConversationClientProps {
   initialMessages: Array<{
     id: string;
     role: 'user' | 'assistant';
-    parts: Array<{ type: string; text?: string; [key: string]: any }>;
+    parts?: UIMessagePart<any, any>[];
   }>;
   initialHasMore?: boolean;
   initialDbRowCount?: number;
@@ -46,7 +46,7 @@ export interface ConversationInputProps {
 export interface BaseMessage {
   id: string;
   role: 'user' | 'assistant' | 'system' | 'tool';
-  parts?: UIMessagePart[];
+  parts?: UIMessagePart<any, any>[];
   content?: string;
   metadata?: any;
   createdAt?: string;

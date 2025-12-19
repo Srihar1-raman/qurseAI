@@ -55,9 +55,6 @@ Sentry.init({
     /^resource:\/\//i,
   ],
 
-  // Capture unhandled promise rejections
-  captureUnhandledRejections: true,
-
   // Integrate with browser integrations
   integrations: [
     Sentry.replayIntegration({

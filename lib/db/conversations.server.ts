@@ -11,13 +11,18 @@ const logger = createScopedLogger('db/conversations.server');
 
 /**
  * Ensure conversation exists (server-side)
+ * @param conversationId - Conversation ID
+ * @param userId - User ID
+ * @param title - Conversation title
+ * @param supabaseClient - Optional Supabase client (creates one if not provided)
  */
 export async function ensureConversationServerSide(
   conversationId: string,
   userId: string,
-  title: string
+  title: string,
+  supabaseClient?: Awaited<ReturnType<typeof createClient>>
 ): Promise<void> {
-  const supabase = await createClient();
+  const supabase = supabaseClient || await createClient();
 
   try {
     const { data: existing, error: checkError } = await supabase

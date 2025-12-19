@@ -15,6 +15,7 @@ export interface ConfirmModalProps {
   variant?: 'default' | 'danger';
   warning?: string;
   disabled?: boolean;
+  preventClose?: boolean; // When true, prevents closing via backdrop click or Escape key
 }
 
 export function ConfirmModal({
@@ -28,9 +29,10 @@ export function ConfirmModal({
   variant = 'default',
   warning,
   disabled = false,
+  preventClose = false,
 }: ConfirmModalProps) {
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
+    <Modal isOpen={isOpen} onClose={onClose} preventClose={preventClose}>
       <h3
         className={variant === 'danger' ? 'modal-title danger' : 'modal-title'}
       >
@@ -46,7 +48,7 @@ export function ConfirmModal({
       {warning && <p className="modal-warning">{warning}</p>}
 
       <div className="modal-actions">
-        <UnifiedButton variant="secondary" onClick={onClose}>
+        <UnifiedButton variant="secondary" onClick={onClose} disabled={preventClose}>
           {cancelText}
         </UnifiedButton>
         <UnifiedButton

@@ -7,6 +7,7 @@ import { useTheme } from '@/lib/theme-provider';
 import { useOptimisticNavigation } from '@/hooks/use-optimistic-navigation';
 import { getIconPath } from '@/lib/icon-utils';
 import { useClickOutside } from '@/hooks/use-click-outside';
+import { useAuth } from '@/lib/contexts/AuthContext';
 import type { ConversationItemProps } from '@/lib/types';
 
 export default function ConversationItem({ 
@@ -15,16 +16,23 @@ export default function ConversationItem({
   onDelete, 
   onClose,
   isMenuOpen,
-  onMenuToggle
+  onMenuToggle,
+  activeConversationId,
+  onPin
 }: ConversationItemProps) {
   const router = useRouter();
   const { navigateOptimistically } = useOptimisticNavigation();
   const { resolvedTheme, mounted } = useTheme();
+  const { user } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editTitle, setEditTitle] = useState(conversation.title);
+  const [isPinning, setIsPinning] = useState(false);
   const [menuDirection, setMenuDirection] = useState<'up' | 'down'>('up');
+  const [menuPosition, setMenuPosition] = useState<{ top?: number; bottom?: number; right: number }>({ right: 0 });
   const menuTriggerRef = useRef<HTMLButtonElement>(null);
   const menuContainerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const pinButtonRef = useRef<HTMLButtonElement>(null);
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -60,6 +68,41 @@ export default function ConversationItem({
     onMenuToggle(); // Close menu after delete
   };
 
+  const handlePin = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isPinning) return;
+
+    setIsPinning(true);
+    try {
+      const isGuest = !user;
+      const endpoint = isGuest 
+        ? `/api/guest/conversations/${conversation.id}/pin`
+        : `/api/conversations/${conversation.id}/pin`;
+
+      const response = await fetch(endpoint, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to toggle pin');
+      }
+
+      const data = await response.json();
+      
+      // Optimistically update local state
+      if (onPin) {
+        onPin(conversation.id, data.pinned);
+      }
+    } catch (error) {
+      console.error('Error toggling pin:', error);
+    } finally {
+      setIsPinning(false);
+    }
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -86,6 +129,11 @@ export default function ConversationItem({
     if (isMenuOpen && menuTriggerRef.current) {
       const triggerRect = menuTriggerRef.current.getBoundingClientRect();
       
+      // Calculate position relative to viewport for fixed positioning
+      const sidebar = menuTriggerRef.current.closest('.history-sidebar') as HTMLElement;
+      const sidebarRect = sidebar?.getBoundingClientRect();
+      const sidebarRight = sidebarRect ? sidebarRect.right : window.innerWidth;
+      
       // Find the scrollable container (.history-content) to check space relative to it
       const scrollContainer = menuTriggerRef.current.closest('.history-content') as HTMLElement;
       
@@ -109,36 +157,57 @@ export default function ConversationItem({
         spaceBelow = window.innerHeight - triggerRect.bottom;
       }
       
+      // Use estimate for calculation (menu not rendered yet in useLayoutEffect)
+      // Estimate: 2 items (~32px each) + padding (8px) = ~72px, add buffer = 80px
+      const estimatedMenuHeight = 80;
+      
+      // Calculate menu position
+      const menuRight = sidebarRight - triggerRect.right;
+      
       // Handle negative space explicitly (edge case: trigger above container)
       if (spaceAbove < 0) {
         setMenuDirection('down');
+        setMenuPosition({
+          top: triggerRect.bottom + 4,
+          right: menuRight,
+        });
         return;
       }
-      
-      // Use estimate for calculation (menu not rendered yet in useLayoutEffect)
-      // Estimate: 2 items (~32px each) + padding (8px) = ~72px, add buffer = 80px
-      // This is accurate enough for positioning decisions
-      const estimatedMenuHeight = 80;
       
       // Open upward if there's enough space above, otherwise open downward
       if (spaceAbove >= estimatedMenuHeight) {
         setMenuDirection('up');
+        setMenuPosition({
+          bottom: window.innerHeight - triggerRect.top + 4,
+          right: menuRight,
+        });
       } else if (spaceBelow >= estimatedMenuHeight) {
         setMenuDirection('down');
+        setMenuPosition({
+          top: triggerRect.bottom + 4,
+          right: menuRight,
+        });
       } else {
         // If neither direction has enough space, prefer downward for first items
         setMenuDirection('down');
+        setMenuPosition({
+          top: triggerRect.bottom + 4,
+          right: menuRight,
+        });
       }
     } else if (!isMenuOpen) {
       // Reset to default direction when menu closes (consistency)
       setMenuDirection('up');
+      setMenuPosition({ right: 0 });
     }
   }, [isMenuOpen]);
+
+  const isActive = conversation.id === activeConversationId;
 
   return (
     <div className="history-tree-item">
       <div 
-        className="tree-item-content"
+        className={`tree-item-content ${isActive ? 'active' : ''}`}
         onClick={handleChatClick}
         onMouseEnter={() => !isEditing && router.prefetch(`/conversation/${conversation.id}`)}
         style={{ cursor: isEditing ? 'default' : 'pointer' }}
@@ -167,6 +236,21 @@ export default function ConversationItem({
         {/* Actions */}
         <div className="tree-item-actions" ref={menuContainerRef}>
           <button
+            ref={pinButtonRef}
+            className="chat-pin-trigger"
+            onClick={handlePin}
+            title={conversation.pinned ? "Unpin conversation" : "Pin conversation"}
+            disabled={isPinning}
+          >
+            <Image 
+              src={conversation.pinned ? getIconPath("pin", resolvedTheme, true, mounted) : getIconPath("unpin", resolvedTheme, false, mounted)} 
+              alt={conversation.pinned ? "Unpin" : "Pin"} 
+              width={12} 
+              height={12} 
+              className={`tree-item-pin ${conversation.pinned ? 'active' : ''}`}
+            />
+          </button>
+          <button
             ref={menuTriggerRef}
             className="chat-menu-trigger"
             onClick={(e) => {
@@ -185,9 +269,19 @@ export default function ConversationItem({
           </button>
           
           {isMenuOpen && (
-            <div className={`chat-menu chat-menu-${menuDirection}`}>
+            <div 
+              ref={menuRef}
+              className={`chat-menu chat-menu-${menuDirection}`}
+              style={menuPosition}
+            >
               <div className="chat-menu-item" onClick={(e) => {
                 e.stopPropagation();
+                // Check if user is guest - trigger popup immediately instead of allowing edit
+                if (!user) {
+                  onRename(conversation.id, conversation.title); // This will trigger popup in HistorySidebar
+                  onMenuToggle(); // Close menu
+                  return;
+                }
                 setIsEditing(true);
                 setEditTitle(conversation.title);
                 onMenuToggle(); // Close menu

@@ -19,7 +19,7 @@ export default function DeleteAccountModal({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose}>
+    <Modal isOpen={isOpen} onClose={handleClose} preventClose={isDeleting}>
       <h3 className="modal-title danger">
         Delete Account
       </h3>

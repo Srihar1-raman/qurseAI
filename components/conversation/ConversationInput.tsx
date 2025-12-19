@@ -18,6 +18,7 @@ interface ConversationInputProps {
   onKeyPress: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   isLoading: boolean;
+  isRateLimited: boolean;
   chatMode: string;
   onChatModeChange: (mode: string) => void;
 }
@@ -29,6 +30,7 @@ export function ConversationInput({
   onKeyPress,
   textareaRef,
   isLoading,
+  isRateLimited,
   chatMode,
   onChatModeChange,
 }: ConversationInputProps) {

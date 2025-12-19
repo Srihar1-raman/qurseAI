@@ -13,6 +13,9 @@ export interface GuestRateLimitPopupProps {
   onClose: () => void;
   reset: number; // Unix timestamp
   layer?: 'redis' | 'database';
+  // Optional custom title and message (for guest actions like rename/delete)
+  customTitle?: string;
+  customMessage?: string;
 }
 
 export function GuestRateLimitPopup({
@@ -20,6 +23,8 @@ export function GuestRateLimitPopup({
   onClose,
   reset,
   layer = 'database',
+  customTitle,
+  customMessage,
 }: GuestRateLimitPopupProps) {
   const { resolvedTheme } = useTheme();
   const pathname = usePathname();
@@ -161,12 +166,16 @@ export function GuestRateLimitPopup({
         onClick={(e) => e.stopPropagation()}
       >
         <h1 className="auth-title" style={{ color: 'var(--color-primary)' }}>
-          Daily Limit Reached
+          {customTitle || 'Daily Limit Reached'}
         </h1>
         
         <p className="auth-subtitle">
-          You've reached the daily message limit. Sign in or sign up to continue messaging, or wait until{' '}
-          <strong style={{ color: 'var(--color-primary)' }}>{resetTime}</strong>.
+          {customMessage || (
+            <>
+              You've reached the daily message limit. Sign in or sign up to continue messaging, or wait until{' '}
+              <strong style={{ color: 'var(--color-primary)' }}>{resetTime}</strong>.
+            </>
+          )}
         </p>
 
         {/* Hero block with background, logo, carousel, and auth buttons */}

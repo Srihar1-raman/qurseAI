@@ -1,5 +1,5 @@
 import { getMessagesServerSide, checkConversationAccess } from '@/lib/db/queries.server';
-import { getGuestMessagesServerSide } from '@/lib/db/messages.server';
+import { getGuestMessagesServerSide } from '@/lib/db/guest-messages.server';
 import { checkGuestConversationAccess } from '@/lib/db/guest-conversations.server';
 import { createClient } from '@/lib/supabase/server';
 import { getUserData } from '@/lib/supabase/auth-utils';
@@ -12,6 +12,7 @@ import { hmacSessionId } from '@/lib/utils/session-hash';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import ConversationPageClient from './ConversationPageClient';
 import type { User } from '@/lib/types';
+import type { UIMessagePart } from 'ai';
 
 const logger = createScopedLogger('conversation/page');
 
@@ -44,7 +45,7 @@ export default async function ConversationPage({ params, searchParams }: PagePro
 
   const validatedParams = searchParamsValidation.data || {};
 
-  let initialMessages: Array<{ id: string; role: 'user' | 'assistant'; parts: Array<{ type: string; text?: string; [key: string]: any }> }> = [];
+  let initialMessages: Array<{ id: string; role: 'user' | 'assistant'; parts?: UIMessagePart<any, any>[] }> = [];
   let initialHasMore = false;
   let initialDbRowCount = 0;
   let user: User | null = null;

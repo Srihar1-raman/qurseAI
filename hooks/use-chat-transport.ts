@@ -61,7 +61,44 @@ export function useChatTransport({
   }, []);
 
   const handleError = useCallback(
-    (error: Error & { status?: number; cause?: any; response?: Response }) => {
+    async (error: Error & { status?: number; cause?: any; response?: Response }) => {
+      // Try to extract response from multiple sources
+      let response: Response | null = null;
+      
+      if (error.response) {
+        response = error.response;
+      } else if (error.cause && error.cause instanceof Response) {
+        response = error.cause;
+      } else if (error.cause && typeof error.cause === 'object' && 'response' in error.cause) {
+        response = (error.cause as any).response;
+      }
+
+      // If we have a response, try to parse the error body for rate limit info
+      if (response && response.status === 429) {
+        try {
+          const errorData = await response.clone().json().catch(() => null);
+          if (errorData?.rateLimitInfo) {
+            const resetTime = errorData.rateLimitInfo.resetTime || 
+              parseInt(response.headers.get('X-RateLimit-Reset') || '0', 10) || 
+              Date.now() + 24 * 60 * 60 * 1000;
+            const layer = errorData.rateLimitInfo.layer || 
+              (response.headers.get('X-RateLimit-Layer') as 'redis' | 'database') || 
+              'database';
+            
+            setRateLimitState({
+              isRateLimited: true,
+              resetTime,
+              userType: user ? 'free' : 'guest',
+              layer,
+            });
+            return;
+          }
+        } catch {
+          // If JSON parsing fails, continue with header extraction
+        }
+      }
+
+      // Check if it's a rate limit error (by status or message)
       if (isRateLimitError(error)) {
         const rateLimitInfo = extractRateLimitInfo(error);
 
@@ -72,6 +109,7 @@ export function useChatTransport({
           layer: rateLimitInfo.layer,
         });
 
+        // Don't show toast for rate limit errors - popup will handle it
         return;
       }
 

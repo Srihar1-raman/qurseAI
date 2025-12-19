@@ -144,6 +144,10 @@
   overflow-x: hidden;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  /* Hardware acceleration for smoother scrolling */
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .conversation-container::-webkit-scrollbar {
@@ -156,6 +160,9 @@
   gap: 20px;
   padding-bottom: 0px;
   min-height: 400px;
+  /* Hardware acceleration for smoother rendering */
+  transform: translateZ(0);
+  backface-visibility: hidden;
   /* Remove scrollbar styles - this container should NOT scroll, parent does */
 }
 
@@ -167,6 +174,9 @@
 .message {
   display: flex;
   margin-bottom: 20px;
+  /* Hardware acceleration for smoother rendering */
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .user-message {

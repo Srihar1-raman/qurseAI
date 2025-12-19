@@ -20,7 +20,7 @@ interface ConversationThreadProps {
   conversationThreadRef: React.RefObject<HTMLDivElement | null>;
 }
 
-export function ConversationThread({
+function ConversationThreadComponent({
   messages,
   isLoading,
   isLoadingOlderMessages,
@@ -115,3 +115,43 @@ export function ConversationThread({
   );
 }
 
+// Memoize to prevent Safari re-render flash - only re-render when content actually changes
+export const ConversationThread = React.memo(ConversationThreadComponent, (prevProps, nextProps) => {
+  // Only re-render if messages actually changed (by content, not reference)
+  if (prevProps.messages.length !== nextProps.messages.length) {
+    return false; // Re-render
+  }
+  
+  // Check if any message content changed
+  for (let i = 0; i < prevProps.messages.length; i++) {
+    const prevMsg = prevProps.messages[i];
+    const nextMsg = nextProps.messages[i];
+    
+    if (prevMsg.id !== nextMsg.id) {
+      return false; // Re-render
+    }
+    
+    // Check if parts content changed
+    const prevContent = prevMsg.parts?.map(p => ('text' in p ? p.text : '')).join('') || '';
+    const nextContent = nextMsg.parts?.map(p => ('text' in p ? p.text : '')).join('') || '';
+    
+    if (prevContent !== nextContent) {
+      return false; // Re-render
+    }
+  }
+  
+  // Check other props
+  if (
+    prevProps.isLoading !== nextProps.isLoading ||
+    prevProps.isLoadingOlderMessages !== nextProps.isLoadingOlderMessages ||
+    prevProps.hasMoreMessages !== nextProps.hasMoreMessages ||
+    prevProps.isRateLimited !== nextProps.isRateLimited ||
+    prevProps.selectedModel !== nextProps.selectedModel ||
+    prevProps.error?.message !== nextProps.error?.message
+  ) {
+    return false; // Re-render
+  }
+  
+  // Props are equal - skip re-render
+  return true;
+});

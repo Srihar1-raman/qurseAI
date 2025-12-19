@@ -34,9 +34,10 @@ export async function GET(request: NextRequest) {
     // Search conversations (server-side, searches entire database)
     const { data, error } = await supabase
       .from('conversations')
-      .select('id, title, updated_at, created_at, user_id')
+      .select('id, title, updated_at, created_at, user_id, pinned')
       .eq('user_id', user.id)
       .ilike('title', `%${query}%`)
+      .order('pinned', { ascending: false })
       .order('updated_at', { ascending: false })
       .limit(1000);
 
@@ -56,6 +57,7 @@ export async function GET(request: NextRequest) {
       updated_at: conv.updated_at,
       created_at: conv.created_at,
       message_count: 0, // Not needed for search results
+      pinned: conv.pinned || false,
     }));
 
     logger.debug('Search completed', { userId: user.id, query, resultCount: conversations.length });

@@ -126,11 +126,13 @@ export function ConversationClient({
           onKeyPress={handleKeyPress}
           textareaRef={textareaRef}
           isLoading={isLoading}
+          isRateLimited={rateLimitState.isRateLimited}
           chatMode={chatMode}
           onChatModeChange={setChatMode}
         />
       </main>
 
+      {/* Rate limit popups */}
       {rateLimitState.isRateLimited && !user && (
         <GuestRateLimitPopup
           key={sendAttemptCount}
@@ -151,7 +153,7 @@ export function ConversationClient({
             // Don't clear state - user is still rate limited
           }}
           onUpgrade={() => {
-            router.push('/pricing');
+            router.push('/settings?tab=pricing');
           }}
           reset={rateLimitState.resetTime || Date.now()}
         />

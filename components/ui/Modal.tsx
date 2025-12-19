@@ -7,14 +7,15 @@ export interface ModalProps {
   onClose: () => void;
   children: React.ReactNode;
   maxWidth?: string;
+  preventClose?: boolean; // When true, prevents closing via backdrop click or Escape key
 }
 
-export function Modal({ isOpen, onClose, children, maxWidth = '500px' }: ModalProps) {
+export function Modal({ isOpen, onClose, children, maxWidth = '500px', preventClose = false }: ModalProps) {
   useEffect(() => {
     if (!isOpen) return;
 
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
+      if (e.key === 'Escape' && !preventClose) {
         onClose();
       }
     };
@@ -26,7 +27,7 @@ export function Modal({ isOpen, onClose, children, maxWidth = '500px' }: ModalPr
       document.removeEventListener('keydown', handleEscape);
       document.body.style.overflow = '';
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, onClose, preventClose]);
 
   if (!isOpen) return null;
 
@@ -42,7 +43,7 @@ export function Modal({ isOpen, onClose, children, maxWidth = '500px' }: ModalPr
         zIndex: 9999,
         padding: '20px',
       }}
-      onClick={onClose}
+      onClick={preventClose ? undefined : onClose}
     >
       <div
         style={{

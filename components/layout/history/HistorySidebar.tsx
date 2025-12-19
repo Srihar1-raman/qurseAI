@@ -16,6 +16,7 @@ import HistoryHeader from './HistoryHeader';
 import HistorySearch from './HistorySearch';
 import ConversationList from './ConversationList';
 import ClearHistoryModal from './ClearHistoryModal';
+import { GuestRateLimitPopup } from '@/components/rate-limit/GuestRateLimitPopup';
 import { useInfiniteScroll } from '@/hooks/use-infinite-scroll';
 import { useConversationId } from '@/hooks/use-conversation-id';
 import { createScopedLogger } from '@/lib/utils/logger';
@@ -45,9 +46,26 @@ const logger = createScopedLogger('history-sidebar');
 
 // Helper function to group conversations (moved outside component for performance)
   const groupConversations = (conversations: Conversation[]): ConversationGroup[] => {
-    const groups: Record<string, Conversation[]> = {};
+    // Separate pinned and unpinned conversations
+    const pinned: Conversation[] = [];
+    const unpinned: Conversation[] = [];
     
     conversations.forEach(conversation => {
+      if (conversation.pinned) {
+        pinned.push(conversation);
+      } else {
+        unpinned.push(conversation);
+      }
+    });
+
+    // Sort pinned by updated_at DESC
+    pinned.sort((a, b) => 
+      new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+    );
+
+    // Group unpinned conversations by date
+    const groups: Record<string, Conversation[]> = {};
+    unpinned.forEach(conversation => {
       const group = getDateGroup(conversation.updated_at);
       if (!groups[group]) {
         groups[group] = [];
@@ -56,7 +74,7 @@ const logger = createScopedLogger('history-sidebar');
     });
 
     const groupOrder = ['Today', 'Last 24 hours', 'Last 7 days', 'Last 30 days', 'Older'];
-    return groupOrder
+    const dateGroups = groupOrder
       .filter(group => groups[group])
       .map(group => ({
         label: group,
@@ -64,6 +82,18 @@ const logger = createScopedLogger('history-sidebar');
           new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
         )
       }));
+
+    // Return pinned section first (if any), then date groups
+    const result: ConversationGroup[] = [];
+    if (pinned.length > 0) {
+      result.push({
+        label: 'Pinned',
+        conversations: pinned
+      });
+    }
+    result.push(...dateGroups);
+    
+    return result;
   };
 
 function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
@@ -89,6 +119,7 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
   const [isSearching, setIsSearching] = useState(false);
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
+  const [showGuestActionPopup, setShowGuestActionPopup] = useState(false);
 
   // Get state and actions from context
   const {
@@ -396,6 +427,12 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
 
   // Wrap handleRename with useCallback for stable reference
   const handleRename = useCallback(async (id: string, newTitle: string) => {
+    // Check if user is guest - show popup instead of attempting rename
+    if (!user) {
+      setShowGuestActionPopup(true);
+      return;
+    }
+
     try {
       await updateConversation(id, { title: newTitle });
       setChatHistory(prev => 
@@ -413,10 +450,16 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
       // Error handled by component state
       setError('Failed to rename conversation');
     }
-  }, [setChatHistory, setSearchResults, setError]);
+  }, [user, setChatHistory, setSearchResults, setError]);
 
   // Wrap handleDelete with useCallback for stable reference
   const handleDelete = useCallback(async (id: string) => {
+    // Check if user is guest - show popup instead of attempting delete
+    if (!user) {
+      setShowGuestActionPopup(true);
+      return;
+    }
+
     try {
       await deleteConversation(id);
       setChatHistory(prev => prev.filter(chat => chat.id !== id));
@@ -428,7 +471,24 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
       // Error handled by component state
       setError('Failed to delete conversation');
     }
-  }, [setChatHistory, setSearchResults, setTotalConversationCount, setError]);
+  }, [user, setChatHistory, setSearchResults, setTotalConversationCount, setError]);
+
+  // Handle pin toggle - optimistic update with new array reference to force re-sort
+  const handlePin = useCallback((id: string, pinned: boolean) => {
+    setChatHistory(prev => {
+      // Create new array reference to ensure memoization detects change
+      return prev.map(chat => 
+        chat.id === id ? { ...chat, pinned } : chat
+      );
+    });
+    // Also update search results if conversation is in search results
+    setSearchResults(prev => {
+      // Create new array reference to ensure memoization detects change
+      return prev.map(chat => 
+        chat.id === id ? { ...chat, pinned } : chat
+      );
+    });
+  }, [setChatHistory, setSearchResults]);
 
   return (
     <>
@@ -545,6 +605,8 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
                 onDelete={handleDelete}
                 onClose={onClose}
                 isSidebarOpen={isOpen}
+                activeConversationId={conversationId}
+                onPin={handlePin}
               />
 
               {/* Loading indicator for infinite scroll */}
@@ -575,6 +637,14 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
         isOpen={showClearConfirm}
         onClose={() => setShowClearConfirm(false)}
         onConfirm={handleClearHistory}
+      />
+
+      <GuestRateLimitPopup
+        isOpen={showGuestActionPopup}
+        onClose={() => setShowGuestActionPopup(false)}
+        reset={Date.now() + 24 * 60 * 60 * 1000} // 24 hours from now
+        customTitle="Sign in to continue"
+        customMessage="Sign in to unlock this feature and access more capabilities."
       />
     </>
   );

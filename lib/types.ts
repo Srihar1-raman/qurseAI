@@ -145,6 +145,7 @@ export interface Conversation {
   message_count?: number;
   user_id?: string;
   model?: string;
+  pinned?: boolean;
 }
 
 export interface ConversationGroup {
@@ -206,6 +207,8 @@ export interface ConversationItemProps {
   onClose: () => void;
   isMenuOpen: boolean;
   onMenuToggle: () => void;
+  activeConversationId?: string | null; // ID of currently active conversation (for highlighting)
+  onPin?: (id: string, pinned: boolean) => void; // Callback when pin status changes
 }
 
 export interface ConversationListProps {
@@ -214,6 +217,8 @@ export interface ConversationListProps {
   onDelete: (id: string) => void;
   onClose: () => void;
   isSidebarOpen: boolean;
+  activeConversationId?: string | null; // ID of currently active conversation (for highlighting)
+  onPin?: (id: string, pinned: boolean) => void; // Callback when pin status changes
 }
 
 export interface HistorySidebarProps {

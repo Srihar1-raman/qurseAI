@@ -31,9 +31,6 @@ Sentry.init({
     'ENOTFOUND',
   ],
 
-  // Capture unhandled promise rejections
-  captureUnhandledRejections: true,
-
   // Server-specific integrations
   integrations: [],
 

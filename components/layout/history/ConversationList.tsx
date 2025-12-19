@@ -9,7 +9,9 @@ export default function ConversationList({
   onRename, 
   onDelete, 
   onClose,
-  isSidebarOpen
+  isSidebarOpen,
+  activeConversationId,
+  onPin
 }: ConversationListProps) {
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -111,6 +113,8 @@ export default function ConversationList({
                   onClose={onClose}
                   isMenuOpen={openMenuId === conversation.id}
                   onMenuToggle={menuToggleMap.get(conversation.id) || (() => {})}
+                  activeConversationId={activeConversationId}
+                  onPin={onPin}
                 />
               ))}
             </div>

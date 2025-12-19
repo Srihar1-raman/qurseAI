@@ -264,6 +264,10 @@ function SettingsPageContent() {
       // Update both local state and context for consistency
       setUserStats({ totalConversations: 0 });
       setTotalConversationCount(0);
+      
+      // Force refresh history sidebar to clear stale data
+      await loadConversations(true);
+      
       setShowClearChatsConfirm(false);
       router.push('/');
     } catch (error) {
@@ -272,7 +276,7 @@ function SettingsPageContent() {
       showToastError(errorMessage);
       logger.error('Error clearing conversations', error);
     }
-  }, [showToastError, router, setTotalConversationCount]);
+  }, [showToastError, router, setTotalConversationCount, loadConversations]);
 
   // Memoize sections array (never changes)
   const sections = useMemo(() => [

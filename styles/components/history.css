@@ -227,7 +227,9 @@
 .history-tree-container {
   flex: 1;
   overflow-y: auto;
+  overflow-x: visible;
   padding: 0;
+  position: relative;
 }
 
 .history-tree-section {
@@ -267,6 +269,7 @@
 
 .history-tree-item {
   position: relative;
+  overflow: visible;
 }
 
 .tree-item-content {
@@ -278,11 +281,26 @@
   transition: all 0.2s ease;
   background: var(--color-bg);
   position: relative;
+  overflow: visible;
 }
 
 .tree-item-content:hover {
   background: var(--color-bg-hover);
   border-bottom-color: var(--color-border);
+}
+
+/* Active conversation highlighting */
+.tree-item-content.active {
+  background: rgba(0, 0, 0, 0.04); /* Subtle gray overlay with low opacity */
+}
+
+[data-theme='dark'] .tree-item-content.active,
+[data-theme='auto'] .tree-item-content.active {
+  background: rgba(255, 255, 255, 0.04); /* Subtle light overlay for dark mode */
+}
+
+.tree-item-content.active:hover {
+  background: var(--color-bg-hover); /* Hover effect still works on active chat */
 }
 
 .tree-item-main {
@@ -316,10 +334,56 @@
 .tree-item-actions {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 4px;
   flex-shrink: 0;
   margin-right: 0;
   position: relative;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.tree-item-content:hover .tree-item-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tree-item-content.active .tree-item-actions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.chat-pin-trigger {
+  background: transparent;
+  border: none;
+  padding: 6px;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--color-text-muted);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat-pin-trigger:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.chat-pin-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tree-item-pin {
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.tree-item-pin.active {
+  opacity: 1;
+  color: var(--color-primary);
 }
 
 .tree-item-more {
@@ -373,27 +437,24 @@
 }
 
 .chat-menu {
-  position: absolute;
-  right: 0;
+  position: fixed;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   box-shadow: 0 4px 20px var(--color-shadow-lg);
-  z-index: 9999;
+  z-index: 10000;
   min-width: 140px;
-  padding: 4px 0;
+  padding: 0;
+  overflow: hidden;
 }
 
-/* Menu opens upward (default, for most items) */
+/* Menu positioning is now handled via inline styles for fixed positioning */
 .chat-menu.chat-menu-up {
-  bottom: 100%;
-  margin-bottom: 4px;
+  /* Position handled by inline styles */
 }
 
-/* Menu opens downward (for first items when space above is limited) */
 .chat-menu.chat-menu-down {
-  top: 100%;
-  margin-top: 4px;
+  /* Position handled by inline styles */
 }
 
 .chat-menu-item {

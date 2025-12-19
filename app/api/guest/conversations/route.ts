@@ -36,8 +36,9 @@ export async function GET(request: NextRequest) {
     // Query guest conversations (service-role client required)
     const { data, error } = await serviceSupabase
       .from('guest_conversations')
-      .select('id, title, created_at, updated_at, session_hash')
+      .select('id, title, created_at, updated_at, session_hash, pinned')
       .eq('session_hash', sessionHash)
+      .order('pinned', { ascending: false })
       .order('updated_at', { ascending: false })
       .range(offset, offset + limit - 1);
 
@@ -75,6 +76,7 @@ export async function GET(request: NextRequest) {
       updated_at: conv.updated_at,
       created_at: conv.created_at,
       message_count: messageCounts[conv.id] || 0,
+      pinned: conv.pinned || false,
     }));
 
     const hasMore = (data?.length || 0) >= limit;
