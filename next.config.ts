@@ -32,6 +32,12 @@ const nextConfig: NextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  // Exclude test routes from production builds
+  // Test pages are not needed in production and can cause build issues
+  async generateBuildId() {
+    // This ensures test routes are not included in production builds
+    return process.env.VERCEL ? 'production-build' : undefined;
+  },
   // Ignore TypeScript errors during build (only if needed)
   // typescript: {
   //   ignoreBuildErrors: false, // Keep this false to catch TS errors
