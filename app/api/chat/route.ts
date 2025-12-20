@@ -471,7 +471,7 @@ export async function POST(req: Request) {
             }
           } catch (checkError) {
             // If check fails, log but continue (don't block save on check failure)
-            logger.warn('Failed to check for existing stop message', checkError, {
+            logger.error('Failed to check for existing stop message', checkError, {
               conversationId: resolvedConversationId,
             });
           }
