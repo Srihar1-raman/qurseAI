@@ -48,6 +48,26 @@ supabaseDOC.md
 # cursor
 .cursor/worktrees.json
 
+# test files and pages (not needed in production)
+app/test/
+**/__tests__/
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+vitest.config.ts
+vitest.setup.ts
+coverage/
+.nyc_output/
+
+# development tools
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
 # test results and documentation
 TEST_*.md
 *_SUMMARY.md
