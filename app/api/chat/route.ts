@@ -719,6 +719,28 @@ export async function POST(req: Request) {
                   return;
                 }
 
+                // ULTIMATE FINAL CHECK: Right before database insert, check one more time
+                // This catches client saves that happen during the 15-second wait period
+                const ultimateCheck = await checkForStopMessage();
+                if (ultimateCheck) {
+                  console.error('[DIAGNOSTIC] after(): Stop message found in ULTIMATE check right before insert, aborting save', {
+                    conversationId: resolvedConversationId,
+                    timestamp: Date.now(),
+                  });
+                  return; // Don't save if stop message exists
+                }
+
+                // Small delay to catch any in-flight client saves (client saves can take 1-2 seconds)
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                const ultimateFinalCheck = await checkForStopMessage();
+                if (ultimateFinalCheck) {
+                  console.error('[DIAGNOSTIC] after(): Stop message found in ULTIMATE-FINAL check after 2s delay, aborting save', {
+                    conversationId: resolvedConversationId,
+                    timestamp: Date.now(),
+                  });
+                  return; // Don't save if stop message exists
+                }
+
                 const { error: assistantMsgError } = await supabaseClient.from('messages').insert({
                   conversation_id: resolvedConversationId,
                     role: 'assistant',
@@ -872,6 +894,49 @@ export async function POST(req: Request) {
 
             try {
               if (assistantMessage && assistantMessage.role === 'assistant') {
+                // ULTIMATE FINAL CHECK: Right before guest message save, check one more time
+                if (serviceSupabase && !guestConversationId.startsWith('temp-')) {
+                  const { data: ultimateCheckStopMessage } = await serviceSupabase
+                    .from('guest_messages')
+                    .select('id, created_at')
+                    .eq('guest_conversation_id', guestConversationId)
+                    .eq('role', 'assistant')
+                    .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                  if (ultimateCheckStopMessage) {
+                    console.error('[DIAGNOSTIC] after(): Stop message found in ULTIMATE check before guest save, aborting', {
+                      conversationId: guestConversationId,
+                      existingMessageId: ultimateCheckStopMessage.id,
+                      timestamp: Date.now(),
+                    });
+                    return; // Don't save if stop message exists
+                  }
+
+                  // Small delay to catch any in-flight client saves
+                  await new Promise(resolve => setTimeout(resolve, 2000));
+                  const { data: ultimateFinalCheckStopMessage } = await serviceSupabase
+                    .from('guest_messages')
+                    .select('id, created_at')
+                    .eq('guest_conversation_id', guestConversationId)
+                    .eq('role', 'assistant')
+                    .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                  if (ultimateFinalCheckStopMessage) {
+                    console.error('[DIAGNOSTIC] after(): Stop message found in ULTIMATE-FINAL check after 2s delay (guest), aborting', {
+                      conversationId: guestConversationId,
+                      existingMessageId: ultimateFinalCheckStopMessage.id,
+                      timestamp: Date.now(),
+                    });
+                    return; // Don't save if stop message exists
+                  }
+                }
+
                 await saveGuestMessage({
                   conversationId: guestConversationId,
                   message: assistantMessage,
