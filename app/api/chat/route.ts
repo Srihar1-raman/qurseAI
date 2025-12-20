@@ -25,9 +25,17 @@ import { ensureGuestConversation } from '@/lib/db/guest-conversations.server';
 import { saveGuestMessage } from '@/lib/db/guest-messages.server';
 import { hmacSessionId } from '@/lib/utils/session-hash';
 import { applyRateLimitHeaders, applyConversationIdHeader } from '@/lib/utils/rate-limit-headers';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 import type { User } from '@/lib/types';
 
 const logger = createScopedLogger('api/chat');
+
+// Service-role client for guest message checks (bypasses RLS)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const serviceSupabase = supabaseUrl && serviceKey 
+  ? createServiceClient(supabaseUrl, serviceKey)
+  : null;
 
 /**
  * POST /api/chat
@@ -404,6 +412,70 @@ export async function POST(req: Request) {
         // Save assistant messages in BACKGROUND (non-blocking)
         const user = fullUserData;
         const assistantMessage = messages[messages.length - 1];
+
+        // Additional safety check: If message content contains stop text, don't save
+        // This handles cases where abort state isn't detected but client already saved partial message
+        if (assistantMessage && assistantMessage.parts) {
+          const contentText = assistantMessage.parts
+            .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+            .map((p) => p.text)
+            .join('');
+          
+          if (contentText.includes('*User stopped this message here*')) {
+            logger.debug('Message contains stop text, skipping save (client already saved partial)', {
+              conversationId: resolvedConversationId,
+            });
+            return;
+          }
+        }
+
+        // Check if a message with stop text already exists for this conversation (defensive check)
+        // This prevents duplicate saves in production where timing differs
+        if (resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
+          try {
+            if (user) {
+              const checkSupabase = await createClient();
+              const { data: existingStopMessage } = await checkSupabase
+                .from('messages')
+                .select('id')
+                .eq('conversation_id', resolvedConversationId)
+                .eq('role', 'assistant')
+                .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
+                .limit(1)
+                .maybeSingle();
+
+              if (existingStopMessage) {
+                logger.debug('Stop message already exists, skipping save to prevent duplicate', {
+                  conversationId: resolvedConversationId,
+                  existingMessageId: existingStopMessage.id,
+                });
+                return;
+              }
+            } else if (serviceSupabase) {
+              const { data: existingStopMessage } = await serviceSupabase
+                .from('guest_messages')
+                .select('id')
+                .eq('guest_conversation_id', resolvedConversationId)
+                .eq('role', 'assistant')
+                .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
+                .limit(1)
+                .maybeSingle();
+
+              if (existingStopMessage) {
+                logger.debug('Stop message already exists, skipping save to prevent duplicate', {
+                  conversationId: resolvedConversationId,
+                  existingMessageId: existingStopMessage.id,
+                });
+                return;
+              }
+            }
+          } catch (checkError) {
+            // If check fails, log but continue (don't block save on check failure)
+            logger.warn('Failed to check for existing stop message', checkError, {
+              conversationId: resolvedConversationId,
+            });
+          }
+        }
 
         // Authenticated assistant save
         if (user && resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
