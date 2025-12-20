@@ -42,7 +42,7 @@ export async function getOlderMessages(
   // For older messages, we need messages BEFORE the ones we already have
   // Offset represents messages we've already loaded (newest ones)
   // So we skip the offset messages and get the next batch
-  let query = supabase
+  const query = supabase
     .from('messages')
     .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time')
     .eq('conversation_id', conversationId)

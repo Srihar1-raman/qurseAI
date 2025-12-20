@@ -3,7 +3,7 @@
  * Handles message merging, transformation, and deduplication
  */
 
-import type { UIMessagePart } from 'ai';
+import type { UIMessagePart, UIDataTypes, UITools } from 'ai';
 import type { QurseMessage, StreamMetadata } from '@/lib/types';
 
 /**
@@ -12,7 +12,7 @@ import type { QurseMessage, StreamMetadata } from '@/lib/types';
 interface BaseMessage {
   id: string;
   role: 'user' | 'assistant' | 'system' | 'tool';
-  parts?: UIMessagePart<any, any>[];
+  parts?: UIMessagePart<UIDataTypes, UITools>[];
   content?: string;
   metadata?: StreamMetadata;
   createdAt?: string;
@@ -104,7 +104,7 @@ export function transformToQurseMessage(messages: BaseMessage[]): QurseMessage[]
       return {
         id: msg.id,
         role: msg.role as 'user' | 'assistant',
-        parts: msg.parts as UIMessagePart<any, any>[],
+        parts: msg.parts as UIMessagePart<UIDataTypes, UITools>[],
         metadata: 'metadata' in msg && msg.metadata ? (msg.metadata as StreamMetadata) : undefined,
       };
     }

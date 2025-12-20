@@ -14,7 +14,7 @@ export interface RateLimitInfo {
  * @returns True if the error is a rate limit error (status 429)
  */
 export function isRateLimitError(
-  error: Error & { status?: number; cause?: any; response?: Response }
+  error: Error & { status?: number; cause?: unknown; response?: Response }
 ): boolean {
   // Check status code directly
   if (error.status === 429) {
@@ -45,8 +45,9 @@ export function isRateLimitError(
 
   // Check if error has rateLimitInfo in the error object or cause
   if (error.cause && typeof error.cause === 'object') {
-    const cause = error.cause as any;
-    if (cause.rateLimitInfo || cause.error?.includes('limit')) {
+    const cause = error.cause as Record<string, unknown>;
+    const errorMessage = typeof cause.error === 'string' ? cause.error : String(cause.error || '');
+    if (cause.rateLimitInfo || errorMessage.includes('limit')) {
       return true;
     }
   }
@@ -61,7 +62,7 @@ export function isRateLimitError(
  * @returns Rate limit information (resetTime, layer)
  */
 export function extractRateLimitInfo(
-  error: Error & { status?: number; cause?: any; response?: Response }
+  error: Error & { status?: number; cause?: unknown; response?: Response }
 ): RateLimitInfo {
   // Default values
   let resetTime = Date.now() + 24 * 60 * 60 * 1000; // Default: 24 hours from now
@@ -73,9 +74,12 @@ export function extractRateLimitInfo(
   if (error.response) {
     response = error.response;
   } else if (error.cause && error.cause instanceof Response) {
-    response = error.cause;
+    response = error.cause as Response;
   } else if (error.cause && typeof error.cause === 'object' && 'response' in error.cause) {
-    response = (error.cause as any).response;
+    const causeWithResponse = error.cause as { response?: Response };
+    if (causeWithResponse.response) {
+      response = causeWithResponse.response;
+    }
   }
 
   // Extract from response headers

@@ -3,7 +3,7 @@
  * All shared types used across the application
  */
 
-import type { UIMessagePart } from 'ai';
+import type { UIMessagePart, UIDataTypes, UITools } from 'ai';
 
 // ============================================
 // User & Authentication Types
@@ -133,7 +133,7 @@ export interface ChatMessage {
 export interface QurseMessage {
   id: string;
   role: 'user' | 'assistant';
-  parts: UIMessagePart<Record<string, unknown>, Record<string, unknown>>[];
+  parts: UIMessagePart<UIDataTypes, UITools>[];
   metadata?: StreamMetadata;
 }
 

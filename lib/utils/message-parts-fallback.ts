@@ -4,12 +4,12 @@
  * Used for backward compatibility with old messages
  */
 
-import type { UIMessagePart } from 'ai';
+import type { UIMessagePart, UIDataTypes, UITools } from 'ai';
 
 /**
  * Type for parts array (compatible with AI SDK)
  */
-export type MessageParts = UIMessagePart<Record<string, unknown>, Record<string, unknown>>[];
+export type MessageParts = UIMessagePart<UIDataTypes, UITools>[];
 
 /**
  * Delimiter constants for legacy reasoning format

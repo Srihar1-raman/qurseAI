@@ -3,6 +3,8 @@ import { getUserData } from '@/lib/supabase/auth-utils';
 import PricingPageClient from './PricingPageClient';
 import { createScopedLogger } from '@/lib/utils/logger';
 
+export const dynamic = 'force-dynamic';
+
 const logger = createScopedLogger('pricing/page');
 
 export default async function PricingPage() {

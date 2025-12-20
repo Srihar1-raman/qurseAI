@@ -5,6 +5,8 @@ import { getCachedUser } from '@/lib/supabase/auth-utils';
 import SettingsPageClient from './SettingsPageClient';
 import { SettingsPageSkeleton } from '@/components/ui/SettingsPageSkeleton';
 
+export const dynamic = 'force-dynamic';
+
 const logger = createScopedLogger('settings/page');
 
 export default async function SettingsPage() {

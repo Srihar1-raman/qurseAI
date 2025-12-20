@@ -9,7 +9,7 @@ import { ConversationPageSkeleton } from '@/components/ui/ConversationPageSkelet
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { createScopedLogger } from '@/lib/utils/logger';
 import type { User } from '@/lib/types';
-import type { UIMessagePart } from 'ai';
+import type { UIMessagePart, UIDataTypes, UITools } from 'ai';
 
 const logger = createScopedLogger('conversation/ConversationPageClient');
 
@@ -25,7 +25,7 @@ const ConversationClient = dynamic(
 
 interface ConversationPageClientProps {
   conversationId: string;
-  initialMessages: Array<{ id: string; role: 'user' | 'assistant'; parts?: UIMessagePart<Record<string, unknown>, Record<string, unknown>>[] }>;
+  initialMessages: Array<{ id: string; role: 'user' | 'assistant'; parts?: UIMessagePart<UIDataTypes, UITools>[] }>;
   initialHasMore: boolean;
   initialDbRowCount: number;
   hasInitialMessageParam: boolean;

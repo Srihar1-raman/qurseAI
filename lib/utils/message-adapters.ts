@@ -3,7 +3,7 @@
  * Safe conversion between Zod-validated messages, server format, and AI SDK UIMessage format
  */
 
-import { type UIMessage, type UIMessagePart, convertToModelMessages, streamText } from 'ai';
+import { type UIMessage, type UIMessagePart, type UIDataTypes, type UITools, convertToModelMessages, streamText } from 'ai';
 import { createScopedLogger } from './logger';
 import type { ChatRequest } from '@/lib/validation/chat-schema';
 import { convertLegacyContentToParts } from './message-parts-fallback';
@@ -31,7 +31,7 @@ export interface ServerMessage {
   role: 'user' | 'assistant';
   content?: string; // Legacy field, kept for backward compatibility
   reasoning?: string; // Legacy field, kept for backward compatibility
-  parts?: UIMessagePart<Record<string, unknown>, Record<string, unknown>>[]; // New field, AI SDK native parts array
+  parts?: UIMessagePart<UIDataTypes, UITools>[]; // New field, AI SDK native parts array
 }
 
 /**
@@ -87,7 +87,7 @@ export function toUIMessageFromServer(messages: ServerMessage[]): UIMessage[] {
 
     // Fallback: Convert legacy content/reasoning format to parts array
     // Use shared utility function for consistency (handles delimiter-based reasoning)
-    let parts: UIMessageParts = convertLegacyContentToParts(msg.content);
+    const parts: UIMessageParts = convertLegacyContentToParts(msg.content);
 
     // If message has separate reasoning field (legacy format), add it as reasoning part
     if (msg.reasoning && typeof msg.reasoning === 'string') {

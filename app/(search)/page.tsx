@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import dynamic from 'next/dynamic';
+import dynamicImport from 'next/dynamic';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/homepage/Hero';
@@ -15,17 +15,19 @@ import { ConversationPageSkeleton } from '@/components/ui/ConversationPageSkelet
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversationId } from '@/hooks/use-conversation-id';
 
+export const dynamic = 'force-dynamic';
+
 // Lazy load ConversationClient to code split AI SDK
 // AI SDK code is only loaded when needed
 // Loading state uses same skeleton as NavigationWrapper for seamless transition
-const ConversationClient = dynamic(
+const ConversationClient = dynamicImport(
   () => import('@/components/conversation/ConversationClient').then(mod => ({ default: mod.ConversationClient })),
   {
     loading: () => <ConversationPageSkeleton />,
   }
 );
 
-export default function HomePage() {
+function HomePageContent() {
   const searchParams = useSearchParams();
   const [selectedSearchOption, setSelectedSearchOption] = useState('Chat');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
@@ -123,5 +125,13 @@ export default function HomePage() {
         onClose={handleHistoryClose}
       />
     </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HomePageContent />
+    </Suspense>
   );
 }
