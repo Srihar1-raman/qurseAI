@@ -499,59 +499,140 @@ export async function POST(req: Request) {
           }
         }
 
-        // Check if a message with stop text already exists for this conversation (defensive check)
+        // AGGRESSIVE CHECK: Check if a message with stop text already exists for this conversation
         // This prevents duplicate saves in production where timing differs
+        // We check multiple times with small delays to catch in-flight client saves
         if (resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
-          try {
-            if (user) {
-              const checkSupabase = await createClient();
-              const { data: existingStopMessage } = await checkSupabase
-                .from('messages')
-                .select('id')
-                .eq('conversation_id', resolvedConversationId)
-                .eq('role', 'assistant')
-                .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
-                .limit(1)
-                .maybeSingle();
+          const checkForStopMessage = async (): Promise<boolean> => {
+            try {
+              if (user) {
+                const checkSupabase = await createClient();
+                const { data: existingStopMessage } = await checkSupabase
+                  .from('messages')
+                  .select('id, created_at')
+                  .eq('conversation_id', resolvedConversationId)
+                  .eq('role', 'assistant')
+                  .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .maybeSingle();
 
-              if (existingStopMessage) {
-                logger.info('onFinish: Stop message already exists (auth), skipping save to prevent duplicate', {
-                  conversationId: resolvedConversationId,
-                  existingMessageId: existingStopMessage.id,
-                  checkTimestamp: Date.now(),
-                });
-                return;
-              }
-            } else if (serviceSupabase) {
-              const { data: existingStopMessage } = await serviceSupabase
-                .from('guest_messages')
-                .select('id')
-                .eq('guest_conversation_id', resolvedConversationId)
-                .eq('role', 'assistant')
-                .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
-                .limit(1)
-                .maybeSingle();
+                if (existingStopMessage) {
+                  console.error('[DIAGNOSTIC] onFinish: Stop message already exists (auth), skipping save', {
+                    conversationId: resolvedConversationId,
+                    existingMessageId: existingStopMessage.id,
+                    existingMessageCreatedAt: existingStopMessage.created_at,
+                    checkTimestamp: Date.now(),
+                  });
+                  return true;
+                }
+              } else if (serviceSupabase) {
+                const { data: existingStopMessage } = await serviceSupabase
+                  .from('guest_messages')
+                  .select('id, created_at')
+                  .eq('guest_conversation_id', resolvedConversationId)
+                  .eq('role', 'assistant')
+                  .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .maybeSingle();
 
-              if (existingStopMessage) {
-                logger.info('onFinish: Stop message already exists (guest), skipping save to prevent duplicate', {
-                  conversationId: resolvedConversationId,
-                  existingMessageId: existingStopMessage.id,
-                  checkTimestamp: Date.now(),
-                });
-                return;
+                if (existingStopMessage) {
+                  console.error('[DIAGNOSTIC] onFinish: Stop message already exists (guest), skipping save', {
+                    conversationId: resolvedConversationId,
+                    existingMessageId: existingStopMessage.id,
+                    existingMessageCreatedAt: existingStopMessage.created_at,
+                    checkTimestamp: Date.now(),
+                  });
+                  return true;
+                }
               }
+              return false;
+            } catch (checkError) {
+              // If check fails, log but return false to continue (don't block save on check failure)
+              logger.error('Failed to check for existing stop message', checkError, {
+                conversationId: resolvedConversationId,
+              });
+              return false;
             }
-          } catch (checkError) {
-            // If check fails, log but continue (don't block save on check failure)
-            logger.error('Failed to check for existing stop message', checkError, {
-              conversationId: resolvedConversationId,
-            });
+          };
+
+          // Check immediately
+          const hasStopMessage = await checkForStopMessage();
+          if (hasStopMessage) {
+            return;
+          }
+
+          // Check again after 100ms delay (catches in-flight client saves)
+          await new Promise(resolve => setTimeout(resolve, 100));
+          const hasStopMessageDelayed = await checkForStopMessage();
+          if (hasStopMessageDelayed) {
+            return;
+          }
+
+          // Final check after 300ms total delay (catches slower client saves)
+          await new Promise(resolve => setTimeout(resolve, 200));
+          const hasStopMessageFinal = await checkForStopMessage();
+          if (hasStopMessageFinal) {
+            return;
           }
         }
 
         // Authenticated assistant save
         if (user && resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
           after(async () => {
+            // FINAL CHECK: Right before saving, check multiple times if client saved stop message
+            // Client saves can take 1-5 seconds, so we check with increasing delays
+            const checkForStopMessage = async (): Promise<boolean> => {
+              try {
+                const finalCheckSupabase = await createClient();
+                const { data: finalCheckStopMessage } = await finalCheckSupabase
+                  .from('messages')
+                  .select('id, created_at')
+                  .eq('conversation_id', resolvedConversationId)
+                  .eq('role', 'assistant')
+                  .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .maybeSingle();
+
+                if (finalCheckStopMessage) {
+                  const messageAge = Date.now() - new Date(finalCheckStopMessage.created_at).getTime();
+                  console.error('[DIAGNOSTIC] onFinish after(): Stop message found', {
+                    conversationId: resolvedConversationId,
+                    existingMessageId: finalCheckStopMessage.id,
+                    existingMessageCreatedAt: finalCheckStopMessage.created_at,
+                    messageAgeMs: messageAge,
+                    checkTimestamp: Date.now(),
+                  });
+                  return true;
+                }
+                return false;
+              } catch (finalCheckError) {
+                logger.error('Final check for stop message failed', finalCheckError, {
+                  conversationId: resolvedConversationId,
+                });
+                return false;
+              }
+            };
+
+            // Check immediately
+            if (await checkForStopMessage()) {
+              return; // Don't save if stop message exists
+            }
+
+            // Check after 500ms (catches most client saves)
+            await new Promise(resolve => setTimeout(resolve, 500));
+            if (await checkForStopMessage()) {
+              return;
+            }
+
+            // Final check after 2 seconds total (catches slower client saves)
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            if (await checkForStopMessage()) {
+              return;
+            }
+
             try {
               if (assistantMessage && assistantMessage.role === 'assistant' && assistantMessage.parts) {
                 const contentText = assistantMessage.parts
@@ -620,6 +701,59 @@ export async function POST(req: Request) {
           const guestConversationId = resolvedConversationId;
           const guestSessionHash = sessionHash;
           after(async () => {
+            // FINAL CHECK: Right before saving, check multiple times if client saved stop message
+            // Client saves can take 1-5 seconds, so we check with increasing delays
+            if (serviceSupabase && !guestConversationId.startsWith('temp-')) {
+              const checkForStopMessage = async (): Promise<boolean> => {
+                try {
+                  const { data: finalCheckStopMessage } = await serviceSupabase
+                    .from('guest_messages')
+                    .select('id, created_at')
+                    .eq('guest_conversation_id', guestConversationId)
+                    .eq('role', 'assistant')
+                    .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
+                    .order('created_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+
+                  if (finalCheckStopMessage) {
+                    const messageAge = Date.now() - new Date(finalCheckStopMessage.created_at).getTime();
+                    console.error('[DIAGNOSTIC] onFinish after(): Stop message found (guest)', {
+                      conversationId: guestConversationId,
+                      existingMessageId: finalCheckStopMessage.id,
+                      existingMessageCreatedAt: finalCheckStopMessage.created_at,
+                      messageAgeMs: messageAge,
+                      checkTimestamp: Date.now(),
+                    });
+                    return true;
+                  }
+                  return false;
+                } catch (finalCheckError) {
+                  logger.error('Final check for stop message failed (guest)', finalCheckError, {
+                    conversationId: guestConversationId,
+                  });
+                  return false;
+                }
+              };
+
+              // Check immediately
+              if (await checkForStopMessage()) {
+                return; // Don't save if stop message exists
+              }
+
+              // Check after 500ms (catches most client saves)
+              await new Promise(resolve => setTimeout(resolve, 500));
+              if (await checkForStopMessage()) {
+                return;
+              }
+
+              // Final check after 2 seconds total (catches slower client saves)
+              await new Promise(resolve => setTimeout(resolve, 1500));
+              if (await checkForStopMessage()) {
+                return;
+              }
+            }
+
             try {
               if (assistantMessage && assistantMessage.role === 'assistant') {
                 await saveGuestMessage({
