@@ -297,6 +297,12 @@ export async function POST(req: Request) {
         abortTimestamps['reqSignalAbort'] = Date.now();
         abortController.abort();
         abortTimestamps['abortControllerAbort'] = Date.now();
+        // Use console.error to ensure it shows in Vercel logs
+        console.error('[DIAGNOSTIC] ABORT DETECTED: Request signal aborted', {
+          conversationId: resolvedConversationId,
+          timestamp: abortTimestamps['reqSignalAbort'],
+          wasAborted,
+        });
         logger.info('ABORT DETECTED: Request signal aborted', {
           conversationId: resolvedConversationId,
           timestamp: abortTimestamps['reqSignalAbort'],
@@ -309,6 +315,12 @@ export async function POST(req: Request) {
         abortTimestamps['reqSignalAlreadyAborted'] = Date.now();
         abortController.abort();
         abortTimestamps['abortControllerAbort'] = Date.now();
+        // Use console.error to ensure it shows in Vercel logs
+        console.error('[DIAGNOSTIC] ABORT DETECTED: Request signal already aborted', {
+          conversationId: resolvedConversationId,
+          timestamp: abortTimestamps['reqSignalAlreadyAborted'],
+          wasAborted,
+        });
         logger.info('ABORT DETECTED: Request signal already aborted', {
           conversationId: resolvedConversationId,
           timestamp: abortTimestamps['reqSignalAlreadyAborted'],
@@ -367,6 +379,14 @@ export async function POST(req: Request) {
           onAbort: ({ steps }) => {
             wasAborted = true;
             abortTimestamps['streamTextOnAbort'] = Date.now();
+            // Use console.error to ensure it shows in Vercel logs
+            console.error('[DIAGNOSTIC] ABORT DETECTED: streamText onAbort called', { 
+              conversationId: resolvedConversationId,
+              stepsCount: steps.length,
+              hasSteps: steps.length > 0,
+              timestamp: abortTimestamps['streamTextOnAbort'],
+              wasAborted,
+            });
             logger.info('ABORT DETECTED: streamText onAbort called', { 
               conversationId: resolvedConversationId,
               stepsCount: steps.length,
@@ -419,8 +439,8 @@ export async function POST(req: Request) {
           abortControllerAborted: abortController.signal.aborted,
         };
 
-        // Log detailed state for diagnosis
-        logger.info('onFinish CALLED - DIAGNOSTIC LOG', {
+        // Log detailed state for diagnosis - Use console.error to ensure it shows in Vercel logs
+        const diagnosticData = {
           conversationId: resolvedConversationId,
           timestamp: onFinishTimestamp,
           messageCount: messages.length,
@@ -431,17 +451,21 @@ export async function POST(req: Request) {
           lastMessagePartsCount: messages[messages.length - 1]?.parts?.length ?? 0,
           requestStartTime,
           timeSinceRequestStart: onFinishTimestamp - requestStartTime,
-        });
+        };
+        console.error('[DIAGNOSTIC] onFinish CALLED', JSON.stringify(diagnosticData, null, 2));
+        logger.info('onFinish CALLED - DIAGNOSTIC LOG', diagnosticData);
 
         // Check if stream was aborted - don't save if user stopped the stream
         // Check both req.signal and our tracked abort state
         if (wasAborted || req.signal?.aborted || abortController.signal.aborted) {
-          logger.info('onFinish: Stream aborted, skipping message save', {
+          const skipData = {
             conversationId: resolvedConversationId,
             messageCount: messages.length,
             abortState: abortStateAtFinish,
             abortTimestamps,
-          });
+          };
+          console.error('[DIAGNOSTIC] onFinish: Stream aborted, skipping message save', JSON.stringify(skipData, null, 2));
+          logger.info('onFinish: Stream aborted, skipping message save', skipData);
           return;
         }
 
@@ -563,7 +587,7 @@ export async function POST(req: Request) {
                 if (assistantMsgError) {
                   logger.error('Background assistant message save failed', assistantMsgError, { conversationId: resolvedConversationId });
                 } else {
-                  logger.info('onFinish: Assistant message SAVED TO DATABASE', {
+                  const saveData = {
                     conversationId: resolvedConversationId,
                     messageId: assistantMessage.id,
                     partsCount: assistantMessage.parts.length,
@@ -571,7 +595,9 @@ export async function POST(req: Request) {
                     model,
                     saveTimestamp: Date.now(),
                     timeSinceOnFinish: Date.now() - onFinishTimestamp,
-                  });
+                  };
+                  console.error('[DIAGNOSTIC] onFinish: Assistant message SAVED TO DATABASE', JSON.stringify(saveData, null, 2));
+                  logger.info('onFinish: Assistant message SAVED TO DATABASE', saveData);
                 }
               }
             } catch (error) {
