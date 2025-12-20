@@ -43,7 +43,15 @@ const serviceSupabase = supabaseUrl && serviceKey
  */
 export async function POST(req: Request) {
   const requestStartTime = Date.now();
-  logger.debug('Request started');
+  
+  // DIAGNOSTIC: Check if req.signal exists and its state
+  const signalInfo = {
+    hasSignal: !!req.signal,
+    signalAborted: req.signal?.aborted ?? null,
+    signalType: req.signal?.constructor?.name ?? 'unknown',
+  };
+  console.error('[DIAGNOSTIC] Request received - Signal check', JSON.stringify(signalInfo, null, 2));
+  logger.debug('Request started', signalInfo);
   
   try {
     // ============================================
