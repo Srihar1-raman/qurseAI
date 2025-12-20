@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useTheme } from '@/lib/theme-provider';
 import { HeroBlock } from '@/components/rate-limit/HeroBlock';
 import { formatResetTime, getPopupBackgroundStyle } from '@/components/rate-limit/utils';
@@ -98,9 +99,15 @@ export function FreeUserRateLimitPopup({
     // Don't call onClose - rate limit state should remain
   };
 
-  if (!isOpen || !isVisible) return null;
+  // Mount state for portal
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  return (
+  if (!isOpen || !isVisible || !mounted) return null;
+
+  const popupContent = (
     <>
       {/* Tooltip at cursor position - rendered at root level outside modal */}
       {hoveredIconName && (
@@ -258,5 +265,7 @@ export function FreeUserRateLimitPopup({
     </div>
     </>
   );
+
+  return createPortal(popupContent, document.body);
 }
 

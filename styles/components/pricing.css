@@ -1,0 +1,74 @@
+/* Pricing Page Styles */
+
+.pricing-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 32px;
+  align-items: stretch;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Tablet: Ensure side-by-side layout */
+@media (min-width: 769px) and (max-width: 1100px) {
+  .pricing-cards-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+  }
+}
+
+/* Small desktop: Keep side-by-side with adjusted gap */
+@media (min-width: 1101px) {
+  .pricing-cards-container {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+}
+
+/* Responsive: Stack cards on mobile */
+@media (max-width: 768px) {
+  .pricing-cards-container {
+    grid-template-columns: 1fr !important;
+    gap: 24px;
+    min-width: 0 !important; /* Allow grid to shrink below 500px */
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+/* Override AuthButtons hidden class on mobile for pricing cards */
+/* Target the div with hidden class inside pricing-auth-buttons */
+.pricing-auth-buttons div.hidden {
+  display: flex !important;
+}
+
+/* Mobile card adjustments */
+@media (max-width: 768px) {
+  .pricing-card {
+    padding: 24px 16px !important;
+    min-height: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  .pricing-card h2 {
+    font-size: 32px !important;
+  }
+  
+  .pricing-card .pricing-amount {
+    font-size: 14px !important;
+  }
+  
+  /* Ensure feature items don't overflow */
+  .pricing-card > div {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+}
+

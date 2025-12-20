@@ -22,6 +22,9 @@ import { useConversationId } from '@/hooks/use-conversation-id';
 import { createScopedLogger } from '@/lib/utils/logger';
 import type { Conversation, ConversationGroup, HistorySidebarProps } from '@/lib/types';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
+import { ShareConversationModal } from '@/components/conversation/ShareConversationModal';
+import { useShareConversation } from '@/hooks/use-share-conversation';
+import { useToast } from '@/lib/contexts/ToastContext';
 
 const logger = createScopedLogger('history-sidebar');
 
@@ -120,6 +123,11 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   const [showGuestActionPopup, setShowGuestActionPopup] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
+  const [shareUrl, setShareUrl] = useState('');
+  const [sharedConversationId, setSharedConversationId] = useState<string | null>(null);
+  const { shareConversation, unshareConversation } = useShareConversation();
+  const { showToastError, showToastSuccess } = useToast();
 
   // Get state and actions from context
   const {
@@ -512,30 +520,72 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
       return;
     }
 
-    // Call share API directly
-    try {
-      const response = await fetch(`/api/conversations/${id}/share`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: 'Failed to share conversation' }));
-        logger.error('Error sharing conversation', { status: response.status, error: errorData.error });
-        setError('Failed to share conversation');
-        return;
-      }
-
-      const data = await response.json();
-      // Copy share URL to clipboard
-      await navigator.clipboard.writeText(data.shareUrl);
-      // Show success message (you might want to use a toast here)
-      logger.info('Conversation shared', { conversationId: id, shareUrl: data.shareUrl });
-    } catch (err) {
-      logger.error('Error sharing conversation', err, { conversationId: id });
-      setError('Failed to share conversation');
+    // Check if conversation is already shared
+    const conversation = chatHistory.find(conv => conv.id === id);
+    if (conversation?.share_token && conversation?.is_shared) {
+      // Conversation already shared - construct URL and show modal
+      const baseUrl = window.location.origin;
+      const url = `${baseUrl}/shared/${conversation.share_token}`;
+      setShareUrl(url);
+      setSharedConversationId(id);
+      setShareModalOpen(true);
+      return;
     }
-  }, [user, setError]);
+
+    // Call share API
+    try {
+      const response = await shareConversation(id);
+      setShareUrl(response.shareUrl);
+      setSharedConversationId(id);
+      setShareModalOpen(true);
+      
+      // Update conversation in local state
+      setChatHistory(prev => prev.map(conv => 
+        conv.id === id 
+          ? { ...conv, share_token: response.shareToken, is_shared: true }
+          : conv
+      ));
+      setSearchResults(prev => prev.map(conv => 
+        conv.id === id 
+          ? { ...conv, share_token: response.shareToken, is_shared: true }
+          : conv
+      ));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to share conversation';
+      showToastError(errorMessage);
+      logger.error('Error sharing conversation', err, { conversationId: id });
+    }
+  }, [user, chatHistory, shareConversation, setChatHistory, setSearchResults, showToastError]);
+
+  // Handle unshare
+  const handleUnshare = useCallback(async () => {
+    if (!sharedConversationId) return;
+
+    try {
+      await unshareConversation(sharedConversationId);
+      setShareModalOpen(false);
+      setShareUrl('');
+      showToastSuccess('Conversation unshared');
+      
+      // Update conversation in local state
+      setChatHistory(prev => prev.map(conv => 
+        conv.id === sharedConversationId 
+          ? { ...conv, share_token: null, is_shared: false }
+          : conv
+      ));
+      setSearchResults(prev => prev.map(conv => 
+        conv.id === sharedConversationId 
+          ? { ...conv, share_token: null, is_shared: false }
+          : conv
+      ));
+      
+      setSharedConversationId(null);
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Failed to unshare conversation';
+      showToastError(errorMessage);
+      logger.error('Error unsharing conversation', err, { conversationId: sharedConversationId });
+    }
+  }, [sharedConversationId, unshareConversation, setChatHistory, setSearchResults, showToastError, showToastSuccess]);
 
   return (
     <>
@@ -693,6 +743,17 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
         reset={Date.now() + 24 * 60 * 60 * 1000} // 24 hours from now
         customTitle="Sign in to continue"
         customMessage="Sign in to unlock this feature and access more capabilities."
+      />
+
+      <ShareConversationModal
+        isOpen={shareModalOpen}
+        onClose={() => {
+          setShareModalOpen(false);
+          setShareUrl('');
+          setSharedConversationId(null);
+        }}
+        shareUrl={shareUrl}
+        onUnshare={sharedConversationId ? handleUnshare : undefined}
       />
     </>
   );

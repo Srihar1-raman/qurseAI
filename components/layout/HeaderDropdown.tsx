@@ -114,6 +114,23 @@ export function HeaderDropdown({
         mounted={mounted}
       />
 
+      {/* Pricing Section - Show for all users */}
+      <DropdownSeparator />
+      <DropdownItem 
+        onClick={() => navigateOptimistically('/pricing')}
+        onMouseEnter={() => router.prefetch('/pricing')}
+      >
+        <div className="flex items-center gap-3">
+          <Image
+            src={getIconPath('general', resolvedTheme, false, mounted)}
+            alt="Pricing"
+            width={16}
+            height={16}
+          />
+          <span>Pricing</span>
+        </div>
+      </DropdownItem>
+
       {/* Settings Section - Only show when authenticated */}
       {user && (
         <>

@@ -312,7 +312,7 @@ export default function MainInput() {
             // Don't clear state - user is still rate limited
           }}
           onUpgrade={() => {
-            router.push('/settings?tab=pricing');
+            router.push('/pricing');
           }}
           reset={rateLimitState.resetTime || Date.now()}
         />

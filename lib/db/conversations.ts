@@ -62,6 +62,8 @@ export async function getConversations(
     created_at: conv.created_at,
     message_count: conv.message_count?.[0]?.count || 0,
     pinned: conv.pinned || false,
+    share_token: conv.share_token || null,
+    is_shared: conv.is_shared || false,
   }));
 
   return {
@@ -147,7 +149,7 @@ export async function searchConversations(
 
   const { data, error } = await supabase
     .from('conversations')
-    .select('id, title, updated_at, created_at, user_id, pinned')
+    .select('id, title, updated_at, created_at, user_id, pinned, share_token, is_shared')
     .eq('user_id', userId)
     .ilike('title', `%${sanitizedQuery}%`)
     .order('pinned', { ascending: false })
@@ -169,6 +171,8 @@ export async function searchConversations(
     created_at: conv.created_at,
     message_count: 0, // Not needed for search results, set to 0
     pinned: conv.pinned || false,
+    share_token: conv.share_token || null,
+    is_shared: conv.is_shared || false,
   }));
 
   logger.debug('Search results', { userId, query: sanitizedQuery, count: conversations.length });

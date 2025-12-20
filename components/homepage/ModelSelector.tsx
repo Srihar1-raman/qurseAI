@@ -358,7 +358,7 @@ export default function ModelSelector() {
             setModelClickCount(0);
           }}
           onUpgrade={() => {
-            router.push('/settings?tab=pricing');
+            router.push('/pricing');
             setShowUpgradePopup(false);
             setModelClickCount(0);
           }}

@@ -1,8 +1,15 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 
 export default function PaymentSection() {
+  const router = useRouter();
+
+  const handleUpgrade = () => {
+    router.push('/pricing');
+  };
+
   return (
     <div className="settings-section">
       <h2>Payment & Billing</h2>
@@ -14,7 +21,7 @@ export default function PaymentSection() {
             <h4>Free Plan</h4>
             <p>0 messages remaining this month</p>
           </div>
-          <UnifiedButton variant="primary">
+          <UnifiedButton variant="primary" onClick={handleUpgrade}>
             Upgrade Plan
           </UnifiedButton>
         </div>
@@ -27,7 +34,7 @@ export default function PaymentSection() {
             <h4>No payment method</h4>
             <p>Add a payment method to upgrade</p>
           </div>
-          <UnifiedButton variant="secondary">
+          <UnifiedButton variant="secondary" onClick={handleUpgrade}>
             Add Payment Method
           </UnifiedButton>
         </div>

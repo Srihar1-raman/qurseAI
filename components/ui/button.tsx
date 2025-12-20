@@ -14,6 +14,7 @@ const buttonVariants = cva(
           "bg-bg-secondary text-foreground border-border hover:bg-bg-hover hover:border-border-hover border rounded-md",
         ghost: "bg-transparent hover:bg-bg-secondary text-sm font-medium",
         active: "bg-primary text-white border-primary",
+        outline: "border border-border bg-background hover:bg-bg-secondary text-foreground",
       },
       size: {
         default: "h-9 px-3 py-2",

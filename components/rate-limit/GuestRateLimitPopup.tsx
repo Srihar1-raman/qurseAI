@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import AuthButton from '@/components/auth/AuthButton';
@@ -121,9 +122,15 @@ export function GuestRateLimitPopup({
   // Determine button text based on whether it's a rate limit popup or custom popup
   const buttonText = (customTitle || customMessage) ? 'Close' : 'Wait';
 
-  if (!isOpen || !isVisible) return null;
+  // Mount state for portal
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
-  return (
+  if (!isOpen || !isVisible || !mounted) return null;
+
+  const popupContent = (
     <>
       {/* Tooltip at cursor position - rendered at root level outside modal */}
       {hoveredIconName && (
@@ -263,5 +270,7 @@ export function GuestRateLimitPopup({
     </div>
     </>
   );
+
+  return createPortal(popupContent, document.body);
 }
 

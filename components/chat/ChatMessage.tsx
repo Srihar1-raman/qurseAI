@@ -3,7 +3,7 @@
 import React from 'react';
 import { useTheme } from '@/lib/theme-provider';
 import Image from 'next/image';
-// import MarkdownRenderer from './MarkdownRenderer'; // Temporarily disabled for faster streaming
+import MarkdownRenderer from '@/components/markdown';
 import { getIconPath } from '@/lib/icon-utils';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -60,10 +60,8 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user }: ChatMe
             <div className="reasoning-content" style={{
               fontSize: '14px',
               color: 'var(--color-text-secondary)',
-              whiteSpace: 'pre-wrap',
-              wordBreak: 'break-word'
             }}>
-              {reasoning}
+              <MarkdownRenderer content={reasoning} isUserMessage={false} />
             </div>
           </div>
         )}
@@ -71,19 +69,18 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user }: ChatMe
         {/* Main message content */}
         <div className="message-content">
           {isUser ? (
-            content
+            <MarkdownRenderer content={content} isUserMessage={true} />
           ) : (
-            <div style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-              {mainContent}
+            <>
+              <MarkdownRenderer content={mainContent} isUserMessage={false} />
               {hasStopText && (
-                <>
-                  {'\n\n'}
+                <div style={{ marginTop: '12px' }}>
                   <span className="stop-message-indicator">
                     User stopped this message here
                   </span>
-                </>
+                </div>
               )}
-            </div>
+            </>
           )}
         </div>
         

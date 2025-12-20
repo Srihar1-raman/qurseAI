@@ -144,8 +144,14 @@ function SettingsPageContent() {
   const { error: showToastError, warning: showToastWarning } = useToast();
   const searchParams = useSearchParams();
 
-  // Handle URL parameters for section
+  // Handle URL parameters for section and pricing redirect
   useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'pricing') {
+      router.replace('/pricing');
+      return;
+    }
+    
     const section = searchParams.get('section');
     if (section && ['accounts', 'general', 'payment', 'system'].includes(section)) {
       setActiveSection(section);
