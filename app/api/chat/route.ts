@@ -617,21 +617,48 @@ export async function POST(req: Request) {
             };
 
             // Check immediately
+            console.error('[DIAGNOSTIC] after(): Starting stop message checks', {
+              conversationId: resolvedConversationId,
+              timestamp: Date.now(),
+            });
             if (await checkForStopMessage()) {
               return; // Don't save if stop message exists
             }
 
-            // Check after 500ms (catches most client saves)
-            await new Promise(resolve => setTimeout(resolve, 500));
+            // Check after 1 second (catches most client saves)
+            console.error('[DIAGNOSTIC] after(): Check 1 - waiting 1s', {
+              conversationId: resolvedConversationId,
+              timestamp: Date.now(),
+            });
+            await new Promise(resolve => setTimeout(resolve, 1000));
             if (await checkForStopMessage()) {
               return;
             }
 
-            // Final check after 2 seconds total (catches slower client saves)
-            await new Promise(resolve => setTimeout(resolve, 1500));
+            // Check after 3 seconds total (catches slower client saves)
+            console.error('[DIAGNOSTIC] after(): Check 2 - waiting 2s more', {
+              conversationId: resolvedConversationId,
+              timestamp: Date.now(),
+            });
+            await new Promise(resolve => setTimeout(resolve, 2000));
             if (await checkForStopMessage()) {
               return;
             }
+
+            // Final check after 6 seconds total (catches very slow client saves, up to 4-5s delay)
+            console.error('[DIAGNOSTIC] after(): Check 3 - waiting 3s more (final)', {
+              conversationId: resolvedConversationId,
+              timestamp: Date.now(),
+            });
+            await new Promise(resolve => setTimeout(resolve, 3000));
+            if (await checkForStopMessage()) {
+              return;
+            }
+
+            console.error('[DIAGNOSTIC] after(): All checks complete, proceeding with save', {
+              conversationId: resolvedConversationId,
+              timestamp: Date.now(),
+            });
 
             try {
               if (assistantMessage && assistantMessage.role === 'assistant' && assistantMessage.parts) {
@@ -737,21 +764,48 @@ export async function POST(req: Request) {
               };
 
               // Check immediately
+              console.error('[DIAGNOSTIC] after(): Starting stop message checks (guest)', {
+                conversationId: guestConversationId,
+                timestamp: Date.now(),
+              });
               if (await checkForStopMessage()) {
                 return; // Don't save if stop message exists
               }
 
-              // Check after 500ms (catches most client saves)
-              await new Promise(resolve => setTimeout(resolve, 500));
+              // Check after 1 second (catches most client saves)
+              console.error('[DIAGNOSTIC] after(): Check 1 - waiting 1s (guest)', {
+                conversationId: guestConversationId,
+                timestamp: Date.now(),
+              });
+              await new Promise(resolve => setTimeout(resolve, 1000));
               if (await checkForStopMessage()) {
                 return;
               }
 
-              // Final check after 2 seconds total (catches slower client saves)
-              await new Promise(resolve => setTimeout(resolve, 1500));
+              // Check after 3 seconds total (catches slower client saves)
+              console.error('[DIAGNOSTIC] after(): Check 2 - waiting 2s more (guest)', {
+                conversationId: guestConversationId,
+                timestamp: Date.now(),
+              });
+              await new Promise(resolve => setTimeout(resolve, 2000));
               if (await checkForStopMessage()) {
                 return;
               }
+
+              // Final check after 6 seconds total (catches very slow client saves, up to 4-5s delay)
+              console.error('[DIAGNOSTIC] after(): Check 3 - waiting 3s more (final, guest)', {
+                conversationId: guestConversationId,
+                timestamp: Date.now(),
+              });
+              await new Promise(resolve => setTimeout(resolve, 3000));
+              if (await checkForStopMessage()) {
+                return;
+              }
+
+              console.error('[DIAGNOSTIC] after(): All checks complete, proceeding with save (guest)', {
+                conversationId: guestConversationId,
+                timestamp: Date.now(),
+              });
             }
 
             try {
