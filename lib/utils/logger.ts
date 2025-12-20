@@ -14,8 +14,8 @@ if (process.env.NEXT_PUBLIC_SENTRY_DSN && typeof window !== 'undefined') {
       Sentry = module;
     })
     .catch(() => {
-      // Sentry not available or not configured, continue without it
-      Sentry = null;
+    // Sentry not available or not configured, continue without it
+    Sentry = null;
     });
 }
 

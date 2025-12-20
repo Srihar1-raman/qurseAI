@@ -380,6 +380,15 @@ export async function POST(req: Request) {
         );
       },
       onFinish: async ({ messages }) => {
+        // Check if stream was aborted - don't save if user stopped the stream
+        if (req.signal?.aborted) {
+          logger.debug('Stream aborted, skipping message save', {
+            conversationId: resolvedConversationId,
+            messageCount: messages.length,
+          });
+          return;
+        }
+
         // Save assistant messages in BACKGROUND (non-blocking)
         const user = fullUserData;
         const assistantMessage = messages[messages.length - 1];

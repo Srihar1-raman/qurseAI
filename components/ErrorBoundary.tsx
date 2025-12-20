@@ -60,27 +60,27 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       // Use dynamic import for Sentry to avoid build-time errors
       import('@sentry/nextjs')
         .then((Sentry) => {
-          if (Sentry && Sentry.captureException) {
-            Sentry.captureException(error, {
-              tags: {
-                errorBoundary: 'true',
-                errorId: this.state.errorId || 'unknown',
+        if (Sentry && Sentry.captureException) {
+          Sentry.captureException(error, {
+            tags: {
+              errorBoundary: 'true',
+              errorId: this.state.errorId || 'unknown',
+            },
+            contexts: {
+              react: {
+                componentStack: errorInfo.componentStack,
               },
-              contexts: {
-                react: {
-                  componentStack: errorInfo.componentStack,
-                },
-              },
-              extra: {
-                errorBoundary: true,
-                errorId: this.state.errorId,
-              },
-            });
-          }
+            },
+            extra: {
+              errorBoundary: true,
+              errorId: this.state.errorId,
+            },
+          });
+        }
         })
         .catch(() => {
-          // Sentry failed or not available, but don't break error boundary
-          // Error is already logged above
+        // Sentry failed or not available, but don't break error boundary
+        // Error is already logged above
         });
     }
 
