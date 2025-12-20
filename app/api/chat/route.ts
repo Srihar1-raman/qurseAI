@@ -645,20 +645,51 @@ export async function POST(req: Request) {
               return;
             }
 
-            // Final check after 6 seconds total (catches very slow client saves, up to 4-5s delay)
-            console.error('[DIAGNOSTIC] after(): Check 3 - waiting 3s more (final)', {
-              conversationId: resolvedConversationId,
-              timestamp: Date.now(),
-            });
-            await new Promise(resolve => setTimeout(resolve, 3000));
-            if (await checkForStopMessage()) {
-              return;
-            }
+              // Check after 6 seconds total (catches slower client saves)
+              console.error('[DIAGNOSTIC] after(): Check 3 - waiting 3s more', {
+                conversationId: resolvedConversationId,
+                timestamp: Date.now(),
+              });
+              await new Promise(resolve => setTimeout(resolve, 3000));
+              if (await checkForStopMessage()) {
+                return;
+              }
+
+              // Check after 10 seconds total (catches very slow client saves, up to 8-10s delay)
+              console.error('[DIAGNOSTIC] after(): Check 4 - waiting 4s more', {
+                conversationId: resolvedConversationId,
+                timestamp: Date.now(),
+              });
+              await new Promise(resolve => setTimeout(resolve, 4000));
+              if (await checkForStopMessage()) {
+                return;
+              }
+
+              // Final check after 15 seconds total (catches extremely slow client saves, up to 12-15s delay)
+              console.error('[DIAGNOSTIC] after(): Check 5 - waiting 5s more (final)', {
+                conversationId: resolvedConversationId,
+                timestamp: Date.now(),
+              });
+              await new Promise(resolve => setTimeout(resolve, 5000));
+              if (await checkForStopMessage()) {
+                return;
+              }
 
             console.error('[DIAGNOSTIC] after(): All checks complete, proceeding with save', {
               conversationId: resolvedConversationId,
               timestamp: Date.now(),
             });
+
+            // FINAL FINAL CHECK: Right before the actual save operation
+            // This catches client saves that happen during the save operation itself
+            const finalFinalCheck = await checkForStopMessage();
+            if (finalFinalCheck) {
+              console.error('[DIAGNOSTIC] after(): Stop message found in final-final check, aborting save', {
+                conversationId: resolvedConversationId,
+                timestamp: Date.now(),
+              });
+              return; // Don't save if stop message exists
+            }
 
             try {
               if (assistantMessage && assistantMessage.role === 'assistant' && assistantMessage.parts) {
@@ -792,8 +823,8 @@ export async function POST(req: Request) {
                 return;
               }
 
-              // Final check after 6 seconds total (catches very slow client saves, up to 4-5s delay)
-              console.error('[DIAGNOSTIC] after(): Check 3 - waiting 3s more (final, guest)', {
+              // Check after 6 seconds total (catches slower client saves)
+              console.error('[DIAGNOSTIC] after(): Check 3 - waiting 3s more (guest)', {
                 conversationId: guestConversationId,
                 timestamp: Date.now(),
               });
@@ -802,10 +833,41 @@ export async function POST(req: Request) {
                 return;
               }
 
+              // Check after 10 seconds total (catches very slow client saves, up to 8-10s delay)
+              console.error('[DIAGNOSTIC] after(): Check 4 - waiting 4s more (guest)', {
+                conversationId: guestConversationId,
+                timestamp: Date.now(),
+              });
+              await new Promise(resolve => setTimeout(resolve, 4000));
+              if (await checkForStopMessage()) {
+                return;
+              }
+
+              // Final check after 15 seconds total (catches extremely slow client saves, up to 12-15s delay)
+              console.error('[DIAGNOSTIC] after(): Check 5 - waiting 5s more (final, guest)', {
+                conversationId: guestConversationId,
+                timestamp: Date.now(),
+              });
+              await new Promise(resolve => setTimeout(resolve, 5000));
+              if (await checkForStopMessage()) {
+                return;
+              }
+
               console.error('[DIAGNOSTIC] after(): All checks complete, proceeding with save (guest)', {
                 conversationId: guestConversationId,
                 timestamp: Date.now(),
               });
+
+              // FINAL FINAL CHECK: Right before the actual save operation
+              // This catches client saves that happen during the save operation itself
+              const finalFinalCheck = await checkForStopMessage();
+              if (finalFinalCheck) {
+                console.error('[DIAGNOSTIC] after(): Stop message found in final-final check (guest), aborting save', {
+                  conversationId: guestConversationId,
+                  timestamp: Date.now(),
+                });
+                return; // Don't save if stop message exists
+              }
             }
 
             try {
