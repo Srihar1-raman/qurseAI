@@ -277,6 +277,24 @@ export async function POST(req: Request) {
       return null;
     })();
 
+    // Track abort state outside execute scope so onFinish can access it
+    let wasAborted = false;
+    const abortController = new AbortController();
+
+    // Forward abort signal from request if available
+    if (req.signal) {
+      const abortHandler = () => {
+        wasAborted = true;
+        abortController.abort();
+      };
+      req.signal.addEventListener('abort', abortHandler);
+      // Also check if already aborted
+      if (req.signal.aborted) {
+        wasAborted = true;
+        abortController.abort();
+      }
+    }
+
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
         // ============================================
@@ -304,17 +322,6 @@ export async function POST(req: Request) {
         // ============================================
         // START STREAMING (after user message is saved)
         // ============================================
-        // Create abort controller for stop functionality
-        const abortController = new AbortController();
-
-        // Forward abort signal from request if available
-        if (req.signal) {
-          const abortHandler = () => {
-            abortController.abort();
-          };
-          req.signal.addEventListener('abort', abortHandler);
-          // Note: Cleanup handled by request lifecycle
-        }
 
         const result = streamText({
           model: qurse.languageModel(model),
@@ -337,6 +344,7 @@ export async function POST(req: Request) {
             }
           },
           onAbort: ({ steps }) => {
+            wasAborted = true;
             logger.debug('Stream aborted', { 
               stepsCount: steps.length,
               hasSteps: steps.length > 0
@@ -381,10 +389,14 @@ export async function POST(req: Request) {
       },
       onFinish: async ({ messages }) => {
         // Check if stream was aborted - don't save if user stopped the stream
-        if (req.signal?.aborted) {
+        // Check both req.signal and our tracked abort state
+        if (wasAborted || req.signal?.aborted || abortController.signal.aborted) {
           logger.debug('Stream aborted, skipping message save', {
             conversationId: resolvedConversationId,
             messageCount: messages.length,
+            wasAborted,
+            reqSignalAborted: req.signal?.aborted,
+            abortControllerAborted: abortController.signal.aborted,
           });
           return;
         }
