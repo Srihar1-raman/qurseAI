@@ -59,21 +59,37 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const { error: msgError } = await supabase.from('messages').insert({
+      const saveStartTime = Date.now();
+      logger.info('SERVER /api/messages: Saving client stop message (auth user)', {
+        conversationId,
+        messageId: message.id,
+        timestamp: saveStartTime,
+        contentLength: contentText.length,
+        hasStopText: contentText.includes('*User stopped this message here*'),
+      });
+
+      const { error: msgError, data: insertedData } = await supabase.from('messages').insert({
         conversation_id: conversationId,
         role: 'assistant',
         parts: message.parts || [{ type: 'text', text: contentText.trim() }],
         content: contentText.trim(),
         model: (message as UIMessage & { metadata?: { model?: string } }).metadata?.model || null,
-      });
+      }).select('id').single();
 
       if (msgError) {
-        logger.error('Failed to save stopped message', msgError, { conversationId });
+        logger.error('SERVER /api/messages: Failed to save stopped message', msgError, { conversationId });
         return NextResponse.json(
           { error: 'Failed to save message' },
           { status: 500 }
         );
       }
+
+      logger.info('SERVER /api/messages: Client stop message saved successfully (auth user)', {
+        conversationId,
+        messageId: message.id,
+        insertedId: insertedData?.id,
+        saveDuration: Date.now() - saveStartTime,
+      });
 
       return NextResponse.json({ success: true });
     }
@@ -81,12 +97,27 @@ export async function POST(request: NextRequest) {
     // Guest user save
     const sessionId = getOrCreateSessionId(request);
     const sessionHash = hmacSessionId(sessionId);
+    const saveStartTime = Date.now();
+
+    logger.info('SERVER /api/messages: Saving client stop message (guest)', {
+      conversationId,
+      messageId: message.id,
+      timestamp: saveStartTime,
+      contentLength: contentText.length,
+      hasStopText: contentText.includes('*User stopped this message here*'),
+    });
 
     await saveGuestMessage({
       conversationId,
       message,
       role: 'assistant',
       sessionHash,
+    });
+
+    logger.info('SERVER /api/messages: Client stop message saved successfully (guest)', {
+      conversationId,
+      messageId: message.id,
+      saveDuration: Date.now() - saveStartTime,
     });
 
     return NextResponse.json({ success: true });

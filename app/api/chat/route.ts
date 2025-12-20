@@ -288,18 +288,31 @@ export async function POST(req: Request) {
     // Track abort state outside execute scope so onFinish can access it
     let wasAborted = false;
     const abortController = new AbortController();
+    const abortTimestamps: { [key: string]: number } = {};
 
     // Forward abort signal from request if available
     if (req.signal) {
       const abortHandler = () => {
         wasAborted = true;
+        abortTimestamps['reqSignalAbort'] = Date.now();
         abortController.abort();
+        abortTimestamps['abortControllerAbort'] = Date.now();
+        logger.info('ABORT DETECTED: Request signal aborted', {
+          conversationId: resolvedConversationId,
+          timestamp: abortTimestamps['reqSignalAbort'],
+        });
       };
       req.signal.addEventListener('abort', abortHandler);
       // Also check if already aborted
       if (req.signal.aborted) {
         wasAborted = true;
+        abortTimestamps['reqSignalAlreadyAborted'] = Date.now();
         abortController.abort();
+        abortTimestamps['abortControllerAbort'] = Date.now();
+        logger.info('ABORT DETECTED: Request signal already aborted', {
+          conversationId: resolvedConversationId,
+          timestamp: abortTimestamps['reqSignalAlreadyAborted'],
+        });
       }
     }
 
@@ -353,9 +366,12 @@ export async function POST(req: Request) {
           },
           onAbort: ({ steps }) => {
             wasAborted = true;
-            logger.debug('Stream aborted', { 
+            abortTimestamps['streamTextOnAbort'] = Date.now();
+            logger.info('ABORT DETECTED: streamText onAbort called', { 
+              conversationId: resolvedConversationId,
               stepsCount: steps.length,
-              hasSteps: steps.length > 0
+              hasSteps: steps.length > 0,
+              timestamp: abortTimestamps['streamTextOnAbort'],
             });
           },
           onFinish: async ({ usage }) => {
@@ -396,15 +412,35 @@ export async function POST(req: Request) {
         );
       },
       onFinish: async ({ messages }) => {
+        const onFinishTimestamp = Date.now();
+        const abortStateAtFinish = {
+          wasAborted,
+          reqSignalAborted: req.signal?.aborted ?? false,
+          abortControllerAborted: abortController.signal.aborted,
+        };
+
+        // Log detailed state for diagnosis
+        logger.info('onFinish CALLED - DIAGNOSTIC LOG', {
+          conversationId: resolvedConversationId,
+          timestamp: onFinishTimestamp,
+          messageCount: messages.length,
+          abortState: abortStateAtFinish,
+          abortTimestamps,
+          lastMessageId: messages[messages.length - 1]?.id,
+          lastMessageRole: messages[messages.length - 1]?.role,
+          lastMessagePartsCount: messages[messages.length - 1]?.parts?.length ?? 0,
+          requestStartTime,
+          timeSinceRequestStart: onFinishTimestamp - requestStartTime,
+        });
+
         // Check if stream was aborted - don't save if user stopped the stream
         // Check both req.signal and our tracked abort state
         if (wasAborted || req.signal?.aborted || abortController.signal.aborted) {
-          logger.debug('Stream aborted, skipping message save', {
+          logger.info('onFinish: Stream aborted, skipping message save', {
             conversationId: resolvedConversationId,
             messageCount: messages.length,
-            wasAborted,
-            reqSignalAborted: req.signal?.aborted,
-            abortControllerAborted: abortController.signal.aborted,
+            abortState: abortStateAtFinish,
+            abortTimestamps,
           });
           return;
         }
@@ -422,8 +458,10 @@ export async function POST(req: Request) {
             .join('');
           
           if (contentText.includes('*User stopped this message here*')) {
-            logger.debug('Message contains stop text, skipping save (client already saved partial)', {
+            logger.info('onFinish: Message contains stop text, skipping save (client already saved partial)', {
               conversationId: resolvedConversationId,
+              contentLength: contentText.length,
+              contentPreview: contentText.substring(0, 100),
             });
             return;
           }
@@ -445,9 +483,10 @@ export async function POST(req: Request) {
                 .maybeSingle();
 
               if (existingStopMessage) {
-                logger.debug('Stop message already exists, skipping save to prevent duplicate', {
+                logger.info('onFinish: Stop message already exists (auth), skipping save to prevent duplicate', {
                   conversationId: resolvedConversationId,
                   existingMessageId: existingStopMessage.id,
+                  checkTimestamp: Date.now(),
                 });
                 return;
               }
@@ -462,9 +501,10 @@ export async function POST(req: Request) {
                 .maybeSingle();
 
               if (existingStopMessage) {
-                logger.debug('Stop message already exists, skipping save to prevent duplicate', {
+                logger.info('onFinish: Stop message already exists (guest), skipping save to prevent duplicate', {
                   conversationId: resolvedConversationId,
                   existingMessageId: existingStopMessage.id,
+                  checkTimestamp: Date.now(),
                 });
                 return;
               }
@@ -523,11 +563,14 @@ export async function POST(req: Request) {
                 if (assistantMsgError) {
                   logger.error('Background assistant message save failed', assistantMsgError, { conversationId: resolvedConversationId });
                 } else {
-                  logger.info('Assistant message saved', {
+                  logger.info('onFinish: Assistant message SAVED TO DATABASE', {
                     conversationId: resolvedConversationId,
+                    messageId: assistantMessage.id,
                     partsCount: assistantMessage.parts.length,
                     tokens: totalTokens,
                     model,
+                    saveTimestamp: Date.now(),
+                    timeSinceOnFinish: Date.now() - onFinishTimestamp,
                   });
                 }
               }

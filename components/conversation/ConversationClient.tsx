@@ -177,10 +177,23 @@ export function ConversationClient({
     hasStoppedRef.current = true;
     hasSavedStopRef.current = false;
 
+    const stopTimestamp = Date.now();
+    logger.info('CLIENT: handleStop called', {
+      conversationId,
+      timestamp: stopTimestamp,
+      status,
+      messageCount: displayMessages.length,
+    });
+
     const currentStatus = status;
     const currentDisplayMessages = displayMessages;
 
     stop();
+    logger.info('CLIENT: stop() called', {
+      conversationId,
+      timestamp: Date.now(),
+      timeSinceStop: Date.now() - stopTimestamp,
+    });
 
     // Wait for stop() to complete and messages to settle before processing
     setTimeout(() => {
@@ -222,6 +235,12 @@ export function ConversationClient({
           // Save to database (only once)
           if (conversationId && !hasSavedStopRef.current) {
             hasSavedStopRef.current = true;
+            const saveStartTime = Date.now();
+            logger.info('CLIENT: Saving partial message to /api/messages', {
+              conversationId,
+              messageId: updatedLastMessage.id,
+              timestamp: saveStartTime,
+            });
             fetch('/api/messages', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -229,8 +248,19 @@ export function ConversationClient({
                 conversationId,
                 message: updatedLastMessage,
               }),
-            }).catch((error) => {
-              logger.error('Failed to save stopped message', error);
+            })
+            .then(() => {
+              logger.info('CLIENT: Partial message saved successfully', {
+                conversationId,
+                messageId: updatedLastMessage.id,
+                saveDuration: Date.now() - saveStartTime,
+              });
+            })
+            .catch((error) => {
+              logger.error('CLIENT: Failed to save stopped message', error, {
+                conversationId,
+                messageId: updatedLastMessage.id,
+              });
             });
           }
           
@@ -247,6 +277,12 @@ export function ConversationClient({
           // Save to database (only once)
           if (conversationId && !hasSavedStopRef.current) {
             hasSavedStopRef.current = true;
+            const saveStartTime = Date.now();
+            logger.info('CLIENT: Saving stop-only message to /api/messages', {
+              conversationId,
+              messageId: stopMessage.id,
+              timestamp: saveStartTime,
+            });
             fetch('/api/messages', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -254,8 +290,19 @@ export function ConversationClient({
                 conversationId,
                 message: stopMessage,
               }),
-            }).catch((error) => {
-              logger.error('Failed to save stopped message', error);
+            })
+            .then(() => {
+              logger.info('CLIENT: Stop-only message saved successfully', {
+                conversationId,
+                messageId: stopMessage.id,
+                saveDuration: Date.now() - saveStartTime,
+              });
+            })
+            .catch((error) => {
+              logger.error('CLIENT: Failed to save stopped message', error, {
+                conversationId,
+                messageId: stopMessage.id,
+              });
             });
           }
           
