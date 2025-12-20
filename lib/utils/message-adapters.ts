@@ -31,7 +31,7 @@ export interface ServerMessage {
   role: 'user' | 'assistant';
   content?: string; // Legacy field, kept for backward compatibility
   reasoning?: string; // Legacy field, kept for backward compatibility
-  parts?: UIMessagePart<any, any>[]; // New field, AI SDK native parts array
+  parts?: UIMessagePart<Record<string, unknown>, Record<string, unknown>>[]; // New field, AI SDK native parts array
 }
 
 /**

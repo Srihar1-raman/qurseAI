@@ -40,8 +40,38 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# docs
+# docs and markdown files
+*.md
+!README.md
 supabaseDOC.md
 
 # cursor
 .cursor/worktrees.json
+
+# test results and documentation
+TEST_*.md
+*_SUMMARY.md
+*_REVIEW.md
+*_ANALYSIS.md
+*_PLAN.md
+*_GUIDE.md
+*_RESULTS.md
+*_VERIFICATION.md
+*_EXPLAINED.md
+*_FIXES.md
+*_ISSUES.md
+*_STATUS.md
+*_CHECKLIST.md
+*_COMPLETE.md
+*_DIAGRAM.md
+*_COMPARISON.md
+*_SOLUTIONS.md
+*_DOCUMENTATION.md
+*_BOTTLENECK.md
+*_OPTIMIZATIONS.md
+*_CONCEPTS.md
+*_SIMPLE.md
+*_FLOW.md
+*_FIX.md
+*_SUMMARY.md
+md/

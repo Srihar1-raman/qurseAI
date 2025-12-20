@@ -133,7 +133,7 @@ export interface ChatMessage {
 export interface QurseMessage {
   id: string;
   role: 'user' | 'assistant';
-  parts: UIMessagePart<any, any>[];
+  parts: UIMessagePart<Record<string, unknown>, Record<string, unknown>>[];
   metadata?: StreamMetadata;
 }
 
@@ -193,6 +193,7 @@ export interface ChatMessageProps {
   onRedo?: () => void | Promise<void>;
   onShare?: () => void | Promise<void>;
   user?: { id: string } | null;
+  isStreaming?: boolean; // Indicates if content is actively streaming
 }
 
 export interface ModelSelectorProps {

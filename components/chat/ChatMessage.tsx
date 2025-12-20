@@ -7,7 +7,7 @@ import MarkdownRenderer from '@/components/markdown';
 import { getIconPath } from '@/lib/icon-utils';
 import type { ChatMessageProps } from '@/lib/types';
 
-function ChatMessageComponent({ message, isUser, onRedo, onShare, user }: ChatMessageProps) {
+function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false }: ChatMessageProps) {
   const { resolvedTheme, mounted } = useTheme();
 
   // Extract text content from message parts
@@ -61,7 +61,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user }: ChatMe
               fontSize: '14px',
               color: 'var(--color-text-secondary)',
             }}>
-              <MarkdownRenderer content={reasoning} isUserMessage={false} />
+              <MarkdownRenderer content={reasoning} isUserMessage={false} isStreaming={isStreaming} />
             </div>
           </div>
         )}
@@ -69,10 +69,10 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user }: ChatMe
         {/* Main message content */}
         <div className="message-content">
           {isUser ? (
-            <MarkdownRenderer content={content} isUserMessage={true} />
+            <MarkdownRenderer content={content} isUserMessage={true} isStreaming={false} />
           ) : (
             <>
-              <MarkdownRenderer content={mainContent} isUserMessage={false} />
+              <MarkdownRenderer content={mainContent} isUserMessage={false} isStreaming={isStreaming} />
               {hasStopText && (
                 <div style={{ marginTop: '12px' }}>
                   <span className="stop-message-indicator">
@@ -162,6 +162,11 @@ export default React.memo(ChatMessageComponent, (prevProps, nextProps) => {
     .filter((p): p is { type: 'reasoning'; text: string } => p.type === 'reasoning')
     .map(p => p.text)
     .join('');
+  
+  // Check if streaming status changed
+  if (prevProps.isStreaming !== nextProps.isStreaming) {
+    return false; // Re-render if streaming status changes
+  }
   
   // Return true if props are EQUAL (skip re-render), false if different (re-render)
   return prevContent === nextContent && prevReasoning === nextReasoning;

@@ -1,7 +1,6 @@
 import 'katex/dist/katex.min.css';
 
 import { highlight } from 'sugar-high';
-import Image from 'next/image';
 import Link from 'next/link';
 import Latex from 'react-latex-next';
 import Marked, { ReactRenderer } from 'marked-react';
@@ -14,15 +13,52 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import { Check, Copy, WrapText, ArrowLeftRight, Download } from 'lucide-react';
 import { useToast } from '@/lib/contexts/ToastContext';
+import { useThrottledValue } from '@/lib/utils/throttle';
+
+// Performance constants
+const THROTTLE_DELAY_MS = 150;
+const VIRTUAL_SCROLL_THRESHOLD_STREAMING = 20000;
+const VIRTUAL_SCROLL_THRESHOLD_NORMAL = 100000;
+
+// Adaptive throttling thresholds (content size in characters)
+const ADAPTIVE_THROTTLE_SMALL = 10000;      // <10k: 150ms
+const ADAPTIVE_THROTTLE_MEDIUM = 50000;     // 10-50k: 250ms
+const ADAPTIVE_THROTTLE_LARGE = 100000;     // 50-100k: 400ms
+// >100k: 600ms
+
+// Throttle delays (milliseconds)
+const THROTTLE_DELAY_SMALL = 150;
+const THROTTLE_DELAY_MEDIUM = 250;
+const THROTTLE_DELAY_LARGE = 400;
+const THROTTLE_DELAY_VERY_LARGE = 600;
+
+// Minimal processing mode threshold
+const MINIMAL_MODE_THRESHOLD = 20000; // 20k chars
+
+// Fast streaming detection (chars per second)
+const FAST_STREAMING_RATE = 5000; // 5k chars/sec
+
+// Virtual scrolling thresholds
+const VIRTUAL_SCROLL_FAST_STREAMING = 10000; // 10k for fast streaming
 
 interface MarkdownRendererProps {
   content: string;
   isUserMessage?: boolean;
+  /** Indicates if content is actively streaming. Enables performance optimizations like throttling and skipping expensive operations. */
+  isStreaming?: boolean;
 }
 
 interface CitationLink {
   text: string;
   link: string;
+}
+
+interface ProcessedContentResult {
+  processedContent: string;
+  citations: CitationLink[];
+  latexBlocks: Array<{ id: string; content: string; isBlock: boolean }>;
+  isProcessing: boolean;
+  isMinimalMode?: boolean; // Indicates minimal processing mode
 }
 
 // Fallback monospace font stack (Geist_Mono not available)
@@ -275,13 +311,164 @@ const CodeBlock: React.FC<CodeBlockProps> = React.memo(
 
 CodeBlock.displayName = 'CodeBlock';
 
+/**
+ * Calculate adaptive throttle delay based on content size
+ * Larger content needs more processing time, so we throttle more aggressively
+ * 
+ * @param contentLength - Current content length in characters
+ * @param isStreaming - Whether content is actively streaming
+ * @returns Throttle delay in milliseconds (0 if not streaming)
+ */
+function getAdaptiveThrottleDelay(contentLength: number, isStreaming: boolean): number {
+  if (!isStreaming) {
+    return 0; // No throttling when not streaming
+  }
+
+  if (contentLength < ADAPTIVE_THROTTLE_SMALL) {
+    return THROTTLE_DELAY_SMALL; // 150ms for small content
+  }
+  
+  if (contentLength < ADAPTIVE_THROTTLE_MEDIUM) {
+    return THROTTLE_DELAY_MEDIUM; // 250ms for medium content
+  }
+  
+  if (contentLength < ADAPTIVE_THROTTLE_LARGE) {
+    return THROTTLE_DELAY_LARGE; // 400ms for large content
+  }
+  
+  return THROTTLE_DELAY_VERY_LARGE; // 600ms for very large content
+}
+
+/**
+ * Detect fast streaming by measuring content growth rate
+ * Returns true if content is growing faster than threshold
+ * 
+ * @param content - Current content string
+ * @param isStreaming - Whether content is actively streaming
+ * @returns True if streaming is fast (>5k chars/sec)
+ */
+function useFastStreamingDetection(content: string, isStreaming: boolean): boolean {
+  const lastContentLength = useRef(0);
+  const lastUpdateTime = useRef(Date.now());
+  const [isFastStreaming, setIsFastStreaming] = useState(false);
+
+  useEffect(() => {
+    if (!isStreaming) {
+      setIsFastStreaming(false);
+      lastContentLength.current = 0;
+      lastUpdateTime.current = Date.now();
+      return;
+    }
+
+    const now = Date.now();
+    const timeDelta = now - lastUpdateTime.current;
+    const contentDelta = content.length - lastContentLength.current;
+
+    // Calculate growth rate (characters per second)
+    if (timeDelta > 0 && contentDelta > 0) {
+      const growthRate = (contentDelta / timeDelta) * 1000; // chars per second
+      
+      // Consider fast if growing faster than threshold
+      setIsFastStreaming(growthRate > FAST_STREAMING_RATE);
+    }
+
+    lastContentLength.current = content.length;
+    lastUpdateTime.current = now;
+  }, [content, isStreaming]);
+
+  return isFastStreaming;
+}
+
 // Optimized synchronous content processor using useMemo
-const useProcessedContent = (content: string) => {
+const useProcessedContent = (
+  content: string,
+  isStreaming: boolean = false,
+  isFastStreaming: boolean = false
+): ProcessedContentResult => {
   return useMemo(() => {
     const citations: CitationLink[] = [];
     const latexBlocks: Array<{ id: string; content: string; isBlock: boolean }> = [];
     let modifiedContent = content;
 
+    // NEW: Minimal mode for fast streaming + large content
+    const shouldUseMinimalMode = isStreaming && (
+      content.length > MINIMAL_MODE_THRESHOLD || // Size-based
+      isFastStreaming // Rate-based
+    );
+
+    if (shouldUseMinimalMode) {
+      // MINIMAL MODE: Skip ALL expensive operations
+      // Only basic markdown parsing, no code blocks, LaTeX, citations
+      return {
+        processedContent: content, // No processing at all
+        citations: [],
+        latexBlocks: [],
+        isProcessing: false,
+        isMinimalMode: true,
+      };
+    }
+
+    // Existing streaming mode logic (for content < 20k and slow streaming)
+    if (isStreaming) {
+      // Only process code blocks and basic LaTeX (skip citations and complex LaTeX)
+      const codeBlocks: Array<{ id: string; content: string }> = [];
+      const codeBlockPatterns = [/```[\s\S]*?```/g, /`[^`\n]+`/g];
+
+      for (const pattern of codeBlockPatterns) {
+        const matches = [...modifiedContent.matchAll(pattern)];
+        let lastIndex = 0;
+        let newContent = '';
+
+        for (let i = 0; i < matches.length; i++) {
+          const match = matches[i];
+          const id = `CODEBLOCK${codeBlocks.length}END`;
+          codeBlocks.push({ id, content: match[0] });
+          newContent += modifiedContent.slice(lastIndex, match.index) + id;
+          lastIndex = match.index! + match[0].length;
+        }
+        newContent += modifiedContent.slice(lastIndex);
+        modifiedContent = newContent;
+      }
+
+      // Basic LaTeX only (block and inline, no complex patterns)
+      const basicLatexPatterns = [
+        { patterns: [/\\\[([\s\S]*?)\\\]/g, /\$\$([\s\S]*?)\$\$/g], isBlock: true, prefix: 'LATEXBLOCK' },
+        { patterns: [/\\\(([\s\S]*?)\\\)/g, /\$[^\$\n]+\$/g], isBlock: false, prefix: 'LATEXINLINE' },
+      ];
+
+      for (const { patterns, isBlock, prefix } of basicLatexPatterns) {
+        for (const pattern of patterns) {
+          const matches = [...modifiedContent.matchAll(pattern)];
+          let lastIndex = 0;
+          let newContent = '';
+
+          for (let i = 0; i < matches.length; i++) {
+            const match = matches[i];
+            const id = `${prefix}${latexBlocks.length}END`;
+            latexBlocks.push({ id, content: match[0], isBlock });
+            newContent += modifiedContent.slice(lastIndex, match.index) + id;
+            lastIndex = match.index! + match[0].length;
+          }
+          newContent += modifiedContent.slice(lastIndex);
+          modifiedContent = newContent;
+        }
+      }
+
+      // Restore code blocks
+      codeBlocks.forEach(({ id, content }) => {
+        modifiedContent = modifiedContent.replace(id, content);
+      });
+
+      return {
+        processedContent: modifiedContent,
+        citations: [], // Skip citations during streaming
+        latexBlocks,
+        isProcessing: false,
+        isMinimalMode: false,
+      };
+    }
+
+    // Full processing when not streaming
     try {
       // Extract and protect code blocks
       const codeBlocks: Array<{ id: string; content: string }> = [];
@@ -439,6 +626,7 @@ const useProcessedContent = (content: string) => {
         citations,
         latexBlocks,
         isProcessing: false,
+        isMinimalMode: false,
       };
     } catch (error) {
       console.error('Error processing content:', error);
@@ -447,10 +635,244 @@ const useProcessedContent = (content: string) => {
         citations: [],
         latexBlocks: [],
         isProcessing: false,
+        isMinimalMode: false,
       };
     }
-  }, [content]);
+  }, [content, isStreaming, isFastStreaming]);
 };
+
+/**
+ * Process full content synchronously (for deferred processing)
+ * This is the same logic as useProcessedContent full mode
+ * Extracted for use in deferred processing hook
+ */
+function processFullContentSync(content: string): ProcessedContentResult {
+  const citations: CitationLink[] = [];
+  const latexBlocks: Array<{ id: string; content: string; isBlock: boolean }> = [];
+  let modifiedContent = content;
+
+  try {
+    // Extract and protect code blocks
+    const codeBlocks: Array<{ id: string; content: string }> = [];
+    const codeBlockPatterns = [/```[\s\S]*?```/g, /`[^`\n]+`/g];
+
+    for (const pattern of codeBlockPatterns) {
+      const matches = [...modifiedContent.matchAll(pattern)];
+      let lastIndex = 0;
+      let newContent = '';
+
+      for (let i = 0; i < matches.length; i++) {
+        const match = matches[i];
+        const id = `CODEBLOCK${codeBlocks.length}END`;
+        codeBlocks.push({ id, content: match[0] });
+
+        newContent += modifiedContent.slice(lastIndex, match.index) + id;
+        lastIndex = match.index! + match[0].length;
+      }
+
+      newContent += modifiedContent.slice(lastIndex);
+      modifiedContent = newContent;
+    }
+
+    // Extract monetary amounts FIRST to protect them from LaTeX patterns
+    const monetaryBlocks: Array<{ id: string; content: string }> = [];
+    const monetaryRegex =
+      /(^|[\s([>~≈<)])\$\d+(?:,\d{3})*(?:\.\d+)?(?:[kKmMbBtT]|\s+(?:thousand|million|billion|trillion|k|K|M|B|T))?(?:\s+(?:USD|EUR|GBP|CAD|AUD|JPY|CNY|CHF))?(?:\s*(?:per\s+(?:million|thousand|token|month|year)|\/(?:month|year|token)))?(?=$|[\s).,;!?<\]])/g;
+
+    let monetaryProcessed = '';
+    let lastMonetaryIndex = 0;
+    const monetaryMatches = [...modifiedContent.matchAll(monetaryRegex)];
+
+    for (let i = 0; i < monetaryMatches.length; i++) {
+      const match = monetaryMatches[i];
+      const prefix = match[1];
+      const id = `MONETARY${monetaryBlocks.length}END`;
+      monetaryBlocks.push({ id, content: match[0].slice(prefix.length) });
+
+      monetaryProcessed += modifiedContent.slice(lastMonetaryIndex, match.index) + prefix + id;
+      lastMonetaryIndex = match.index! + match[0].length;
+    }
+
+    monetaryProcessed += modifiedContent.slice(lastMonetaryIndex);
+    modifiedContent = monetaryProcessed;
+
+    // Extract LaTeX blocks AFTER monetary amounts are protected
+    const allLatexPatterns = [
+      { patterns: [/\\\[([\s\S]*?)\\\]/g, /\$\$([\s\S]*?)\$\$/g], isBlock: true, prefix: 'LATEXBLOCK' },
+      { 
+        patterns: [
+          /\\\(([\s\S]*?)\\\)/g, 
+          /\$[^\$\n]*[\\^_{}][^\$\n]*\$/g,
+          /\$[^\$\n]*\([^\)]*[a-zA-Z][^\)]*\)[^\$\n]*\$/g,
+          /\$[^\$\n]*\|[^\|]*\|[^\$\n]*\$/g,
+          /\$[a-zA-Z]\s*[=<>≤≥≠]\s*[0-9a-zA-Z][^\$\n]*\$/g,
+          /\$[0-9][^\$\n]*[\\^_≤≥≠∈∉⊂⊃∪∩θΘπΠαβγδεζηλμνξρσςτφχψωΑΒΓΔΕΖΗΛΜΝΞΡΣΤΦΧΨΩ°][^\$\n]*\$/g,
+          /\$[a-zA-ZθΘπΠαβγδεζηλμνξρσςτφχψωΑΒΓΔΕΖΗΛΜΝΞΡΣΤΦΧΨΩ]+\$/g
+        ], 
+        isBlock: false, 
+        prefix: 'LATEXINLINE' 
+      },
+    ];
+
+    for (const { patterns, isBlock, prefix } of allLatexPatterns) {
+      for (const pattern of patterns) {
+        const matches = [...modifiedContent.matchAll(pattern)];
+        let lastIndex = 0;
+        let newContent = '';
+
+        for (let i = 0; i < matches.length; i++) {
+          const match = matches[i];
+          const id = `${prefix}${latexBlocks.length}END`;
+          latexBlocks.push({ id, content: match[0], isBlock });
+
+          newContent += modifiedContent.slice(lastIndex, match.index) + id;
+          lastIndex = match.index! + match[0].length;
+        }
+
+        newContent += modifiedContent.slice(lastIndex);
+        modifiedContent = newContent;
+      }
+    }
+
+    // Escape unescaped pipe characters inside explicit markdown link texts
+    try {
+      const explicitLinkPattern = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+      const linkMatches = [...modifiedContent.matchAll(explicitLinkPattern)];
+      if (linkMatches.length > 0) {
+        let rebuilt = '';
+        let lastPos = 0;
+        for (let i = 0; i < linkMatches.length; i++) {
+          const m = linkMatches[i];
+          const full = m[0];
+          const textPart = m[1];
+          const urlPart = m[2];
+          const fixedText = textPart.replace(/(^|[^\\])\|/g, '$1\\|');
+          rebuilt += modifiedContent.slice(lastPos, m.index!) + `[${fixedText}](${urlPart})`;
+          lastPos = m.index! + full.length;
+        }
+        rebuilt += modifiedContent.slice(lastPos);
+        modifiedContent = rebuilt;
+      }
+    } catch {}
+
+    // Process citations
+    const refWithUrlRegex =
+      /(?:\[(?:(?:\[?(PDF|DOC|HTML)\]?\s+)?([^\]]+))\]|\b([^.!?\n]+?(?:\s+[-–—]\s+\w+|\s+\([^)]+\)))\b)(?:\s*(?:\(|\[\s*|\s+))(https?:\/\/[^\s)]+)(?:\s*[)\]]|\s|$)/g;
+
+    let citationProcessed = '';
+    let lastCitationIndex = 0;
+    const citationMatches = [...modifiedContent.matchAll(refWithUrlRegex)];
+
+    for (let i = 0; i < citationMatches.length; i++) {
+      const match = citationMatches[i];
+      const [fullMatch, docType, bracketText, plainText, url] = match;
+      const text = bracketText || plainText;
+      const fullText = (docType ? `[${docType}] ` : '') + text;
+      const cleanUrl = url.replace(/[.,;:]+$/, '');
+      citations.push({ text: fullText.trim(), link: cleanUrl });
+
+      citationProcessed += modifiedContent.slice(lastCitationIndex, match.index) + `[${fullText.trim()}](${cleanUrl})`;
+      lastCitationIndex = match.index! + fullMatch.length;
+    }
+
+    citationProcessed += modifiedContent.slice(lastCitationIndex);
+    modifiedContent = citationProcessed;
+
+    // Restore protected blocks
+    monetaryBlocks.forEach(({ id, content }) => {
+      modifiedContent = modifiedContent.replace(id, content);
+      for (let i = 0; i < citations.length; i++) {
+        citations[i].text = citations[i].text.replace(id, content);
+      }
+    });
+
+    codeBlocks.forEach(({ id, content }) => {
+      modifiedContent = modifiedContent.replace(id, content);
+      for (let i = 0; i < citations.length; i++) {
+        citations[i].text = citations[i].text.replace(id, content);
+      }
+    });
+
+    return {
+      processedContent: modifiedContent,
+      citations,
+      latexBlocks,
+      isProcessing: false,
+      isMinimalMode: false,
+    };
+  } catch (error) {
+    console.error('Error processing content:', error);
+    return {
+      processedContent: content,
+      citations: [],
+      latexBlocks: [],
+      isProcessing: false,
+      isMinimalMode: false,
+    };
+  }
+}
+
+/**
+ * Defer full processing until streaming completes
+ * During streaming: uses minimal/streaming mode
+ * After streaming: processes full content in background
+ * 
+ * @param content - Full content string
+ * @param isStreaming - Whether content is actively streaming
+ * @param currentProcessed - Currently processed content (minimal/streaming mode)
+ * @returns Deferred processed content and processing state
+ */
+function useDeferredProcessing(
+  content: string,
+  isStreaming: boolean,
+  currentProcessed: ProcessedContentResult
+): {
+  processedContent: ProcessedContentResult;
+  isProcessing: boolean;
+} {
+  const [deferredContent, setDeferredContent] = useState<ProcessedContentResult | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const processingRef = useRef(false);
+  const wasStreamingRef = useRef(false);
+
+  useEffect(() => {
+    // Track streaming state changes
+    const streamingStopped = wasStreamingRef.current && !isStreaming;
+    wasStreamingRef.current = isStreaming;
+
+    // When streaming stops, trigger full processing
+    if (streamingStopped && !processingRef.current && currentProcessed.isMinimalMode) {
+      processingRef.current = true;
+      setIsProcessing(true);
+
+      // Process in next frame to not block UI
+      requestAnimationFrame(() => {
+        // Use setTimeout to yield to browser
+        setTimeout(() => {
+          // Run full processing (not minimal mode)
+          const fullProcessed = processFullContentSync(content);
+          setDeferredContent(fullProcessed);
+          setIsProcessing(false);
+          processingRef.current = false;
+        }, 0);
+      });
+    }
+
+    // Reset when streaming starts again
+    if (isStreaming) {
+      processingRef.current = false;
+      setDeferredContent(null);
+    }
+  }, [isStreaming, content, currentProcessed.isMinimalMode]);
+
+  // Use deferred content if available, otherwise use current
+  const finalContent = deferredContent || currentProcessed;
+
+  return {
+    processedContent: finalContent,
+    isProcessing,
+  };
+}
 
 const InlineCode: React.FC<{ code: string; elementKey: string }> = React.memo(({ code }) => {
   const [isCopied, setIsCopied] = useState(false);
@@ -597,12 +1019,13 @@ const LinkPreview = React.memo(({ href, title }: { href: string; title?: string 
   return (
     <div className="flex flex-col bg-accent text-xs m-0">
       <div className="flex items-center h-6 space-x-1.5 px-2 pt-2 text-xs text-muted-foreground">
-        <Image
+        <img
           src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
           alt=""
           width={12}
           height={12}
           className="rounded-sm"
+          loading="lazy"
         />
         <span className="truncate font-medium">{domain}</span>
       </div>
@@ -617,22 +1040,66 @@ const LinkPreview = React.memo(({ href, title }: { href: string; title?: string 
 
 LinkPreview.displayName = 'LinkPreview';
 
-const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false }) => {
-  const { processedContent, citations: extractedCitations, latexBlocks, isProcessing } = useProcessedContent(content);
+/**
+ * Processing indicator shown when deferred processing is active
+ */
+const ProcessingIndicator: React.FC = React.memo(() => {
+  return (
+    <div className="flex items-center gap-2 px-3 py-1.5 text-xs text-muted-foreground bg-accent/50 rounded-md mt-2">
+      <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+      <span>Processing formatting...</span>
+    </div>
+  );
+});
+
+ProcessingIndicator.displayName = 'ProcessingIndicator';
+
+const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false, isStreaming = false }) => {
+  // Detect fast streaming
+  const isFastStreaming = useFastStreamingDetection(content, isStreaming);
+
+  // Calculate adaptive throttle delay based on content size
+  const throttleDelay = useMemo(
+    () => getAdaptiveThrottleDelay(content.length, isStreaming),
+    [content.length, isStreaming]
+  );
+
+  // Throttle content updates with adaptive delay
+  const throttledContent = useThrottledValue(content, throttleDelay);
+
+  // Get current processed content
+  const currentProcessed = useProcessedContent(throttledContent, isStreaming, isFastStreaming);
+
+  // Defer full processing if needed
+  const { processedContent: finalProcessed, isProcessing: isDeferredProcessing } = useDeferredProcessing(
+    throttledContent,
+    isStreaming,
+    currentProcessed
+  );
+
+  // Extract values from final processed content
+  const { 
+    processedContent, 
+    citations: extractedCitations, 
+    latexBlocks, 
+    isProcessing,
+    isMinimalMode 
+  } = finalProcessed;
   const citationLinks = extractedCitations;
 
   // Optimized element key generation using content hash instead of indices
+  // Use throttledContent to ensure keys remain stable during throttling
   const contentHash = useMemo(() => {
     // Simple hash for stable keys
     let hash = 0;
-    const str = content.slice(0, 200); // Use first 200 chars for hash
+    const str = throttledContent.slice(0, 200); // Use first 200 chars for hash
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return Math.abs(hash).toString(36);
-  }, [content]);
+  }, [throttledContent]);
 
   // Use closures to maintain counters without re-creating on each render
   const getElementKey = useMemo(() => {
@@ -793,7 +1260,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         return components.length === 1 ? components[0] : <Fragment>{components}</Fragment>;
       },
       hr() {
-        return <></>;
+        const key = getElementKey('hr');
+        return <hr key={key} className="my-6 border-t border-border" />;
       },
       paragraph(children) {
         const key = getElementKey('paragraph', String(children));
@@ -1011,21 +1479,25 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
   }
 
   return (
-    <div className="markdown-body prose prose-neutral dark:prose-invert max-w-none text-foreground font-sans">
-      <Marked renderer={renderer}>{processedContent}</Marked>
-    </div>
+    <>
+      <div className="markdown-body prose prose-neutral dark:prose-invert max-w-none text-foreground font-sans">
+        <Marked renderer={renderer}>{processedContent}</Marked>
+      </div>
+      {isDeferredProcessing && <ProcessingIndicator />}
+    </>
   );
 }, (prevProps, nextProps) => {
   return (
     prevProps.content === nextProps.content &&
-    prevProps.isUserMessage === nextProps.isUserMessage
+    prevProps.isUserMessage === nextProps.isUserMessage &&
+    prevProps.isStreaming === nextProps.isStreaming
   );
 });
 
 MarkdownRenderer.displayName = 'MarkdownRenderer';
 
 // Virtual scrolling component for very large content
-const VirtualMarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false }) => {
+const VirtualMarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false, isStreaming = false }) => {
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 });
   const containerRef = useRef<HTMLDivElement>(null);
   
@@ -1053,9 +1525,13 @@ const VirtualMarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ c
     setVisibleRange({ start: Math.max(0, start - 5), end });
   }, [contentChunks.length]);
 
+  // Lower threshold during streaming for better performance
+  // Match OptimizedMarkdownRenderer threshold for consistency
+  const virtualScrollThreshold = isStreaming ? VIRTUAL_SCROLL_THRESHOLD_STREAMING : VIRTUAL_SCROLL_THRESHOLD_NORMAL;
+  
   // Only use virtual scrolling for very large content
-  if (content.length < 50000) {
-    return <MarkdownRenderer content={content} isUserMessage={isUserMessage} />;
+  if (content.length < virtualScrollThreshold) {
+    return <MarkdownRenderer content={content} isUserMessage={isUserMessage} isStreaming={isStreaming} />;
   }
 
   return (
@@ -1068,7 +1544,8 @@ const VirtualMarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ c
         <MarkdownRenderer 
           key={`chunk-${visibleRange.start + index}`}
           content={chunk} 
-          isUserMessage={isUserMessage} 
+          isUserMessage={isUserMessage}
+          isStreaming={isStreaming}
         />
       ))}
     </div>
@@ -1076,7 +1553,8 @@ const VirtualMarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ c
 }, (prevProps, nextProps) => {
   return (
     prevProps.content === nextProps.content &&
-    prevProps.isUserMessage === nextProps.isUserMessage
+    prevProps.isUserMessage === nextProps.isUserMessage &&
+    prevProps.isStreaming === nextProps.isStreaming
   );
 });
 
@@ -1122,19 +1600,28 @@ const usePerformanceMonitor = (content: string) => {
 };
 
 // Main optimized markdown component with automatic optimization selection
-const OptimizedMarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false }) => {
+const OptimizedMarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false, isStreaming = false }) => {
   usePerformanceMonitor(content);
   
+  // Detect fast streaming for threshold adjustment
+  const isFastStreaming = useFastStreamingDetection(content, isStreaming);
+  
+  // Lower threshold for fast streaming
+  const virtualScrollThreshold = isFastStreaming
+    ? VIRTUAL_SCROLL_FAST_STREAMING // 10k for fast streaming
+    : (isStreaming ? VIRTUAL_SCROLL_THRESHOLD_STREAMING : VIRTUAL_SCROLL_THRESHOLD_NORMAL);
+  
   // Automatically choose the best rendering strategy based on content size
-  if (content.length > 100000) {
-    return <VirtualMarkdownRenderer content={content} isUserMessage={isUserMessage} />;
+  if (content.length > virtualScrollThreshold) {
+    return <VirtualMarkdownRenderer content={content} isUserMessage={isUserMessage} isStreaming={isStreaming} />;
   }
   
-  return <MarkdownRenderer content={content} isUserMessage={isUserMessage} />;
+  return <MarkdownRenderer content={content} isUserMessage={isUserMessage} isStreaming={isStreaming} />;
 }, (prevProps, nextProps) => {
   return (
     prevProps.content === nextProps.content &&
-    prevProps.isUserMessage === nextProps.isUserMessage
+    prevProps.isUserMessage === nextProps.isUserMessage &&
+    prevProps.isStreaming === nextProps.isStreaming
   );
 });
 

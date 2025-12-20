@@ -12,6 +12,8 @@ import { NavigationWrapper } from "@/components/layout/NavigationWrapper";
 import { RoutePrefetcher } from "@/components/layout/RoutePrefetcher";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -105,6 +107,8 @@ export default function RootLayout({
           </AuthProvider>
         </ThemeProvider>
         </ErrorBoundary>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

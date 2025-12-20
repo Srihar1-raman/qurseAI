@@ -25,7 +25,7 @@ const ConversationClient = dynamic(
 
 interface ConversationPageClientProps {
   conversationId: string;
-  initialMessages: Array<{ id: string; role: 'user' | 'assistant'; parts?: UIMessagePart<any, any>[] }>;
+  initialMessages: Array<{ id: string; role: 'user' | 'assistant'; parts?: UIMessagePart<Record<string, unknown>, Record<string, unknown>>[] }>;
   initialHasMore: boolean;
   initialDbRowCount: number;
   hasInitialMessageParam: boolean;

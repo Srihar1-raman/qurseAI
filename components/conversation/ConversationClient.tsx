@@ -116,6 +116,7 @@ export function ConversationClient({
 
   const isLoading = status === 'submitted' || status === 'streaming';
   const isThinking = status === 'submitted'; // Only show thinking animation before streaming starts
+  const isStreaming = status === 'streaming'; // Extract for passing down to markdown renderer
   const showStopButton = (status === 'submitted' || status === 'streaming') && !hasStoppedRef.current;
 
   const { input, setInput, textareaRef, handleSubmit, handleKeyPress } = useConversationInput({
@@ -277,6 +278,7 @@ export function ConversationClient({
           error={error}
           isRateLimited={rateLimitState.isRateLimited}
           selectedModel={selectedModel}
+          isStreaming={isStreaming}
           conversationEndRef={conversationEndRef}
           conversationContainerRef={conversationContainerRef}
           conversationThreadRef={conversationThreadRef}

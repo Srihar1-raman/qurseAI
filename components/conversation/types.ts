@@ -32,6 +32,7 @@ export interface ConversationThreadProps {
   conversationThreadRef: React.RefObject<HTMLDivElement | null>;
   onShare?: () => void | Promise<void>;
   user?: { id: string } | null;
+  isStreaming?: boolean; // Indicates if content is actively streaming
 }
 
 export interface ConversationInputProps {

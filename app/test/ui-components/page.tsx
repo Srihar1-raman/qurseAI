@@ -514,7 +514,7 @@ export default function UIComponentsTestPage() {
                   </UnifiedButton>
                 </div>
                 <p style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '8px', fontStyle: 'italic' }}>
-                  Used in: History Sidebar "Sign In", Error Boundary "Go Home"
+                  Used in: History Sidebar &quot;Sign In&quot;, Error Boundary &quot;Go Home&quot;
                 </p>
               </div>
             </div>
@@ -819,7 +819,7 @@ export default function UIComponentsTestPage() {
               This is a <strong>ConfirmModal</strong> - ready to use with title, message, and buttons.
             </p>
             <p className="modal-text">
-              It's built on top of Base Modal, but has all the common confirmation dialog parts already included.
+              It&apos;s built on top of Base Modal, but has all the common confirmation dialog parts already included.
             </p>
             <p className="modal-warning">
               This action cannot be undone.

@@ -3,12 +3,12 @@ import type { PricingFeature } from './types';
 export const FREE_PLAN_FEATURES: PricingFeature[] = [
   {
     title: 'Limited Messages',
-    description: '20 messages per day',
+    description: '19 messages per day',
     icon: 'history',
   },
   {
     title: 'Access to Free Models',
-    description: 'Use free AI models like GPT-4o-mini, Kimi K2, and more',
+    description: 'Use free AI models like GPT OSS 120B, Kimi K2, and more',
     icon: 'model',
   },
   {
@@ -36,12 +36,12 @@ export const PRO_PLAN_FEATURES: PricingFeature[] = [
   },
   {
     title: 'Increased File Uploads',
-    description: 'Higher file size limits and more uploads per conversation',
+    description: 'Higher file size limits and more uploads',
     icon: 'attach',
   },
   {
     title: 'Priority Support',
-    description: 'Get faster response times and dedicated support',
+    description: 'Get dedicated support',
     icon: 'general',
   },
 ];

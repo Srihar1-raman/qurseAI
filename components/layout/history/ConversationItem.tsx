@@ -244,7 +244,7 @@ export default function ConversationItem({
             disabled={isPinning}
           >
             <Image 
-              src={conversation.pinned ? getIconPath("pin", resolvedTheme, true, mounted) : getIconPath("unpin", resolvedTheme, false, mounted)} 
+              src={conversation.pinned ? getIconPath("pin", resolvedTheme, false, mounted) : getIconPath("unpin", resolvedTheme, false, mounted)} 
               alt={conversation.pinned ? "Unpin" : "Pin"} 
               width={12} 
               height={12} 

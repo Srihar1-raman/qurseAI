@@ -21,6 +21,7 @@ function ConversationThreadComponent({
   conversationThreadRef,
   onShare,
   user,
+  isStreaming = false,
 }: ConversationThreadProps) {
   return (
     <div ref={conversationContainerRef} className="conversation-container">
@@ -38,7 +39,7 @@ function ConversationThreadComponent({
           </div>
         )}
 
-        {messages.map((message) => (
+        {messages.map((message, index) => (
           <ChatMessage
             key={message.id}
             message={message}
@@ -46,6 +47,7 @@ function ConversationThreadComponent({
             model={selectedModel}
             onShare={onShare}
             user={user}
+            isStreaming={isStreaming && index === messages.length - 1} // Only last message streams
           />
         ))}
 
@@ -140,7 +142,8 @@ export const ConversationThread = React.memo(ConversationThreadComponent, (prevP
     prevProps.isRateLimited !== nextProps.isRateLimited ||
     prevProps.selectedModel !== nextProps.selectedModel ||
     prevProps.error?.message !== nextProps.error?.message ||
-    prevProps.user?.id !== nextProps.user?.id
+    prevProps.user?.id !== nextProps.user?.id ||
+    prevProps.isStreaming !== nextProps.isStreaming
   ) {
     return false; // Re-render
   }

@@ -127,7 +127,7 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
   const [shareUrl, setShareUrl] = useState('');
   const [sharedConversationId, setSharedConversationId] = useState<string | null>(null);
   const { shareConversation, unshareConversation } = useShareConversation();
-  const { showToastError, showToastSuccess } = useToast();
+  const { error: showToastError, success: showToastSuccess } = useToast();
 
   // Get state and actions from context
   const {

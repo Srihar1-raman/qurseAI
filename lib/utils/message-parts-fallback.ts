@@ -9,7 +9,7 @@ import type { UIMessagePart } from 'ai';
 /**
  * Type for parts array (compatible with AI SDK)
  */
-export type MessageParts = UIMessagePart<any, any>[];
+export type MessageParts = UIMessagePart<Record<string, unknown>, Record<string, unknown>>[];
 
 /**
  * Delimiter constants for legacy reasoning format

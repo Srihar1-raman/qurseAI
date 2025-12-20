@@ -5,16 +5,18 @@
  */
 
 // Sentry integration (optional, only if DSN is configured)
-// Safely import Sentry - it will be available if configured in sentry.client.config.ts or sentry.server.config.ts
+// Dynamically import Sentry to avoid build-time errors
 let Sentry: typeof import('@sentry/nextjs') | null = null;
-if (process.env.NEXT_PUBLIC_SENTRY_DSN) {
-  try {
-    // Try to import Sentry (will work if sentry config files are loaded)
-    Sentry = require('@sentry/nextjs');
-  } catch {
-    // Sentry not available or not configured, continue without it
-    Sentry = null;
-  }
+if (process.env.NEXT_PUBLIC_SENTRY_DSN && typeof window !== 'undefined') {
+  // Dynamic import for client-side only
+  import('@sentry/nextjs')
+    .then((module) => {
+      Sentry = module;
+    })
+    .catch(() => {
+      // Sentry not available or not configured, continue without it
+      Sentry = null;
+    });
 }
 
 /**
