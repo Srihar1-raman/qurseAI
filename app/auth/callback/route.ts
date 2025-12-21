@@ -10,6 +10,7 @@ import { transferGuestToUser } from '@/lib/db/guest-transfer.server';
 import { parseCookie, isValidUUID } from '@/lib/utils/session';
 import { hmacSessionId } from '@/lib/utils/session-hash';
 import { validateReturnUrl } from '@/lib/utils/validate-return-url';
+import { createClient as createServiceClient } from '@supabase/supabase-js';
 
 const logger = createScopedLogger('auth/callback');
 const SESSION_COOKIE_NAME = 'session_id';
@@ -109,13 +110,65 @@ export async function GET(request: Request) {
       const cookieHeader = request.headers.get('cookie') ?? '';
       const sessionId = parseCookie(cookieHeader, SESSION_COOKIE_NAME);
       
+      // 🔍 DIAGNOSTIC LOGGING - Remove after root cause verification
+      logger.info('🔍 AUTH CALLBACK DIAGNOSTIC', {
+        userId: data.user?.id,
+        cookieHeaderLength: cookieHeader.length,
+        cookieHeaderPreview: cookieHeader.substring(0, 200), // First 200 chars
+        sessionId: sessionId || 'NULL',
+        hasSessionId: !!sessionId,
+        isValidUUID: sessionId ? isValidUUID(sessionId) : false,
+        allCookieNames: cookieHeader.split(';').map(c => c.trim().split('=')[0]).filter(Boolean),
+        hasSessionIdCookie: cookieHeader.includes('session_id'),
+        userAgent: request.headers.get('user-agent')?.substring(0, 100),
+        referer: request.headers.get('referer'),
+        origin: request.headers.get('origin'),
+        url: requestUrl.toString(),
+      });
+
+      // If no session_id, check if guest conversations exist (helps diagnose)
+      if (!sessionId || !isValidUUID(sessionId)) {
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        
+        if (supabaseUrl && serviceKey) {
+          const serviceSupabase = createServiceClient(supabaseUrl, serviceKey);
+          const { data: recentGuestConvs, error: guestError } = await serviceSupabase
+            .from('guest_conversations')
+            .select('id, session_hash, created_at, title')
+            .order('created_at', { ascending: false })
+            .limit(5);
+          
+          logger.info('🔍 Guest conversations check (no valid session_id)', {
+            error: guestError?.message,
+            recentCount: recentGuestConvs?.length || 0,
+            recentConvs: recentGuestConvs?.map(c => ({ 
+              id: c.id, 
+              created: c.created_at,
+              title: c.title?.substring(0, 30)
+            })),
+          });
+        }
+      }
+      
       if (sessionId && isValidUUID(sessionId)) {
         try {
           // Derive session_hash from session_id (HMAC)
           const sessionHash = hmacSessionId(sessionId);
           
+          logger.info('🔍 Attempting transfer', { 
+            sessionId, 
+            sessionHash: sessionHash.substring(0, 20) + '...' 
+          });
+          
           // Transfer guest data to user (non-blocking)
           const transferResult = await transferGuestToUser(sessionHash, userId);
+          
+          logger.info('🔍 Transfer result', {
+            messages: transferResult.messagesTransferred,
+            conversations: transferResult.conversationsTransferred,
+            rateLimits: transferResult.rateLimitsTransferred,
+          });
           
           if (transferResult.messagesTransferred > 0 || transferResult.conversationsTransferred > 0) {
             logger.info('Guest data transferred to user', {
@@ -136,7 +189,11 @@ export async function GET(request: Request) {
           logger.error('Failed to transfer guest data (non-blocking)', error, { userId });
         }
       } else {
-        logger.debug('No session_id cookie found, skipping guest transfer', { userId });
+        logger.warn('🔍 No valid session_id - transfer skipped', { 
+          userId,
+          sessionId: sessionId || 'null',
+          isValid: sessionId ? isValidUUID(sessionId) : false
+        });
       }
     }
 
