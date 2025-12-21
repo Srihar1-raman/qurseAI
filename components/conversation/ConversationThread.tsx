@@ -5,7 +5,7 @@
 
 import React from 'react';
 import ChatMessage from '@/components/chat/ChatMessage';
-// import { deduplicateMessages } from '@/lib/utils/message-deduplication';
+import { deduplicateMessages } from '@/lib/utils/message-deduplication';
 import type { QurseMessage } from '@/lib/types';
 import type { ConversationThreadProps } from './types';
 
@@ -24,12 +24,11 @@ function ConversationThreadComponent({
   user,
   isStreaming = false,
 }: ConversationThreadProps) {
-  // Deduplicate messages before rendering
-  // COMMENTED OUT FOR TESTING: Testing abort flag fix - deduplication should not be needed
-  // const deduplicatedMessages = React.useMemo(
-  //   () => deduplicateMessages(messages),
-  //   [messages]
-  // );
+  // Deduplicate messages before rendering (safety net for Vercel serverless abort signal limitations)
+  const deduplicatedMessages = React.useMemo(
+    () => deduplicateMessages(messages),
+    [messages]
+  );
   
   return (
     <div ref={conversationContainerRef} className="conversation-container">
@@ -47,7 +46,7 @@ function ConversationThreadComponent({
           </div>
         )}
 
-        {messages.map((message, index) => (
+        {deduplicatedMessages.map((message, index) => (
           <ChatMessage
             key={message.id}
             message={message}
@@ -55,7 +54,7 @@ function ConversationThreadComponent({
             model={selectedModel}
             onShare={onShare}
             user={user}
-            isStreaming={isStreaming && index === messages.length - 1} // Only last message streams
+            isStreaming={isStreaming && index === deduplicatedMessages.length - 1} // Only last message streams
           />
         ))}
 
