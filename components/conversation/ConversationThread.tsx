@@ -52,44 +52,101 @@ function deduplicateMessages(messages: QurseMessage[]): QurseMessage[] {
     const reasoning2 = getReasoningContent(msg2);
     
     // If both have reasoning, check if reasoning matches first (strong indicator of duplicates)
-    if (reasoning1 && reasoning2 && reasoning1.length > 50 && reasoning2.length > 50) {
-      // If reasoning is identical or very similar (90%+), they're likely duplicates
+    // Check for both long (>50 chars) and short reasoning
+    const hasLongReasoning = reasoning1 && reasoning2 && reasoning1.length > 50 && reasoning2.length > 50;
+    const hasShortReasoning = reasoning1 && reasoning2 && reasoning1.length > 0 && reasoning2.length > 0;
+    
+    if (hasLongReasoning || hasShortReasoning) {
+      // If reasoning is identical, they're duplicates regardless of text
       if (reasoning1 === reasoning2) {
-        // Reasoning matches exactly - check if text is similar (one might have stop text)
-        if (text1.length >= 10 || text2.length >= 10) {
-          // If text is similar (one is prefix of other), they're duplicates
-          const shorterText = text1.length < text2.length ? text1 : text2;
-          const longerText = text1.length >= text2.length ? text1 : text2;
-          if (longerText.startsWith(shorterText) && shorterText.length >= longerText.length * 0.5) {
-            return true;
-          }
-          // Or if they share significant prefix
-          if (shorterText.length >= 20 && longerText.substring(0, Math.min(100, shorterText.length)) === shorterText.substring(0, Math.min(100, shorterText.length))) {
-            return true;
-          }
-        }
-        // Even if text is different, if reasoning matches exactly, they're likely duplicates
-        // (one might be partial, one might have stop text)
+        // Reasoning matches exactly - they're duplicates regardless of text
+        // One might have full text, the other might only have stop text (empty after removal)
+        // This handles the case where Response 1 has full text and Response 2 only has stop text
         return true;
       }
       // If reasoning is very similar (90%+ match), they're likely duplicates
       const shorterReasoning = reasoning1.length < reasoning2.length ? reasoning1 : reasoning2;
       const longerReasoning = reasoning1.length >= reasoning2.length ? reasoning1 : reasoning2;
-      if (longerReasoning.startsWith(shorterReasoning) && shorterReasoning.length >= longerReasoning.length * 0.9) {
+      // For long reasoning, use 90% threshold; for short, use 80% threshold
+      const similarityThreshold = hasLongReasoning ? 0.9 : 0.8;
+      if (longerReasoning.startsWith(shorterReasoning) && shorterReasoning.length >= longerReasoning.length * similarityThreshold) {
         // Reasoning is very similar - check text similarity
         const shorterText = text1.length < text2.length ? text1 : text2;
         const longerText = text1.length >= text2.length ? text1 : text2;
         if (longerText.startsWith(shorterText) && shorterText.length >= longerText.length * 0.5) {
           return true;
         }
+        // If one text is empty/short and reasoning matches, still consider duplicates
+        if (shorterText.length < 10 && longerText.length >= 10) {
+          return true;
+        }
       }
     }
     
-    // If one is empty or very short, they're not duplicates (unless reasoning matches)
+    // Handle case where only ONE has reasoning (Gap 1 fix)
+    if ((reasoning1 && !reasoning2) || (!reasoning1 && reasoning2)) {
+      const reasoning = reasoning1 || reasoning2;
+      // If one has reasoning and one text is empty, check if reasoning matches the other's context
+      // This is a weaker match, so require text similarity too
+      if (reasoning && reasoning.length > 20) {
+        // One has reasoning, one doesn't - check text similarity
+        if (text1.length >= 10 && text2.length >= 10) {
+          // Both have text - use text comparison
+          const shorter = text1.length < text2.length ? text1 : text2;
+          const longer = text1.length >= text2.length ? text1 : text2;
+          if (longer.startsWith(shorter) && shorter.length >= longer.length * 0.7) {
+            return true;
+          }
+        }
+      }
+    }
+    
+    // Handle case where one message has full text and the other only has stop text (empty after removal)
+    // If one is empty/short and the other has content, check if reasoning matches
+    if ((text1.length < 10 && text2.length >= 10) || (text1.length >= 10 && text2.length < 10)) {
+      // One has text, one doesn't - check if reasoning matches (both or one-sided)
+      if (reasoning1 && reasoning2) {
+        // Both have reasoning
+        if (reasoning1 === reasoning2) {
+          return true; // Reasoning matches, they're duplicates
+        }
+        // Check for high similarity (lower threshold for shorter reasoning)
+        const minReasoningLength = Math.min(reasoning1.length, reasoning2.length);
+        const similarityThreshold = minReasoningLength > 50 ? 0.9 : 0.8;
+        const shorterReasoning = reasoning1.length < reasoning2.length ? reasoning1 : reasoning2;
+        const longerReasoning = reasoning1.length >= reasoning2.length ? reasoning1 : reasoning2;
+        if (longerReasoning.startsWith(shorterReasoning) && shorterReasoning.length >= longerReasoning.length * similarityThreshold) {
+          return true;
+        }
+      } else if (reasoning1 || reasoning2) {
+        // Only one has reasoning - if reasoning is substantial, consider it a match
+        const reasoning = reasoning1 || reasoning2;
+        if (reasoning.length > 20) {
+          // One has reasoning, one doesn't - if the one with text is similar to reasoning context, match
+          const textWithContent = text1.length >= 10 ? text1 : text2;
+          // If text is substantial and reasoning exists, likely duplicates
+          if (textWithContent.length >= 20) {
+            return true;
+          }
+        }
+      }
+    }
+    
+    // If both are empty or very short, they're not duplicates (unless reasoning matches)
     if (text1.length < 10 && text2.length < 10) {
-      // Both are very short - only duplicates if reasoning matches
-      if (reasoning1 && reasoning2 && reasoning1 === reasoning2) {
-        return true;
+      // Both are very short - check if reasoning matches (any length)
+      if (reasoning1 && reasoning2) {
+        if (reasoning1 === reasoning2) {
+          return true;
+        }
+        // Check for similarity even with short reasoning
+        if (reasoning1.length > 0 && reasoning2.length > 0) {
+          const shorterReasoning = reasoning1.length < reasoning2.length ? reasoning1 : reasoning2;
+          const longerReasoning = reasoning1.length >= reasoning2.length ? reasoning1 : reasoning2;
+          if (longerReasoning.startsWith(shorterReasoning) && shorterReasoning.length >= longerReasoning.length * 0.8) {
+            return true;
+          }
+        }
       }
       return false;
     }
