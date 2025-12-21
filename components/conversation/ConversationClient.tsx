@@ -133,7 +133,8 @@ export function ConversationClient({
     }
     
     // Track current streaming message ID
-    // Use displayMessages.length as dependency to avoid infinite loops
+    // Extract last message info as primitives to avoid infinite loops during streaming
+    // During streaming, displayMessages gets new reference on every chunk
     if (status === 'streaming' && displayMessages.length > 0) {
       const lastMessage = displayMessages[displayMessages.length - 1];
       if (lastMessage.role === 'assistant') {
@@ -142,7 +143,9 @@ export function ConversationClient({
     }
     
     prevStatusRef.current = status;
-  }, [status, displayMessages.length]); // Use length instead of entire array
+    // Depend only on status and length (primitives), not array reference
+    // Accessing displayMessages inside effect is safe - we only read, don't depend on reference
+  }, [status, displayMessages.length]);
 
   const isLoading = status === 'submitted' || status === 'streaming';
   const isThinking = status === 'submitted'; // Only show thinking animation before streaming starts

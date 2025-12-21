@@ -55,21 +55,25 @@ export function useConversationScroll({
   const scrollScheduledRef = useRef(false);
   const lastScrollTimeRef = useRef<number>(0);
   const displayMessagesRef = useRef(displayMessages);
-
-  // Keep displayMessages ref in sync
-  // Only update when content actually changes (length or last message ID)
-  // This reduces unnecessary ref updates during streaming
+  
+  // Track previous length and last message ID to detect actual changes
+  // Use refs to avoid dependency on array reference
   const lastLengthRef = useRef(displayMessages.length);
   const lastMessageIdRef = useRef(
     displayMessages.length > 0 ? displayMessages[displayMessages.length - 1]?.id : null
   );
 
-  useEffect(() => {
-    const currentLength = displayMessages.length;
-    const currentLastMessageId =
-      displayMessages.length > 0 ? displayMessages[displayMessages.length - 1]?.id : null;
+  // Extract primitives outside effect for dependency array
+  // This prevents infinite loops - we only depend on values, not array reference
+  const currentLength = displayMessages.length;
+  const currentLastMessageId = displayMessages.length > 0 ? displayMessages[displayMessages.length - 1]?.id : null;
 
+  // Sync ref only when length or last message ID actually changes
+  // DO NOT depend on displayMessages array reference - this causes infinite loops during streaming
+  // During streaming, displayMessages gets new reference on every chunk, but length/ID might not change
+  useEffect(() => {
     // Only update ref if length changed or last message ID changed
+    // This prevents unnecessary updates when only array reference changes (during streaming)
     if (
       currentLength !== lastLengthRef.current ||
       currentLastMessageId !== lastMessageIdRef.current
@@ -78,7 +82,9 @@ export function useConversationScroll({
       lastLengthRef.current = currentLength;
       lastMessageIdRef.current = currentLastMessageId;
     }
-  }, [displayMessages]);
+    // Depend only on primitives (length and ID), not array reference
+    // This ensures effect only runs when actual content changes, not on every render during streaming
+  }, [currentLength, currentLastMessageId]);
 
   // Reset state when conversation changes
   useEffect(() => {
