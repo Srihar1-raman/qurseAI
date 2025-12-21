@@ -476,6 +476,17 @@ export async function POST(req: Request) {
           .map((p) => p.text)
           .join('') || '';
 
+        // FALLBACK: Check message content for stop text (works even if abort signal doesn't propagate in Vercel)
+        // If message contains stop text, client already saved it - skip server save
+        if (messageContentText.includes('*User stopped this message here*')) {
+          console.log('🚀 [ABORT DEBUG] onFinish - SKIPPING SAVE (stop text found in message content)');
+          logger.info('Skipping server save - message contains stop text (client already saved)', { 
+            conversationId: resolvedConversationId,
+            messageId: assistantMessage.id,
+          });
+          return;
+        }
+
         // Authenticated assistant save
         logger.debug('Checking authenticated save conditions', {
           hasUser: !!user,
