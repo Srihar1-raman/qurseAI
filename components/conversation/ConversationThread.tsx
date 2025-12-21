@@ -29,29 +29,108 @@ function deduplicateMessages(messages: QurseMessage[]): QurseMessage[] {
       .map((p) => p.text)
       .join('')
       .replace(/\*User stopped this message here\*/g, '')
+      .replace(/\s+/g, ' ') // Normalize whitespace (multiple spaces/newlines to single space)
+      .trim() || '';
+  };
+  
+  // Helper to extract reasoning content
+  const getReasoningContent = (msg: QurseMessage): string => {
+    return msg.parts
+      ?.filter((p): p is { type: 'reasoning'; text: string } => p.type === 'reasoning' && typeof p.text === 'string')
+      .map((p) => p.text)
+      .join('\n\n')
+      .replace(/\s+/g, ' ') // Normalize whitespace
       .trim() || '';
   };
   
   // Helper to check if two messages are duplicates (same content, different stop text)
-  const areDuplicates = (msg1: QurseMessage, msg2: QurseMessage): boolean => {
+  // threshold: similarity threshold (0.5 = 50%, 0.7 = 70%, etc.)
+  const areDuplicates = (msg1: QurseMessage, msg2: QurseMessage, threshold: number = 0.7): boolean => {
     const text1 = getTextContent(msg1);
     const text2 = getTextContent(msg2);
+    const reasoning1 = getReasoningContent(msg1);
+    const reasoning2 = getReasoningContent(msg2);
     
-    // If one is empty or very short, they're not duplicates
-    if (text1.length < 10 || text2.length < 10) return false;
+    // If both have reasoning, check if reasoning matches first (strong indicator of duplicates)
+    if (reasoning1 && reasoning2 && reasoning1.length > 50 && reasoning2.length > 50) {
+      // If reasoning is identical or very similar (90%+), they're likely duplicates
+      if (reasoning1 === reasoning2) {
+        // Reasoning matches exactly - check if text is similar (one might have stop text)
+        if (text1.length >= 10 || text2.length >= 10) {
+          // If text is similar (one is prefix of other), they're duplicates
+          const shorterText = text1.length < text2.length ? text1 : text2;
+          const longerText = text1.length >= text2.length ? text1 : text2;
+          if (longerText.startsWith(shorterText) && shorterText.length >= longerText.length * 0.5) {
+            return true;
+          }
+          // Or if they share significant prefix
+          if (shorterText.length >= 20 && longerText.substring(0, Math.min(100, shorterText.length)) === shorterText.substring(0, Math.min(100, shorterText.length))) {
+            return true;
+          }
+        }
+        // Even if text is different, if reasoning matches exactly, they're likely duplicates
+        // (one might be partial, one might have stop text)
+        return true;
+      }
+      // If reasoning is very similar (90%+ match), they're likely duplicates
+      const shorterReasoning = reasoning1.length < reasoning2.length ? reasoning1 : reasoning2;
+      const longerReasoning = reasoning1.length >= reasoning2.length ? reasoning1 : reasoning2;
+      if (longerReasoning.startsWith(shorterReasoning) && shorterReasoning.length >= longerReasoning.length * 0.9) {
+        // Reasoning is very similar - check text similarity
+        const shorterText = text1.length < text2.length ? text1 : text2;
+        const longerText = text1.length >= text2.length ? text1 : text2;
+        if (longerText.startsWith(shorterText) && shorterText.length >= longerText.length * 0.5) {
+          return true;
+        }
+      }
+    }
     
-    // Check if one is a prefix of the other (same message, different completion)
-    const shorter = text1.length < text2.length ? text1 : text2;
-    const longer = text1.length >= text2.length ? text1 : text2;
+    // If one is empty or very short, they're not duplicates (unless reasoning matches)
+    if (text1.length < 10 && text2.length < 10) {
+      // Both are very short - only duplicates if reasoning matches
+      if (reasoning1 && reasoning2 && reasoning1 === reasoning2) {
+        return true;
+      }
+      return false;
+    }
     
-    // If shorter is at least 80% of longer and longer starts with shorter, they're duplicates
-    if (longer.startsWith(shorter) && shorter.length >= longer.length * 0.8) {
+    // First check: exact match (after removing stop text, they're identical)
+    if (text1 === text2) {
       return true;
     }
     
-    // Also check reverse (in case stop text is in the middle)
-    if (shorter.length >= longer.length * 0.8 && longer.includes(shorter)) {
+    // Second check: one is a prefix of the other (same message, different completion)
+    const shorter = text1.length < text2.length ? text1 : text2;
+    const longer = text1.length >= text2.length ? text1 : text2;
+    
+    // If shorter is at least threshold% of longer and longer starts with shorter, they're duplicates
+    if (longer.startsWith(shorter) && shorter.length >= longer.length * threshold) {
       return true;
+    }
+    
+    // Third check: high similarity (for cases where there might be minor differences)
+    // Calculate how much of the shorter text is contained in the longer text
+    if (shorter.length >= longer.length * threshold && longer.includes(shorter)) {
+      return true;
+    }
+    
+    // Fourth check: check if they share a significant common prefix
+    // This handles cases where messages are nearly identical but one has slight differences
+    const minLength = Math.min(text1.length, text2.length);
+    if (minLength >= 50) { // Only for longer messages
+      let commonPrefixLength = 0;
+      for (let i = 0; i < minLength; i++) {
+        if (text1[i] === text2[i]) {
+          commonPrefixLength++;
+        } else {
+          break;
+        }
+      }
+      // If threshold% of the shorter message is a common prefix, they're duplicates
+      const prefixThreshold = Math.max(threshold, 0.85); // At least 85% for prefix check
+      if (commonPrefixLength >= shorter.length * prefixThreshold) {
+        return true;
+      }
     }
     
     return false;
@@ -93,10 +172,36 @@ function deduplicateMessages(messages: QurseMessage[]): QurseMessage[] {
       
       const otherHasStopText = otherText.includes('*User stopped this message here*');
       
+      // Special case: If messages are consecutive (or very close), be more aggressive
+      const isConsecutive = j - i <= 2; // Allow 1-2 messages in between (in case of user message)
+      
+      // For consecutive messages, check if they share a significant prefix (first 100 chars)
+      // This catches cases where messages are the same but comparison fails due to minor differences
+      let hasSignificantPrefix = false;
+      if (isConsecutive) {
+        const text1Prefix = getTextContent(message).substring(0, 100);
+        const text2Prefix = getTextContent(otherMessage).substring(0, 100);
+        if (text1Prefix.length >= 50 && text2Prefix.length >= 50) {
+          // If first 100 chars match (or 80% similarity), they're likely duplicates
+          const minPrefix = Math.min(text1Prefix.length, text2Prefix.length);
+          let matchingChars = 0;
+          for (let k = 0; k < minPrefix; k++) {
+            if (text1Prefix[k] === text2Prefix[k]) matchingChars++;
+          }
+          hasSignificantPrefix = matchingChars >= minPrefix * 0.8;
+        }
+      }
+      
       // Only deduplicate if:
       // 1. They have different stop text status (one stopped, one not)
       // 2. They have similar content (same message, different completion)
-      if (hasStopText !== otherHasStopText && areDuplicates(message, otherMessage)) {
+      // OR if they're consecutive and share significant prefix (more aggressive for consecutive messages)
+      const shouldDeduplicate = hasStopText !== otherHasStopText && (
+        areDuplicates(message, otherMessage) || 
+        (isConsecutive && hasSignificantPrefix) // Consecutive + significant prefix = likely duplicates
+      );
+      
+      if (shouldDeduplicate) {
         // They're duplicates - keep the one with stop text, skip the one without
         if (hasStopText) {
           // This one has stop text, skip the other one (full message)
@@ -106,6 +211,13 @@ function deduplicateMessages(messages: QurseMessage[]): QurseMessage[] {
           skipIndices.add(i);
           break; // Don't add this message, move to next
         }
+      }
+      
+      // If we've checked a few messages ahead and they're not duplicates, stop looking
+      // This optimizes performance and prevents false matches with later different messages
+      // Only check up to 5 messages ahead (to catch duplicates that might be separated by user messages)
+      if (j - i > 5) {
+        break;
       }
     }
     
