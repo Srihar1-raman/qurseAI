@@ -317,10 +317,13 @@ export function useConversationMessages({
   const latestMessagesRef = useRef<QurseMessage[]>([]);
   
   // Always keep latestMessagesRef updated with latest content (for scroll hook RAF loop)
-  // This runs on every render, but only updates ref (no re-render trigger)
+  // Update directly from rawDisplayMessages to bypass memoization chain issues
+  // This ensures ref is always updated during streaming, even if transformedMessages reference doesn't change
   useEffect(() => {
-    latestMessagesRef.current = transformedMessages;
-  }, [transformedMessages]);
+    // Transform directly here to ensure we always have latest content
+    const latest = transformToQurseMessage(rawDisplayMessages);
+    latestMessagesRef.current = latest;
+  }, [rawDisplayMessages]);
 
   // Memoize displayMessages with smart update strategy during streaming
   const displayMessages = useMemo(() => {
