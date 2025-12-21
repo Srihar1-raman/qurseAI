@@ -495,9 +495,9 @@ export async function POST(req: Request) {
                               abortController.signal.aborted ||
                               (contentText.includes('*User stopped this message here*'));
 
-        // Only run aggressive checks for stop scenarios
-        // For normal messages, skip checks and save immediately in after() callback
-        if (isStopScenario && resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
+        // ALWAYS check for stop messages (client might have saved before abort signal arrives)
+        // But only run aggressive delays if it's a stop scenario OR if we find a stop message
+        if (resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
           const checkForStopMessage = async (): Promise<boolean> => {
             try {
               if (user) {
@@ -547,65 +547,69 @@ export async function POST(req: Request) {
             }
           };
 
-          // Quick check immediately
+          // Quick check immediately (for all messages)
           const hasStopMessage = await checkForStopMessage();
           if (hasStopMessage) {
             return;
           }
 
-          // Additional checks with small delays (only for stop scenarios)
-          await new Promise(resolve => setTimeout(resolve, 100));
-          if (await checkForStopMessage()) {
-            return;
-          }
+          // Only run additional delays if it's a stop scenario (abort detected or stop text in content)
+          // This prevents normal messages from being delayed
+          if (isStopScenario) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            if (await checkForStopMessage()) {
+              return;
+            }
 
-          await new Promise(resolve => setTimeout(resolve, 200));
-          if (await checkForStopMessage()) {
-            return;
+            await new Promise(resolve => setTimeout(resolve, 200));
+            if (await checkForStopMessage()) {
+              return;
+            }
           }
         }
 
         // Authenticated assistant save
         if (user && resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
           after(async () => {
-            // Only run aggressive checks for stop scenarios
-            // For normal messages, save immediately without delays
+            // ALWAYS check for stop messages (client might save before abort signal arrives)
+            const checkForStopMessage = async (): Promise<boolean> => {
+              try {
+                const finalCheckSupabase = await createClient();
+                const { data: finalCheckStopMessage } = await finalCheckSupabase
+                  .from('messages')
+                  .select('id, created_at')
+                  .eq('conversation_id', resolvedConversationId)
+                  .eq('role', 'assistant')
+                  .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
+                  .order('created_at', { ascending: false })
+                  .limit(1)
+                  .maybeSingle();
+
+                if (finalCheckStopMessage) {
+                  logger.info('after(): Stop message found, skipping save', {
+                    conversationId: resolvedConversationId,
+                    existingMessageId: finalCheckStopMessage.id,
+                  });
+                  return true;
+                }
+                return false;
+              } catch (finalCheckError) {
+                logger.error('Check for stop message failed', finalCheckError, {
+                  conversationId: resolvedConversationId,
+                });
+                return false;
+              }
+            };
+
+            // Quick check immediately (for all messages)
+            if (await checkForStopMessage()) {
+              return;
+            }
+
+            // Only run aggressive delays if it's a stop scenario
+            // This prevents normal messages from being delayed
             if (isStopScenario) {
               // AGGRESSIVE CHECKS: Only for stop scenarios
-              const checkForStopMessage = async (): Promise<boolean> => {
-                try {
-                  const finalCheckSupabase = await createClient();
-                  const { data: finalCheckStopMessage } = await finalCheckSupabase
-                    .from('messages')
-                    .select('id, created_at')
-                    .eq('conversation_id', resolvedConversationId)
-                    .eq('role', 'assistant')
-                    .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-
-                  if (finalCheckStopMessage) {
-                    logger.info('after(): Stop message found, skipping save', {
-                      conversationId: resolvedConversationId,
-                      existingMessageId: finalCheckStopMessage.id,
-                    });
-                    return true;
-                  }
-                  return false;
-                } catch (finalCheckError) {
-                  logger.error('Check for stop message failed', finalCheckError, {
-                    conversationId: resolvedConversationId,
-                  });
-                  return false;
-                }
-              };
-
-              // Aggressive checks with delays (only for stop scenarios)
-              if (await checkForStopMessage()) {
-                return;
-              }
-
               await new Promise(resolve => setTimeout(resolve, 1000));
               if (await checkForStopMessage()) {
                 return;
@@ -708,10 +712,8 @@ export async function POST(req: Request) {
           const guestConversationId = resolvedConversationId;
           const guestSessionHash = sessionHash;
           after(async () => {
-            // Only run aggressive checks for stop scenarios
-            // For normal messages, save immediately without delays
-            if (isStopScenario && serviceSupabase && !guestConversationId.startsWith('temp-')) {
-              // AGGRESSIVE CHECKS: Only for stop scenarios
+            // ALWAYS check for stop messages (client might save before abort signal arrives)
+            if (serviceSupabase && !guestConversationId.startsWith('temp-')) {
               const checkForStopMessage = async (): Promise<boolean> => {
                 try {
                   const { data: finalCheckStopMessage } = await serviceSupabase
@@ -740,44 +742,49 @@ export async function POST(req: Request) {
                 }
               };
 
-              // Aggressive checks with delays (only for stop scenarios)
+              // Quick check immediately (for all messages)
               if (await checkForStopMessage()) {
                 return;
               }
 
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              if (await checkForStopMessage()) {
-                return;
-              }
+              // Only run aggressive delays if it's a stop scenario
+              // This prevents normal messages from being delayed
+              if (isStopScenario) {
+                // AGGRESSIVE CHECKS: Only for stop scenarios
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                if (await checkForStopMessage()) {
+                  return;
+                }
 
-              await new Promise(resolve => setTimeout(resolve, 2000));
-              if (await checkForStopMessage()) {
-                return;
-              }
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                if (await checkForStopMessage()) {
+                  return;
+                }
 
-              await new Promise(resolve => setTimeout(resolve, 3000));
-              if (await checkForStopMessage()) {
-                return;
-              }
+                await new Promise(resolve => setTimeout(resolve, 3000));
+                if (await checkForStopMessage()) {
+                  return;
+                }
 
-              await new Promise(resolve => setTimeout(resolve, 4000));
-              if (await checkForStopMessage()) {
-                return;
-              }
+                await new Promise(resolve => setTimeout(resolve, 4000));
+                if (await checkForStopMessage()) {
+                  return;
+                }
 
-              await new Promise(resolve => setTimeout(resolve, 5000));
-              if (await checkForStopMessage()) {
-                return;
-              }
+                await new Promise(resolve => setTimeout(resolve, 5000));
+                if (await checkForStopMessage()) {
+                  return;
+                }
 
-              // Final check before save
-              if (await checkForStopMessage()) {
-                return;
-              }
+                // Final check before save
+                if (await checkForStopMessage()) {
+                  return;
+                }
 
-              await new Promise(resolve => setTimeout(resolve, 2000));
-              if (await checkForStopMessage()) {
-                return;
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                if (await checkForStopMessage()) {
+                  return;
+                }
               }
             }
 
