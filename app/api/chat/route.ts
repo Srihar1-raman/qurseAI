@@ -475,7 +475,6 @@ export async function POST(req: Request) {
               output_tokens: outputTokens,
               total_tokens: totalTokens,
               completion_time: completionTime,
-              is_stopped: false, // Server saves are always full messages (not stopped)
             });
 
             if (assistantMsgError) {
@@ -508,7 +507,6 @@ export async function POST(req: Request) {
               message: assistantMessage,
               role: 'assistant',
               sessionHash: sessionHash,
-              isStopped: false, // Server saves are always full messages (not stopped)
             });
             logger.info('Guest assistant message saved', {
               conversationId: resolvedConversationId,

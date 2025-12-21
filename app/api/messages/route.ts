@@ -68,16 +68,12 @@ export async function POST(request: NextRequest) {
         hasStopText: contentText.includes('*User stopped this message here*'),
       });
 
-      // Determine if this is a stop message
-      const isStopMessage = contentText.includes('*User stopped this message here*');
-
       const { error: msgError, data: insertedData } = await supabase.from('messages').insert({
         conversation_id: conversationId,
         role: 'assistant',
         parts: message.parts || [{ type: 'text', text: contentText.trim() }],
         content: contentText.trim(),
         model: (message as UIMessage & { metadata?: { model?: string } }).metadata?.model || null,
-        is_stopped: isStopMessage,
       }).select('id').single();
 
       if (msgError) {
@@ -111,15 +107,11 @@ export async function POST(request: NextRequest) {
       hasStopText: contentText.includes('*User stopped this message here*'),
     });
 
-    // Determine if this is a stop message
-    const isStopMessage = contentText.includes('*User stopped this message here*');
-
     await saveGuestMessage({
       conversationId,
       message,
       role: 'assistant',
       sessionHash,
-      isStopped: isStopMessage,
     });
 
     logger.info('SERVER /api/messages: Client stop message saved successfully (guest)', {
