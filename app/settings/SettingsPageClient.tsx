@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation';
+import { useQueryState } from 'nuqs';
+import { parseAsString } from 'nuqs';
 import Image from 'next/image';
 import dynamic from 'next/dynamic';
 import Header from '@/components/layout/Header';
@@ -142,23 +144,24 @@ function SettingsPageContent() {
     loadPreferences();
   }, [mockUser?.id]);
   const { error: showToastError, warning: showToastWarning } = useToast();
-  const searchParams = useSearchParams();
+  
+  // Read tab and section from URL using nuqs - no Suspense needed!
+  const [tab] = useQueryState('tab', parseAsString);
+  const [section] = useQueryState('section', parseAsString);
 
   // Handle URL parameters for section and pricing redirect
   useEffect(() => {
-    const tab = searchParams.get('tab');
     if (tab === 'pricing') {
       router.replace('/pricing');
       return;
     }
     
-    const section = searchParams.get('section');
     if (section && ['accounts', 'general', 'payment', 'system'].includes(section)) {
       setActiveSection(section);
     } else {
       setActiveSection('accounts');
     }
-  }, [searchParams]);
+  }, [tab, section, router]);
 
   // Wrap handleSaveSettings with useCallback for stable reference
   const handleSaveSettings = useCallback(async (isAutoSave: boolean = false) => {

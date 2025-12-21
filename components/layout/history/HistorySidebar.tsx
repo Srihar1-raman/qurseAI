@@ -3,7 +3,8 @@
 import { useState, useEffect, useCallback, useRef, useMemo, memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useQueryStates } from 'nuqs';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
@@ -101,17 +102,25 @@ const logger = createScopedLogger('history-sidebar');
 
 function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  
+  // Get all query params using nuqs (for building callback URL)
+  const [allParams] = useQueryStates({}, { history: 'replace' });
   
   // Build callback URL for post-auth redirect (industry standard: query parameter)
   const callbackUrl = useMemo(() => {
-    const currentUrl = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+    // Build query string from all params
+    const queryString = Object.entries(allParams)
+      .filter(([_, value]) => value !== null)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+      .join('&');
+    
+    const currentUrl = pathname + (queryString ? `?${queryString}` : '');
     // Only add callbackUrl if not already on login/signup pages (avoid loops)
     if (currentUrl.startsWith('/login') || currentUrl.startsWith('/signup')) {
       return '';
     }
     return encodeURIComponent(currentUrl);
-  }, [pathname, searchParams]);
+  }, [pathname, allParams]);
   const { resolvedTheme, mounted } = useTheme();
   const { user, isLoading: isAuthLoading } = useAuth();
   const { registerHandler } = useSidebar();

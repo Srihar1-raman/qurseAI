@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useQueryState } from 'nuqs';
+import { callbackUrlParser } from '@/lib/url-params/parsers';
 import AuthButton from '@/components/auth/AuthButton';
 
 interface AuthPageProps {
@@ -10,10 +11,11 @@ interface AuthPageProps {
 
 export default function AuthPage({ mode }: AuthPageProps) {
   const isLogin = mode === 'login';
-  const searchParams = useSearchParams();
+  
+  // Read callbackUrl from URL using nuqs - no Suspense needed!
+  const [callbackUrl] = useQueryState('callbackUrl', callbackUrlParser);
   
   // Preserve callbackUrl when switching between login/signup pages
-  const callbackUrl = searchParams.get('callbackUrl') || '';
   const callbackUrlParam = callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : '';
 
   return (

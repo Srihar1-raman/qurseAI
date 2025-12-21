@@ -1,4 +1,3 @@
-import { Suspense } from 'react';
 import { getUserData } from '@/lib/supabase/auth-utils';
 import PricingPageClient from './PricingPageClient';
 import { createScopedLogger } from '@/lib/utils/logger';
@@ -19,20 +18,14 @@ export default async function PricingPage() {
       userId: lightweightUser?.userId || null,
     };
 
-    return (
-      <Suspense fallback={<div>Loading...</div>}>
-        <PricingPageClient userState={userState} />
-      </Suspense>
-    );
+    return <PricingPageClient userState={userState} />;
   } catch (error) {
     logger.error('Error loading pricing page', error);
     // On error, treat as guest (fail open)
     return (
-      <Suspense fallback={<div>Loading...</div>}>
-        <PricingPageClient 
-          userState={{ isGuest: true, isFree: false, isPro: false, userId: null }} 
-        />
-      </Suspense>
+      <PricingPageClient 
+        userState={{ isGuest: true, isFree: false, isPro: false, userId: null }} 
+      />
     );
   }
 }

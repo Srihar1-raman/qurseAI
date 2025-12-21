@@ -2,7 +2,8 @@
 
 import Image from 'next/image';
 import { useState, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useQueryState } from 'nuqs';
+import { callbackUrlParser } from '@/lib/url-params/parsers';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import { useToast } from '@/lib/contexts/ToastContext';
@@ -35,15 +36,18 @@ export default function AuthButton({ provider, onClick, callbackUrl: callbackUrl
   const { resolvedTheme, mounted } = useTheme();
   const { error: showToastError } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const searchParams = useSearchParams();
+  
+  // Read callbackUrl from prop, URL param, or default to '/'
+  // Using nuqs - no Suspense needed!
+  const [callbackUrlParam] = useQueryState('callbackUrl', callbackUrlParser);
 
   // Read callbackUrl from prop, current page URL, or default to '/'
   // This allows post-auth redirect to the page user was on before login
   const callbackUrl = useMemo(() => {
-    const url = callbackUrlProp || searchParams.get('callbackUrl') || '/';
+    const url = callbackUrlProp || callbackUrlParam || '/';
     // Encode to pass through OAuth flow safely
     return encodeURIComponent(url);
-  }, [callbackUrlProp, searchParams]);
+  }, [callbackUrlProp, callbackUrlParam]);
 
   const handleClick = async () => {
     if (onClick) {

@@ -3,7 +3,8 @@
 import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
+import { useQueryStates } from 'nuqs';
 import { useTheme } from '@/lib/theme-provider';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useOptimisticNavigation } from '@/hooks/use-optimistic-navigation';
@@ -22,7 +23,6 @@ function Header({
 }: HeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { theme, setTheme, resolvedTheme, mounted } = useTheme();
   const { user: authUser, isLoading, signOut } = useAuth();
   const { navigateOptimistically } = useOptimisticNavigation();
@@ -32,15 +32,25 @@ function Header({
   // Use auth user if available, otherwise fall back to prop user
   const user = authUser || propUser;
 
+  // Get all query params using nuqs (for building callback URL)
+  // We use an empty object to get all params without specifying them
+  const [allParams] = useQueryStates({}, { history: 'replace' });
+
   // Build callback URL for post-auth redirect (industry standard: query parameter)
   const callbackUrl = useMemo(() => {
-    const currentUrl = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+    // Build query string from all params
+    const queryString = Object.entries(allParams)
+      .filter(([_, value]) => value !== null)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+      .join('&');
+    
+    const currentUrl = pathname + (queryString ? `?${queryString}` : '');
     // Only add callbackUrl if not already on login/signup pages (avoid loops)
     if (currentUrl.startsWith('/login') || currentUrl.startsWith('/signup')) {
       return '';
     }
     return encodeURIComponent(currentUrl);
-  }, [pathname, searchParams]);
+  }, [pathname, allParams]);
 
   // Memoize user initial calculation (derived from user.name/email)
   const userInitial = useMemo(() => {

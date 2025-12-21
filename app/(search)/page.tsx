@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useMemo, useCallback, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState, useMemo, useCallback } from 'react';
+import { useQueryState } from 'nuqs';
+import { messageParser } from '@/lib/url-params/parsers';
 import dynamicImport from 'next/dynamic';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
@@ -16,6 +17,7 @@ import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversationId } from '@/hooks/use-conversation-id';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'edge';
 
 // Lazy load ConversationClient to code split AI SDK
 // AI SDK code is only loaded when needed
@@ -28,7 +30,6 @@ const ConversationClient = dynamicImport(
 );
 
 function HomePageContent() {
-  const searchParams = useSearchParams();
   const [selectedSearchOption, setSelectedSearchOption] = useState('Chat');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const { user } = useAuth();
@@ -37,9 +38,11 @@ function HomePageContent() {
   const conversationId = useConversationId();
 
   // Check if URL has message params (for Phase 2 - MainInput uses URL params)
+  // Using nuqs - no Suspense needed!
+  const [message] = useQueryState('message', messageParser);
   const hasInitialMessageParam = useMemo(() => {
-    return !!searchParams.get('message');
-  }, [searchParams]);
+    return !!message;
+  }, [message]);
 
   // Wrap handleNewChat with useCallback for stable reference
   const handleNewChat = useCallback(() => {
@@ -129,9 +132,5 @@ function HomePageContent() {
 }
 
 export default function HomePage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <HomePageContent />
-    </Suspense>
-  );
+  return <HomePageContent />;
 }

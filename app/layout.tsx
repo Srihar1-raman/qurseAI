@@ -14,6 +14,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { NuqsAdapter } from 'nuqs/adapters/next/app';
 
 const inter = Inter({
   variable: "--font-inter",
@@ -94,10 +95,12 @@ export default function RootLayout({
                 <SidebarProvider>
                 <ToastProvider>
                   <NavigationProvider>
-                    <RoutePrefetcher />
-                    <NavigationWrapper>
-              {children}
-                    </NavigationWrapper>
+                    <NuqsAdapter>
+                      <RoutePrefetcher />
+                      <NavigationWrapper>
+                        {children}
+                      </NavigationWrapper>
+                    </NuqsAdapter>
                   </NavigationProvider>
                   <Toaster />
                 </ToastProvider>

@@ -2,7 +2,8 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
+import { useQueryStates } from 'nuqs';
 import AuthButton from '@/components/auth/AuthButton';
 import { HeroBlock } from '@/components/rate-limit/HeroBlock';
 import { formatResetTime } from '@/components/rate-limit/utils';
@@ -30,7 +31,10 @@ export function GuestRateLimitPopup({
   showPricing = false,
 }: GuestRateLimitPopupProps) {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  
+  // Get all query params using nuqs (for building callback URL)
+  const [allParams] = useQueryStates({}, { history: 'replace' });
+  
   const resetTime = formatResetTime(reset);
   
   // Local state to control popup visibility (allows wait button to close it)
@@ -72,9 +76,14 @@ export function GuestRateLimitPopup({
 
   // Preserve current URL as callback
   const callbackUrl = useMemo(() => {
-    const search = searchParams.toString();
-    return `${pathname}${search ? `?${search}` : ''}`;
-  }, [pathname, searchParams]);
+    // Build query string from all params
+    const queryString = Object.entries(allParams)
+      .filter(([_, value]) => value !== null)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+      .join('&');
+    
+    return `${pathname}${queryString ? `?${queryString}` : ''}`;
+  }, [pathname, allParams]);
 
   // Auto-close if limit has reset
   useEffect(() => {
