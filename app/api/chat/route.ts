@@ -44,6 +44,10 @@ const serviceSupabase = supabaseUrl && serviceKey
 export async function POST(req: Request) {
   const requestStartTime = Date.now();
   
+  // Track abort state explicitly (works reliably in Vercel serverless)
+  let wasAborted = false;
+  console.log('🚀 [ABORT DEBUG] POST handler started, wasAborted =', wasAborted, 'timestamp:', Date.now());
+  
   try {
     // ============================================
     // Stage 1: Fast authentication check (single getUser() call)
@@ -286,14 +290,19 @@ export async function POST(req: Request) {
 
     // Create AbortController to handle stream cancellation
     const abortController = new AbortController();
+    console.log('🚀 [ABORT DEBUG] AbortController created, req.signal.aborted =', req.signal?.aborted, 'timestamp:', Date.now());
     
     // If req.signal exists, forward its abort to our controller
     if (req.signal) {
       if (req.signal.aborted) {
+        console.log('🚀 [ABORT DEBUG] req.signal already aborted, aborting controller immediately');
         abortController.abort();
+        wasAborted = true;
       } else {
         req.signal.addEventListener('abort', () => {
+          console.log('🚀 [ABORT DEBUG] req.signal abort event fired, aborting controller, timestamp:', Date.now());
           abortController.abort();
+          wasAborted = true;
         });
       }
     }
@@ -353,6 +362,13 @@ export async function POST(req: Request) {
             }
           },
           onAbort: ({ steps }) => {
+            wasAborted = true; // Set abort flag
+            console.log('🚀 [ABORT DEBUG] onAbort CALLED - wasAborted set to TRUE', {
+              conversationId: resolvedConversationId,
+              stepsCount: steps.length,
+              timestamp: Date.now(),
+              abortControllerAborted: abortController.signal.aborted,
+            });
             logger.info('Stream aborted', { 
               conversationId: resolvedConversationId,
               stepsCount: steps.length,
@@ -398,6 +414,24 @@ export async function POST(req: Request) {
         );
       },
       onFinish: async ({ messages }) => {
+        console.log('🚀 [ABORT DEBUG] onFinish STARTED', {
+          wasAborted,
+          abortControllerAborted: abortController.signal.aborted,
+          reqSignalAborted: req.signal?.aborted,
+          timestamp: Date.now(),
+          messagesLength: messages.length,
+          conversationId: resolvedConversationId,
+        });
+
+        // Check abort flag first - if stream was aborted, don't save (client already saved stopped message)
+        if (wasAborted) {
+          console.log('🚀 [ABORT DEBUG] onFinish - SKIPPING SAVE (wasAborted = true)');
+          logger.info('Skipping server save - stream was aborted', { conversationId: resolvedConversationId });
+          return;
+        }
+
+        console.log('🚀 [ABORT DEBUG] onFinish - PROCEEDING WITH SAVE (wasAborted = false)');
+
         // Save assistant messages directly (before response is sent, like Scira)
         logger.info('🔵 onFinish CALLED', { 
           messagesLength: messages.length,
@@ -427,17 +461,11 @@ export async function POST(req: Request) {
           return;
         }
 
-        // Extract text content once (reused for stop check and save)
+        // Extract text content for save
         const messageContentText = assistantMessage.parts
           .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
           .map((p) => p.text)
           .join('') || '';
-
-        // Skip save if message has stop text (client already saved it)
-        if (messageContentText.includes('*User stopped this message here*')) {
-          logger.info('Skipping server save - message was stopped by user', { conversationId: resolvedConversationId });
-          return;
-        }
 
         // Authenticated assistant save
         logger.debug('Checking authenticated save conditions', {
@@ -480,6 +508,11 @@ export async function POST(req: Request) {
             if (assistantMsgError) {
               logger.error('Assistant message save failed', assistantMsgError, { conversationId: resolvedConversationId });
             } else {
+              console.log('🚀 [ABORT DEBUG] Assistant message SAVED TO DB (authenticated)', {
+                conversationId: resolvedConversationId,
+                messageId: assistantMessage.id,
+                timestamp: Date.now(),
+              });
               logger.info('Assistant message saved', {
                 conversationId: resolvedConversationId,
                 messageId: assistantMessage.id,
@@ -507,6 +540,11 @@ export async function POST(req: Request) {
               message: assistantMessage,
               role: 'assistant',
               sessionHash: sessionHash,
+            });
+            console.log('🚀 [ABORT DEBUG] Guest assistant message SAVED TO DB', {
+              conversationId: resolvedConversationId,
+              messageId: assistantMessage.id,
+              timestamp: Date.now(),
             });
             logger.info('Guest assistant message saved', {
               conversationId: resolvedConversationId,

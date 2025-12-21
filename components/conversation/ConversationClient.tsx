@@ -178,6 +178,12 @@ export function ConversationClient({
     hasSavedStopRef.current = false;
 
     const stopTimestamp = Date.now();
+    console.log('🚀 [ABORT DEBUG] CLIENT: handleStop called', {
+      conversationId,
+      timestamp: stopTimestamp,
+      status,
+      messageCount: displayMessages.length,
+    });
     logger.info('CLIENT: handleStop called', {
       conversationId,
       timestamp: stopTimestamp,
@@ -189,6 +195,11 @@ export function ConversationClient({
     const currentDisplayMessages = displayMessages;
 
     stop();
+    console.log('🚀 [ABORT DEBUG] CLIENT: stop() called', {
+      conversationId,
+      timestamp: Date.now(),
+      timeSinceStop: Date.now() - stopTimestamp,
+    });
     logger.info('CLIENT: stop() called', {
       conversationId,
       timestamp: Date.now(),
@@ -236,6 +247,11 @@ export function ConversationClient({
           if (conversationId && !hasSavedStopRef.current) {
             hasSavedStopRef.current = true;
             const saveStartTime = Date.now();
+            console.log('🚀 [ABORT DEBUG] CLIENT: Saving partial message to /api/messages', {
+              conversationId,
+              messageId: updatedLastMessage.id,
+              timestamp: saveStartTime,
+            });
             logger.info('CLIENT: Saving partial message to /api/messages', {
               conversationId,
               messageId: updatedLastMessage.id,
@@ -250,6 +266,12 @@ export function ConversationClient({
               }),
             })
             .then(() => {
+              console.log('🚀 [ABORT DEBUG] CLIENT: Partial message SAVED TO DB', {
+                conversationId,
+                messageId: updatedLastMessage.id,
+                saveDuration: Date.now() - saveStartTime,
+                timestamp: Date.now(),
+              });
               logger.info('CLIENT: Partial message saved successfully', {
                 conversationId,
                 messageId: updatedLastMessage.id,
@@ -257,6 +279,7 @@ export function ConversationClient({
               });
             })
             .catch((error) => {
+              console.log('🚀 [ABORT DEBUG] CLIENT: Failed to save stopped message', error);
               logger.error('CLIENT: Failed to save stopped message', error, {
                 conversationId,
                 messageId: updatedLastMessage.id,
