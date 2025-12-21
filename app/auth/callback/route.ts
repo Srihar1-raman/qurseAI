@@ -16,20 +16,48 @@ const logger = createScopedLogger('auth/callback');
 const SESSION_COOKIE_NAME = 'session_id';
 
 export async function GET(request: Request) {
+  // 🔍 LOG AT THE VERY START - Verify route is being called
+  // Use console.log directly to ensure it's not filtered
+  console.log('🔍🔍🔍 AUTH CALLBACK ROUTE CALLED - DIRECT CONSOLE.LOG', {
+    url: request.url,
+    method: request.method,
+    hasCode: !!request.url.includes('code='),
+    timestamp: new Date().toISOString(),
+  });
+  
+  logger.info('🔍 AUTH CALLBACK ROUTE CALLED', {
+    url: request.url,
+    method: request.method,
+    hasCode: !!request.url.includes('code='),
+    timestamp: new Date().toISOString(),
+  });
+
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
   const origin = requestUrl.origin;
 
+  logger.info('🔍 AUTH CALLBACK - After URL parsing', {
+    code: code ? code.substring(0, 10) + '...' : 'NULL',
+    origin,
+    fullUrl: requestUrl.toString(),
+  });
+
   if (code) {
+    logger.info('🔍 AUTH CALLBACK - Code exists, proceeding with auth exchange');
     const supabase = await createClient();
     
     // Exchange code for session
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-      logger.error('Error exchanging code for session', error, { code: code.substring(0, 10) + '...' });
+      logger.error('🔍 AUTH CALLBACK - Error exchanging code for session', error, { code: code.substring(0, 10) + '...' });
       return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
     }
+
+    logger.info('🔍 AUTH CALLBACK - Code exchanged successfully', {
+      hasUser: !!data.user,
+      userId: data.user?.id,
+    });
 
     if (data.user) {
       const userId = data.user.id;
@@ -215,6 +243,10 @@ export async function GET(request: Request) {
   }
 
   // If no code, redirect to login
+  logger.warn('🔍 AUTH CALLBACK - No code parameter, redirecting to login', {
+    url: request.url,
+    searchParams: Object.fromEntries(new URL(request.url).searchParams),
+  });
   return NextResponse.redirect(`${origin}/login`);
 }
 
