@@ -9,18 +9,53 @@ import type { QurseMessage } from '@/lib/types';
 import type { ConversationThreadProps } from './types';
 
 /**
- * Layer 3: Deduplicate messages before display
+ * Deduplicate messages before display
  * Removes duplicate assistant messages where one has stop text and one doesn't
- * Keeps the message with stop text, removes the full duplicate
+ * Only removes duplicates if they have similar content (same message, different completion state)
  * 
- * Algorithm: For each assistant message, check if there's a duplicate later in the array.
- * If one has stop text and one doesn't, keep the one with stop text.
+ * Algorithm: For each assistant message, check if there's a duplicate with similar content.
+ * If one has stop text and one doesn't, and they share significant content overlap, keep the one with stop text.
  */
 function deduplicateMessages(messages: QurseMessage[]): QurseMessage[] {
   if (messages.length === 0) return messages;
   
   const deduplicated: QurseMessage[] = [];
   const skipIndices = new Set<number>();
+  
+  // Helper to extract text content without stop text
+  const getTextContent = (msg: QurseMessage): string => {
+    return msg.parts
+      ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+      .map((p) => p.text)
+      .join('')
+      .replace(/\*User stopped this message here\*/g, '')
+      .trim() || '';
+  };
+  
+  // Helper to check if two messages are duplicates (same content, different stop text)
+  const areDuplicates = (msg1: QurseMessage, msg2: QurseMessage): boolean => {
+    const text1 = getTextContent(msg1);
+    const text2 = getTextContent(msg2);
+    
+    // If one is empty or very short, they're not duplicates
+    if (text1.length < 10 || text2.length < 10) return false;
+    
+    // Check if one is a prefix of the other (same message, different completion)
+    const shorter = text1.length < text2.length ? text1 : text2;
+    const longer = text1.length >= text2.length ? text1 : text2;
+    
+    // If shorter is at least 80% of longer and longer starts with shorter, they're duplicates
+    if (longer.startsWith(shorter) && shorter.length >= longer.length * 0.8) {
+      return true;
+    }
+    
+    // Also check reverse (in case stop text is in the middle)
+    if (shorter.length >= longer.length * 0.8 && longer.includes(shorter)) {
+      return true;
+    }
+    
+    return false;
+  };
   
   for (let i = 0; i < messages.length; i++) {
     // Skip if already marked for removal
@@ -34,7 +69,6 @@ function deduplicateMessages(messages: QurseMessage[]): QurseMessage[] {
       continue;
     }
     
-    // Extract text content from parts
     const messageText = message.parts
       ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
       .map((p) => p.text)
@@ -43,7 +77,7 @@ function deduplicateMessages(messages: QurseMessage[]): QurseMessage[] {
     const hasStopText = messageText.includes('*User stopped this message here*');
     
     // Check if this message has a duplicate later in the array
-    // We only deduplicate pairs where one has stop text and one doesn't
+    // Only deduplicate if they have similar content AND different stop text status
     for (let j = i + 1; j < messages.length; j++) {
       if (skipIndices.has(j)) continue;
       
@@ -59,8 +93,10 @@ function deduplicateMessages(messages: QurseMessage[]): QurseMessage[] {
       
       const otherHasStopText = otherText.includes('*User stopped this message here*');
       
-      // Check if they're duplicates (one has stop text, one doesn't)
-      if (hasStopText !== otherHasStopText) {
+      // Only deduplicate if:
+      // 1. They have different stop text status (one stopped, one not)
+      // 2. They have similar content (same message, different completion)
+      if (hasStopText !== otherHasStopText && areDuplicates(message, otherMessage)) {
         // They're duplicates - keep the one with stop text, skip the one without
         if (hasStopText) {
           // This one has stop text, skip the other one (full message)
