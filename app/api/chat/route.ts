@@ -38,58 +38,6 @@ const serviceSupabase = supabaseUrl && serviceKey
   : null;
 
 /**
- * Layer 1: Quick check for existing stop message
- * Returns true if a stop message already exists within the last 3 seconds, false otherwise
- * This prevents duplicate saves when user stops a stream
- * Uses is_stopped column for fast indexed lookup
- */
-async function checkForStopMessage(
-  conversationId: string,
-  isAuthenticated: boolean,
-  supabaseClient?: Awaited<ReturnType<typeof createClient>>
-): Promise<boolean> {
-  try {
-    // Check for stop messages created within last 3 seconds
-    // This handles consecutive stops while keeping the window small
-    const threeSecondsAgo = new Date(Date.now() - 3000).toISOString();
-    
-    if (isAuthenticated) {
-      // Reuse provided client if available, otherwise create new one
-      const checkSupabase = supabaseClient || await createClient();
-      const { data: stopMessage } = await checkSupabase
-        .from('messages')
-        .select('id')
-        .eq('conversation_id', conversationId)
-        .eq('role', 'assistant')
-        .eq('is_stopped', true)
-        .gte('created_at', threeSecondsAgo)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      return !!stopMessage;
-    } else {
-      if (!serviceSupabase) return false;
-      const { data: stopMessage } = await serviceSupabase
-        .from('guest_messages')
-        .select('id')
-        .eq('guest_conversation_id', conversationId)
-        .eq('role', 'assistant')
-        .eq('is_stopped', true)
-        .gte('created_at', threeSecondsAgo)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      
-      return !!stopMessage;
-    }
-  } catch (error) {
-    logger.error('Error checking for stop message', error, { conversationId });
-    return false; // On error, allow save (fail open)
-  }
-}
-
-/**
  * POST /api/chat
  * Stream AI responses with authentication, access control, and database persistence
  */
@@ -450,109 +398,97 @@ export async function POST(req: Request) {
         );
       },
       onFinish: async ({ messages }) => {
-        // Save assistant messages in BACKGROUND (non-blocking)
+        // Save assistant messages directly (before response is sent, like Scira)
         const user = fullUserData;
         const assistantMessage = messages[messages.length - 1];
 
+        // Early return if no valid assistant message
+        if (!assistantMessage || assistantMessage.role !== 'assistant' || !assistantMessage.parts || assistantMessage.parts.length === 0) {
+          return;
+        }
+
+        // Validate parts array
+        if (!Array.isArray(assistantMessage.parts)) {
+          logger.error('Invalid parts array', { conversationId: resolvedConversationId, parts: assistantMessage.parts });
+          return;
+        }
+
+        // Extract text content once (reused for stop check and save)
+        const messageContentText = assistantMessage.parts
+          .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+          .map((p) => p.text)
+          .join('') || '';
+
+        // Skip save if message has stop text (client already saved it)
+        if (messageContentText.includes('*User stopped this message here*')) {
+          logger.info('Skipping server save - message was stopped by user', { conversationId: resolvedConversationId });
+          return;
+        }
+
         // Authenticated assistant save
         if (user && resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
-          after(async () => {
-            // Layer 1: Quick check - Does a stop message already exist?
-            // Reuse supabaseClient to avoid creating new client
-            const hasStopMessage = await checkForStopMessage(resolvedConversationId, true, supabaseClient);
-            if (hasStopMessage) {
-              logger.info('Stop message found, skipping server save', { conversationId: resolvedConversationId });
-              return;
+          try {
+            interface MessageWithMetadata extends UIMessage {
+              metadata?: {
+                inputTokens?: number | null;
+                outputTokens?: number | null;
+                totalTokens?: number | null;
+                completionTime?: number;
+                model?: string;
+              };
             }
+            const messageWithMetadata = assistantMessage as MessageWithMetadata;
+            const metadata = messageWithMetadata.metadata;
+            const inputTokens = metadata?.inputTokens ?? null;
+            const outputTokens = metadata?.outputTokens ?? null;
+            const totalTokens = metadata?.totalTokens ?? null;
+            const completionTime = metadata?.completionTime ?? (Date.now() - requestStartTime) / 1000;
 
-            try {
-              if (assistantMessage && assistantMessage.role === 'assistant' && assistantMessage.parts) {
-                const messageContentText = assistantMessage.parts
-                  .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
-                  .map((p) => p.text)
-                  .join('') || '';
+            const { error: assistantMsgError } = await supabaseClient.from('messages').insert({
+              conversation_id: resolvedConversationId,
+              role: 'assistant',
+              parts: assistantMessage.parts,
+              content: messageContentText || null,
+              model: model,
+              input_tokens: inputTokens,
+              output_tokens: outputTokens,
+              total_tokens: totalTokens,
+              completion_time: completionTime,
+              is_stopped: false, // Server saves are always full messages (not stopped)
+            });
 
-                interface MessageWithMetadata extends UIMessage {
-                  metadata?: {
-                    inputTokens?: number | null;
-                    outputTokens?: number | null;
-                    totalTokens?: number | null;
-                    completionTime?: number;
-                    model?: string;
-                  };
-                }
-                const messageWithMetadata = assistantMessage as MessageWithMetadata;
-                const metadata = messageWithMetadata.metadata;
-                const inputTokens = metadata?.inputTokens ?? null;
-                const outputTokens = metadata?.outputTokens ?? null;
-                const totalTokens = metadata?.totalTokens ?? null;
-                const completionTime = metadata?.completionTime ?? (Date.now() - requestStartTime) / 1000;
-
-                if (!Array.isArray(assistantMessage.parts) || assistantMessage.parts.length === 0) {
-                  logger.error('Invalid parts array', { conversationId: resolvedConversationId, parts: assistantMessage.parts });
-                  return;
-                }
-
-                const { error: assistantMsgError } = await supabaseClient.from('messages').insert({
-                  conversation_id: resolvedConversationId,
-                  role: 'assistant',
-                  parts: assistantMessage.parts,
-                  content: messageContentText || null,
-                  model: model,
-                  input_tokens: inputTokens,
-                  output_tokens: outputTokens,
-                  total_tokens: totalTokens,
-                  completion_time: completionTime,
-                  is_stopped: false, // Server saves are always full messages (not stopped)
-                });
-
-                if (assistantMsgError) {
-                  logger.error('Background assistant message save failed', assistantMsgError, { conversationId: resolvedConversationId });
-                } else {
-                  logger.info('Assistant message saved', {
-                    conversationId: resolvedConversationId,
-                    messageId: assistantMessage.id,
-                    tokens: totalTokens,
-                    model,
-                  });
-                }
-              }
-            } catch (error) {
-              logger.error('Background assistant message save error', error, { conversationId: resolvedConversationId });
+            if (assistantMsgError) {
+              logger.error('Assistant message save failed', assistantMsgError, { conversationId: resolvedConversationId });
+            } else {
+              logger.info('Assistant message saved', {
+                conversationId: resolvedConversationId,
+                messageId: assistantMessage.id,
+                tokens: totalTokens,
+                model,
+              });
             }
-          });
+          } catch (error) {
+            logger.error('Assistant message save error', error, { conversationId: resolvedConversationId });
+          }
         }
 
         // Guest assistant save
         if (!user && sessionHash && resolvedConversationId) {
-          const guestConversationId = resolvedConversationId;
-          const guestSessionHash = sessionHash;
-          after(async () => {
-            // Layer 1: Quick check - Does a stop message already exist?
-            const hasStopMessage = await checkForStopMessage(guestConversationId, false);
-            if (hasStopMessage) {
-              logger.info('Stop message found (guest), skipping server save', { conversationId: guestConversationId });
-              return;
-            }
-
-            try {
-              if (assistantMessage && assistantMessage.role === 'assistant') {
-                await saveGuestMessage({
-                  conversationId: guestConversationId,
-                  message: assistantMessage,
-                  role: 'assistant',
-                  sessionHash: guestSessionHash,
-                  isStopped: false, // Server saves are always full messages (not stopped)
-                });
-                logger.info('Guest assistant message saved', {
-                  conversationId: guestConversationId,
-                  messageId: assistantMessage.id,
-                });
-              }
-            } catch (error) {
-              logger.error('Guest assistant message save error', error, { conversationId: guestConversationId, sessionHash: guestSessionHash });
-            }
-          });
+          try {
+            await saveGuestMessage({
+              conversationId: resolvedConversationId,
+              message: assistantMessage,
+              role: 'assistant',
+              sessionHash: sessionHash,
+              isStopped: false, // Server saves are always full messages (not stopped)
+            });
+            logger.info('Guest assistant message saved', {
+              conversationId: resolvedConversationId,
+              messageId: assistantMessage.id,
+            });
+          } catch (error) {
+            logger.error('Guest assistant message save error', error, { conversationId: resolvedConversationId, sessionHash });
+          }
         }
       },
     });

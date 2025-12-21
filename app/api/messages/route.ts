@@ -111,40 +111,6 @@ export async function POST(request: NextRequest) {
       hasStopText: contentText.includes('*User stopped this message here*'),
     });
 
-    // Check if server already saved a message for this conversation (prevents duplicate)
-    const { createClient: createServiceClient } = await import('@supabase/supabase-js');
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-    
-    if (supabaseUrl && serviceKey) {
-      const serviceSupabase = createServiceClient(supabaseUrl, serviceKey);
-      const { data: existingGuestMessage, error: checkError } = await serviceSupabase
-        .from('guest_messages')
-        .select('id, created_at, role')
-        .eq('guest_conversation_id', conversationId)
-        .eq('role', 'assistant')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (checkError) {
-        logger.error('SERVER /api/messages: Error checking for existing guest message', checkError, { conversationId });
-        // Continue with save even if check fails
-      } else if (existingGuestMessage) {
-        const messageAge = Date.now() - new Date(existingGuestMessage.created_at).getTime();
-        // If a message was saved in the last 20 seconds, assume server already saved
-        if (messageAge < 20000) {
-          logger.info('SERVER /api/messages: Server already saved guest message, skipping client save to prevent duplicate', {
-            conversationId,
-            existingMessageId: existingGuestMessage.id,
-            messageAgeMs: messageAge,
-            timestamp: Date.now(),
-          });
-          return NextResponse.json({ success: true, skipped: true, reason: 'server_already_saved' });
-        }
-      }
-    }
-
     // Determine if this is a stop message
     const isStopMessage = contentText.includes('*User stopped this message here*');
 
