@@ -49,10 +49,45 @@ export function useConversationScroll({
 
   const { scrollToBottom, markManualScroll, resetManualScroll } = useOptimizedScroll(conversationContainerRef);
 
+  // Track last scrolled message to prevent redundant scrolls
+  const lastScrolledMessageIdRef = useRef<string | null>(null);
+  const lastScrolledContentLengthRef = useRef<number>(0);
+  const scrollScheduledRef = useRef(false);
+  const lastScrollTimeRef = useRef<number>(0);
+  const displayMessagesRef = useRef(displayMessages);
+
+  // Keep displayMessages ref in sync
+  // Only update when content actually changes (length or last message ID)
+  // This reduces unnecessary ref updates during streaming
+  const lastLengthRef = useRef(displayMessages.length);
+  const lastMessageIdRef = useRef(
+    displayMessages.length > 0 ? displayMessages[displayMessages.length - 1]?.id : null
+  );
+
+  useEffect(() => {
+    const currentLength = displayMessages.length;
+    const currentLastMessageId =
+      displayMessages.length > 0 ? displayMessages[displayMessages.length - 1]?.id : null;
+
+    // Only update ref if length changed or last message ID changed
+    if (
+      currentLength !== lastLengthRef.current ||
+      currentLastMessageId !== lastMessageIdRef.current
+    ) {
+      displayMessagesRef.current = displayMessages;
+      lastLengthRef.current = currentLength;
+      lastMessageIdRef.current = currentLastMessageId;
+    }
+  }, [displayMessages]);
+
   // Reset state when conversation changes
   useEffect(() => {
     hasInitiallyScrolledRef.current = false;
     lastUserMessageIdRef.current = null;
+    lastScrolledMessageIdRef.current = null;
+    lastScrolledContentLengthRef.current = 0;
+    scrollScheduledRef.current = false;
+    lastScrollTimeRef.current = 0;
     resetManualScroll();
     const containerElement = conversationContainerRef.current;
     if (containerElement) {
@@ -180,20 +215,88 @@ export function useConversationScroll({
   }, [status, resetManualScroll, scrollToBottom]);
 
   // Auto-scroll during streaming when messages change
+  // Use requestAnimationFrame loop during streaming to detect content changes
+  // This avoids infinite loops while still detecting content updates when length doesn't change
+  // Optimized: Skip frames to reduce CPU usage (check every 2-3 frames instead of every frame)
   useEffect(() => {
-    if (status === 'streaming') {
-      requestAnimationFrame(() => scrollToBottom());
+    if (status !== 'streaming') {
+      return;
     }
-  }, [displayMessages, status, scrollToBottom]);
+
+    let rafId: number | null = null;
+    let frameSkipCounter = 0;
+    const FRAME_SKIP = 2; // Check every 3rd frame (0, 1, 2 -> check on 2)
+
+    const checkAndScroll = () => {
+      // Skip frames to reduce CPU usage
+      frameSkipCounter++;
+      if (frameSkipCounter < FRAME_SKIP) {
+        rafId = requestAnimationFrame(checkAndScroll);
+        return;
+      }
+      frameSkipCounter = 0;
+
+      // Stop if status changed (checked via closure - effect will clean up)
+      const currentMessages = displayMessagesRef.current;
+      if (currentMessages.length === 0) {
+        rafId = requestAnimationFrame(checkAndScroll);
+        return;
+      }
+
+      const lastMessage = currentMessages[currentMessages.length - 1];
+      const lastMessageId = lastMessage?.id || null;
+      const lastMessageContentLength = lastMessage?.parts
+        ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+        .map(p => p.text)
+        .join('').length || 0;
+
+      // Check if we need to scroll:
+      // 1. New message appeared (ID changed)
+      // 2. Content significantly changed (length difference > 50 chars) AND throttle time passed
+      const isNewMessage = lastMessageId !== lastScrolledMessageIdRef.current;
+      const contentChanged = Math.abs(lastMessageContentLength - lastScrolledContentLengthRef.current) > 50;
+      const throttleTime = 150; // ms
+      const timeSinceLastScroll = Date.now() - lastScrollTimeRef.current;
+      const shouldThrottle = timeSinceLastScroll < throttleTime;
+
+      if (isNewMessage || (contentChanged && !shouldThrottle && !scrollScheduledRef.current)) {
+        lastScrolledMessageIdRef.current = lastMessageId;
+        lastScrolledContentLengthRef.current = lastMessageContentLength;
+        lastScrollTimeRef.current = Date.now();
+        scrollScheduledRef.current = true;
+
+        scrollToBottom();
+        scrollScheduledRef.current = false;
+      }
+
+      // Continue loop while streaming
+      // The effect will clean up when status changes
+      rafId = requestAnimationFrame(checkAndScroll);
+    };
+
+    // Start the loop
+    rafId = requestAnimationFrame(checkAndScroll);
+
+    return () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+    };
+  }, [status, scrollToBottom]); // Only depend on status and scrollToBottom
 
   // Reset manual scroll when user sends a new message (allows auto-scroll for AI response)
   useEffect(() => {
-    const lastMessage = displayMessages[displayMessages.length - 1];
+    // Access current messages from ref (avoids dependency on array reference)
+    const currentMessages = displayMessagesRef.current;
+    if (currentMessages.length === 0) {
+      return;
+    }
+
+    const lastMessage = currentMessages[currentMessages.length - 1];
     const isNewUserMessage =
       lastMessage?.role === 'user' && lastMessage?.id !== lastUserMessageIdRef.current;
 
     if (
-      displayMessages.length > 0 &&
       isNewUserMessage &&
       hasInteracted &&
       !isLoadingOlderMessages &&
@@ -207,7 +310,7 @@ export function useConversationScroll({
       }
     }
   }, [
-    displayMessages,
+    displayMessages.length, // Use length instead of entire array
     status,
     hasInteracted,
     isLoadingOlderMessages,

@@ -133,6 +133,7 @@ export function ConversationClient({
     }
     
     // Track current streaming message ID
+    // Use displayMessages.length as dependency to avoid infinite loops
     if (status === 'streaming' && displayMessages.length > 0) {
       const lastMessage = displayMessages[displayMessages.length - 1];
       if (lastMessage.role === 'assistant') {
@@ -141,7 +142,7 @@ export function ConversationClient({
     }
     
     prevStatusRef.current = status;
-  }, [status, displayMessages]);
+  }, [status, displayMessages.length]); // Use length instead of entire array
 
   const isLoading = status === 'submitted' || status === 'streaming';
   const isThinking = status === 'submitted'; // Only show thinking animation before streaming starts
