@@ -113,7 +113,7 @@ export function ConversationClient({
 
   // Reset stop flags when a new message starts streaming (status transitions to 'submitted')
   // This allows stopping multiple messages in the same conversation
-  const prevStatusRef = React.useRef(status);
+  const prevStatusRef = React.useRef<string | undefined>(undefined);
   React.useEffect(() => {
     // When status changes from 'idle'/'error' to 'submitted', a new message is starting
     const wasIdle = prevStatusRef.current === 'idle' || prevStatusRef.current === 'error' || prevStatusRef.current === undefined;
