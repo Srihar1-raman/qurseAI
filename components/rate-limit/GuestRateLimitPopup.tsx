@@ -3,10 +3,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useTheme } from '@/lib/theme-provider';
 import AuthButton from '@/components/auth/AuthButton';
 import { HeroBlock } from '@/components/rate-limit/HeroBlock';
-import { formatResetTime, getPopupBackgroundStyle } from '@/components/rate-limit/utils';
+import { formatResetTime } from '@/components/rate-limit/utils';
 import { RATE_LIMIT_CONSTANTS } from '@/components/rate-limit/constants';
 
 export interface GuestRateLimitPopupProps {
@@ -30,10 +29,8 @@ export function GuestRateLimitPopup({
   customMessage,
   showPricing = false,
 }: GuestRateLimitPopupProps) {
-  const { resolvedTheme } = useTheme();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const backgroundStyle = getPopupBackgroundStyle(resolvedTheme);
   const resetTime = formatResetTime(reset);
   
   // Local state to control popup visibility (allows wait button to close it)
@@ -169,18 +166,10 @@ export function GuestRateLimitPopup({
       // Popup is non-dismissible - user must authenticate or wait
     >
       <div
-        className="form-content"
+        className="popup-content"
         style={{
           padding: RATE_LIMIT_CONSTANTS.CONTAINER_PADDING,
           maxWidth: RATE_LIMIT_CONSTANTS.CONTAINER_MAX_WIDTH,
-          width: '100%',
-          position: 'relative',
-          zIndex: 1,
-          background: backgroundStyle,
-          backdropFilter: RATE_LIMIT_CONSTANTS.CONTAINER_BACKDROP_BLUR,
-          borderRadius: RATE_LIMIT_CONSTANTS.CONTAINER_BORDER_RADIUS,
-          border: '1px solid var(--color-border)',
-          boxShadow: '0 12px 30px rgba(0, 0, 0, 0.18)',
         }}
         onClick={(e) => e.stopPropagation()}
       >

@@ -20,10 +20,10 @@ export function formatResetTime(reset: number): string {
 
 /**
  * Get theme-aware background style for popup
+ * @deprecated No longer used - popups now use CSS class with var(--color-bg)
+ * Kept for backwards compatibility if needed elsewhere
  */
 export function getPopupBackgroundStyle(resolvedTheme: 'light' | 'dark'): string {
-  return resolvedTheme === 'dark' 
-    ? 'rgba(26, 26, 26, 0.9)' 
-    : 'rgba(255, 255, 255, 0.9)';
+  return 'var(--color-bg)';
 }
 

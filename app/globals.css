@@ -14,6 +14,7 @@
 @import '../styles/components/conversation.css';
 @import '../styles/components/history.css';
 @import '../styles/components/settings.css';
+@import '../styles/components/rate-limit.css';
 
 /* Tailwind directives */
 /* stylelint-disable at-rule-no-unknown */
