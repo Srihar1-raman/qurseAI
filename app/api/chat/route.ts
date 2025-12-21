@@ -372,20 +372,11 @@ export async function POST(req: Request) {
           },
           onAbort: ({ steps }) => {
             wasAborted = true;
-            abortTimestamps['streamTextOnAbort'] = Date.now();
-            // Use console.error to ensure it shows in Vercel logs
-            console.error('[DIAGNOSTIC] ABORT DETECTED: streamText onAbort called', { 
-              conversationId: resolvedConversationId,
-              stepsCount: steps.length,
-              hasSteps: steps.length > 0,
-              timestamp: abortTimestamps['streamTextOnAbort'],
-              wasAborted,
-            });
             logger.info('ABORT DETECTED: streamText onAbort called', { 
               conversationId: resolvedConversationId,
               stepsCount: steps.length,
               hasSteps: steps.length > 0,
-              timestamp: abortTimestamps['streamTextOnAbort'],
+              timestamp: Date.now(),
             });
           },
           onFinish: async ({ usage }) => {
@@ -432,32 +423,25 @@ export async function POST(req: Request) {
           abortSignalAborted: abortSignal.aborted,
         };
 
-        // Log detailed state for diagnosis - Use console.error to ensure it shows in Vercel logs
-        const diagnosticData = {
+        // Log detailed state for diagnosis
+        logger.info('onFinish called', {
           conversationId: resolvedConversationId,
           timestamp: onFinishTimestamp,
           messageCount: messages.length,
           abortState: abortStateAtFinish,
-          abortTimestamps,
           lastMessageId: messages[messages.length - 1]?.id,
           lastMessageRole: messages[messages.length - 1]?.role,
-          lastMessagePartsCount: messages[messages.length - 1]?.parts?.length ?? 0,
           requestStartTime,
           timeSinceRequestStart: onFinishTimestamp - requestStartTime,
-        };
-        console.error('[DIAGNOSTIC] onFinish CALLED', JSON.stringify(diagnosticData, null, 2));
-        logger.info('onFinish CALLED - DIAGNOSTIC LOG', diagnosticData);
+        });
 
         // Check if stream was aborted - don't save if user stopped the stream
         if (wasAborted || abortSignal.aborted) {
-          const skipData = {
+          logger.info('onFinish: Stream aborted, skipping message save', {
             conversationId: resolvedConversationId,
             messageCount: messages.length,
             abortState: abortStateAtFinish,
-            abortTimestamps,
-          };
-          console.error('[DIAGNOSTIC] onFinish: Stream aborted, skipping message save', JSON.stringify(skipData, null, 2));
-          logger.info('onFinish: Stream aborted, skipping message save', skipData);
+          });
           return;
         }
 
