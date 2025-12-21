@@ -399,11 +399,25 @@ export async function POST(req: Request) {
       },
       onFinish: async ({ messages }) => {
         // Save assistant messages directly (before response is sent, like Scira)
+        logger.info('🔵 onFinish CALLED', { 
+          messagesLength: messages.length,
+          resolvedConversationId,
+          isTempId: resolvedConversationId?.startsWith('temp-'),
+          hasUser: !!fullUserData,
+          hasSessionHash: !!sessionHash
+        });
+
         const user = fullUserData;
         const assistantMessage = messages[messages.length - 1];
 
         // Early return if no valid assistant message
         if (!assistantMessage || assistantMessage.role !== 'assistant' || !assistantMessage.parts || assistantMessage.parts.length === 0) {
+          logger.warn('⚠️ Early return - invalid assistant message', {
+            hasAssistantMessage: !!assistantMessage,
+            role: assistantMessage?.role,
+            hasParts: !!assistantMessage?.parts,
+            partsLength: assistantMessage?.parts?.length
+          });
           return;
         }
 
@@ -426,6 +440,13 @@ export async function POST(req: Request) {
         }
 
         // Authenticated assistant save
+        logger.debug('Checking authenticated save conditions', {
+          hasUser: !!user,
+          hasResolvedId: !!resolvedConversationId,
+          isTempId: resolvedConversationId?.startsWith('temp-'),
+          willSave: !!(user && resolvedConversationId && !resolvedConversationId.startsWith('temp-'))
+        });
+
         if (user && resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
           try {
             interface MessageWithMetadata extends UIMessage {
@@ -473,6 +494,13 @@ export async function POST(req: Request) {
         }
 
         // Guest assistant save
+        logger.debug('Checking guest save conditions', {
+          hasUser: !!user,
+          hasSessionHash: !!sessionHash,
+          hasResolvedId: !!resolvedConversationId,
+          willSave: !!(!user && sessionHash && resolvedConversationId)
+        });
+
         if (!user && sessionHash && resolvedConversationId) {
           try {
             await saveGuestMessage({
