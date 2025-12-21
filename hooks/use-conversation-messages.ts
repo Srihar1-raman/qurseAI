@@ -53,6 +53,7 @@ interface UseConversationMessagesProps {
 
 interface UseConversationMessagesReturn {
   displayMessages: QurseMessage[];
+  displayMessagesRef: React.MutableRefObject<QurseMessage[]>; // Always has latest content, even during throttling
   isLoadingOlderMessages: boolean;
   isLoadingInitialMessages: boolean;
   hasMoreMessages: boolean;
@@ -311,6 +312,16 @@ export function useConversationMessages({
     return transformToQurseMessage(rawDisplayMessages);
   }, [rawDisplayMessages]);
 
+  // Ref to expose latest messages to scroll hook (always up-to-date, even during throttling)
+  // This allows RAF loop to read latest content while displayMessages is throttled
+  const latestMessagesRef = useRef<QurseMessage[]>([]);
+  
+  // Always keep latestMessagesRef updated with latest content (for scroll hook RAF loop)
+  // This runs on every render, but only updates ref (no re-render trigger)
+  useEffect(() => {
+    latestMessagesRef.current = transformedMessages;
+  }, [transformedMessages]);
+
   // Memoize displayMessages with smart update strategy during streaming
   const displayMessages = useMemo(() => {
     const now = Date.now();
@@ -337,6 +348,7 @@ export function useConversationMessages({
       
       // Within throttle window - return cached reference to prevent re-render
       // This breaks the infinite loop while still allowing periodic updates
+      // Note: latestMessagesRef is always updated above, so scroll hook can read latest content
       return cachedDisplayMessagesRef.current.length > 0 
         ? cachedDisplayMessagesRef.current 
         : transformedMessages;
@@ -351,6 +363,7 @@ export function useConversationMessages({
 
   return {
     displayMessages,
+    displayMessagesRef: latestMessagesRef, // Expose ref with always-latest content for scroll hook
     isLoadingOlderMessages,
     isLoadingInitialMessages,
     hasMoreMessages,

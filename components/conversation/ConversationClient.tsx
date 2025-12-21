@@ -77,6 +77,7 @@ export function ConversationClient({
 
   const {
     displayMessages,
+    displayMessagesRef,
     isLoadingOlderMessages,
     isLoadingInitialMessages,
     hasMoreMessages,
@@ -100,6 +101,7 @@ export function ConversationClient({
   const { conversationEndRef, conversationContainerRef, conversationThreadRef, scrollToBottom } =
     useConversationScroll({
       displayMessages,
+      displayMessagesRef, // Pass ref with always-latest content for RAF loop
       status,
       hasInteracted,
       isLoadingOlderMessages,

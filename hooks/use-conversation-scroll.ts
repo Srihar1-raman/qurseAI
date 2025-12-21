@@ -9,6 +9,7 @@ import type { QurseMessage } from '@/lib/types';
 
 interface UseConversationScrollProps {
   displayMessages: QurseMessage[];
+  displayMessagesRef: React.MutableRefObject<QurseMessage[]>; // Always has latest content, even during throttling
   status: 'idle' | 'streaming' | 'submitted' | string;
   hasInteracted: boolean;
   isLoadingOlderMessages: boolean;
@@ -29,6 +30,7 @@ interface UseConversationScrollReturn {
 
 export function useConversationScroll({
   displayMessages,
+  displayMessagesRef: latestMessagesRef, // Ref with always-latest content from useConversationMessages
   status,
   hasInteracted,
   isLoadingOlderMessages,
@@ -54,9 +56,13 @@ export function useConversationScroll({
   const lastScrolledContentLengthRef = useRef<number>(0);
   const scrollScheduledRef = useRef(false);
   const lastScrollTimeRef = useRef<number>(0);
-  const displayMessagesRef = useRef(displayMessages);
   
-  // Track previous length and last message ID to detect actual changes
+  // Use the ref from useConversationMessages which always has latest content
+  // This ref is continuously updated via useEffect in useConversationMessages, even during throttling
+  // No need for local ref sync - the prop ref is the source of truth
+  const displayMessagesRef = latestMessagesRef;
+  
+  // Track previous length and last message ID to detect actual changes (for other effects)
   // Use refs to avoid dependency on array reference
   const lastLengthRef = useRef(displayMessages.length);
   const lastMessageIdRef = useRef(
@@ -68,22 +74,19 @@ export function useConversationScroll({
   const currentLength = displayMessages.length;
   const currentLastMessageId = displayMessages.length > 0 ? displayMessages[displayMessages.length - 1]?.id : null;
 
-  // Sync ref only when length or last message ID actually changes
-  // DO NOT depend on displayMessages array reference - this causes infinite loops during streaming
-  // During streaming, displayMessages gets new reference on every chunk, but length/ID might not change
+  // Track structure changes (for other effects that need to know when structure changes)
+  // We don't need to sync displayMessagesRef here - it's already synced in useConversationMessages
   useEffect(() => {
-    // Only update ref if length changed or last message ID changed
-    // This prevents unnecessary updates when only array reference changes (during streaming)
+    // Only track structure changes (for other logic that depends on structure)
     if (
       currentLength !== lastLengthRef.current ||
       currentLastMessageId !== lastMessageIdRef.current
     ) {
-      displayMessagesRef.current = displayMessages;
       lastLengthRef.current = currentLength;
       lastMessageIdRef.current = currentLastMessageId;
     }
     // Depend only on primitives (length and ID), not array reference
-    // This ensures effect only runs when actual content changes, not on every render during streaming
+    // This ensures effect only runs when structure changes, not on every render during streaming
   }, [currentLength, currentLastMessageId]);
 
   // Reset state when conversation changes
