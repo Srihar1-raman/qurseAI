@@ -287,26 +287,67 @@ export function useConversationMessages({
     return mergeMessages(loadedMessages, stableUseChatMessages, isLoadingInitialMessages);
   }, [loadedMessages, stableUseChatMessages, isLoadingInitialMessages]);
 
-  // Create a content-based key for rawDisplayMessages to detect actual content changes
-  const rawDisplayMessagesKey = useMemo(() => {
-    return rawDisplayMessages.map(m => `${m.id}:${m.role}:${extractMessageContent(m)}`).join('|');
+  // Track message structure (count and IDs) separately from content
+  // This allows us to detect structure changes (new messages) vs content changes (streaming)
+  const messageStructureKey = useMemo(() => {
+    return rawDisplayMessages.map(m => `${m.id}:${m.role}`).join('|');
   }, [rawDisplayMessages]);
 
-  // Memoize transformToQurseMessage to prevent creating new objects when content hasn't changed
-  // Use ref to store previous result and only recalculate when key actually changes
-  const displayMessagesRef = useRef<{ messages: QurseMessage[]; key: string }>({ messages: [], key: '' });
+  // Track previous structure to detect when new messages are added
+  const previousStructureRef = useRef<string>('');
+  const isStructureChanged = messageStructureKey !== previousStructureRef.current;
+
+  // During streaming, throttle displayMessages updates to prevent infinite loops
+  // Strategy: Update immediately on structure changes, but throttle content-only updates
+  const isStreaming = status === 'streaming';
   
+  // Ref to cache the last returned displayMessages (for throttling during streaming)
+  const cachedDisplayMessagesRef = useRef<QurseMessage[]>([]);
+  const lastUpdateTimeRef = useRef<number>(0);
+  const THROTTLE_MS = 150; // Update at most every 150ms during streaming
+  
+  // Always transform to get latest content
+  const transformedMessages = useMemo(() => {
+    return transformToQurseMessage(rawDisplayMessages);
+  }, [rawDisplayMessages]);
+
+  // Memoize displayMessages with smart update strategy during streaming
   const displayMessages = useMemo(() => {
-    // Only recalculate if content actually changed (key-based comparison)
-    if (rawDisplayMessagesKey === displayMessagesRef.current.key && displayMessagesRef.current.messages.length > 0) {
-      return displayMessagesRef.current.messages;
-    }
+    const now = Date.now();
     
-    // Content changed - recalculate
-    const transformed = transformToQurseMessage(rawDisplayMessages);
-    displayMessagesRef.current = { messages: transformed, key: rawDisplayMessagesKey };
-    return transformed;
-  }, [rawDisplayMessagesKey]); // Only depend on key, not rawDisplayMessages array reference
+    // Always update when structure changes (new message added) - immediate update
+    if (isStructureChanged) {
+      previousStructureRef.current = messageStructureKey;
+      cachedDisplayMessagesRef.current = transformedMessages;
+      lastUpdateTimeRef.current = now;
+      return transformedMessages;
+    }
+
+    // During streaming: throttle content-only updates to prevent infinite loops
+    // This prevents new references on every chunk while still showing progress
+    if (isStreaming) {
+      const timeSinceLastUpdate = now - lastUpdateTimeRef.current;
+      
+      // Update if throttle time has passed (allows UI to show progress)
+      if (timeSinceLastUpdate >= THROTTLE_MS) {
+        cachedDisplayMessagesRef.current = transformedMessages;
+        lastUpdateTimeRef.current = now;
+        return transformedMessages;
+      }
+      
+      // Within throttle window - return cached reference to prevent re-render
+      // This breaks the infinite loop while still allowing periodic updates
+      return cachedDisplayMessagesRef.current.length > 0 
+        ? cachedDisplayMessagesRef.current 
+        : transformedMessages;
+    }
+
+    // Not streaming: always return latest (normal behavior)
+    previousStructureRef.current = messageStructureKey;
+    cachedDisplayMessagesRef.current = transformedMessages;
+    lastUpdateTimeRef.current = now;
+    return transformedMessages;
+  }, [messageStructureKey, isStructureChanged, isStreaming, transformedMessages]);
 
   return {
     displayMessages,
