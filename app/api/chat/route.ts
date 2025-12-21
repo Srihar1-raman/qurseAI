@@ -295,46 +295,25 @@ export async function POST(req: Request) {
 
     // Track abort state outside execute scope so onFinish can access it
     let wasAborted = false;
-    const abortController = new AbortController();
-    const abortTimestamps: { [key: string]: number } = {};
-
-    // Forward abort signal from request if available
-    if (req.signal) {
-      const abortHandler = () => {
-        wasAborted = true;
-        abortTimestamps['reqSignalAbort'] = Date.now();
-        abortController.abort();
-        abortTimestamps['abortControllerAbort'] = Date.now();
-        // Use console.error to ensure it shows in Vercel logs
-        console.error('[DIAGNOSTIC] ABORT DETECTED: Request signal aborted', {
-          conversationId: resolvedConversationId,
-          timestamp: abortTimestamps['reqSignalAbort'],
-          wasAborted,
-        });
-        logger.info('ABORT DETECTED: Request signal aborted', {
-          conversationId: resolvedConversationId,
-          timestamp: abortTimestamps['reqSignalAbort'],
-        });
-      };
-      req.signal.addEventListener('abort', abortHandler);
-      // Also check if already aborted
-      if (req.signal.aborted) {
-        wasAborted = true;
-        abortTimestamps['reqSignalAlreadyAborted'] = Date.now();
-        abortController.abort();
-        abortTimestamps['abortControllerAbort'] = Date.now();
-        // Use console.error to ensure it shows in Vercel logs
-        console.error('[DIAGNOSTIC] ABORT DETECTED: Request signal already aborted', {
-          conversationId: resolvedConversationId,
-          timestamp: abortTimestamps['reqSignalAlreadyAborted'],
-          wasAborted,
-        });
-        logger.info('ABORT DETECTED: Request signal already aborted', {
-          conversationId: resolvedConversationId,
-          timestamp: abortTimestamps['reqSignalAlreadyAborted'],
-        });
-      }
+    
+    // Use req.signal directly if available, otherwise create our own
+    // This ensures the abort signal from useChat's stop() is properly forwarded to streamText
+    const abortSignal = req.signal || new AbortController().signal;
+    
+    // Track abort state
+    if (abortSignal.aborted) {
+      wasAborted = true;
+      logger.info('Request already aborted on arrival', { conversationId: resolvedConversationId });
     }
+    
+    // Listen for abort events
+    abortSignal.addEventListener('abort', () => {
+      wasAborted = true;
+      logger.info('ABORT DETECTED: Request signal aborted', {
+        conversationId: resolvedConversationId,
+        timestamp: Date.now(),
+      });
+    });
 
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
@@ -364,6 +343,13 @@ export async function POST(req: Request) {
         // START STREAMING (after user message is saved)
         // ============================================
 
+        // Check if already aborted before starting streamText
+        if (abortSignal.aborted) {
+          logger.info('Stream aborted before streamText call', { conversationId: resolvedConversationId });
+          wasAborted = true;
+          return; // Exit early if already aborted
+        }
+
         const result = streamText({
           model: qurse.languageModel(model),
           messages: convertToModelMessages(uiMessages),
@@ -372,7 +358,7 @@ export async function POST(req: Request) {
           ...getModelParameters(model),
           providerOptions: getProviderOptions(model) as StreamTextProviderOptions,
           tools: Object.keys(tools).length > 0 ? tools : undefined,
-          abortSignal: abortController.signal,
+          abortSignal: abortSignal, // Use req.signal directly - this stops the provider
           onError: (err) => {
             logger.error('Stream error', err.error, { model });
             const errorMessage = err.error instanceof Error ? err.error.message : String(err.error);
@@ -443,8 +429,7 @@ export async function POST(req: Request) {
         const onFinishTimestamp = Date.now();
         const abortStateAtFinish = {
           wasAborted,
-          reqSignalAborted: req.signal?.aborted ?? false,
-          abortControllerAborted: abortController.signal.aborted,
+          abortSignalAborted: abortSignal.aborted,
         };
 
         // Log detailed state for diagnosis - Use console.error to ensure it shows in Vercel logs
@@ -464,8 +449,7 @@ export async function POST(req: Request) {
         logger.info('onFinish CALLED - DIAGNOSTIC LOG', diagnosticData);
 
         // Check if stream was aborted - don't save if user stopped the stream
-        // Check both req.signal and our tracked abort state
-        if (wasAborted || req.signal?.aborted || abortController.signal.aborted) {
+        if (wasAborted || abortSignal.aborted) {
           const skipData = {
             conversationId: resolvedConversationId,
             messageCount: messages.length,
@@ -491,8 +475,7 @@ export async function POST(req: Request) {
 
         // Determine if this is a stop scenario (aborted OR contains stop text)
         const isStopScenario = wasAborted || 
-                              req.signal?.aborted || 
-                              abortController.signal.aborted ||
+                              abortSignal.aborted ||
                               (contentText.includes('*User stopped this message here*'));
 
         // ALWAYS check for stop messages (client might have saved before abort signal arrives)
