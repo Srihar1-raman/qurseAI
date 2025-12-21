@@ -16,14 +16,19 @@ const logger = createScopedLogger('auth/callback');
 const SESSION_COOKIE_NAME = 'session_id';
 
 export async function GET(request: Request) {
-  // 🔍 LOG AT THE VERY START - Verify route is being called
-  // Use console.log directly to ensure it's not filtered
-  console.log('🔍🔍🔍 AUTH CALLBACK ROUTE CALLED - DIRECT CONSOLE.LOG', {
-    url: request.url,
-    method: request.method,
-    hasCode: !!request.url.includes('code='),
-    timestamp: new Date().toISOString(),
-  });
+  // 🔍 AGGRESSIVE LOGGING - Multiple methods to ensure we see it
+  console.error('🔍🔍🔍 ERROR LEVEL - AUTH CALLBACK ROUTE CALLED');
+  console.warn('🔍🔍🔍 WARN LEVEL - AUTH CALLBACK ROUTE CALLED');
+  console.log('🔍🔍🔍 LOG LEVEL - AUTH CALLBACK ROUTE CALLED');
+  console.info('🔍🔍🔍 INFO LEVEL - AUTH CALLBACK ROUTE CALLED');
+  
+  // Also throw a visible error that will definitely show in logs
+  // (We'll catch it, but it will appear in error logs)
+  try {
+    throw new Error('🔍 FORCED ERROR TO VERIFY ROUTE IS CALLED');
+  } catch (e) {
+    console.error('🔍 Route verification error (expected):', e);
+  }
   
   logger.info('🔍 AUTH CALLBACK ROUTE CALLED', {
     url: request.url,
