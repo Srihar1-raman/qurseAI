@@ -46,10 +46,15 @@ export function ConversationClient({
   const [sendAttemptCount, setSendAttemptCount] = React.useState(0);
   const hasStoppedRef = useRef(false);
   const hasSavedStopRef = useRef(false);
+  const stoppedMessageIdsRef = useRef<Set<string>>(new Set()); // Track which message IDs have been stopped
+  const currentStreamingMessageIdRef = useRef<string | null>(null); // Track current streaming message ID
 
   React.useEffect(() => {
     conversationIdRef.current = conversationId;
     hasStoppedRef.current = false; // Reset on conversation change
+    hasSavedStopRef.current = false;
+    stoppedMessageIdsRef.current.clear(); // Clear stopped message IDs on conversation change
+    currentStreamingMessageIdRef.current = null;
   }, [conversationId]);
 
   const { messages, sendMessage, status, error, stop, setMessages } = useChatTransport({
@@ -106,13 +111,37 @@ export function ConversationClient({
       conversationId,
     });
 
-  // Reset stop flag when not actively streaming/submitted
+  // Reset stop flags when a new message starts streaming (status transitions to 'submitted')
+  // This allows stopping multiple messages in the same conversation
+  const prevStatusRef = React.useRef(status);
   React.useEffect(() => {
+    // When status changes from 'idle'/'error' to 'submitted', a new message is starting
+    const wasIdle = prevStatusRef.current === 'idle' || prevStatusRef.current === 'error' || prevStatusRef.current === undefined;
+    const isNowSubmitted = status === 'submitted';
+    
+    if (wasIdle && isNowSubmitted) {
+      // New message starting - reset stop flags
+      hasStoppedRef.current = false;
+      hasSavedStopRef.current = false;
+      currentStreamingMessageIdRef.current = null;
+    }
+    
+    // Also reset when status becomes idle/error (message completed or failed)
     if (status !== 'submitted' && status !== 'streaming') {
       hasStoppedRef.current = false;
       hasSavedStopRef.current = false;
     }
-  }, [status]);
+    
+    // Track current streaming message ID
+    if (status === 'streaming' && displayMessages.length > 0) {
+      const lastMessage = displayMessages[displayMessages.length - 1];
+      if (lastMessage.role === 'assistant') {
+        currentStreamingMessageIdRef.current = lastMessage.id;
+      }
+    }
+    
+    prevStatusRef.current = status;
+  }, [status, displayMessages]);
 
   const isLoading = status === 'submitted' || status === 'streaming';
   const isThinking = status === 'submitted'; // Only show thinking animation before streaming starts
@@ -171,46 +200,52 @@ export function ConversationClient({
   }, [conversationId, unshareConversation, showToastError, showToastSuccess]);
 
   const handleStop = React.useCallback(() => {
+    // Get current streaming message ID
+    const streamingMessageId = currentStreamingMessageIdRef.current;
+    
+    // Check if this message has already been stopped
+    if (streamingMessageId && stoppedMessageIdsRef.current.has(streamingMessageId)) {
+      return; // Already stopped this message
+    }
+    
+    // Check if we've already stopped in this session (prevent rapid clicks)
     if (hasStoppedRef.current) {
       return;
     }
+    
     hasStoppedRef.current = true;
     hasSavedStopRef.current = false;
-
-    const currentStatus = status;
-    const currentDisplayMessages = displayMessages;
 
     stop();
 
     // Wait for stop() to complete and messages to settle before processing
     setTimeout(() => {
-      if (hasSavedStopRef.current) {
-        return;
-      }
-
-      const lastDisplayMessage = currentDisplayMessages[currentDisplayMessages.length - 1];
-      const hasPartialInDisplay = lastDisplayMessage?.role === 'assistant' && 
-        lastDisplayMessage.parts && lastDisplayMessage.parts.length > 0;
-      
+      // Use current messages state (not captured) to avoid stale state
       setMessages((prev) => {
         // Check again inside setMessages to prevent duplicate processing
         if (hasSavedStopRef.current) {
           return prev;
         }
 
-        const lastMessage = hasPartialInDisplay ? lastDisplayMessage : prev[prev.length - 1];
+        const lastMessage = prev[prev.length - 1];
         const hasPartialResponse = lastMessage?.role === 'assistant' && 
           lastMessage.parts && lastMessage.parts.length > 0;
         
-        // Check if stop text already exists in any message to prevent duplicates
-        const alreadyStopped = prev.some(
-          msg => msg.role === 'assistant' && 
-            msg.parts?.some(p => p.type === 'text' && typeof p.text === 'string' && p.text.includes('*User stopped this message here*'))
-        ) || (lastMessage?.parts?.some(
-          p => p.type === 'text' && typeof p.text === 'string' && p.text.includes('*User stopped this message here*')
-        ) ?? false);
+        // Check if this specific message has already been stopped
+        const messageId = lastMessage?.id;
+        if (messageId && stoppedMessageIdsRef.current.has(messageId)) {
+          return prev; // Already processed this message
+        }
         
-        if (hasPartialResponse && !alreadyStopped) {
+        // Check if stop text already exists in this message
+        const alreadyStopped = lastMessage?.parts?.some(
+          p => p.type === 'text' && typeof p.text === 'string' && p.text.includes('*User stopped this message here*')
+        ) ?? false;
+        
+        if (hasPartialResponse && !alreadyStopped && messageId) {
+          // Mark this message as stopped
+          stoppedMessageIdsRef.current.add(messageId);
+          
           const updatedLastMessage = {
             ...lastMessage,
             parts: [
@@ -254,7 +289,11 @@ export function ConversationClient({
           return [...prev.slice(0, -1), updatedLastMessage];
         }
         
-        if ((currentStatus === 'submitted' || currentStatus === 'streaming') && !alreadyStopped) {
+        // If no partial response but status was streaming, create stop-only message
+        if ((status === 'submitted' || status === 'streaming') && !alreadyStopped && messageId) {
+          // Mark this message as stopped
+          stoppedMessageIdsRef.current.add(messageId);
+          
           const stopMessage = {
             id: `stop-${Date.now()}`,
             role: 'assistant' as const,
@@ -299,7 +338,7 @@ export function ConversationClient({
         return prev;
       });
     }, 200);
-  }, [stop, status, displayMessages, setMessages, conversationId]);
+  }, [stop, status, setMessages, conversationId]);
 
   return (
     <div className="homepage-container">
