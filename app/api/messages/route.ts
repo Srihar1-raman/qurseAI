@@ -68,33 +68,8 @@ export async function POST(request: NextRequest) {
         hasStopText: contentText.includes('*User stopped this message here*'),
       });
 
-      // Check if server already saved a message for this conversation (prevents duplicate)
-      // Server saves happen in after() callback, so they might complete before client save
-      const { data: existingMessage, error: checkError } = await supabase
-        .from('messages')
-        .select('id, created_at, role')
-        .eq('conversation_id', conversationId)
-        .eq('role', 'assistant')
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (checkError) {
-        logger.error('SERVER /api/messages: Error checking for existing message', checkError, { conversationId });
-        // Continue with save even if check fails
-      } else if (existingMessage) {
-        const messageAge = Date.now() - new Date(existingMessage.created_at).getTime();
-        // If a message was saved in the last 20 seconds, assume server already saved
-        if (messageAge < 20000) {
-          logger.info('SERVER /api/messages: Server already saved message, skipping client save to prevent duplicate', {
-            conversationId,
-            existingMessageId: existingMessage.id,
-            messageAgeMs: messageAge,
-            timestamp: Date.now(),
-          });
-          return NextResponse.json({ success: true, skipped: true, reason: 'server_already_saved' });
-        }
-      }
+      // Determine if this is a stop message
+      const isStopMessage = contentText.includes('*User stopped this message here*');
 
       const { error: msgError, data: insertedData } = await supabase.from('messages').insert({
         conversation_id: conversationId,
@@ -102,6 +77,7 @@ export async function POST(request: NextRequest) {
         parts: message.parts || [{ type: 'text', text: contentText.trim() }],
         content: contentText.trim(),
         model: (message as UIMessage & { metadata?: { model?: string } }).metadata?.model || null,
+        is_stopped: isStopMessage,
       }).select('id').single();
 
       if (msgError) {
@@ -169,11 +145,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Determine if this is a stop message
+    const isStopMessage = contentText.includes('*User stopped this message here*');
+
     await saveGuestMessage({
       conversationId,
       message,
       role: 'assistant',
       sessionHash,
+      isStopped: isStopMessage,
     });
 
     logger.info('SERVER /api/messages: Client stop message saved successfully (guest)', {

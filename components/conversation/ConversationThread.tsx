@@ -8,6 +8,80 @@ import ChatMessage from '@/components/chat/ChatMessage';
 import type { QurseMessage } from '@/lib/types';
 import type { ConversationThreadProps } from './types';
 
+/**
+ * Layer 3: Deduplicate messages before display
+ * Removes duplicate assistant messages where one has stop text and one doesn't
+ * Keeps the message with stop text, removes the full duplicate
+ * 
+ * Algorithm: For each assistant message, check if there's a duplicate later in the array.
+ * If one has stop text and one doesn't, keep the one with stop text.
+ */
+function deduplicateMessages(messages: QurseMessage[]): QurseMessage[] {
+  if (messages.length === 0) return messages;
+  
+  const deduplicated: QurseMessage[] = [];
+  const skipIndices = new Set<number>();
+  
+  for (let i = 0; i < messages.length; i++) {
+    // Skip if already marked for removal
+    if (skipIndices.has(i)) continue;
+    
+    const message = messages[i];
+    
+    // Always include user messages
+    if (message.role !== 'assistant') {
+      deduplicated.push(message);
+      continue;
+    }
+    
+    // Extract text content from parts
+    const messageText = message.parts
+      ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+      .map((p) => p.text)
+      .join('') || '';
+    
+    const hasStopText = messageText.includes('*User stopped this message here*');
+    
+    // Check if this message has a duplicate later in the array
+    // We only deduplicate pairs where one has stop text and one doesn't
+    for (let j = i + 1; j < messages.length; j++) {
+      if (skipIndices.has(j)) continue;
+      
+      const otherMessage = messages[j];
+      
+      // Only check assistant messages
+      if (otherMessage.role !== 'assistant') continue;
+      
+      const otherText = otherMessage.parts
+        ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+        .map((p) => p.text)
+        .join('') || '';
+      
+      const otherHasStopText = otherText.includes('*User stopped this message here*');
+      
+      // Check if they're duplicates (one has stop text, one doesn't)
+      if (hasStopText !== otherHasStopText) {
+        // They're duplicates - keep the one with stop text, skip the one without
+        if (hasStopText) {
+          // This one has stop text, skip the other one (full message)
+          skipIndices.add(j);
+        } else {
+          // Other has stop text, skip this one (full message)
+          skipIndices.add(i);
+          break; // Don't add this message, move to next
+        }
+      }
+    }
+    
+    // Add message if not skipped
+    if (!skipIndices.has(i)) {
+      deduplicated.push(message);
+    }
+  }
+  
+  return deduplicated;
+}
+
 function ConversationThreadComponent({
   messages,
   isLoading,
@@ -23,6 +97,12 @@ function ConversationThreadComponent({
   user,
   isStreaming = false,
 }: ConversationThreadProps) {
+  // Layer 3: Deduplicate messages before rendering
+  const deduplicatedMessages = React.useMemo(
+    () => deduplicateMessages(messages),
+    [messages]
+  );
+  
   return (
     <div ref={conversationContainerRef} className="conversation-container">
       <div ref={conversationThreadRef} className="conversation-thread">
@@ -39,7 +119,7 @@ function ConversationThreadComponent({
           </div>
         )}
 
-        {messages.map((message, index) => (
+        {deduplicatedMessages.map((message, index) => (
           <ChatMessage
             key={message.id}
             message={message}
@@ -47,7 +127,7 @@ function ConversationThreadComponent({
             model={selectedModel}
             onShare={onShare}
             user={user}
-            isStreaming={isStreaming && index === messages.length - 1} // Only last message streams
+            isStreaming={isStreaming && index === deduplicatedMessages.length - 1} // Only last message streams
           />
         ))}
 

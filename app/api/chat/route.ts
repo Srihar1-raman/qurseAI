@@ -38,20 +38,63 @@ const serviceSupabase = supabaseUrl && serviceKey
   : null;
 
 /**
+ * Layer 1: Quick check for existing stop message
+ * Returns true if a stop message already exists within the last 3 seconds, false otherwise
+ * This prevents duplicate saves when user stops a stream
+ * Uses is_stopped column for fast indexed lookup
+ */
+async function checkForStopMessage(
+  conversationId: string,
+  isAuthenticated: boolean,
+  supabaseClient?: Awaited<ReturnType<typeof createClient>>
+): Promise<boolean> {
+  try {
+    // Check for stop messages created within last 3 seconds
+    // This handles consecutive stops while keeping the window small
+    const threeSecondsAgo = new Date(Date.now() - 3000).toISOString();
+    
+    if (isAuthenticated) {
+      // Reuse provided client if available, otherwise create new one
+      const checkSupabase = supabaseClient || await createClient();
+      const { data: stopMessage } = await checkSupabase
+        .from('messages')
+        .select('id')
+        .eq('conversation_id', conversationId)
+        .eq('role', 'assistant')
+        .eq('is_stopped', true)
+        .gte('created_at', threeSecondsAgo)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      return !!stopMessage;
+    } else {
+      if (!serviceSupabase) return false;
+      const { data: stopMessage } = await serviceSupabase
+        .from('guest_messages')
+        .select('id')
+        .eq('guest_conversation_id', conversationId)
+        .eq('role', 'assistant')
+        .eq('is_stopped', true)
+        .gte('created_at', threeSecondsAgo)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      
+      return !!stopMessage;
+    }
+  } catch (error) {
+    logger.error('Error checking for stop message', error, { conversationId });
+    return false; // On error, allow save (fail open)
+  }
+}
+
+/**
  * POST /api/chat
  * Stream AI responses with authentication, access control, and database persistence
  */
 export async function POST(req: Request) {
   const requestStartTime = Date.now();
-  
-  // DIAGNOSTIC: Check if req.signal exists and its state
-  const signalInfo = {
-    hasSignal: !!req.signal,
-    signalAborted: req.signal?.aborted ?? null,
-    signalType: req.signal?.constructor?.name ?? 'unknown',
-  };
-  console.error('[DIAGNOSTIC] Request received - Signal check', JSON.stringify(signalInfo, null, 2));
-  logger.debug('Request started', signalInfo);
   
   try {
     // ============================================
@@ -293,27 +336,19 @@ export async function POST(req: Request) {
       return null;
     })();
 
-    // Track abort state outside execute scope so onFinish can access it
-    let wasAborted = false;
+    // Create AbortController to handle stream cancellation
+    const abortController = new AbortController();
     
-    // Use req.signal directly if available, otherwise create our own
-    // This ensures the abort signal from useChat's stop() is properly forwarded to streamText
-    const abortSignal = req.signal || new AbortController().signal;
-    
-    // Track abort state
-    if (abortSignal.aborted) {
-      wasAborted = true;
-      logger.info('Request already aborted on arrival', { conversationId: resolvedConversationId });
+    // If req.signal exists, forward its abort to our controller
+    if (req.signal) {
+      if (req.signal.aborted) {
+        abortController.abort();
+      } else {
+        req.signal.addEventListener('abort', () => {
+          abortController.abort();
+        });
+      }
     }
-    
-    // Listen for abort events
-    abortSignal.addEventListener('abort', () => {
-      wasAborted = true;
-      logger.info('ABORT DETECTED: Request signal aborted', {
-        conversationId: resolvedConversationId,
-        timestamp: Date.now(),
-      });
-    });
 
     const stream = createUIMessageStream({
       execute: async ({ writer: dataStream }) => {
@@ -344,9 +379,8 @@ export async function POST(req: Request) {
         // ============================================
 
         // Check if already aborted before starting streamText
-        if (abortSignal.aborted) {
+        if (abortController.signal.aborted) {
           logger.info('Stream aborted before streamText call', { conversationId: resolvedConversationId });
-          wasAborted = true;
           return; // Exit early if already aborted
         }
 
@@ -358,7 +392,7 @@ export async function POST(req: Request) {
           ...getModelParameters(model),
           providerOptions: getProviderOptions(model) as StreamTextProviderOptions,
           tools: Object.keys(tools).length > 0 ? tools : undefined,
-          abortSignal: abortSignal, // Use req.signal directly - this stops the provider
+          abortSignal: abortController.signal, // Forward abort signal to stop provider
           onError: (err) => {
             logger.error('Stream error', err.error, { model });
             const errorMessage = err.error instanceof Error ? err.error.message : String(err.error);
@@ -371,8 +405,7 @@ export async function POST(req: Request) {
             }
           },
           onAbort: ({ steps }) => {
-            wasAborted = true;
-            logger.info('ABORT DETECTED: streamText onAbort called', { 
+            logger.info('Stream aborted', { 
               conversationId: resolvedConversationId,
               stepsCount: steps.length,
               hasSteps: steps.length > 0,
@@ -417,203 +450,21 @@ export async function POST(req: Request) {
         );
       },
       onFinish: async ({ messages }) => {
-        const onFinishTimestamp = Date.now();
-        const abortStateAtFinish = {
-          wasAborted,
-          abortSignalAborted: abortSignal.aborted,
-        };
-
-        // Log detailed state for diagnosis
-        logger.info('onFinish called', {
-          conversationId: resolvedConversationId,
-          timestamp: onFinishTimestamp,
-          messageCount: messages.length,
-          abortState: abortStateAtFinish,
-          lastMessageId: messages[messages.length - 1]?.id,
-          lastMessageRole: messages[messages.length - 1]?.role,
-          requestStartTime,
-          timeSinceRequestStart: onFinishTimestamp - requestStartTime,
-        });
-
-        // Check if stream was aborted - don't save if user stopped the stream
-        if (wasAborted || abortSignal.aborted) {
-          logger.info('onFinish: Stream aborted, skipping message save', {
-            conversationId: resolvedConversationId,
-            messageCount: messages.length,
-            abortState: abortStateAtFinish,
-          });
-          return;
-        }
-
         // Save assistant messages in BACKGROUND (non-blocking)
         const user = fullUserData;
         const assistantMessage = messages[messages.length - 1];
 
-        // Extract content text to check for stop scenarios
-        const contentText = assistantMessage && assistantMessage.parts
-          ? assistantMessage.parts
-              .filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
-              .map((p) => p.text)
-              .join('')
-          : '';
-
-        // Determine if this is a stop scenario (aborted OR contains stop text)
-        const isStopScenario = wasAborted || 
-                              abortSignal.aborted ||
-                              (contentText.includes('*User stopped this message here*'));
-
-        // ALWAYS check for stop messages (client might have saved before abort signal arrives)
-        // But only run aggressive delays if it's a stop scenario OR if we find a stop message
-        if (resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
-          const checkForStopMessage = async (): Promise<boolean> => {
-            try {
-              if (user) {
-                const checkSupabase = await createClient();
-                const { data: existingStopMessage } = await checkSupabase
-                  .from('messages')
-                  .select('id, created_at')
-                  .eq('conversation_id', resolvedConversationId)
-                  .eq('role', 'assistant')
-                  .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
-                  .order('created_at', { ascending: false })
-                  .limit(1)
-                  .maybeSingle();
-
-                if (existingStopMessage) {
-                  logger.info('onFinish: Stop message already exists (auth), skipping save', {
-                    conversationId: resolvedConversationId,
-                    existingMessageId: existingStopMessage.id,
-                  });
-                  return true;
-                }
-              } else if (serviceSupabase) {
-                const { data: existingStopMessage } = await serviceSupabase
-                  .from('guest_messages')
-                  .select('id, created_at')
-                  .eq('guest_conversation_id', resolvedConversationId)
-                  .eq('role', 'assistant')
-                  .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
-                  .order('created_at', { ascending: false })
-                  .limit(1)
-                  .maybeSingle();
-
-                if (existingStopMessage) {
-                  logger.info('onFinish: Stop message already exists (guest), skipping save', {
-                    conversationId: resolvedConversationId,
-                    existingMessageId: existingStopMessage.id,
-                  });
-                  return true;
-                }
-              }
-              return false;
-            } catch (checkError) {
-              logger.error('Failed to check for existing stop message', checkError, {
-                conversationId: resolvedConversationId,
-              });
-              return false;
-            }
-          };
-
-          // Quick check immediately (for all messages)
-          const hasStopMessage = await checkForStopMessage();
-          if (hasStopMessage) {
-            return;
-          }
-
-          // Only run additional delays if it's a stop scenario (abort detected or stop text in content)
-          // This prevents normal messages from being delayed
-          if (isStopScenario) {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            if (await checkForStopMessage()) {
-              return;
-            }
-
-            await new Promise(resolve => setTimeout(resolve, 200));
-            if (await checkForStopMessage()) {
-              return;
-            }
-          }
-        }
-
         // Authenticated assistant save
         if (user && resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
           after(async () => {
-            // ALWAYS check for stop messages (client might save before abort signal arrives)
-            const checkForStopMessage = async (): Promise<boolean> => {
-              try {
-                const finalCheckSupabase = await createClient();
-                const { data: finalCheckStopMessage } = await finalCheckSupabase
-                  .from('messages')
-                  .select('id, created_at')
-                  .eq('conversation_id', resolvedConversationId)
-                  .eq('role', 'assistant')
-                  .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
-                  .order('created_at', { ascending: false })
-                  .limit(1)
-                  .maybeSingle();
-
-                if (finalCheckStopMessage) {
-                  logger.info('after(): Stop message found, skipping save', {
-                    conversationId: resolvedConversationId,
-                    existingMessageId: finalCheckStopMessage.id,
-                  });
-                  return true;
-                }
-                return false;
-              } catch (finalCheckError) {
-                logger.error('Check for stop message failed', finalCheckError, {
-                  conversationId: resolvedConversationId,
-                });
-                return false;
-              }
-            };
-
-            // Quick check immediately (for all messages)
-            if (await checkForStopMessage()) {
+            // Layer 1: Quick check - Does a stop message already exist?
+            // Reuse supabaseClient to avoid creating new client
+            const hasStopMessage = await checkForStopMessage(resolvedConversationId, true, supabaseClient);
+            if (hasStopMessage) {
+              logger.info('Stop message found, skipping server save', { conversationId: resolvedConversationId });
               return;
             }
 
-            // Only run aggressive delays if it's a stop scenario
-            // This prevents normal messages from being delayed
-            if (isStopScenario) {
-              // AGGRESSIVE CHECKS: Only for stop scenarios
-              await new Promise(resolve => setTimeout(resolve, 1000));
-              if (await checkForStopMessage()) {
-                return;
-              }
-
-              await new Promise(resolve => setTimeout(resolve, 2000));
-              if (await checkForStopMessage()) {
-                return;
-              }
-
-              await new Promise(resolve => setTimeout(resolve, 3000));
-              if (await checkForStopMessage()) {
-                return;
-              }
-
-              await new Promise(resolve => setTimeout(resolve, 4000));
-              if (await checkForStopMessage()) {
-                return;
-              }
-
-              await new Promise(resolve => setTimeout(resolve, 5000));
-              if (await checkForStopMessage()) {
-                return;
-              }
-
-              // Final check before save
-              if (await checkForStopMessage()) {
-                return;
-              }
-
-              await new Promise(resolve => setTimeout(resolve, 2000));
-              if (await checkForStopMessage()) {
-                return;
-              }
-            }
-
-            // Save message (immediately for normal messages, after checks for stop scenarios)
             try {
               if (assistantMessage && assistantMessage.role === 'assistant' && assistantMessage.parts) {
                 const messageContentText = assistantMessage.parts
@@ -652,6 +503,7 @@ export async function POST(req: Request) {
                   output_tokens: outputTokens,
                   total_tokens: totalTokens,
                   completion_time: completionTime,
+                  is_stopped: false, // Server saves are always full messages (not stopped)
                 });
 
                 if (assistantMsgError) {
@@ -662,8 +514,6 @@ export async function POST(req: Request) {
                     messageId: assistantMessage.id,
                     tokens: totalTokens,
                     model,
-                    isStopScenario,
-                    timeSinceOnFinish: Date.now() - onFinishTimestamp,
                   });
                 }
               }
@@ -675,87 +525,16 @@ export async function POST(req: Request) {
 
         // Guest assistant save
         if (!user && sessionHash && resolvedConversationId) {
-          // Capture values in local constants for type narrowing
           const guestConversationId = resolvedConversationId;
           const guestSessionHash = sessionHash;
           after(async () => {
-            // ALWAYS check for stop messages (client might save before abort signal arrives)
-            if (serviceSupabase && !guestConversationId.startsWith('temp-')) {
-              const checkForStopMessage = async (): Promise<boolean> => {
-                try {
-                  const { data: finalCheckStopMessage } = await serviceSupabase
-                    .from('guest_messages')
-                    .select('id, created_at')
-                    .eq('guest_conversation_id', guestConversationId)
-                    .eq('role', 'assistant')
-                    .or('content.ilike.%*User stopped this message here*%,parts::text.ilike.%*User stopped this message here*%')
-                    .order('created_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-
-                  if (finalCheckStopMessage) {
-                    logger.info('after(): Stop message found (guest), skipping save', {
-                      conversationId: guestConversationId,
-                      existingMessageId: finalCheckStopMessage.id,
-                    });
-                    return true;
-                  }
-                  return false;
-                } catch (finalCheckError) {
-                  logger.error('Check for stop message failed (guest)', finalCheckError, {
-                    conversationId: guestConversationId,
-                  });
-                  return false;
-                }
-              };
-
-              // Quick check immediately (for all messages)
-              if (await checkForStopMessage()) {
-                return;
-              }
-
-              // Only run aggressive delays if it's a stop scenario
-              // This prevents normal messages from being delayed
-              if (isStopScenario) {
-                // AGGRESSIVE CHECKS: Only for stop scenarios
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                if (await checkForStopMessage()) {
-                  return;
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                if (await checkForStopMessage()) {
-                  return;
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 3000));
-                if (await checkForStopMessage()) {
-                  return;
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 4000));
-                if (await checkForStopMessage()) {
-                  return;
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 5000));
-                if (await checkForStopMessage()) {
-                  return;
-                }
-
-                // Final check before save
-                if (await checkForStopMessage()) {
-                  return;
-                }
-
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                if (await checkForStopMessage()) {
-                  return;
-                }
-              }
+            // Layer 1: Quick check - Does a stop message already exist?
+            const hasStopMessage = await checkForStopMessage(guestConversationId, false);
+            if (hasStopMessage) {
+              logger.info('Stop message found (guest), skipping server save', { conversationId: guestConversationId });
+              return;
             }
 
-            // Save message (immediately for normal messages, after checks for stop scenarios)
             try {
               if (assistantMessage && assistantMessage.role === 'assistant') {
                 await saveGuestMessage({
@@ -763,11 +542,11 @@ export async function POST(req: Request) {
                   message: assistantMessage,
                   role: 'assistant',
                   sessionHash: guestSessionHash,
+                  isStopped: false, // Server saves are always full messages (not stopped)
                 });
                 logger.info('Guest assistant message saved', {
                   conversationId: guestConversationId,
                   messageId: assistantMessage.id,
-                  isStopScenario,
                 });
               }
             } catch (error) {

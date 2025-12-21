@@ -27,6 +27,7 @@ type GuestMessagePayload = {
   message: UIMessage;
   role: 'user' | 'assistant' | 'system' | 'tool';
   sessionHash: string;
+  isStopped?: boolean;
 };
 
 /**
@@ -134,7 +135,7 @@ export async function getGuestMessagesServerSide(
  * Save guest message (server-side)
  */
 export async function saveGuestMessage(payload: GuestMessagePayload): Promise<void> {
-  const { conversationId, message, role, sessionHash } = payload;
+  const { conversationId, message, role, sessionHash, isStopped = false } = payload;
   if (!conversationId || conversationId.startsWith('temp-')) return;
 
   const supabase = serviceSupabase;
@@ -164,6 +165,7 @@ export async function saveGuestMessage(payload: GuestMessagePayload): Promise<vo
     output_tokens: outputTokens,
     total_tokens: totalTokens,
     completion_time: completionTime,
+    is_stopped: isStopped,
   });
 
   if (error) {
