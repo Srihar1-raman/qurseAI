@@ -414,23 +414,32 @@ export async function POST(req: Request) {
         );
       },
       onFinish: async ({ messages }) => {
+        // Check abort signal DIRECTLY (synchronous check, works even if event listener hasn't fired yet)
+        const isAborted = abortController.signal.aborted || req.signal?.aborted || wasAborted;
+        
         console.log('🚀 [ABORT DEBUG] onFinish STARTED', {
           wasAborted,
           abortControllerAborted: abortController.signal.aborted,
           reqSignalAborted: req.signal?.aborted,
+          isAborted, // Combined check
           timestamp: Date.now(),
           messagesLength: messages.length,
           conversationId: resolvedConversationId,
         });
 
-        // Check abort flag first - if stream was aborted, don't save (client already saved stopped message)
-        if (wasAborted) {
-          console.log('🚀 [ABORT DEBUG] onFinish - SKIPPING SAVE (wasAborted = true)');
-          logger.info('Skipping server save - stream was aborted', { conversationId: resolvedConversationId });
+        // Check abort state (synchronous check of signal + async flag as fallback)
+        if (isAborted) {
+          console.log('🚀 [ABORT DEBUG] onFinish - SKIPPING SAVE (isAborted = true)');
+          logger.info('Skipping server save - stream was aborted', { 
+            conversationId: resolvedConversationId,
+            abortControllerAborted: abortController.signal.aborted,
+            reqSignalAborted: req.signal?.aborted,
+            wasAborted,
+          });
           return;
         }
 
-        console.log('🚀 [ABORT DEBUG] onFinish - PROCEEDING WITH SAVE (wasAborted = false)');
+        console.log('🚀 [ABORT DEBUG] onFinish - PROCEEDING WITH SAVE (isAborted = false)');
 
         // Save assistant messages directly (before response is sent, like Scira)
         logger.info('🔵 onFinish CALLED', { 
