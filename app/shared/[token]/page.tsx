@@ -73,7 +73,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
           card: "summary_large_image",
           title: "Qurse - Shared Conversation",
           description: "AI Chat Platform for the fastest",
-          images: ["https://www.qurse.site/images/qurse.jpeg"],
+          images: [
+            {
+              url: "https://www.qurse.site/images/qurse.jpeg",
+              width: 1200,
+              height: 630,
+              alt: "Qurse",
+            },
+          ],
         },
       };
     }
@@ -144,7 +151,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         card: "summary_large_image",
         title,
         description,
-        images: ["https://www.qurse.site/images/qurse.jpeg"],
+        images: [
+          {
+            url: "https://www.qurse.site/images/qurse.jpeg",
+            width: 1200,
+            height: 630,
+            alt: title,
+          },
+        ],
       },
     };
   } catch (error) {

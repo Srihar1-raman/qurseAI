@@ -31,6 +31,7 @@ const reenieBeanie = Reenie_Beanie({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://www.qurse.site'),
   title: "Qurse",
   description: "AI Chat Platform for the fastest",
   icons: {
@@ -63,7 +64,14 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Qurse",
     description: "AI Chat Platform for the fastest",
-    images: ["https://www.qurse.site/images/qurse.jpeg"],
+    images: [
+      {
+        url: "https://www.qurse.site/images/qurse.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Qurse",
+      },
+    ],
   },
 };
 
