@@ -37,6 +37,9 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
     // You could add a toast notification here
   }, [content]);
 
+  // Only show buttons for assistant messages after streaming ends and message has content
+  const shouldShowActions = !isUser && !isStreaming && content.trim().length > 0;
+
   return (
     <div className={`message ${isUser ? 'user-message' : 'bot-message'}`}>
       <div style={{ maxWidth: '95%', marginLeft: isUser ? 'auto' : 0, marginRight: isUser ? 0 : 'auto' }}>
@@ -84,7 +87,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
           )}
         </div>
         
-        {!isUser && (
+        {shouldShowActions && (
           <div className="message-actions">
             <button onClick={copyToClipboard} className="action-btn" title="Copy message">
               <Image src={getIconPath('copy', resolvedTheme, false, mounted)} alt="Copy" width={16} height={16} className="icon" />

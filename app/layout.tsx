@@ -32,7 +32,7 @@ const reenieBeanie = Reenie_Beanie({
 
 export const metadata: Metadata = {
   title: "Qurse",
-  description: "AI Assistant - A modern AI chat interface",
+  description: "AI Chat Platform for the fastest",
   icons: {
     icon: [
       { url: '/favicon-dark/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
@@ -42,6 +42,28 @@ export const metadata: Metadata = {
     apple: [
       { url: '/favicon-dark/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }
     ],
+  },
+  openGraph: {
+    title: "Qurse",
+    description: "AI Chat Platform for the fastest",
+    url: "https://www.qurse.site",
+    siteName: "Qurse",
+    images: [
+      {
+        url: "https://www.qurse.site/images/qurse.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Qurse",
+      },
+    ],
+    locale: "en_US",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Qurse",
+    description: "AI Chat Platform for the fastest",
+    images: ["https://www.qurse.site/images/qurse.jpeg"],
   },
 };
 
