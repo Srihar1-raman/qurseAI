@@ -7,6 +7,16 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
+  // Normalize homepage URL to always have trailing slash for Twitter Card compatibility
+  // This ensures metadata is always accessible whether URL is www.qurse.site or www.qurse.site/
+  // Twitter treats these as different URLs, so we redirect to the canonical version with trailing slash
+  const pathname = request.nextUrl.pathname;
+  if (pathname === '/' && !request.nextUrl.href.endsWith('/')) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
+    return NextResponse.redirect(url, 308); // 308 = Permanent Redirect (preserves method)
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
