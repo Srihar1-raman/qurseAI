@@ -298,14 +298,14 @@ export function useConversationMessages({
   const previousStructureRef = useRef<string>('');
   const isStructureChanged = messageStructureKey !== previousStructureRef.current;
 
-  // During streaming, throttle displayMessages updates to prevent infinite loops
-  // Strategy: Update immediately on structure changes, but throttle content-only updates
+  // During streaming, use requestAnimationFrame batching for smooth 60fps updates
+  // Strategy: Update immediately on structure changes, batch content-only updates via RAF
   const isStreaming = status === 'streaming';
   
-  // Ref to cache the last returned displayMessages (for throttling during streaming)
+  // Ref to cache the last returned displayMessages (for RAF batching during streaming)
   const cachedDisplayMessagesRef = useRef<QurseMessage[]>([]);
-  const lastUpdateTimeRef = useRef<number>(0);
-  const THROTTLE_MS = 150; // Update at most every 150ms during streaming
+  const rafScheduledRef = useRef<number | null>(null); // Track pending RAF callback
+  const pendingUpdateRef = useRef<QurseMessage[] | null>(null); // Store pending update
   
   // Always transform to get latest content
   const transformedMessages = useMemo(() => {
@@ -325,32 +325,58 @@ export function useConversationMessages({
     latestMessagesRef.current = latest;
   }, [rawDisplayMessages]);
 
+  // Use state to trigger re-renders when RAF updates cached messages
+  const [, setForceUpdate] = useState(0);
+  
   // Memoize displayMessages with smart update strategy during streaming
+  // Uses requestAnimationFrame batching for smooth 60fps updates (ChatGPT-like smoothness)
   const displayMessages = useMemo(() => {
-    const now = Date.now();
-    
     // Always update when structure changes (new message added) - immediate update
     if (isStructureChanged) {
       previousStructureRef.current = messageStructureKey;
       cachedDisplayMessagesRef.current = transformedMessages;
-      lastUpdateTimeRef.current = now;
+      
+      // Cancel any pending RAF since we're updating immediately
+      if (rafScheduledRef.current !== null && typeof requestAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(rafScheduledRef.current);
+        rafScheduledRef.current = null;
+      }
+      pendingUpdateRef.current = null;
+      
       return transformedMessages;
     }
 
-    // During streaming: throttle content-only updates to prevent infinite loops
-    // This prevents new references on every chunk while still showing progress
+    // During streaming: use requestAnimationFrame batching for smooth updates
+    // This creates 60fps (16ms) updates instead of fixed 150ms delays
     if (isStreaming) {
-      const timeSinceLastUpdate = now - lastUpdateTimeRef.current;
+      // Store the latest content for RAF callback
+      pendingUpdateRef.current = transformedMessages;
       
-      // Update if throttle time has passed (allows UI to show progress)
-      if (timeSinceLastUpdate >= THROTTLE_MS) {
-        cachedDisplayMessagesRef.current = transformedMessages;
-        lastUpdateTimeRef.current = now;
-        return transformedMessages;
+      // Schedule RAF update if not already scheduled
+      if (rafScheduledRef.current === null && typeof requestAnimationFrame !== 'undefined') {
+        rafScheduledRef.current = requestAnimationFrame(() => {
+          try {
+            // Update cached messages with pending update
+            if (pendingUpdateRef.current !== null) {
+              cachedDisplayMessagesRef.current = pendingUpdateRef.current;
+              pendingUpdateRef.current = null;
+              // Force re-render by updating state
+              setForceUpdate(prev => prev + 1);
+            }
+            rafScheduledRef.current = null;
+          } catch (error) {
+            // Fallback: update immediately on error
+            console.error('Error in RAF callback for displayMessages:', error);
+            cachedDisplayMessagesRef.current = transformedMessages;
+            setForceUpdate(prev => prev + 1);
+            rafScheduledRef.current = null;
+            pendingUpdateRef.current = null;
+          }
+        });
       }
       
-      // Within throttle window - return cached reference to prevent re-render
-      // This breaks the infinite loop while still allowing periodic updates
+      // Return cached reference during streaming (prevents infinite loops)
+      // RAF callback will update cached reference on next frame and trigger re-render
       // Note: latestMessagesRef is always updated above, so scroll hook can read latest content
       return cachedDisplayMessagesRef.current.length > 0 
         ? cachedDisplayMessagesRef.current 
@@ -358,11 +384,28 @@ export function useConversationMessages({
     }
 
     // Not streaming: always return latest (normal behavior)
+    // Clean up any pending RAF
+    if (rafScheduledRef.current !== null && typeof requestAnimationFrame !== 'undefined') {
+      cancelAnimationFrame(rafScheduledRef.current);
+      rafScheduledRef.current = null;
+    }
+    pendingUpdateRef.current = null;
+    
     previousStructureRef.current = messageStructureKey;
     cachedDisplayMessagesRef.current = transformedMessages;
-    lastUpdateTimeRef.current = now;
     return transformedMessages;
   }, [messageStructureKey, isStructureChanged, isStreaming, transformedMessages]);
+  
+  // Cleanup RAF on unmount or status change
+  useEffect(() => {
+    return () => {
+      if (rafScheduledRef.current !== null && typeof requestAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(rafScheduledRef.current);
+        rafScheduledRef.current = null;
+      }
+      pendingUpdateRef.current = null;
+    };
+  }, [status]);
 
   return {
     displayMessages,

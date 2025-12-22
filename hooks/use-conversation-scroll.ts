@@ -205,20 +205,26 @@ export function useConversationScroll({
     };
   }, [markManualScroll, resetManualScroll]);
 
-  // Reset manual scroll when streaming starts (only if user is near bottom)
+  // Reset manual scroll when streaming starts (always reset to allow auto-scroll)
+  // This ensures auto-scroll works during streaming, even if user was scrolled up
   useEffect(() => {
     if (status === 'streaming') {
       const containerElement = conversationContainerRef.current;
+      // Always reset manual scroll flag when streaming starts
+      // This allows auto-scroll to work during streaming
+      resetManualScroll();
+      
       if (containerElement) {
         const { scrollTop, scrollHeight, clientHeight } = containerElement;
         const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+        // If user is near bottom, scroll immediately
+        // Otherwise, RAF loop will handle scrolling as content changes
         if (distanceFromBottom <= 100) {
-          resetManualScroll();
           requestAnimationFrame(() => scrollToBottom());
         }
       } else {
-        // Container not ready yet (first message case) - reset manual scroll anyway
-        resetManualScroll();
+        // Container not ready yet (first message case) - scroll will happen when container is ready
+        // Manual scroll flag is already reset above
       }
     }
   }, [status, resetManualScroll, scrollToBottom]);
@@ -254,8 +260,12 @@ export function useConversationScroll({
 
       const lastMessage = currentMessages[currentMessages.length - 1];
       const lastMessageId = lastMessage?.id || null;
+      // Calculate content length including both text and reasoning parts
+      // This ensures auto-scroll works when reasoning is streaming
       const lastMessageContentLength = lastMessage?.parts
-        ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
+        ?.filter((p): p is { type: 'text' | 'reasoning'; text: string } => 
+          (p.type === 'text' || p.type === 'reasoning') && typeof p.text === 'string'
+        )
         .map(p => p.text)
         .join('').length || 0;
 
@@ -274,6 +284,9 @@ export function useConversationScroll({
         lastScrollTimeRef.current = Date.now();
         scrollScheduledRef.current = true;
 
+        // Reset manual scroll flag when new message/content detected during streaming
+        // This ensures auto-scroll works even if user briefly scrolled up
+        resetManualScroll();
         scrollToBottom();
         scrollScheduledRef.current = false;
       }

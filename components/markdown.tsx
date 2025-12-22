@@ -13,7 +13,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip
 import { cn } from '@/lib/utils';
 import { Check, Copy, WrapText, ArrowLeftRight, Download } from 'lucide-react';
 import { useToast } from '@/lib/contexts/ToastContext';
-import { useThrottledValue } from '@/lib/utils/throttle';
+// Removed useThrottledValue import - no longer throttling content for smooth streaming
 
 // Performance constants
 const THROTTLE_DELAY_MS = 150;
@@ -1058,21 +1058,16 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
   // Detect fast streaming
   const isFastStreaming = useFastStreamingDetection(content, isStreaming);
 
-  // Calculate adaptive throttle delay based on content size
-  const throttleDelay = useMemo(
-    () => getAdaptiveThrottleDelay(content.length, isStreaming),
-    [content.length, isStreaming]
-  );
+  // Render content directly without throttling for smooth ChatGPT-like streaming
+  // React's natural batching + requestAnimationFrame in useConversationMessages handles smooth updates
+  // This eliminates visible "blocks" and creates buttery smooth streaming experience
 
-  // Throttle content updates with adaptive delay
-  const throttledContent = useThrottledValue(content, throttleDelay);
-
-  // Get current processed content
-  const currentProcessed = useProcessedContent(throttledContent, isStreaming, isFastStreaming);
+  // Get current processed content (using content directly, no throttling)
+  const currentProcessed = useProcessedContent(content, isStreaming, isFastStreaming);
 
   // Defer full processing if needed
   const { processedContent: finalProcessed, isProcessing: isDeferredProcessing } = useDeferredProcessing(
-    throttledContent,
+    content,
     isStreaming,
     currentProcessed
   );
@@ -1088,18 +1083,18 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
   const citationLinks = extractedCitations;
 
   // Optimized element key generation using content hash instead of indices
-  // Use throttledContent to ensure keys remain stable during throttling
+  // Use content directly for hash (no throttling needed)
   const contentHash = useMemo(() => {
     // Simple hash for stable keys
     let hash = 0;
-    const str = throttledContent.slice(0, 200); // Use first 200 chars for hash
+    const str = content.slice(0, 200); // Use first 200 chars for hash
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return Math.abs(hash).toString(36);
-  }, [throttledContent]);
+  }, [content]);
 
   // Use closures to maintain counters without re-creating on each render
   const getElementKey = useMemo(() => {
