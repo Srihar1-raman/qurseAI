@@ -127,7 +127,6 @@ export async function POST(req: Request) {
       lastUserMessage: messageData.lastUserMessage,
       userMessageText: messageData.userMessageText,
       title: messageData.title,
-      isFirstMessage: messages.length === 1,
       supabaseClient,
     });
 

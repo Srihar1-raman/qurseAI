@@ -31,8 +31,6 @@ export interface DatabaseOperationsConfig {
   title: string;
   /** User message text for title generation */
   userMessageText: string;
-  /** Is this the first message in conversation */
-  isFirstMessage: boolean;
   /** Supabase client for database operations */
   supabaseClient: SupabaseClient;
 }
@@ -66,7 +64,6 @@ export async function handleChatDatabaseOperations(
     lastUserMessage,
     title,
     userMessageText,
-    isFirstMessage,
     supabaseClient,
   } = config;
 
@@ -78,7 +75,6 @@ export async function handleChatDatabaseOperations(
       lastUserMessage,
       title,
       userMessageText,
-      isFirstMessage,
       supabaseClient,
     });
   }
@@ -91,7 +87,6 @@ export async function handleChatDatabaseOperations(
       lastUserMessage,
       title,
       userMessageText,
-      isFirstMessage,
     });
   }
 
@@ -112,10 +107,9 @@ async function handleAuthenticatedDatabaseOperations(config: {
   lastUserMessage: UIMessage;
   title: string;
   userMessageText: string;
-  isFirstMessage: boolean;
   supabaseClient: SupabaseClient;
 }): Promise<DatabaseOperationsResult> {
-  const { conversationId, user, lastUserMessage, title, userMessageText, isFirstMessage, supabaseClient } = config;
+  const { conversationId, user, lastUserMessage, title, userMessageText, supabaseClient } = config;
 
   // Check if conversation exists before creating/validating
   if (!user.id) {
@@ -129,15 +123,21 @@ async function handleAuthenticatedDatabaseOperations(config: {
   const accessCheck = await checkConversationAccess(conversationId, user.id, supabaseClient);
   const isNewConversation = !accessCheck.exists;
 
+  logger.debug('Title generation check', {
+    conversationId,
+    isNewConversation,
+    dbHasMessages: accessCheck.exists,
+  });
+
   // Ensure conversation exists
   await ensureConversationServerSide(conversationId, user.id, title, supabaseClient);
 
-  // Generate title for first message if needed
+  // Generate title for first message if needed (FIX: Use database state, not request payload)
   generateConversationTitle({
     conversationId,
     userMessage: lastUserMessage,
     userMessageText,
-    isFirstMessage,
+    isFirstMessage: isNewConversation,
     supabaseClient,
     isGuest: false,
   });
@@ -164,12 +164,15 @@ async function handleGuestDatabaseOperations(config: {
   lastUserMessage: UIMessage;
   title: string;
   userMessageText: string;
-  isFirstMessage: boolean;
 }): Promise<DatabaseOperationsResult> {
-  const { conversationId, sessionHash, lastUserMessage, title, userMessageText, isFirstMessage } = config;
+  const { conversationId, sessionHash, lastUserMessage, title, userMessageText } = config;
 
   // Ensure guest conversation exists
   const guestConversationId = await ensureGuestConversation(sessionHash, title, conversationId);
+
+  // Check database for existing messages BEFORE saving (FIX: Use database count, not request payload)
+  const messageCount = await getGuestMessageCount(guestConversationId);
+  const isFirstMessage = messageCount === 0;
 
   // Save guest message
   await saveGuestMessage({

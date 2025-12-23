@@ -126,7 +126,16 @@ export function useConversationMessages({
         // Don't update loadedMessages if useChatMessages already has messages
         // This prevents flashing when messages are already streaming via useChat
         // The mergeMessages function will handle merging when needed
-        if (useChatMessagesRef.current.length === 0) {
+
+        // FIX: Check if we should initialize useChat with DB messages
+        // Initialize if: useChat is empty OR DB message count differs (ensures sync after reload)
+        const shouldInitializeUseChat =
+          useChatMessagesRef.current.length === 0 ||
+          useChatMessagesRef.current.length !== messages.filter(
+            (msg: BaseMessage) => msg.role === 'user' || msg.role === 'assistant'
+          ).length;
+
+        if (shouldInitializeUseChat) {
           setLoadedMessages(messages);
           setMessagesOffset(dbRowCount);
           setHasMoreMessages(hasMore);
@@ -144,15 +153,17 @@ export function useConversationMessages({
               conversationId: id,
               messageCount: messages.length,
               filteredCount: messagesForUseChat.length,
+              useChatPriorCount: useChatMessagesRef.current.length,
             });
           }
         } else {
           // Still update offset and hasMore for future pagination, but don't replace messages
           setMessagesOffset(dbRowCount);
           setHasMoreMessages(hasMore);
-          logger.debug('Skipped updating loadedMessages - useChatMessages already has messages', {
+          logger.debug('Skipped updating loadedMessages - useChatMessages already synced', {
             conversationId: id,
             useChatMessagesCount: useChatMessagesRef.current.length,
+            dbMessageCount: messages.length,
           });
         }
       } catch (error) {
