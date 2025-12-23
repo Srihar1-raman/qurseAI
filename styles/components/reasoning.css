@@ -49,6 +49,11 @@
   animation: shimmer 2s ease-in-out infinite;
 }
 
+.reasoning-header-text:not(.streaming),
+.reasoning-collapsed-text:not(.streaming) {
+  color: var(--color-text-secondary);
+}
+
 @keyframes shimmer {
   0% { background-position: 200% 0; }
   100% { background-position: -200% 0; }
