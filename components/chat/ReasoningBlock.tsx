@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
@@ -17,6 +17,7 @@ interface ReasoningBlockProps {
 
 export function ReasoningBlock({ reasoning, isStreaming }: ReasoningBlockProps) {
   const { resolvedTheme, mounted } = useTheme();
+  const previewRef = useRef<HTMLDivElement>(null);
 
   // State management
   const [isExpanded, setIsExpanded] = useState(false);
@@ -56,6 +57,13 @@ export function ReasoningBlock({ reasoning, isStreaming }: ReasoningBlockProps) 
       setIsExpanded(false);
     }
   }, [isStreaming, duration, isExpanded, isCollapsedByUser]);
+
+  // Auto-scroll to bottom when streaming
+  useEffect(() => {
+    if (isStreaming && previewRef.current) {
+      previewRef.current.scrollTop = previewRef.current.scrollHeight;
+    }
+  }, [reasoning, isStreaming]);
 
   // Toggle expand/collapse
   const toggleExpanded = useCallback(() => {
@@ -107,7 +115,7 @@ export function ReasoningBlock({ reasoning, isStreaming }: ReasoningBlockProps) 
             </span>
           </div>
 
-          <div className="reasoning-content streaming">
+          <div className="reasoning-content streaming" ref={previewRef}>
             <div className="reasoning-preview" key={reasoning.length}>
               <MarkdownRenderer content={reasoning} isUserMessage={false} isStreaming={true} />
             </div>

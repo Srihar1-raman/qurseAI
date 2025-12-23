@@ -59,7 +59,7 @@
   width: 16px;
   height: 16px;
   transition: transform 0.2s ease;
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 .reasoning-chevron.expanded {
