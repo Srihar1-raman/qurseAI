@@ -122,25 +122,32 @@ export const ConversationThread = React.memo(ConversationThreadComponent, (prevP
   if (prevProps.messages.length !== nextProps.messages.length) {
     return false; // Re-render
   }
-  
+
   // Check if any message content changed
+  let contentChanged = false;
   for (let i = 0; i < prevProps.messages.length; i++) {
     const prevMsg = prevProps.messages[i];
     const nextMsg = nextProps.messages[i];
-    
+
     if (prevMsg.id !== nextMsg.id) {
-      return false; // Re-render
+      contentChanged = true;
+      break;
     }
-    
+
     // Check if parts content changed
     const prevContent = prevMsg.parts?.map(p => ('text' in p ? p.text : '')).join('') || '';
     const nextContent = nextMsg.parts?.map(p => ('text' in p ? p.text : '')).join('') || '';
-    
+
     if (prevContent !== nextContent) {
-      return false; // Re-render
+      contentChanged = true;
+      break;
     }
   }
-  
+
+  if (contentChanged) {
+    return false; // Re-render
+  }
+
   // Check other props
   if (
     prevProps.isLoading !== nextProps.isLoading ||
@@ -154,10 +161,10 @@ export const ConversationThread = React.memo(ConversationThreadComponent, (prevP
   ) {
     return false; // Re-render
   }
-  
+
   // Note: onShare is a function, so we don't compare it (functions are always different references)
   // This is fine - the share button will only show for authenticated users anyway
-  
+
   // Props are equal - skip re-render
   return true;
 });
