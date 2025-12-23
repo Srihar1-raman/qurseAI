@@ -17,6 +17,7 @@ interface UseChatTransportProps {
   user: { id?: string } | null;
   setRateLimitState: (state: RateLimitState) => void;
   showToastError: (message: string) => void;
+  onSendAttempt?: () => void;
 }
 
 interface UseChatTransportReturn {
@@ -35,6 +36,7 @@ export function useChatTransport({
   user,
   setRateLimitState,
   showToastError,
+  onSendAttempt,
 }: UseChatTransportProps): UseChatTransportReturn {
   const conversationIdRef = useRef(conversationId);
   const selectedModelRef = useRef(selectedModel);
@@ -49,6 +51,38 @@ export function useChatTransport({
   const transport = useMemo(() => {
     return new DefaultChatTransport({
       api: '/api/chat',
+      fetch: async (url, options) => {
+        const response = await fetch(url, options);
+        
+        // If we get a 429 response, handle it here to trigger rate limit immediately
+        if (response.status === 429) {
+          try {
+            const errorData = await response.clone().json();
+            if (errorData?.rateLimitInfo) {
+              const resetTime = errorData.rateLimitInfo.resetTime || 
+                parseInt(response.headers.get('X-RateLimit-Reset') || '0', 10) || 
+                Date.now() + 24 * 60 * 60 * 1000;
+              const layer = errorData.rateLimitInfo.layer || 
+                (response.headers.get('X-RateLimit-Layer') as 'redis' | 'database') || 
+                'database';
+              
+              setRateLimitState({
+                isRateLimited: true,
+                resetTime,
+                userType: user ? 'free' : 'guest',
+                layer,
+              });
+              
+              // Increment send attempt count so popup shows immediately
+              onSendAttempt?.();
+            }
+          } catch {
+            // JSON parse failed, let default error handling take over
+          }
+        }
+        
+        return response;
+      },
       prepareSendMessagesRequest({ messages }) {
         return {
           body: {
@@ -60,7 +94,7 @@ export function useChatTransport({
         };
       },
     });
-  }, []);
+  }, [user, setRateLimitState, onSendAttempt]);
 
   const handleError = useCallback(
     async (error: Error & { status?: number; cause?: any; response?: Response }) => {

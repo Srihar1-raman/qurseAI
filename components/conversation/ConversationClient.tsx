@@ -64,6 +64,9 @@ export function ConversationClient({
     user: user ? { id: user.id } : null,
     setRateLimitState,
     showToastError,
+    onSendAttempt: () => {
+      setSendAttemptCount((prev) => prev + 1);
+    },
   });
 
   const { hasInteracted, setHasInteracted } = useConversationLifecycle({
