@@ -39,7 +39,7 @@ export function useConversationInput({
   const [sendAttemptCount, setSendAttemptCount] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Pre-flight rate limit check
+  // Pre-flight rate limit check (read-only, does not increment)
   const { checkRateLimitBeforeSend, isChecking } = useRateLimitCheck({
     user,
     onRateLimitDetected: (status) => {
@@ -73,14 +73,14 @@ export function useConversationInput({
         return false;
       }
 
-      // Check client-side state first (fast path)
+      // Check client-side state first (fast path) - if already rate limited, show popup
       if (isRateLimited) {
         setSendAttemptCount((prev) => prev + 1);
         onSendAttempt();
         return false;
       }
 
-      // Pre-flight quota check before sending (prevents popup after send)
+      // Pre-flight quota check (read-only) - prevents navigating to conversation page if already limited
       const canSend = await checkRateLimitBeforeSend();
       if (!canSend) {
         return false; // Rate limit popup already shown by onRateLimitDetected callback

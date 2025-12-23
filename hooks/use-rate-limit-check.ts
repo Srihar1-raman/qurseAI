@@ -1,6 +1,7 @@
 /**
  * Hook for pre-flight rate limit checking
- * Checks quota status before user sends a message to prevent rate limit popup after send
+ * Checks if user is already rate limited BEFORE sending message
+ * Does NOT increment counter - only reads current status
  */
 
 import { useState, useCallback, useRef } from 'react';
@@ -28,8 +29,8 @@ interface UseRateLimitCheckReturn {
   invalidateCache: () => void;
 }
 
-// Cache duration: 30 seconds (don't spam the API)
-const CACHE_DURATION = 30 * 1000;
+// Cache duration: 5 seconds (short cache to prevent spam but stay relatively fresh)
+const CACHE_DURATION = 5 * 1000;
 
 export function useRateLimitCheck({
   user,
@@ -43,7 +44,7 @@ export function useRateLimitCheck({
     const now = Date.now();
     const timeSinceLastCheck = now - lastCheckTimeRef.current;
 
-    // Use cached status if fresh (within 30 seconds)
+    // Use cached status if fresh (within 5 seconds)
     if (cachedStatusRef.current && timeSinceLastCheck < CACHE_DURATION) {
       const status = cachedStatusRef.current;
       if (status.isRateLimited) {
@@ -54,7 +55,7 @@ export function useRateLimitCheck({
       return true;
     }
 
-    // Fetch fresh status from server
+    // Fetch fresh status from server (read-only, does not increment)
     setIsChecking(true);
     try {
       const response = await fetch('/api/rate-limit/status');
