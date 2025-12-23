@@ -23,9 +23,9 @@ export default async function PricingPage() {
     logger.error('Error loading pricing page', error);
     // On error, treat as guest (fail open)
     return (
-      <PricingPageClient 
-        userState={{ isGuest: true, isFree: false, isPro: false, userId: null }} 
-      />
+        <PricingPageClient 
+          userState={{ isGuest: true, isFree: false, isPro: false, userId: null }} 
+        />
     );
   }
 }

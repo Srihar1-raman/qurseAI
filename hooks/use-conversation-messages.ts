@@ -373,8 +373,8 @@ export function useConversationMessages({
             pendingUpdateRef.current = null;
           }
         });
-      }
-      
+    }
+    
       // Return cached reference during streaming (prevents infinite loops)
       // RAF callback will update cached reference on next frame and trigger re-render
       // Note: latestMessagesRef is always updated above, so scroll hook can read latest content

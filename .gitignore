@@ -95,3 +95,4 @@ TEST_*.md
 *_FIX.md
 *_SUMMARY.md
 md/
+claude_code_zai_env.sh
