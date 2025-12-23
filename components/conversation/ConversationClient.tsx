@@ -154,7 +154,11 @@ export function ConversationClient({
   }, [status, displayMessages.length]);
 
   const isLoading = status === 'submitted' || status === 'streaming';
-  const isThinking = status === 'submitted'; // Only show thinking animation before streaming starts
+  // Show thinking animation until first assistant text chunk arrives (covers provider TTFB delay)
+  const hasAssistantText = displayMessages.some(m =>
+    m.role === 'assistant' && m.parts.some(p => p.type === 'text' && p.text.length > 0)
+  );
+  const isThinking = status === 'submitted' || (status === 'streaming' && !hasAssistantText);
   const isStreaming = status === 'streaming'; // Extract for passing down to markdown renderer
   const showStopButton = status === 'streaming' && !hasStoppedRef.current;
 
@@ -166,6 +170,8 @@ export function ConversationClient({
       setSendAttemptCount((prev) => prev + 1);
     },
     onInteract: () => setHasInteracted(true),
+    user: user ? { id: user.id } : null,
+    setRateLimitState,
   });
 
   const handleShare = React.useCallback(async () => {

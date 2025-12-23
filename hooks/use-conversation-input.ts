@@ -5,6 +5,7 @@
 
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTextareaAutoResize } from './use-textarea-auto-resize';
+import { useRateLimitCheck } from './use-rate-limit-check';
 import type { UIMessagePart } from 'ai';
 
 interface UseConversationInputProps {
@@ -13,6 +14,8 @@ interface UseConversationInputProps {
   isRateLimited: boolean;
   onSendAttempt: () => void;
   onInteract: () => void;
+  user: { id?: string } | null;
+  setRateLimitState?: (state: { isRateLimited: boolean; resetTime: number; userType: 'guest' | 'free'; layer: 'redis' | 'database' }) => void;
 }
 
 interface UseConversationInputReturn {
@@ -29,10 +32,29 @@ export function useConversationInput({
   isRateLimited,
   onSendAttempt,
   onInteract,
+  user,
+  setRateLimitState,
 }: UseConversationInputProps): UseConversationInputReturn {
   const [input, setInput] = useState('');
   const [sendAttemptCount, setSendAttemptCount] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Pre-flight rate limit check
+  const { checkRateLimitBeforeSend, isChecking } = useRateLimitCheck({
+    user,
+    onRateLimitDetected: (status) => {
+      // Update rate limit state immediately when quota exceeded
+      setRateLimitState?.({
+        isRateLimited: true,
+        resetTime: status.resetTime,
+        userType: user ? 'free' : 'guest',
+        layer: status.layer as 'redis' | 'database',
+      });
+      // Trigger popup
+      setSendAttemptCount((prev) => prev + 1);
+      onSendAttempt();
+    },
+  });
 
   useTextareaAutoResize(textareaRef, input, {
     maxHeight: 200,
@@ -46,15 +68,22 @@ export function useConversationInput({
   }, []);
 
   const sendMessageWithRateLimitCheck = useCallback(
-    (messageText: string) => {
-      if (!messageText.trim() || isLoading) {
+    async (messageText: string) => {
+      if (!messageText.trim() || isLoading || isChecking) {
         return false;
       }
 
+      // Check client-side state first (fast path)
       if (isRateLimited) {
         setSendAttemptCount((prev) => prev + 1);
         onSendAttempt();
         return false;
+      }
+
+      // Pre-flight quota check before sending (prevents popup after send)
+      const canSend = await checkRateLimitBeforeSend();
+      if (!canSend) {
+        return false; // Rate limit popup already shown by onRateLimitDetected callback
       }
 
       setInput('');
@@ -67,7 +96,7 @@ export function useConversationInput({
 
       return true;
     },
-    [isLoading, isRateLimited, sendMessage, onSendAttempt, onInteract]
+    [isLoading, isRateLimited, isChecking, checkRateLimitBeforeSend, sendMessage, onSendAttempt, onInteract]
   );
 
   const handleSubmit = useCallback(
