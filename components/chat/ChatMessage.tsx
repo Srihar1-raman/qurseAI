@@ -5,6 +5,7 @@ import { useTheme } from '@/lib/theme-provider';
 import Image from 'next/image';
 import MarkdownRenderer from '@/components/markdown';
 import { getIconPath } from '@/lib/icon-utils';
+import { ReasoningBlock } from './ReasoningBlock';
 import type { ChatMessageProps } from '@/lib/types';
 
 function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false }: ChatMessageProps) {
@@ -45,28 +46,10 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       <div style={{ maxWidth: '95%', marginLeft: isUser ? 'auto' : 0, marginRight: isUser ? 0 : 'auto' }}>
         {/* Reasoning section (for assistant messages only) */}
         {!isUser && reasoning && (
-          <div className="reasoning-section" style={{ 
-            marginBottom: '12px',
-            padding: '12px',
-            backgroundColor: 'var(--color-surface)',
-            border: '1px solid var(--color-border)',
-            borderRadius: '8px'
-          }}>
-            <div className="reasoning-label" style={{
-              fontSize: '12px',
-              fontWeight: 600,
-              color: 'var(--color-text-secondary)',
-              marginBottom: '8px'
-            }}>
-              💭 Thinking...
-            </div>
-            <div className="reasoning-content" style={{
-              fontSize: '14px',
-              color: 'var(--color-text-secondary)',
-            }}>
-              <MarkdownRenderer content={reasoning} isUserMessage={false} isStreaming={isStreaming} />
-            </div>
-          </div>
+          <ReasoningBlock
+            reasoning={reasoning}
+            isStreaming={isStreaming}
+          />
         )}
 
         {/* Main message content */}

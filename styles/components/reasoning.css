@@ -1,0 +1,150 @@
+/* ===================================
+   REASONING BLOCK STYLES
+   Collapsible reasoning UI with streaming preview
+   =================================== */
+
+/* Container - matches message-content pattern */
+.reasoning-block {
+  margin-bottom: 12px;
+}
+
+/* Header - clickable row */
+.reasoning-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 8px 8px 0 0;
+  transition: background 0.2s ease;
+}
+
+.reasoning-header:hover {
+  background: var(--color-bg-secondary);
+}
+
+/* Header text */
+.reasoning-header-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+/* Pulsating animation while streaming */
+.reasoning-header-text.streaming,
+.reasoning-collapsed-text.streaming {
+  animation: headerPulse 2s ease-in-out infinite;
+}
+
+@keyframes headerPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Chevron icon */
+.reasoning-chevron {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.2s ease;
+  color: var(--color-text-muted);
+}
+
+.reasoning-chevron.expanded {
+  transform: rotate(180deg);
+}
+
+/* Content box */
+.reasoning-content {
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  background: var(--color-bg);
+  animation: fadeIn 0.3s ease;
+}
+
+/* Streaming preview - clamped height */
+.reasoning-content.streaming {
+  max-height: 72px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Fade gradient at bottom for streaming */
+.reasoning-content.streaming::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 24px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--color-bg)
+  );
+}
+
+/* Preview text (streaming, dimmed) */
+.reasoning-preview {
+  color: var(--color-text-muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Full text (expanded, normal) */
+.reasoning-full {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Show less button */
+.reasoning-show-less {
+  display: block;
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  text-align: center;
+  padding: 4px 0;
+  background: none;
+  border: none;
+}
+
+.reasoning-show-less:hover {
+  color: var(--color-text-secondary);
+}
+
+/* Collapsed header only (no box) */
+.reasoning-collapsed {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s ease;
+}
+
+.reasoning-collapsed:hover {
+  background: var(--color-bg-secondary);
+}
+
+.reasoning-collapsed-text {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
