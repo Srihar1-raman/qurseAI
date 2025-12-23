@@ -11,7 +11,7 @@ import { handleClientError } from '@/lib/utils/error-handler';
 import type { RateLimitState } from '@/lib/contexts/RateLimitContext';
 
 interface UseChatTransportProps {
-  conversationId: string;
+  conversationId: string | undefined;
   selectedModel: string;
   chatMode: string;
   user: { id?: string } | null;

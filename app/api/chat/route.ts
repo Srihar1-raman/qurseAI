@@ -3,26 +3,24 @@
  * Main endpoint for AI streaming responses with reasoning support
  */
 
-import { streamText, createUIMessageStream, JsonToSseTransformStream, convertToModelMessages, type UIMessage, type UIMessagePart } from 'ai';
+import { streamText, createUIMessageStream, JsonToSseTransformStream, convertToModelMessages, type UIMessage } from 'ai';
 import { NextResponse, after } from 'next/server';
 import { qurse } from '@/ai/providers';
 import { canUseModel, getModelParameters, getProviderOptions, getModelConfig, requiresAuthentication, requiresProSubscription } from '@/ai/models';
 import { getChatMode } from '@/ai/config';
 import { getToolsByIds } from '@/lib/tools';
-import { createClient } from '@/lib/supabase/server';
 import { getUserData } from '@/lib/supabase/auth-utils';
 import { ModelAccessError, ChatModeError, StreamingError, ProviderError, ValidationError } from '@/lib/errors';
 import { safeValidateChatRequest } from '@/lib/validation/chat-schema';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { handleApiError } from '@/lib/utils/error-handler';
-import { sanitizeApiError } from '@/lib/utils/error-sanitizer';
 import { toUIMessageFromZod, type StreamTextProviderOptions } from '@/lib/utils/message-adapters';
 import { generateTitleFromUserMessage } from '@/lib/utils/convo-title-generation';
-import { updateConversationTitle, ensureConversationServerSide } from '@/lib/db/queries.server';
+import { updateConversationTitle, ensureConversationServerSide, checkConversationAccess } from '@/lib/db/queries.server';
 import { checkRateLimit } from '@/lib/services/rate-limiting';
 import { saveUserMessageServerSide } from '@/lib/db/messages.server';
 import { ensureGuestConversation } from '@/lib/db/guest-conversations.server';
-import { saveGuestMessage } from '@/lib/db/guest-messages.server';
+import { saveGuestMessage, getGuestMessageCount } from '@/lib/db/guest-messages.server';
 import { hmacSessionId } from '@/lib/utils/session-hash';
 import { applyRateLimitHeaders, applyConversationIdHeader } from '@/lib/utils/rate-limit-headers';
 import { createClient as createServiceClient } from '@supabase/supabase-js';
@@ -30,10 +28,13 @@ import type { User } from '@/lib/types';
 
 const logger = createScopedLogger('api/chat');
 
+// Constants
+const TITLE_GENERATION_MIN_LENGTH = 50; // Minimum message length to trigger title generation
+
 // Service-role client for guest message checks (bypasses RLS)
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const serviceSupabase = supabaseUrl && serviceKey 
+const serviceSupabase = supabaseUrl && serviceKey
   ? createServiceClient(supabaseUrl, serviceKey)
   : null;
 
@@ -200,13 +201,13 @@ export async function POST(req: Request) {
     
     // Calculate title for conversation creation
     const title = userMessageText.trim().length > 0
-      ? userMessageText.slice(0, 50) + (userMessageText.length > 50 ? '...' : '')
+      ? userMessageText.slice(0, TITLE_GENERATION_MIN_LENGTH) + (userMessageText.length > TITLE_GENERATION_MIN_LENGTH ? '...' : '')
       : 'New Chat';
 
     let resolvedConversationId = conversationId;
     
     logger.debug('Starting stream', { duration: `${Date.now() - requestStartTime}ms` });
-    
+
     // ============================================
     // Stage 5: Stream AI response (UI stream with reasoning)
     // ============================================
@@ -222,34 +223,30 @@ export async function POST(req: Request) {
       const user = fullUserData;
 
       // Authenticated flow
-      if (user && conversationId && !conversationId.startsWith('temp-') && lastUserMessage) {
+      if (user && conversationId && lastUserMessage) {
+        // Check if conversation exists before creating/validating
+        const accessCheck = await checkConversationAccess(conversationId, user.id, supabaseClient);
+        const isNewConversation = !accessCheck.exists;
+
         return ensureConversationServerSide(conversationId, user.id, title, supabaseClient)
           .then(() => {
             resolvedConversationId = conversationId;
-            if (!conversationId || conversationId.startsWith('temp-') || !lastUserMessage) {
-              return { convId: conversationId, saveSuccess: false };
+
+            // Only generate title for first message (new conversation)
+            // lastUserMessage is already validated as 'user' role above
+            if (userMessageText.trim().length > TITLE_GENERATION_MIN_LENGTH && isNewConversation) {
+              after(async () => {
+                try {
+                  const betterTitle = await generateTitleFromUserMessage({ message: lastUserMessage as UIMessage });
+                  await updateConversationTitle(conversationId, betterTitle, supabaseClient);
+                  logger.debug('Title generated and updated', { conversationId, title: betterTitle, isFirstMessage: true });
+                } catch (error) {
+                  logger.error('Background title generation failed', error, { conversationId });
+                }
+              });
             }
-            
-            const userMessageText = lastUserMessage.parts
-              ?.filter((p): p is { type: 'text'; text: string } => p.type === 'text' && typeof p.text === 'string')
-              .map((p) => p.text)
-              .join('') || '';
-            
-            if (userMessageText.trim().length > 50) {
-              if (lastUserMessage && lastUserMessage.role === 'user') {
-                after(async () => {
-                  try {
-                    const betterTitle = await generateTitleFromUserMessage({ message: lastUserMessage! });
-                    await updateConversationTitle(conversationId, betterTitle, supabaseClient);
-                    logger.debug('Title generated and updated', { conversationId, title: betterTitle });
-                  } catch (error) {
-                    logger.error('Background title generation failed', error, { conversationId });
-                  }
-                });
-              }
-            }
-            
-            return saveUserMessageServerSide(conversationId, lastUserMessage, supabaseClient)
+
+            return saveUserMessageServerSide(conversationId, lastUserMessage as UIMessage, supabaseClient)
               .then((saved) => ({ convId: conversationId, saveSuccess: saved }))
               .catch((error) => {
                 logger.error('Failed to save user message', error, { conversationId });
@@ -265,15 +262,49 @@ export async function POST(req: Request) {
       // Guest flow
       if (!user && sessionHash && lastUserMessage) {
         try {
-          const preferredId = conversationId && !conversationId.startsWith('temp-') ? conversationId : undefined;
-          const guestConversationId = await ensureGuestConversation(sessionHash, title, preferredId);
+          const guestConversationId = await ensureGuestConversation(sessionHash, title, conversationId);
           resolvedConversationId = guestConversationId;
+
+          // Check if this is the first message by counting existing messages
+          // This properly handles both new conversations and existing ones
+          const messageCount = await getGuestMessageCount(guestConversationId);
+          const isFirstGuestMessage = messageCount === 0;
+
           await saveGuestMessage({
             conversationId: guestConversationId,
             message: lastUserMessage,
             role: 'user',
             sessionHash,
           });
+
+          // Only generate title for first guest message (>50 chars)
+          // userMessageText is already calculated above (lines 194-197)
+          if (isFirstGuestMessage && userMessageText.trim().length > TITLE_GENERATION_MIN_LENGTH) {
+            after(async () => {
+              try {
+                const betterTitle = await generateTitleFromUserMessage({ message: lastUserMessage as UIMessage });
+                // Update guest conversation title
+                // Note: Using service role client to bypass RLS for guest tables
+                if (serviceSupabase) {
+                  const { error: updateError } = await serviceSupabase
+                    .from('guest_conversations')
+                    .update({ title: betterTitle })
+                    .eq('id', guestConversationId);
+
+                  if (updateError) {
+                    logger.error('Failed to update guest conversation title', updateError, { conversationId: guestConversationId });
+                  } else {
+                    logger.debug('Guest title generated and updated', { conversationId: guestConversationId, title: betterTitle });
+                  }
+                } else {
+                  logger.warn('Service Supabase client not available for guest title update', { conversationId: guestConversationId });
+                }
+              } catch (error) {
+                logger.error('Background guest title generation failed', error, { conversationId: guestConversationId });
+              }
+            });
+          }
+
           return { convId: guestConversationId, saveSuccess: true };
         } catch (error) {
           logger.error('Guest DB operations failed', error, { sessionHash, conversationId });
@@ -392,10 +423,9 @@ export async function POST(req: Request) {
       },
       onFinish: async ({ messages }) => {
         // Save assistant messages directly (before response is sent, like Scira)
-        logger.info('onFinish called', { 
+        logger.info('onFinish called', {
           messagesLength: messages.length,
           conversationId: resolvedConversationId,
-          isTempId: resolvedConversationId?.startsWith('temp-'),
           hasUser: !!fullUserData,
           hasSessionHash: !!sessionHash
         });
@@ -430,11 +460,10 @@ export async function POST(req: Request) {
         logger.debug('Checking authenticated save conditions', {
           hasUser: !!user,
           hasResolvedId: !!resolvedConversationId,
-          isTempId: resolvedConversationId?.startsWith('temp-'),
-          willSave: !!(user && resolvedConversationId && !resolvedConversationId.startsWith('temp-'))
+          willSave: !!(user && resolvedConversationId)
         });
 
-        if (user && resolvedConversationId && !resolvedConversationId.startsWith('temp-')) {
+        if (user && resolvedConversationId) {
           try {
             interface MessageWithMetadata extends UIMessage {
               metadata?: {

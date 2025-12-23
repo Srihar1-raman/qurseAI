@@ -135,7 +135,7 @@ export function ConversationInput({
             <button
               type="button"
               onClick={() => {
-                // Attach file functionality
+                // TODO: Implement attach file functionality
               }}
               className="attach-btn"
               title="Attach file"

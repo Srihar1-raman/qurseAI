@@ -18,7 +18,7 @@ interface UseConversationScrollProps {
   loadedMessagesLength: number;
   loadOlderMessages: () => Promise<void>;
   scrollPositionRef: React.MutableRefObject<{ height: number; top: number } | null>;
-  conversationId: string;
+  conversationId: string | undefined;
 }
 
 interface UseConversationScrollReturn {

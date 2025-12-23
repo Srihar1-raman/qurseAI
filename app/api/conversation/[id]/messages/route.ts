@@ -20,16 +20,7 @@ export async function GET(
         { status: 400 }
       );
     }
-    
-    // Skip temp- conversations (no messages to load)
-    if (conversationId.startsWith('temp-')) {
-      return NextResponse.json({
-        messages: [],
-        hasMore: false,
-        dbRowCount: 0,
-      });
-    }
-    
+
     // Get auth user
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();

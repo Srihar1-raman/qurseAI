@@ -34,6 +34,7 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
     <div className="relative" ref={dropdownRef}>
       {/* Trigger Button */}
       <Button
+        type="button"
         variant="secondary"
         className={cn(
           "justify-center rounded-md border px-2.5 py-1.5 h-auto text-sm font-normal web-search-mobile",

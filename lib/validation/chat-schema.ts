@@ -27,13 +27,9 @@ export function isValidUUID(id: string): boolean {
 }
 
 /**
- * Validate conversation ID (supports regular UUID or temp-UUID format)
+ * Validate conversation ID (must be a valid UUID)
  */
 export function isValidConversationId(id: string): boolean {
-  if (id.startsWith('temp-')) {
-    const uuidPart = id.slice(5);
-    return UUID_REGEX.test(uuidPart);
-  }
   return UUID_REGEX.test(id);
 }
 
@@ -125,17 +121,11 @@ export const chatRequestSchema = z.object({
     .refine(
       (id) => {
         // If conversationId is provided, it must be a valid UUID
-        // Guest users can have temp- prefixed IDs
         if (!id) return true;
-        if (id.startsWith('temp-')) {
-          // Validate the part after temp- is a valid UUID
-          const uuidPart = id.slice(5);
-          return UUID_REGEX.test(uuidPart);
-        }
         return UUID_REGEX.test(id);
       },
       {
-        message: 'Conversation ID must be a valid UUID or temp-UUID format',
+        message: 'Conversation ID must be a valid UUID',
       }
     ),
   

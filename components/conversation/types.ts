@@ -8,7 +8,7 @@ import type { UIMessagePart } from 'ai';
 import type { QurseMessage } from '@/lib/types';
 
 export interface ConversationClientProps {
-  conversationId: string;
+  conversationId: string | undefined;
   initialMessages: Array<{
     id: string;
     role: 'user' | 'assistant';

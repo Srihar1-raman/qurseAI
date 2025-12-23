@@ -35,7 +35,7 @@ export async function saveUserMessageServerSide(
   userMessage: UIMessage,
   supabaseClient: Awaited<ReturnType<typeof createClient>>
 ): Promise<boolean> {
-  if (!conversationId || conversationId.startsWith('temp-') || !userMessage) {
+  if (!conversationId || !userMessage) {
     return false;
   }
 

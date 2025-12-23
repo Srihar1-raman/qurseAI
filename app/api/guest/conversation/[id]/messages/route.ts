@@ -28,16 +28,7 @@ export async function GET(
         { status: 400 }
       );
     }
-    
-    // Skip temp- conversations (no messages to load)
-    if (conversationId.startsWith('temp-')) {
-      return NextResponse.json({
-        messages: [],
-        hasMore: false,
-        dbRowCount: 0,
-      });
-    }
-    
+
     // Get session_id from cookie
     const cookieHeader = request.headers.get('cookie') ?? '';
     const sessionId = parseCookie(cookieHeader, SESSION_COOKIE_NAME);

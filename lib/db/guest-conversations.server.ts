@@ -32,7 +32,7 @@ export async function ensureGuestConversation(
   const supabase = serviceSupabase;
 
   // If conversationId provided, validate it belongs to this session_hash
-  if (conversationId && !conversationId.startsWith('temp-')) {
+  if (conversationId) {
     // First check if conversation exists and belongs to this session
     const { data: existing, error } = await supabase
       .from('guest_conversations')

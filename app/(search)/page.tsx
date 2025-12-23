@@ -114,7 +114,7 @@ function HomePageContent() {
       {/* This pre-initializes useChat hook for instant sends when conversation starts */}
       <div style={{ display: conversationId ? 'block' : 'none' }}>
         <ConversationClient
-          conversationId={conversationId || 'temp-new'}
+          conversationId={conversationId || undefined}
           initialMessages={[]}
           initialHasMore={false}
           initialDbRowCount={0}

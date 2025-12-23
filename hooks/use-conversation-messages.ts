@@ -9,6 +9,7 @@ import { handleClientError } from '@/lib/utils/error-handler';
 import { mergeMessages, transformToQurseMessage } from '@/lib/conversation/message-utils';
 import { createScopedLogger } from '@/lib/utils/logger';
 import type { QurseMessage } from '@/lib/types';
+import type { UIMessage } from 'ai';
 
 const logger = createScopedLogger('hooks/use-conversation-messages');
 
@@ -38,7 +39,7 @@ function extractMessageContent(message: BaseMessage): string {
 }
 
 interface UseConversationMessagesProps {
-  conversationId: string;
+  conversationId: string | undefined;
   initialMessages: BaseMessage[];
   initialHasMore?: boolean;
   initialDbRowCount?: number;
@@ -46,9 +47,10 @@ interface UseConversationMessagesProps {
   user: { id?: string } | null;
   showToastError: (message: string) => void;
   initialMessageSentRef: React.MutableRefObject<boolean>;
-  conversationIdRef: React.MutableRefObject<string>;
+  conversationIdRef: React.MutableRefObject<string | undefined>;
   hasInitialMessageParam: boolean;
   status: 'idle' | 'streaming' | 'submitted' | string;
+  setMessages?: (messages: UIMessage[]) => void;
 }
 
 interface UseConversationMessagesReturn {
@@ -74,6 +76,7 @@ export function useConversationMessages({
   conversationIdRef,
   hasInitialMessageParam,
   status,
+  setMessages,
 }: UseConversationMessagesProps): UseConversationMessagesReturn {
   const [loadedMessages, setLoadedMessages] = useState<BaseMessage[]>(initialMessages);
   const useChatMessagesRef = useRef(useChatMessages);
@@ -87,7 +90,7 @@ export function useConversationMessages({
   const [isLoadingInitialMessages, setIsLoadingInitialMessages] = useState(false);
   const [hasMoreMessages, setHasMoreMessages] = useState(initialHasMore ?? initialMessages.length >= 50);
   const scrollPositionRef = useRef<{ height: number; top: number } | null>(null);
-  const previousConversationIdRef = useRef<string | null>(null);
+  const previousConversationIdRef = useRef<string | undefined | null>(null);
 
   const loadInitialMessages = useCallback(
     async (id: string) => {
@@ -127,6 +130,22 @@ export function useConversationMessages({
           setLoadedMessages(messages);
           setMessagesOffset(dbRowCount);
           setHasMoreMessages(hasMore);
+
+          // CRITICAL FIX: Initialize useChat with DB messages for full context
+          // This ensures AI receives complete conversation history, not just new messages
+          // Filter out 'tool' role messages (UIMessage doesn't support 'tool' role)
+          if (setMessages && messages.length > 0) {
+            const messagesForUseChat = messages.filter(
+              (msg: BaseMessage): msg is UIMessage =>
+                msg.role === 'user' || msg.role === 'assistant'
+            );
+            setMessages(messagesForUseChat);
+            logger.debug('Initialized useChat with DB messages', {
+              conversationId: id,
+              messageCount: messages.length,
+              filteredCount: messagesForUseChat.length,
+            });
+          }
         } else {
           // Still update offset and hasMore for future pagination, but don't replace messages
           setMessagesOffset(dbRowCount);
@@ -147,7 +166,7 @@ export function useConversationMessages({
         }
       }
     },
-    [showToastError, user, initialMessageSentRef, conversationIdRef]
+    [showToastError, user, initialMessageSentRef, conversationIdRef, setMessages]
   );
 
   useEffect(() => {
@@ -174,7 +193,6 @@ export function useConversationMessages({
 
       if (
         conversationId &&
-        !conversationId.startsWith('temp-') &&
         !hasInitialMessageParam
       ) {
         setIsLoadingInitialMessages(true);
@@ -202,7 +220,6 @@ export function useConversationMessages({
   useEffect(() => {
     if (
       conversationId &&
-      !conversationId.startsWith('temp-') &&
       !hasInitialMessageParam &&
       loadedMessages.length === 0 &&
       !isLoadingInitialMessages &&
@@ -229,7 +246,7 @@ export function useConversationMessages({
   ]);
 
   const loadOlderMessages = useCallback(async () => {
-    if (isLoadingOlderMessages || !hasMoreMessages || conversationId.startsWith('temp-')) {
+    if (isLoadingOlderMessages || !hasMoreMessages || !conversationId) {
       return;
     }
 

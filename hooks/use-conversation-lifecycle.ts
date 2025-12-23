@@ -11,7 +11,7 @@ import type { UIMessagePart } from 'ai';
 const logger = createScopedLogger('hooks/use-conversation-lifecycle');
 
 interface UseConversationLifecycleProps {
-  conversationId: string;
+  conversationId: string | undefined;
   user: { id?: string } | null;
   isAuthLoading: boolean;
   hasInitialMessageParam: boolean;

@@ -3,8 +3,8 @@ import { usePathname } from 'next/navigation';
 
 /**
  * Hook to extract conversation ID from URL pathname
- * Handles both regular UUIDs and temp- prefixed IDs
- * 
+ * Extracts UUID from /conversation/[id] pattern
+ *
  * @returns Conversation ID from URL or null if not found
  */
 export function useConversationId(): string | null {

@@ -99,6 +99,7 @@ export function ConversationClient({
     conversationIdRef,
     hasInitialMessageParam,
     status,
+    setMessages: setMessages, // Pass setMessages to initialize useChat with DB messages
   });
 
   const { conversationEndRef, conversationContainerRef, conversationThreadRef, scrollToBottom } =
@@ -175,7 +176,7 @@ export function ConversationClient({
       return;
     }
 
-    if (!conversationId || conversationId.startsWith('temp-')) {
+    if (!conversationId) {
       showToastError('Cannot share this conversation');
       return;
     }
@@ -192,7 +193,7 @@ export function ConversationClient({
   }, [conversationId, shareConversation, showToastError, user]);
 
   const handleUnshare = React.useCallback(async () => {
-    if (!conversationId || conversationId.startsWith('temp-')) {
+    if (!conversationId) {
       return;
     }
 

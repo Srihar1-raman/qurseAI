@@ -29,6 +29,7 @@ export {
 export {
   getGuestMessagesServerSide,
   saveGuestMessage,
+  getGuestMessageCount,
 } from './guest-messages.server';
 
 export {

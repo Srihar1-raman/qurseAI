@@ -131,11 +131,31 @@ export async function getGuestMessagesServerSide(
 }
 
 /**
+ * Check if guest conversation has any messages
+ * Used to determine if title should be generated for first message
+ */
+export async function getGuestMessageCount(conversationId: string): Promise<number> {
+  const supabase = serviceSupabase;
+
+  const { count, error } = await supabase
+    .from('guest_messages')
+    .select('*', { count: 'exact', head: true })
+    .eq('guest_conversation_id', conversationId);
+
+  if (error) {
+    logger.error('Failed to get guest message count', error, { conversationId });
+    return 0;
+  }
+
+  return count ?? 0;
+}
+
+/**
  * Save guest message (server-side)
  */
 export async function saveGuestMessage(payload: GuestMessagePayload): Promise<void> {
   const { conversationId, message, role, sessionHash } = payload;
-  if (!conversationId || conversationId.startsWith('temp-')) return;
+  if (!conversationId) return;
 
   const supabase = serviceSupabase;
 
