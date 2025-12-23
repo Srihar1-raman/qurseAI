@@ -9,7 +9,6 @@ import { handleClientError } from '@/lib/utils/error-handler';
 import { mergeMessages, transformToQurseMessage } from '@/lib/conversation/message-utils';
 import { createScopedLogger } from '@/lib/utils/logger';
 import type { QurseMessage } from '@/lib/types';
-import type { UIMessage } from 'ai';
 
 const logger = createScopedLogger('hooks/use-conversation-messages');
 
@@ -50,7 +49,6 @@ interface UseConversationMessagesProps {
   conversationIdRef: React.MutableRefObject<string | undefined>;
   hasInitialMessageParam: boolean;
   status: 'idle' | 'streaming' | 'submitted' | string;
-  setMessages?: (messages: UIMessage[]) => void;
 }
 
 interface UseConversationMessagesReturn {
@@ -76,7 +74,6 @@ export function useConversationMessages({
   conversationIdRef,
   hasInitialMessageParam,
   status,
-  setMessages,
 }: UseConversationMessagesProps): UseConversationMessagesReturn {
   const [loadedMessages, setLoadedMessages] = useState<BaseMessage[]>(initialMessages);
   const useChatMessagesRef = useRef(useChatMessages);
@@ -126,46 +123,9 @@ export function useConversationMessages({
         // Don't update loadedMessages if useChatMessages already has messages
         // This prevents flashing when messages are already streaming via useChat
         // The mergeMessages function will handle merging when needed
-
-        // FIX: Check if we should initialize useChat with DB messages
-        // Initialize if: useChat is empty OR DB message count differs (ensures sync after reload)
-        const shouldInitializeUseChat =
-          useChatMessagesRef.current.length === 0 ||
-          useChatMessagesRef.current.length !== messages.filter(
-            (msg: BaseMessage) => msg.role === 'user' || msg.role === 'assistant'
-          ).length;
-
-        if (shouldInitializeUseChat) {
-          setLoadedMessages(messages);
-          setMessagesOffset(dbRowCount);
-          setHasMoreMessages(hasMore);
-
-          // CRITICAL FIX: Initialize useChat with DB messages for full context
-          // This ensures AI receives complete conversation history, not just new messages
-          // Filter out 'tool' role messages (UIMessage doesn't support 'tool' role)
-          if (setMessages && messages.length > 0) {
-            const messagesForUseChat = messages.filter(
-              (msg: BaseMessage): msg is UIMessage =>
-                msg.role === 'user' || msg.role === 'assistant'
-            );
-            setMessages(messagesForUseChat);
-            logger.debug('Initialized useChat with DB messages', {
-              conversationId: id,
-              messageCount: messages.length,
-              filteredCount: messagesForUseChat.length,
-              useChatPriorCount: useChatMessagesRef.current.length,
-            });
-          }
-        } else {
-          // Still update offset and hasMore for future pagination, but don't replace messages
-          setMessagesOffset(dbRowCount);
-          setHasMoreMessages(hasMore);
-          logger.debug('Skipped updating loadedMessages - useChatMessages already synced', {
-            conversationId: id,
-            useChatMessagesCount: useChatMessagesRef.current.length,
-            dbMessageCount: messages.length,
-          });
-        }
+        setLoadedMessages(messages);
+        setMessagesOffset(dbRowCount);
+        setHasMoreMessages(hasMore);
       } catch (error) {
         if (conversationIdRef.current === id && !initialMessageSentRef.current) {
           const userMessage = handleClientError(error as Error, 'conversation/loadInitialMessages');
@@ -177,7 +137,7 @@ export function useConversationMessages({
         }
       }
     },
-    [showToastError, user, initialMessageSentRef, conversationIdRef, setMessages]
+    [showToastError, user, initialMessageSentRef, conversationIdRef]
   );
 
   useEffect(() => {

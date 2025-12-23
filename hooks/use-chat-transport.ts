@@ -5,7 +5,7 @@
 
 import { useEffect, useMemo, useRef, useCallback } from 'react';
 import { useChat } from '@ai-sdk/react';
-import { DefaultChatTransport, type UIMessagePart } from 'ai';
+import { DefaultChatTransport, type UIMessagePart, type UIMessage } from 'ai';
 import { isRateLimitError, extractRateLimitInfo } from '@/lib/conversation/rate-limit-utils';
 import { handleClientError } from '@/lib/utils/error-handler';
 import type { RateLimitState } from '@/lib/contexts/RateLimitContext';
@@ -14,6 +14,7 @@ interface UseChatTransportProps {
   conversationId: string | undefined;
   selectedModel: string;
   chatMode: string;
+  initialMessages?: Array<{ id: string; role: 'user' | 'assistant'; parts?: UIMessagePart<any, any>[] }>;
   user: { id?: string } | null;
   setRateLimitState: (state: RateLimitState) => void;
   showToastError: (message: string) => void;
@@ -33,6 +34,7 @@ export function useChatTransport({
   conversationId,
   selectedModel,
   chatMode,
+  initialMessages,
   user,
   setRateLimitState,
   showToastError,
@@ -47,6 +49,23 @@ export function useChatTransport({
     selectedModelRef.current = selectedModel;
     chatModeRef.current = chatMode;
   }, [conversationId, selectedModel, chatMode]);
+
+  // Ensure initialMessages have valid parts array for UIMessage type
+  // Filter out messages without valid parts (e.g., tool messages, system messages)
+  const validInitialMessages = useMemo(() => {
+    if (!initialMessages || initialMessages.length === 0) return undefined;
+
+    return initialMessages
+      .filter((msg): msg is { id: string; role: 'user' | 'assistant'; parts: UIMessagePart<any, any>[] } => {
+        return (
+          msg.role === 'user' || msg.role === 'assistant'
+        ) && Array.isArray(msg.parts) && msg.parts.length >= 0;
+      })
+      .map((msg) => ({
+        ...msg,
+        parts: msg.parts, // Type guard ensures parts is defined
+      })) as UIMessage[]; // Cast to UIMessage after validation
+  }, [initialMessages]);
 
   const transport = useMemo(() => {
     return new DefaultChatTransport({
@@ -157,6 +176,7 @@ export function useChatTransport({
 
   const chatResult = useChat({
     id: conversationId,
+    messages: validInitialMessages,
     transport,
     onError: handleError,
   });

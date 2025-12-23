@@ -61,6 +61,7 @@ export function ConversationClient({
     conversationId,
     selectedModel,
     chatMode,
+    initialMessages,
     user: user ? { id: user.id } : null,
     setRateLimitState,
     showToastError,
@@ -99,7 +100,6 @@ export function ConversationClient({
     conversationIdRef,
     hasInitialMessageParam,
     status,
-    setMessages: setMessages, // Pass setMessages to initialize useChat with DB messages
   });
 
   const { conversationEndRef, conversationContainerRef, conversationThreadRef, scrollToBottom } =
