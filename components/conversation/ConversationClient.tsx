@@ -154,13 +154,14 @@ export function ConversationClient({
   }, [status, displayMessages.length]);
 
   const isLoading = status === 'submitted' || status === 'streaming';
-  // Show thinking animation until first assistant text chunk arrives (covers provider TTFB delay)
+  // Show thinking animation until any content arrives (text or reasoning)
   // Only check the last assistant message (current streaming one), not all previous messages
   const lastAssistantMessage = displayMessages.filter(m => m.role === 'assistant').pop();
-  const hasCurrentAssistantText = lastAssistantMessage?.parts.some(
-    p => p.type === 'text' && p.text.length > 0
-  ) || false;
-  const isThinking = status === 'submitted' || (status === 'streaming' && !hasCurrentAssistantText);
+  const hasCurrentContent = lastAssistantMessage?.parts.some(p => {
+    // Hide thinking when we have text or reasoning content
+    return (p.type === 'text' || p.type === 'reasoning') && 'text' in p && p.text.length > 0;
+  }) || false;
+  const isThinking = status === 'submitted' || (status === 'streaming' && !hasCurrentContent);
   const isStreaming = status === 'streaming'; // Extract for passing down to markdown renderer
   const showStopButton = status === 'streaming' && !hasStoppedRef.current;
 
