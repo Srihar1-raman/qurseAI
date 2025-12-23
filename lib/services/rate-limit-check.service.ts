@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server';
 import { checkRateLimit } from './rate-limiting';
 import { hmacSessionId } from '@/lib/utils/session-hash';
 import { applyRateLimitHeaders, applyConversationIdHeader } from '@/lib/utils/rate-limit-headers';
-import type { User } from '@/lib/types';
+import type { LightweightUser } from '@/lib/supabase/auth-utils';
 
 /**
  * Result of rate limit check
@@ -30,20 +30,20 @@ export interface RateLimitCheckResult {
  * Check rate limits for chat request
  *
  * @param req - Incoming request
- * @param user - Authenticated user (null for guests)
+ * @param user - Lightweight authenticated user (null for guests)
  * @param conversationId - Conversation ID for header application
  * @returns Rate limit check result with session info or early response
  */
 export async function checkRateLimits(
   req: Request,
-  user: User | null,
+  user: LightweightUser | null,
   conversationId: string | undefined
 ): Promise<RateLimitCheckResult> {
   const rateLimitResponse = new Response();
 
   const rateLimitCheck = await checkRateLimit({
-    userId: user?.id || null,
-    isProUser: false, // TODO: Implement isProUser check
+    userId: user?.userId || null,
+    isProUser: user?.isProUser ?? false,
     request: req,
     response: rateLimitResponse,
   });
