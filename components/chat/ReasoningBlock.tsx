@@ -108,7 +108,7 @@ export function ReasoningBlock({ reasoning, isStreaming }: ReasoningBlockProps) 
           </div>
 
           <div className="reasoning-content streaming">
-            <div className="reasoning-preview">
+            <div className="reasoning-preview" key={reasoning.length}>
               <MarkdownRenderer content={reasoning} isUserMessage={false} isStreaming={true} />
             </div>
           </div>

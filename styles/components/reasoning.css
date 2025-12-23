@@ -33,15 +33,25 @@
   color: var(--color-text-secondary);
 }
 
-/* Pulsating animation while streaming */
+/* Shimmer effect while streaming */
 .reasoning-header-text.streaming,
 .reasoning-collapsed-text.streaming {
-  animation: headerPulse 2s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    var(--color-text-secondary) 0%,
+    var(--color-text) 50%,
+    var(--color-text-secondary) 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmer 2s ease-in-out infinite;
 }
 
-@keyframes headerPulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.7; }
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
 /* Chevron icon */
@@ -49,7 +59,7 @@
   width: 16px;
   height: 16px;
   transition: transform 0.2s ease;
-  color: var(--color-text-muted);
+  color: var(--color-text-secondary);
 }
 
 .reasoning-chevron.expanded {
@@ -68,8 +78,9 @@
 
 /* Streaming preview - clamped height */
 .reasoning-content.streaming {
-  max-height: 72px;
-  overflow: hidden;
+  max-height: 120px;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
 }
 
