@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversation } from '@/lib/contexts/ConversationContext';
@@ -12,11 +12,13 @@ import { useConversationScroll } from '@/hooks/use-conversation-scroll';
 import { useConversationInput } from '@/hooks/use-conversation-input';
 import { useChatTransport } from '@/hooks/use-chat-transport';
 import { useConversationLifecycle } from '@/hooks/use-conversation-lifecycle';
+import { useContextUsage } from '@/hooks/use-context-usage';
 import { ConversationThread } from './ConversationThread';
 import { ConversationInput } from './ConversationInput';
 import { ShareConversationModal } from './ShareConversationModal';
 import { useShareConversation } from '@/hooks/use-share-conversation';
 import { createScopedLogger } from '@/lib/utils/logger';
+import { getModelConfig } from '@/ai/models';
 import type { ConversationClientProps } from './types';
 
 const logger = createScopedLogger('components/conversation/ConversationClient');
@@ -69,6 +71,46 @@ export function ConversationClient({
       setSendAttemptCount((prev) => prev + 1);
     },
   });
+
+  // Extract context metadata from messages and update context usage state
+  const { contextUsage, updateContextUsage, clearContextUsage } = useContextUsage();
+
+  useEffect(() => {
+    // Find the last assistant message and check for context metadata
+    if (messages.length === 0) return;
+
+    const lastAssistantMessage = messages
+      .filter((m) => m.role === 'assistant')
+      .at(-1);
+
+    if (lastAssistantMessage?.metadata && typeof lastAssistantMessage.metadata === 'object') {
+      const metadata = lastAssistantMessage.metadata as any;
+      if (metadata.contextMetadata) {
+        const contextMetadata = metadata.contextMetadata as {
+          originalTokenCount: number;
+          trimmedTokenCount: number;
+          removedReasoningFrom: number;
+          droppedMessages: number;
+          warning?: string;
+        };
+
+        const modelConfig = getModelConfig(selectedModel);
+        const modelContextWindow = modelConfig?.contextWindow || 128000;
+
+        updateContextUsage(
+          contextMetadata,
+          selectedModel,
+          modelContextWindow,
+          messages.length
+        );
+      }
+    }
+  }, [messages, selectedModel, updateContextUsage]);
+
+  // Clear context usage when conversation changes
+  useEffect(() => {
+    clearContextUsage();
+  }, [conversationId, clearContextUsage]);
 
   const { hasInteracted, setHasInteracted } = useConversationLifecycle({
     conversationId,
@@ -389,6 +431,7 @@ export function ConversationClient({
           onChatModeChange={setChatMode}
           onStop={handleStop}
           showStopButton={showStopButton}
+          contextUsage={contextUsage}
         />
       </main>
 

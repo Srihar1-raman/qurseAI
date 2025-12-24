@@ -184,6 +184,7 @@ export async function POST(req: Request) {
       dbOperationsPromise,
       abortController,
       conversationId,
+      contextMetadata: trimResult.metadata,
     });
 
     // ============================================

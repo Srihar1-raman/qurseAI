@@ -44,6 +44,7 @@ export interface ConversationInputProps {
   isLoading: boolean;
   chatMode: string;
   onChatModeChange: (mode: string) => void;
+  contextUsage?: ContextUsage | null;
 }
 
 export interface BaseMessage {
@@ -53,5 +54,30 @@ export interface BaseMessage {
   content?: string;
   metadata?: any;
   createdAt?: string;
+}
+
+/**
+ * Context usage metadata from API
+ * Contains information about conversation context utilization
+ */
+export interface ContextUsage {
+  /** Percentage of context budget used (0-100) */
+  percentage: number;
+  /** Current token count after trimming */
+  currentTokens: number;
+  /** Maximum tokens allowed (75% of model context window) */
+  maxTokens: number;
+  /** Model's total context window */
+  modelContextWindow: number;
+  /** Number of messages in current context */
+  messagesKept: number;
+  /** Number of messages dropped (if any) */
+  messagesDropped: number;
+  /** Number of messages reasoning was removed from */
+  reasoningRemoved: number;
+  /** Optional warning message from context manager */
+  warning?: string;
+  /** Model identifier */
+  model: string;
 }
 

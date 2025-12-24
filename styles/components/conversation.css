@@ -759,3 +759,53 @@ form.conversation-input-container:focus-within {
 }
 
 
+
+/* ===================================
+   CONTEXT INDICATOR STYLES
+   Semi-circle gauge for context usage
+   =================================== */
+
+.context-indicator {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: help;
+  color: var(--color-text-muted);
+  transition: color 0.2s ease;
+}
+
+.context-indicator:hover {
+  color: var(--color-text-secondary);
+}
+
+.context-indicator-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.context-indicator-bg {
+  opacity: 0.2;
+}
+
+.context-indicator-progress {
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
+}
+
+.context-indicator-progress.near-full {
+  opacity: 1;
+}
+
+/* Tooltip styling override */
+.context-indicator-tooltip {
+  max-width: 250px;
+  line-height: 1.4;
+}
+

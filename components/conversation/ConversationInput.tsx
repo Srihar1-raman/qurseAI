@@ -10,6 +10,8 @@ import { getIconPath } from '@/lib/icon-utils';
 import ModelSelector from '@/components/homepage/ModelSelector';
 import WebSearchSelector from '@/components/homepage/WebSearchSelector';
 import { getOptionFromChatMode, getChatModeFromOption } from '@/lib/conversation/chat-mode-utils';
+import { ContextIndicator } from './ContextIndicator';
+import type { ContextUsage } from './types';
 
 interface ConversationInputProps {
   input: string;
@@ -24,6 +26,7 @@ interface ConversationInputProps {
   showStopButton?: boolean;
   disabled?: boolean;
   onDisabledClick?: () => void; // Handler for when disabled input is clicked/focused
+  contextUsage?: ContextUsage | null;
 }
 
 export function ConversationInput({
@@ -39,6 +42,7 @@ export function ConversationInput({
   showStopButton = false,
   disabled = false,
   onDisabledClick,
+  contextUsage,
 }: ConversationInputProps) {
   const { resolvedTheme, mounted } = useTheme();
 
@@ -147,6 +151,8 @@ export function ConversationInput({
                 height={16}
               />
             </button>
+
+            <ContextIndicator contextUsage={contextUsage || null} />
           </div>
 
           <div className="input-actions-right">

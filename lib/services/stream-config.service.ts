@@ -49,6 +49,14 @@ export interface StreamConfig {
   abortController: AbortController;
   /** Conversation ID from request (fallback) */
   conversationId: string | undefined;
+  /** Context trimming metadata */
+  contextMetadata?: {
+    originalTokenCount: number;
+    trimmedTokenCount: number;
+    removedReasoningFrom: number;
+    droppedMessages: number;
+    warning?: string;
+  };
 }
 
 /**
@@ -72,6 +80,7 @@ export function buildStreamConfig(config: StreamConfig) {
     dbOperationsPromise,
     abortController,
     conversationId,
+    contextMetadata,
   } = config;
 
   return {
@@ -150,6 +159,10 @@ export function buildStreamConfig(config: StreamConfig) {
                 totalTokens: part.totalUsage?.totalTokens ?? null,
                 inputTokens: part.totalUsage?.inputTokens ?? null,
                 outputTokens: part.totalUsage?.outputTokens ?? null,
+                // Include context metadata if available
+                ...(contextMetadata && {
+                  contextMetadata: contextMetadata,
+                }),
               };
             }
           },
