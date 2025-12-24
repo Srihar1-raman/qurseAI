@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import { createScopedLogger } from '@/lib/utils/logger';
@@ -6,6 +7,11 @@ import SettingsPageClient from './SettingsPageClient';
 import { SettingsPageSkeleton } from '@/components/ui/SettingsPageSkeleton';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Qurse - Settings',
+  description: 'AI Chat Platform for the fastest',
+};
 
 const logger = createScopedLogger('settings/page');
 

@@ -47,24 +47,30 @@ function getTooltipMessage(usage: ContextUsage): string {
 }
 
 /**
- * Get semi-circle stroke dasharray based on percentage
- * Semi-circle goes from 0 to 50%, so we map 0-100% to 0-50 range
+ * Get circle fill parameters based on context percentage
+ * Background: full circle outline (dimmed)
+ * Progress: fills matching the context percentage
+ * - 50% context → 50% fill (semi-circle)
+ * - 75% context → 75% fill (3/4 circle)
+ * - 100% context → 100% fill (full circle)
  */
-function getSemiCircleParams(percentage: number) {
-  // Semi-circle circumference (radius 8, half circle)
+function getCircleParams(percentage: number) {
   const radius = 8;
-  const circumference = Math.PI * radius; // Half circle
-  const visiblePortion = Math.min(percentage / 100, 1);
+  const circumference = 2 * Math.PI * radius; // Full circle (~50.27)
+
+  // Direct mapping: context percentage = fill percentage
+  const fillPercentage = Math.min(percentage / 100, 1);
+  const visibleLength = circumference * fillPercentage;
 
   return {
     circumference,
-    visibleLength: circumference * visiblePortion,
+    visibleLength,
   };
 }
 
 /**
  * Context indicator component
- * Shows semi-circle gauge when context usage >= 50%
+ * Shows circular gauge when context usage >= 50%
  */
 export function ContextIndicator({ contextUsage }: ContextIndicatorProps) {
   // Don't render if no usage data or below 50%
@@ -74,7 +80,7 @@ export function ContextIndicator({ contextUsage }: ContextIndicatorProps) {
 
   const { percentage } = contextUsage;
   const { circumference, visibleLength } = useMemo(
-    () => getSemiCircleParams(percentage),
+    () => getCircleParams(percentage),
     [percentage]
   );
 
@@ -103,32 +109,29 @@ export function ContextIndicator({ contextUsage }: ContextIndicatorProps) {
             viewBox="0 0 20 20"
             className="context-indicator-svg"
           >
-            {/* Background semi-circle */}
+            {/* Background full circle (dimmed outline) */}
             <circle
               cx="10"
-              cy="16"
+              cy="10"
               r="8"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              strokeDasharray={`${Math.PI * 8} ${Math.PI * 8}`}
-              strokeDashoffset={0}
               className="context-indicator-bg"
-              transform="rotate(-90 10 16)"
             />
 
-            {/* Progress semi-circle */}
+            {/* Progress fill (fills from top, clockwise) */}
             <circle
               cx="10"
-              cy="16"
+              cy="10"
               r="8"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              strokeDasharray={`${Math.PI * 8} ${Math.PI * 8}`}
-              strokeDashoffset={Math.PI * 8 - visibleLength}
+              strokeDasharray={`${visibleLength} ${circumference}`}
+              strokeDashoffset={0}
               className={`context-indicator-progress ${isNearFull ? 'near-full' : ''}`}
-              transform="rotate(-90 10 16)"
+              transform="rotate(-90 10 10)"
             />
           </svg>
         </button>

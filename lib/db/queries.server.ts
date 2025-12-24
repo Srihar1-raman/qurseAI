@@ -19,11 +19,13 @@ export {
   getConversationCountServerSide,
   checkConversationAccess,
   clearAllConversationsServerSide,
+  getConversationTitleById,
 } from './conversations.server';
 
 export {
   ensureGuestConversation,
   checkGuestConversationAccess,
+  getGuestConversationTitleById,
 } from './guest-conversations.server';
 
 export {

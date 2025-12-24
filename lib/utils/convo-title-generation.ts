@@ -66,6 +66,7 @@ export async function generateTitleFromUserMessage({
 
 Your titles should:
 - Capture the main topic or question in 3-8 words
+- Titles should SFW and appropriate for all audiences
 - Use natural, conversational language (not formal or academic)
 - Be specific enough to distinguish from similar conversations
 - Avoid generic words like "help", "question", "about" unless necessary

@@ -129,6 +129,34 @@ export async function ensureGuestConversation(
 }
 
 /**
+ * Get guest conversation title by ID (server-side)
+ * Uses service role client for guest conversations
+ * Used for metadata generation
+ * @param conversationId - Conversation ID
+ * @param sessionHash - Session hash for verification
+ * @returns Title or null if not found
+ */
+export async function getGuestConversationTitleById(
+  conversationId: string,
+  sessionHash: string
+): Promise<string | null> {
+  try {
+    const { data, error } = await serviceSupabase
+      .from('guest_conversations')
+      .select('title')
+      .eq('id', conversationId)
+      .eq('session_hash', sessionHash)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data?.title || null;
+  } catch (error) {
+    logger.error('Error fetching guest conversation title', error, { conversationId });
+    return null;
+  }
+}
+
+/**
  * Check guest conversation access (read-only)
  * Validates if conversation exists and belongs to session_hash
  * Mirror of checkConversationAccess for auth users

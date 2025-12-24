@@ -31,7 +31,7 @@ const reenieBeanie = Reenie_Beanie({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL('https://www.qurse.site'),
+  metadataBase: new URL('https://www.qurse.site/'),
   title: "Qurse",
   description: "AI Chat Platform for the fastest",
   icons: {
@@ -47,7 +47,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Qurse",
     description: "AI Chat Platform for the fastest",
-    url: "https://www.qurse.site",
+    url: "https://www.qurse.site/",
     siteName: "Qurse",
     images: [
       {

@@ -276,6 +276,35 @@ export async function getSharedConversationByToken(
 }
 
 /**
+ * Get conversation title by ID (server-side)
+ * Used for metadata generation - optimized for single field fetch
+ * @param conversationId - Conversation ID
+ * @param userId - User ID (for auth users)
+ * @returns Title or null if not found
+ */
+export async function getConversationTitleById(
+  conversationId: string,
+  userId: string
+): Promise<string | null> {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('title')
+      .eq('id', conversationId)
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (error) throw error;
+    return data?.title || null;
+  } catch (error) {
+    logger.error('Error fetching conversation title', error, { conversationId, userId });
+    return null;
+  }
+}
+
+/**
  * Fork shared conversation - create new conversation with copied messages
  * @param shareToken - Share token (UUID)
  * @param userId - User ID to create conversation for

@@ -1,8 +1,14 @@
+import type { Metadata } from 'next';
 import { getUserData } from '@/lib/supabase/auth-utils';
 import PricingPageClient from './PricingPageClient';
 import { createScopedLogger } from '@/lib/utils/logger';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata: Metadata = {
+  title: 'Qurse - Pricing',
+  description: 'AI Chat Platform for the fastest',
+};
 
 const logger = createScopedLogger('pricing/page');
 

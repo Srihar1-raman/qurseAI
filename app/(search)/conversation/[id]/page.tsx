@@ -1,3 +1,5 @@
+import type { Metadata } from 'next';
+import { getConversationTitleById, getGuestConversationTitleById } from '@/lib/db/queries.server';
 import { getMessagesServerSide, checkConversationAccess } from '@/lib/db/queries.server';
 import { getGuestMessagesServerSide } from '@/lib/db/guest-messages.server';
 import { checkGuestConversationAccess } from '@/lib/db/guest-conversations.server';
@@ -19,6 +21,57 @@ const logger = createScopedLogger('conversation/page');
 interface PageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ message?: string; model?: string; mode?: string }>;
+}
+
+// Generate dynamic metadata for conversation pages
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { id: conversationId } = await params;
+
+  // Default metadata (fallback)
+  const defaultMetadata: Metadata = {
+    title: 'Qurse',
+    description: 'AI Chat Platform for the fastest',
+  };
+
+  try {
+    // Check if user is authenticated
+    const { fullUser } = await getUserData();
+    let title: string | null = null;
+
+    if (fullUser?.id) {
+      // Auth user: fetch conversation title
+      title = await getConversationTitleById(conversationId, fullUser.id);
+    } else {
+      // Guest user: fetch conversation title using session_hash
+      const cookieStore = await cookies();
+      const sessionIdCookie = cookieStore.get('session_id');
+      const sessionId = sessionIdCookie?.value || null;
+
+      if (sessionId && isValidUUID(sessionId)) {
+        const sessionHash = hmacSessionId(sessionId);
+        title = await getGuestConversationTitleById(conversationId, sessionHash);
+      }
+    }
+
+    // If title exists and is not empty/default, use it
+    if (title && title.trim() && title !== 'New Chat') {
+      // Truncate to 60 chars for tab display
+      const truncatedTitle = title.length > 60
+        ? title.slice(0, 57) + '...'
+        : title;
+
+      return {
+        title: `${truncatedTitle} | Qurse`,
+        description: 'AI Chat Platform for the fastest',
+      };
+    }
+
+    // No title or default title → just "Qurse"
+    return defaultMetadata;
+  } catch (error) {
+    logger.error('Error generating conversation metadata', error, { conversationId });
+    return defaultMetadata;
+  }
 }
 
 export default async function ConversationPage({ params, searchParams }: PageProps) {

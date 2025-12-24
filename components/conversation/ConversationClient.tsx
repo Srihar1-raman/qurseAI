@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversation } from '@/lib/contexts/ConversationContext';
@@ -17,6 +17,7 @@ import { ConversationThread } from './ConversationThread';
 import { ConversationInput } from './ConversationInput';
 import { ShareConversationModal } from './ShareConversationModal';
 import { useShareConversation } from '@/hooks/use-share-conversation';
+import { GuestSaveNudge } from '@/components/guest/GuestSaveNudge';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { getModelConfig } from '@/ai/models';
 import type { ConversationClientProps } from './types';
@@ -206,6 +207,23 @@ export function ConversationClient({
   const isThinking = status === 'submitted' || (status === 'streaming' && !hasCurrentContent);
   const isStreaming = status === 'streaming'; // Extract for passing down to markdown renderer
   const showStopButton = status === 'streaming' && !hasStoppedRef.current;
+
+  // Track if user is actively chatting for nudge
+  const [isActive, setIsActive] = useState(false);
+  useEffect(() => {
+    if (status === 'streaming' || status === 'submitted') {
+      setIsActive(true);
+    } else if (status === 'ready' || status === 'error') {
+      // Delay setting inactive to allow for natural breaks
+      const timeout = setTimeout(() => setIsActive(false), 5000);
+      return () => clearTimeout(timeout);
+    }
+  }, [status]);
+
+  // Calculate message count (user messages only) for nudge
+  const messageCount = useMemo(() => {
+    return displayMessages.filter(msg => msg.role === 'user').length;
+  }, [displayMessages]);
 
   const { input, setInput, textareaRef, handleSubmit, handleKeyPress } = useConversationInput({
     sendMessage,
@@ -480,6 +498,15 @@ export function ConversationClient({
           layer="database"
           customTitle="Sign in to continue"
           customMessage="Sign in to unlock this feature and access more capabilities."
+        />
+      )}
+
+      {/* Guest save nudge - only show for guest users */}
+      {!user && (
+        <GuestSaveNudge
+          conversationId={conversationId}
+          messageCount={messageCount}
+          isActive={isActive}
         />
       )}
     </div>
