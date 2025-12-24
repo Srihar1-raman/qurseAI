@@ -17,6 +17,7 @@ import { checkRateLimits } from '@/lib/services/rate-limit-check.service';
 import { processMessages } from '@/lib/services/message-processing.service';
 import { handleChatDatabaseOperations } from '@/lib/services/chat-database.service';
 import { buildStreamConfig } from '@/lib/services/stream-config.service';
+import { trimContext } from '@/lib/services/context-manager.service';
 import type { User } from '@/lib/types';
 
 const logger = createScopedLogger('api/chat');
@@ -60,6 +61,25 @@ export async function POST(req: Request) {
       model,
       chatMode,
     } = validationResult.data!;
+
+    // ============================================
+    // Stage 2.5: Smart context trimming
+    // ============================================
+    const trimResult = trimContext(messages, model);
+
+    if (trimResult.metadata.warning) {
+      logger.info('Context trimmed', {
+        conversationId,
+        model,
+        originalTokens: trimResult.metadata.originalTokenCount,
+        trimmedTokens: trimResult.metadata.trimmedTokenCount,
+        droppedMessages: trimResult.metadata.droppedMessages,
+        removedReasoningFrom: trimResult.metadata.removedReasoningFrom,
+      });
+    }
+
+    // Use trimmed messages for AI processing
+    const messagesToSend = trimResult.messages;
 
     // ============================================
     // Stage 3: Early exit checks
@@ -113,7 +133,7 @@ export async function POST(req: Request) {
     // ============================================
     // Stage 6: Process messages
     // ============================================
-    const messageData = processMessages(messages);
+    const messageData = processMessages(messagesToSend);
 
     // ============================================
     // Stage 7: Database operations

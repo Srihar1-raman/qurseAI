@@ -61,21 +61,22 @@ const messageSchema = z.object({
   }
 ).refine(
   (data) => {
-    // Validate total content length
+    // Sanity check: prevent abuse (100K chars ≈ 25K tokens)
+    const maxLength = 100000;
     if (data.parts && Array.isArray(data.parts)) {
       const totalLength = data.parts
-        .filter((p) => p.type === 'text')
+        .filter((p) => p.type === 'text' || p.type === 'reasoning')
         .map((p) => p.text || '')
         .join('').length;
-      return totalLength <= 10000;
+      return totalLength <= maxLength;
     }
     if (data.content) {
-      return data.content.length <= 10000;
+      return data.content.length <= maxLength;
     }
     return true;
   },
   {
-    message: 'Message content must not exceed 10,000 characters',
+    message: 'Message content must not exceed 100,000 characters',
   }
 );
 
@@ -172,7 +173,7 @@ export function safeValidateChatRequest(body: unknown): {
 export const urlSearchParamsSchema = z.object({
   message: z
     .string()
-    .max(10000, 'Message parameter must not exceed 10,000 characters')
+    .max(100000, 'Message parameter must not exceed 100,000 characters')
     .optional(),
   model: modelSchema.optional(),
   mode: chatModeSchema.optional(),
