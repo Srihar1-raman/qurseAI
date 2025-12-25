@@ -18,6 +18,8 @@ import { processMessages } from '@/lib/services/message-processing.service';
 import { handleChatDatabaseOperations } from '@/lib/services/chat-database.service';
 import { buildStreamConfig } from '@/lib/services/stream-config.service';
 import { trimContext } from '@/lib/services/context-manager.service';
+import { getUserPreferences } from '@/lib/services/user-preferences';
+import { buildSystemPrompt } from '@/lib/services/prompt-builder.service';
 import type { User } from '@/lib/types';
 
 const logger = createScopedLogger('api/chat');
@@ -131,12 +133,29 @@ export async function POST(req: Request) {
     logger.debug('Setup complete', { duration: `${Date.now() - requestStartTime}ms` });
 
     // ============================================
-    // Stage 6: Process messages
+    // Stage 6: Fetch user preferences
+    // ============================================
+    let userPreferences = null;
+    if (fullUserData) {
+      try {
+        userPreferences = await getUserPreferences(fullUserData.id);
+        logger.debug('User preferences loaded', {
+          autoSave: userPreferences.auto_save_conversations,
+          hasCustomPrompt: !!userPreferences.custom_prompt
+        });
+      } catch (error: unknown) {
+        logger.warn('Failed to load user preferences, using defaults', error as Record<string, unknown>);
+        // Continue without preferences - will use defaults
+      }
+    }
+
+    // ============================================
+    // Stage 7: Process messages
     // ============================================
     const messageData = processMessages(messagesToSend);
 
     // ============================================
-    // Stage 7: Database operations
+    // Stage 8: Database operations
     // ============================================
     const resolvedConversationIdRef = { current: conversationId };
 
@@ -148,6 +167,7 @@ export async function POST(req: Request) {
       userMessageText: messageData.userMessageText,
       title: messageData.title,
       supabaseClient,
+      userPreferences,
     });
 
     // ============================================
@@ -185,6 +205,7 @@ export async function POST(req: Request) {
       abortController,
       conversationId,
       contextMetadata: trimResult.metadata,
+      customPrompt: userPreferences?.custom_prompt,
     });
 
     // ============================================

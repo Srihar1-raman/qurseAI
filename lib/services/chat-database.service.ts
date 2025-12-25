@@ -10,7 +10,7 @@ import { ensureGuestConversation } from '@/lib/db/guest-conversations.server';
 import { saveGuestMessage, getGuestMessageCount } from '@/lib/db/guest-messages.server';
 import { generateConversationTitle } from './title-generation.service';
 import { createScopedLogger } from '@/lib/utils/logger';
-import type { User } from '@/lib/types';
+import type { User, UserPreferences } from '@/lib/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 const logger = createScopedLogger('services/chat-database');
@@ -33,6 +33,8 @@ export interface DatabaseOperationsConfig {
   userMessageText: string;
   /** Supabase client for database operations */
   supabaseClient: SupabaseClient;
+  /** User preferences (for auto-save logic) */
+  userPreferences?: UserPreferences | null;
 }
 
 /**
@@ -48,7 +50,7 @@ export interface DatabaseOperationsResult {
 /**
  * Handle all database operations for chat message
  * - Ensures conversation exists
- * - Saves user message
+ * - Saves user message (if auto-save is enabled)
  * - Triggers title generation if needed
  *
  * @param config - Database operations configuration
@@ -65,9 +67,24 @@ export async function handleChatDatabaseOperations(
     title,
     userMessageText,
     supabaseClient,
+    userPreferences,
   } = config;
 
-  // Authenticated flow
+  // Check if auto-save is disabled (for authenticated users)
+  const shouldAutoSave = user?.id
+    ? userPreferences?.auto_save_conversations ?? true  // Default to true for authenticated users
+    : true;  // Guests always auto-save
+
+  if (!shouldAutoSave && user?.id) {
+    logger.info('Auto-save disabled by user preference', { userId: user.id });
+    // Return early without saving, but still provide conversation ID for continuity
+    return {
+      resolvedConversationId: conversationId || '',
+      saveSuccess: false,  // Not an error, just skipped
+    };
+  }
+
+  // Authenticated flow with auto-save enabled
   if (user && conversationId && lastUserMessage) {
     return handleAuthenticatedDatabaseOperations({
       conversationId,
@@ -79,7 +96,7 @@ export async function handleChatDatabaseOperations(
     });
   }
 
-  // Guest flow
+  // Guest flow (always auto-saves)
   if (!user && sessionHash && lastUserMessage) {
     return handleGuestDatabaseOperations({
       conversationId,

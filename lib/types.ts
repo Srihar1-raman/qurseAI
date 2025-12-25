@@ -34,6 +34,7 @@ export interface UserPreferences {
   theme: 'light' | 'dark' | 'auto';
   language: string;
   auto_save_conversations: boolean;
+  custom_prompt?: string | null;
   created_at: string;
   updated_at: string;
 }

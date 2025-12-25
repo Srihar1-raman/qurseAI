@@ -20,7 +20,8 @@ const logger = createScopedLogger('api/user/preferences');
 const updatePreferencesSchema = z.object({
   theme: z.enum(['light', 'dark', 'auto']).optional(),
   language: z.string().min(1).optional(),
-  auto_save_conversations: z.boolean().optional(), // Boolean validation (Zod boolean already strict by default)
+  auto_save_conversations: z.boolean().optional(),
+  custom_prompt: z.string().max(5000).nullable().optional(),
 });
 
 /**

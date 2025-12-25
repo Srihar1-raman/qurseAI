@@ -19,6 +19,7 @@ const DEFAULT_PREFERENCES: Omit<UserPreferences, 'user_id' | 'created_at' | 'upd
   theme: 'auto',
   language: 'English',
   auto_save_conversations: true,
+  custom_prompt: null,
 };
 
 /**
@@ -60,6 +61,16 @@ export async function updateUserPreferences(
     // Validate language (basic check - not empty)
     if (preferences.language !== undefined && !preferences.language.trim()) {
       throw new Error('Language cannot be empty');
+    }
+
+    // Validate custom_prompt (check length if provided)
+    if (preferences.custom_prompt !== undefined && preferences.custom_prompt !== null) {
+      const trimmed = preferences.custom_prompt.trim();
+      if (trimmed.length > 5000) {
+        throw new Error('Custom prompt cannot exceed 5000 characters');
+      }
+      // Store trimmed version
+      preferences.custom_prompt = trimmed;
     }
 
     return await updateUserPreferencesServerSide(userId, preferences);

@@ -273,12 +273,18 @@ CREATE TABLE IF NOT EXISTS user_preferences (
   theme TEXT CHECK (theme IN ('light', 'dark', 'auto')) DEFAULT 'auto' NOT NULL,
   language TEXT DEFAULT 'English' NOT NULL,
   auto_save_conversations BOOLEAN DEFAULT true NOT NULL,
+  custom_prompt TEXT DEFAULT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
 
 -- Index for user preferences
 CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user_id);
+
+-- Partial index for custom_prompt (only index non-null values for performance)
+CREATE INDEX IF NOT EXISTS idx_user_preferences_custom_prompt
+ON user_preferences(custom_prompt)
+WHERE custom_prompt IS NOT NULL;
 
 -- Trigger for updated_at
 CREATE TRIGGER update_user_preferences_updated_at

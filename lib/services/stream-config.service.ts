@@ -12,6 +12,7 @@ import { saveUserMessageServerSide } from '@/lib/db/messages.server';
 import { saveGuestMessage } from '@/lib/db/guest-messages.server';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { StreamingError, ProviderError } from '@/lib/errors';
+import { buildSystemPrompt } from './prompt-builder.service';
 import type { StreamTextProviderOptions } from '@/lib/utils/message-adapters';
 import type { User } from '@/lib/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -57,6 +58,8 @@ export interface StreamConfig {
     droppedMessages: number;
     warning?: string;
   };
+  /** User's custom system prompt (optional) */
+  customPrompt?: string | null;
 }
 
 /**
@@ -81,6 +84,7 @@ export function buildStreamConfig(config: StreamConfig) {
     abortController,
     conversationId,
     contextMetadata,
+    customPrompt,
   } = config;
 
   return {
@@ -107,10 +111,16 @@ export function buildStreamConfig(config: StreamConfig) {
       }
 
       // Start streaming
+      // Merge mode system prompt with user's custom prompt
+      const finalSystemPrompt = buildSystemPrompt(
+        modeConfig.systemPrompt || '',
+        customPrompt
+      );
+
       const result = streamText({
         model: qurse.languageModel(model),
         messages: convertToModelMessages(uiMessages),
-        system: modeConfig.systemPrompt,
+        system: finalSystemPrompt,
         maxRetries: 5,
         ...getModelParameters(model),
         providerOptions: getProviderOptions(model) as StreamTextProviderOptions,
