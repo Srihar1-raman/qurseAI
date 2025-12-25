@@ -295,6 +295,12 @@ export function ConversationClient({
     hasStoppedRef.current = true;
     hasSavedStopRef.current = false;
 
+    logger.info('CLIENT: Stop button clicked, calling stop()', {
+      conversationId: conversationIdRef.current,
+      streamingMessageId,
+      timestamp: Date.now(),
+    });
+
     stop();
 
     // Wait for stop() to complete and messages to settle before processing

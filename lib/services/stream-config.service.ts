@@ -138,10 +138,13 @@ export function buildStreamConfig(config: StreamConfig) {
           }
         },
         onAbort: ({ steps }) => {
-          logger.info('Stream aborted', {
+          const processingTime = (Date.now() - requestStartTime) / 1000;
+          logger.info('Stream aborted (streamText onAbort)', {
             conversationId: resolvedConversationIdRef.current,
             stepsCount: steps.length,
             hasSteps: steps.length > 0,
+            duration: `${processingTime.toFixed(2)}s`,
+            abortControllerAborted: abortController.signal.aborted,
           });
         },
         onFinish: async ({ usage }) => {
@@ -179,7 +182,22 @@ export function buildStreamConfig(config: StreamConfig) {
         })
       );
     },
-    onFinish: async ({ messages }: { messages: UIMessage[] }) => {
+    onFinish: async ({ messages, isAborted }: { messages: UIMessage[]; isAborted?: boolean }) => {
+      logger.info('Stream onFinish callback', {
+        isAborted,
+        conversationId: resolvedConversationIdRef.current,
+        messagesCount: messages.length,
+        abortControllerAborted: abortController.signal.aborted,
+      });
+
+      // Skip save if stream was aborted
+      if (isAborted || abortController.signal.aborted) {
+        logger.info('Stream was aborted, skipping assistant message save', {
+          conversationId: resolvedConversationIdRef.current,
+        });
+        return;
+      }
+
       await saveAssistantMessages({
         messages,
         conversationId: conversationId,
