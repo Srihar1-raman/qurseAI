@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryState } from 'nuqs';
 import { parseAsString } from 'nuqs';
@@ -62,26 +62,9 @@ function SettingsPageContent() {
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
   
   const { resolvedTheme, mounted } = useTheme();
-  const { user: mockUser, signOut, isLoading: isAuthLoading } = useAuth();
+  const { user: mockUser, signOut } = useAuth();
   const router = useRouter();
-  const hasRedirectedRef = useRef(false);
-  
-  // Client-side auth check and redirect (handles race condition with server-side check)
-  // Wait for auth to initialize, then redirect if not authenticated
-  useEffect(() => {
-    // Don't redirect while auth is still loading (prevents race condition)
-    if (isAuthLoading || hasRedirectedRef.current) {
-      return;
-    }
-    
-    // If auth finished loading and no user, redirect to homepage
-    if (!mockUser) {
-      hasRedirectedRef.current = true;
-      logger.debug('Client-side auth check: No user, redirecting to homepage');
-      router.replace('/');
-    }
-  }, [isAuthLoading, mockUser, router]);
-  
+
   // Get conversation count from HistorySidebarContext (shared cache)
   const { totalConversationCount, loadConversations, setTotalConversationCount } = useHistorySidebar();
   const [userStats, setUserStats] = useState<{ totalConversations: number }>({ 
@@ -321,13 +304,8 @@ function SettingsPageContent() {
     setIsHistoryOpen(true);
   }, []);
 
-  // Show skeleton while auth is loading or preferences are loading (prevents flash of content)
-  if (isAuthLoading || isLoadingPreferences) {
-    return <SettingsPageSkeleton />;
-  }
-  
-  // Don't render content if no user (redirect will happen in useEffect)
-  if (!mockUser) {
+  // Show skeleton while preferences are loading (prevents flash of content)
+  if (isLoadingPreferences) {
     return <SettingsPageSkeleton />;
   }
 
