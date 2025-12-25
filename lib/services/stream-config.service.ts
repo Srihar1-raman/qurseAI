@@ -117,13 +117,6 @@ export function buildStreamConfig(config: StreamConfig) {
         customPrompt
       );
 
-      logger.debug('System prompt built', {
-        modePromptLength: (modeConfig.systemPrompt || '').length,
-        customPromptLength: customPrompt?.length || 0,
-        finalPromptLength: finalSystemPrompt.length,
-        hasCustomPrompt: !!customPrompt,
-      });
-
       const result = streamText({
         model: qurse.languageModel(model),
         messages: convertToModelMessages(uiMessages),

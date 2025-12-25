@@ -139,12 +139,6 @@ export async function POST(req: Request) {
     if (fullUserData) {
       try {
         userPreferences = await getUserPreferences(fullUserData.id);
-        logger.debug('User preferences loaded', {
-          autoSave: userPreferences.auto_save_conversations,
-          hasCustomPrompt: !!userPreferences.custom_prompt,
-          customPromptLength: userPreferences.custom_prompt?.length || 0,
-          customPromptPreview: userPreferences.custom_prompt?.substring(0, 100) || 'none',
-        });
       } catch (error: unknown) {
         logger.warn('Failed to load user preferences, using defaults', error as Record<string, unknown>);
         // Continue without preferences - will use defaults
