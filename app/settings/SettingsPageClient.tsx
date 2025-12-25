@@ -50,8 +50,15 @@ function SettingsPageContent() {
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [autoSaveConversations, setAutoSaveConversations] = useState(true);
   const [language, setLanguage] = useState('English');
+  const [defaultModel, setDefaultModel] = useState<string>(() => {
+    // Initialize from localStorage if available (for instant UI)
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('user_default_model');
+      if (saved) return saved;
+    }
+    return 'openai/gpt-oss-120b';
+  });
   const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
   
   const { resolvedTheme, mounted } = useTheme();
@@ -122,7 +129,12 @@ function SettingsPageContent() {
         const preferences = await response.json();
         setAutoSaveConversations(preferences.auto_save_conversations ?? true);
         setLanguage(preferences.language ?? 'English');
-        
+        setDefaultModel(preferences.default_model ?? 'openai/gpt-oss-120b');
+        // Cache to localStorage for instant load on next visit
+        if (typeof window !== 'undefined' && preferences.default_model) {
+          localStorage.setItem('user_default_model', preferences.default_model);
+        }
+
         // Sync theme from database to theme provider
         if (preferences.theme && typeof window !== 'undefined') {
           const currentTheme = localStorage.getItem('theme');
@@ -143,7 +155,7 @@ function SettingsPageContent() {
 
     loadPreferences();
   }, [mockUser?.id]);
-  const { error: showToastError, warning: showToastWarning } = useToast();
+  const { error: showToastError, warning: showToastWarning, success: showToastSuccess } = useToast();
   
   // Read tab and section from URL using nuqs - no Suspense needed!
   const [tab] = useQueryState('tab', parseAsString);
@@ -171,7 +183,6 @@ function SettingsPageContent() {
 
     if (!isAutoSave) {
       setIsSaving(true);
-      setSaveStatus('saving');
     }
     
     try {
@@ -183,6 +194,7 @@ function SettingsPageContent() {
         body: JSON.stringify({
           auto_save_conversations: autoSaveConversations,
           language: language,
+          default_model: defaultModel,
           // Note: theme is saved separately when changed via GeneralSection
         }),
       });
@@ -192,13 +204,10 @@ function SettingsPageContent() {
       }
 
       if (!isAutoSave) {
-        setSaveStatus('saved');
-        setTimeout(() => setSaveStatus('idle'), 3000);
+        showToastSuccess('Settings saved successfully');
       }
     } catch (error) {
       if (!isAutoSave) {
-        setSaveStatus('error');
-        setTimeout(() => setSaveStatus('idle'), 3000);
         showToastError('Failed to save settings. Please try again.');
       }
       logger.error('Error saving preferences', error);
@@ -207,7 +216,7 @@ function SettingsPageContent() {
         setIsSaving(false);
       }
     }
-  }, [mockUser?.id, showToastError, autoSaveConversations, language]);
+  }, [mockUser?.id, showToastError, autoSaveConversations, language, defaultModel]);
 
   // Auto-save settings when they change (debounced)
   useEffect(() => {
@@ -215,7 +224,14 @@ function SettingsPageContent() {
       handleSaveSettings(true);
     }, 1000);
     return () => clearTimeout(timeoutId);
-  }, [autoSaveConversations, language, handleSaveSettings]);
+  }, [autoSaveConversations, language, defaultModel, handleSaveSettings]);
+
+  // Update localStorage immediately when defaultModel changes (for instant UI sync)
+  useEffect(() => {
+    if (defaultModel && typeof window !== 'undefined') {
+      localStorage.setItem('user_default_model', defaultModel);
+    }
+  }, [defaultModel]);
 
   // Wrap handleSignOut with useCallback for stable reference
   const handleSignOut = useCallback(async () => {
@@ -378,9 +394,10 @@ function SettingsPageContent() {
               language={language}
               setLanguage={setLanguage}
               user={mockUser}
-              saveStatus={saveStatus}
               isSaving={isSaving}
               onSaveSettings={() => handleSaveSettings(false)}
+              defaultModel={defaultModel}
+              setDefaultModel={setDefaultModel}
             />
           </div>
 

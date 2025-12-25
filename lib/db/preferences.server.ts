@@ -40,6 +40,7 @@ export async function getUserPreferencesServerSide(
       language: 'English',
       auto_save_conversations: true,
       custom_prompt: null,
+      default_model: 'openai/gpt-oss-120b',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -51,6 +52,7 @@ export async function getUserPreferencesServerSide(
     language: data.language,
     auto_save_conversations: data.auto_save_conversations,
     custom_prompt: data.custom_prompt,
+    default_model: data.default_model,
     created_at: data.created_at,
     updated_at: data.updated_at,
   };
@@ -95,6 +97,7 @@ export async function updateUserPreferencesServerSide(
       language: data.language,
       auto_save_conversations: data.auto_save_conversations,
       custom_prompt: data.custom_prompt,
+      default_model: data.default_model,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };
@@ -108,6 +111,7 @@ export async function updateUserPreferencesServerSide(
         language: preferences.language ?? 'English',
         auto_save_conversations: preferences.auto_save_conversations ?? true,
         custom_prompt: preferences.custom_prompt ?? null,
+        default_model: preferences.default_model ?? 'openai/gpt-oss-120b',
       })
       .select()
       .single();
@@ -125,6 +129,7 @@ export async function updateUserPreferencesServerSide(
       language: data.language,
       auto_save_conversations: data.auto_save_conversations,
       custom_prompt: data.custom_prompt,
+      default_model: data.default_model,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };

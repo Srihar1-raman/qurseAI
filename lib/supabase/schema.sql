@@ -274,6 +274,7 @@ CREATE TABLE IF NOT EXISTS user_preferences (
   language TEXT DEFAULT 'English' NOT NULL,
   auto_save_conversations BOOLEAN DEFAULT true NOT NULL,
   custom_prompt TEXT DEFAULT NULL,
+  default_model TEXT DEFAULT 'openai/gpt-oss-120b' NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW() NOT NULL,
   updated_at TIMESTAMPTZ DEFAULT NOW() NOT NULL
 );
@@ -285,6 +286,9 @@ CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user
 CREATE INDEX IF NOT EXISTS idx_user_preferences_custom_prompt
 ON user_preferences(custom_prompt)
 WHERE custom_prompt IS NOT NULL;
+
+-- Comment for default_model column
+COMMENT ON COLUMN user_preferences.default_model IS 'User-selected default AI model. Must match a valid model value from ai/models.ts configuration. Default is GPT OSS 120B.';
 
 -- Trigger for updated_at
 CREATE TRIGGER update_user_preferences_updated_at

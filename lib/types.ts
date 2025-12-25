@@ -35,6 +35,7 @@ export interface UserPreferences {
   language: string;
   auto_save_conversations: boolean;
   custom_prompt?: string | null;
+  default_model: string;
   created_at: string;
   updated_at: string;
 }
@@ -262,9 +263,10 @@ export interface GeneralSectionProps {
   language: string;
   setLanguage: (value: string) => void;
   user: User | null;
-  saveStatus: 'idle' | 'saving' | 'saved' | 'error';
   isSaving: boolean;
   onSaveSettings: () => void;
+  defaultModel: string;
+  setDefaultModel: (value: string) => void;
 }
 
 export interface DeleteAccountModalProps {

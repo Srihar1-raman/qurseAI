@@ -5,19 +5,23 @@ import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
 import type { GeneralSectionProps } from '@/lib/types';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
+import { ModelPreferenceSelector } from '@/components/settings/ModelPreferenceSelector';
+import { StyledDropdown } from '@/components/settings/StyledDropdown';
 import { createScopedLogger } from '@/lib/utils/logger';
 
 const logger = createScopedLogger('components/settings/GeneralSection');
 
-export default function GeneralSection({ 
-  autoSaveConversations, 
+export default function GeneralSection({
+  autoSaveConversations,
   setAutoSaveConversations,
   language,
   setLanguage,
   user,
   saveStatus,
   isSaving,
-  onSaveSettings
+  onSaveSettings,
+  defaultModel,
+  setDefaultModel
 }: GeneralSectionProps) {
   const { theme, setTheme, resolvedTheme, mounted } = useTheme();
 
@@ -103,24 +107,26 @@ export default function GeneralSection({
       </div>
 
       {/* Language */}
-      <div className="settings-group">
-        <label className="settings-label">Language</label>
-        <p className="settings-description">
-          Select your preferred language for the interface.
-        </p>
-        <select 
-          className="settings-select"
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-        >
-          <option value="English">English</option>
-          <option value="Spanish">Spanish</option>
-          <option value="French">French</option>
-          <option value="German">German</option>
-          <option value="Chinese">Chinese</option>
-          <option value="Japanese">Japanese</option>
-        </select>
-      </div>
+      <StyledDropdown
+        value={language}
+        onChange={setLanguage}
+        options={[
+          { value: 'English', label: 'English' },
+          { value: 'Spanish', label: 'Spanish' },
+          { value: 'French', label: 'French' },
+          { value: 'German', label: 'German' },
+          { value: 'Chinese', label: 'Chinese' },
+          { value: 'Japanese', label: 'Japanese' },
+        ]}
+        label="Language"
+        description="Select your preferred language for the interface."
+      />
+
+      {/* Default Model */}
+      <ModelPreferenceSelector
+        value={defaultModel}
+        onChange={setDefaultModel}
+      />
 
       {/* Settings Sync */}
       <div className="settings-group">
@@ -128,23 +134,14 @@ export default function GeneralSection({
           <div className="settings-item-content">
             <h4>Settings Sync</h4>
             <p>
-              {user ? 
+              {user ?
                 'Your settings are automatically saved to your account and will sync across all devices.' :
                 'Sign in to save your settings and sync them across all devices.'
               }
             </p>
-            {saveStatus === 'saved' && (
-              <p className="settings-success">✓ Settings saved successfully!</p>
-            )}
-            {saveStatus === 'error' && (
-              <p className="settings-error">✗ Failed to save settings. Please try again.</p>
-            )}
-            {user && saveStatus === 'idle' && (
-              <p className="settings-note">Settings will be saved automatically when you make changes.</p>
-            )}
           </div>
           {user && (
-            <UnifiedButton 
+            <UnifiedButton
               variant="secondary"
               onClick={onSaveSettings}
               disabled={isSaving}

@@ -29,7 +29,7 @@ export default function ModelSelector() {
   const { selectedModel, setSelectedModel } = useConversation();
   const { error: showToastError } = useToast();
   const router = useRouter();
-  
+
   // Popup states
   const [showGuestPopup, setShowGuestPopup] = useState(false);
   const [showUpgradePopup, setShowUpgradePopup] = useState(false);
@@ -39,9 +39,9 @@ export default function ModelSelector() {
   // Group models by category and filter by search
   const groupedModels = useMemo(() => {
     const query = searchQuery.toLowerCase();
-    
+
     // Filter models by search query
-    const filteredModels = models.filter(model => 
+    const filteredModels = models.filter(model =>
       !query ||
       model.label.toLowerCase().includes(query) ||
       model.description.toLowerCase().includes(query) ||
@@ -71,16 +71,36 @@ export default function ModelSelector() {
 
   // Close dropdown on outside click using hook
   useClickOutside(dropdownRef, () => {
-    setIsOpen(false);
-    setSearchQuery('');
+    if (mounted) {
+      setIsOpen(false);
+      setSearchQuery('');
+    }
   }, isOpen);
 
   // Focus search input when dropdown opens
   useEffect(() => {
-    if (isOpen) {
+    if (mounted && isOpen) {
       setTimeout(() => searchInputRef.current?.focus(), 0);
     }
-  }, [isOpen]);
+  }, [isOpen, mounted]);
+
+  // Prevent hydration mismatch by not rendering until mounted
+  if (!mounted) {
+    return (
+      <Button variant="secondary" className="justify-between gap-2" disabled>
+        <div className="flex items-center gap-2">
+          <Image
+            src={getIconPath('model', resolvedTheme, false, mounted)}
+            alt="Model"
+            width={16}
+            height={16}
+            className="icon-sm"
+          />
+          <span className="model-selector-text">Loading...</span>
+        </div>
+      </Button>
+    );
+  }
 
   const handleSelectModel = (modelValue: string) => {
     const model = getModelConfig(modelValue);

@@ -22,6 +22,7 @@ const updatePreferencesSchema = z.object({
   language: z.string().min(1).optional(),
   auto_save_conversations: z.boolean().optional(),
   custom_prompt: z.string().max(5000).nullable().optional(),
+  default_model: z.string().min(1).optional(),
 });
 
 /**

@@ -118,8 +118,8 @@ export default function RootLayout({
       </head>
       <body className={`${inter.variable} ${reenieBeanie.variable} antialiased`} suppressHydrationWarning>
         <ErrorBoundary>
-        <ThemeProvider>
-          <AuthProvider>
+        <AuthProvider>
+          <ThemeProvider>
             <RateLimitProvider>
               <HistorySidebarProvider>
                 <SidebarProvider>
@@ -137,8 +137,8 @@ export default function RootLayout({
                 </SidebarProvider>
               </HistorySidebarProvider>
             </RateLimitProvider>
-          </AuthProvider>
-        </ThemeProvider>
+          </ThemeProvider>
+        </AuthProvider>
         </ErrorBoundary>
         <Analytics />
         <SpeedInsights />
