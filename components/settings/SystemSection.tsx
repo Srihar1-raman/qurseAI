@@ -20,7 +20,9 @@ export default function SystemSection() {
         const response = await fetch('/api/user/preferences');
         if (response.ok) {
           const data = await response.json();
-          setCustomPrompt(data.custom_prompt || '');
+          const loadedPrompt = data.custom_prompt || '';
+          setCustomPrompt(loadedPrompt);
+          setInitialPrompt(loadedPrompt);
         }
       } catch (error) {
         logger.error('Failed to load custom prompt', error);
@@ -33,9 +35,6 @@ export default function SystemSection() {
   // Detect changes (track if different from loaded value)
   const [initialPrompt, setInitialPrompt] = useState('');
   useEffect(() => {
-    if (initialPrompt === '' && customPrompt !== '') {
-      setInitialPrompt(customPrompt);
-    }
     setHasChanges(customPrompt !== initialPrompt);
   }, [customPrompt, initialPrompt]);
 
@@ -115,7 +114,7 @@ export default function SystemSection() {
           }}
         />
         <div className="settings-textarea-footer">
-          <span className={`character-count ${isOverLimit ? 'over-limit' : ''}`}>
+          <span className="settings-description">
             {characterCount}/{maxLength} characters
             {isOverLimit && ' (exceeds limit)'}
           </span>
@@ -136,9 +135,6 @@ export default function SystemSection() {
             {isSaving ? 'Saving...' : 'Save Changes'}
           </UnifiedButton>
         </div>
-        {hasChanges && !isOverLimit && (
-          <p className="settings-hint">You have unsaved changes</p>
-        )}
         {isOverLimit && (
           <p className="settings-error">Please reduce your prompt to {maxLength} characters or less</p>
         )}

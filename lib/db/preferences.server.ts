@@ -39,6 +39,7 @@ export async function getUserPreferencesServerSide(
       theme: 'auto',
       language: 'English',
       auto_save_conversations: true,
+      custom_prompt: null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -49,6 +50,7 @@ export async function getUserPreferencesServerSide(
     theme: data.theme as 'light' | 'dark' | 'auto',
     language: data.language,
     auto_save_conversations: data.auto_save_conversations,
+    custom_prompt: data.custom_prompt,
     created_at: data.created_at,
     updated_at: data.updated_at,
   };
@@ -92,6 +94,7 @@ export async function updateUserPreferencesServerSide(
       theme: data.theme as 'light' | 'dark' | 'auto',
       language: data.language,
       auto_save_conversations: data.auto_save_conversations,
+      custom_prompt: data.custom_prompt,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };
@@ -104,6 +107,7 @@ export async function updateUserPreferencesServerSide(
         theme: preferences.theme ?? 'auto',
         language: preferences.language ?? 'English',
         auto_save_conversations: preferences.auto_save_conversations ?? true,
+        custom_prompt: preferences.custom_prompt ?? null,
       })
       .select()
       .single();
@@ -120,6 +124,7 @@ export async function updateUserPreferencesServerSide(
       theme: data.theme as 'light' | 'dark' | 'auto',
       language: data.language,
       auto_save_conversations: data.auto_save_conversations,
+      custom_prompt: data.custom_prompt,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };
