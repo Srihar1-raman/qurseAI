@@ -20,6 +20,7 @@ const DEFAULT_PREFERENCES: Omit<UserPreferences, 'user_id' | 'created_at' | 'upd
   language: 'English',
   auto_save_conversations: true,
   custom_prompt: null,
+  default_model: 'openai/gpt-oss-120b',
 };
 
 /**

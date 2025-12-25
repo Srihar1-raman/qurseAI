@@ -17,7 +17,6 @@ export default function GeneralSection({
   language,
   setLanguage,
   user,
-  saveStatus,
   isSaving,
   onSaveSettings,
   defaultModel,
