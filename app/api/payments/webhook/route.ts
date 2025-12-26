@@ -14,28 +14,45 @@ const logger = createScopedLogger('api/payments/webhook');
 const DODO_WEBHOOK_KEY = process.env.DODO_PAYMENTS_WEBHOOK_KEY;
 
 /**
- * Verify webhook signature using HMAC-SHA256
+ * Verify webhook signature using Standard Webhooks spec
+ * Format: webhook-id + timestamp + payload separated by periods
  */
 function verifyWebhookSignature(
   payload: string,
   signature: string,
+  timestamp: string,
+  webhookId: string,
   webhookKey: string
 ): boolean {
   try {
-    // Dodo sends signature as hex string
+    // Dodo follows Standard Webhooks spec
+    // Build signed message: webhookId.timestamp.payload
+    const signedContent = `${webhookId}.${timestamp}.${payload}`;
+
+    // Create HMAC SHA256 signature
     const hmac = crypto.createHmac('sha256', webhookKey);
-    hmac.update(payload);
+    hmac.update(signedContent);
     const digest = hmac.digest('hex');
 
+    // Signature format: "v1,hash1,v2,hash2,..." - extract first hash
+    const signatureParts = signature.split(',');
+    const signatureHash = signatureParts.find((part, i) =>
+      i % 2 === 1 && part.startsWith('sha256=')
+    )?.replace('sha256=', '') || signatureParts[1];
+
+    if (!signatureHash) {
+      logger.warn('Invalid signature format', { signature });
+      return false;
+    }
+
     // Use timing-safe comparison to prevent timing attacks
-    const digestBuffer = Buffer.from(digest, 'hex');
-    const signatureBuffer = Buffer.from(signature, 'hex');
+    const digestBuffer = Buffer.from(digest, 'utf8');
+    const signatureBuffer = Buffer.from(signatureHash, 'utf8');
 
     if (digestBuffer.length !== signatureBuffer.length) {
       return false;
     }
 
-    // Timing-safe comparison
     return crypto.timingSafeEqual(digestBuffer, signatureBuffer);
   } catch (error) {
     logger.error('Signature verification error', error);
@@ -242,12 +259,19 @@ export async function POST(request: NextRequest) {
     // ============================================
     // Stage 1: Verify webhook signature
     // ============================================
-    const signature = request.headers.get('x-dodo-signature') || request.headers.get('dodo-signature');
+    // Dodo sends these headers per Standard Webhooks spec
+    const webhookId = request.headers.get('webhook-id');
+    const webhookTimestamp = request.headers.get('webhook-timestamp');
+    const webhookSignature = request.headers.get('webhook-signature');
 
-    if (!signature) {
-      logger.error('Webhook missing signature');
+    if (!webhookId || !webhookTimestamp || !webhookSignature) {
+      logger.error('Webhook missing required headers', {
+        hasWebhookId: !!webhookId,
+        hasTimestamp: !!webhookTimestamp,
+        hasSignature: !!webhookSignature,
+      });
       return NextResponse.json(
-        { error: 'Missing signature' },
+        { error: 'Missing webhook headers' },
         { status: 401 }
       );
     }
@@ -262,11 +286,19 @@ export async function POST(request: NextRequest) {
 
     const rawPayload = await request.text();
 
-    const isValid = verifyWebhookSignature(rawPayload, signature, DODO_WEBHOOK_KEY);
+    const isValid = verifyWebhookSignature(
+      rawPayload,
+      webhookSignature,
+      webhookTimestamp,
+      webhookId,
+      DODO_WEBHOOK_KEY
+    );
 
     if (!isValid) {
       logger.error('Invalid webhook signature', {
-        signaturePreview: signature.substring(0, 20),
+        webhookId,
+        timestamp: webhookTimestamp,
+        signaturePreview: webhookSignature.substring(0, 20),
       });
       return NextResponse.json(
         { error: 'Invalid signature' },
