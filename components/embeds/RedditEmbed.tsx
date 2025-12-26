@@ -10,14 +10,8 @@ interface RedditEmbedProps {
 
 export const RedditEmbed: React.FC<RedditEmbedProps> = React.memo(({ url, className = '' }) => {
   const info = useMemo(() => {
-    console.log('RedditEmbed URL:', url);
-    if (!isRedditUrl(url)) {
-      console.log('Not a valid Reddit URL');
-      return null;
-    }
-    const extracted = extractRedditInfo(url);
-    console.log('Extracted Reddit info:', extracted);
-    return extracted;
+    if (!isRedditUrl(url)) return null;
+    return extractRedditInfo(url);
   }, [url]);
 
   if (!info) {

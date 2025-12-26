@@ -46,7 +46,6 @@ export const ExcalidrawEmbed: React.FC<ExcalidrawEmbedProps> = React.memo(({ cod
 
   try {
     const data = JSON.parse(code);
-    console.log('Excalidraw data parsed:', data);
 
     return (
       <div className={`my-6 ${className}`}>

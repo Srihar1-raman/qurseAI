@@ -11,20 +11,13 @@ interface GistEmbedProps {
 export const GistEmbed: React.FC<GistEmbedProps> = React.memo(({ url, className = '' }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const info = useMemo(() => {
-    console.log('GistEmbed URL:', url);
-    if (!isGistUrl(url)) {
-      console.log('Not a valid Gist URL');
-      return null;
-    }
-    const extracted = extractGistInfo(url);
-    console.log('Extracted Gist info:', extracted);
-    return extracted;
+    if (!isGistUrl(url)) return null;
+    return extractGistInfo(url);
   }, [url]);
 
   useEffect(() => {
     if (!info || !containerRef.current) return;
 
-    console.log('Loading Gist script for:', info.username, info.gistId);
     // Load GitHub Gist embed script
     const script = document.createElement('script');
     script.src = `https://gist.github.com/${info.username}/${info.gistId}.js`;

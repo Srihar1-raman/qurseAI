@@ -17,7 +17,6 @@ import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversationId } from '@/hooks/use-conversation-id';
 
 export const dynamic = 'force-dynamic';
-export const runtime = 'edge';
 
 // Lazy load ConversationClient to code split AI SDK
 // AI SDK code is only loaded when needed
