@@ -22,6 +22,12 @@ const nextConfig: NextConfig = {
         port: '',
         pathname: '/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'www.google.com',
+        port: '',
+        pathname: '/s2/favicons/**',
+      },
     ],
   },
   // Exclude Sentry's optional dependencies from externalization

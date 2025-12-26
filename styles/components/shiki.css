@@ -1,0 +1,62 @@
+/* ===================================
+   SHIKI SYNTAX HIGHLIGHTING
+   Styles for code blocks with Shiki
+   =================================== */
+
+/* Shiki wrapper */
+.shiki-wrapper {
+  position: relative;
+}
+
+/* Shiki pre/code styles */
+.shiki-wrapper pre {
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+}
+
+.shiki-wrapper code {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace !important;
+  font-size: 0.875rem !important;
+  line-height: 1.625 !important;
+  background: transparent !important;
+  padding: 0 !important;
+}
+
+/* Dark mode adjustments */
+.dark .shiki-wrapper,
+.dark .shiki-wrapper pre,
+.dark .shiki-wrapper code {
+  color-scheme: dark;
+}
+
+/* Light mode adjustments */
+.light .shiki-wrapper,
+.light .shiki-wrapper pre,
+.light .shiki-wrapper code {
+  color-scheme: light;
+}
+
+/* Ensure code blocks don't overflow */
+.shiki-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Custom scrollbar for code blocks */
+.shiki-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.shiki-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.shiki-wrapper::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 4px;
+}
+
+.shiki-wrapper::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.3);
+}

@@ -15,6 +15,7 @@
 @import '../styles/components/history.css';
 @import '../styles/components/settings.css';
 @import '../styles/components/rate-limit.css';
+@import '../styles/components/shiki.css';
 
 /* Tailwind directives */
 /* stylelint-disable at-rule-no-unknown */

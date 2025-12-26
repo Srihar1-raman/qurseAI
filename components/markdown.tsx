@@ -1,19 +1,36 @@
+'use client';
+
 import 'katex/dist/katex.min.css';
 
-import { highlight } from 'sugar-high';
 import Link from 'next/link';
+import Image from 'next/image';
 import Latex from 'react-latex-next';
 import Marked, { ReactRenderer } from 'marked-react';
 import React, { useCallback, useMemo, useState, Fragment, useRef, lazy, Suspense, useEffect } from 'react';
+import mermaid from 'mermaid';
 
 import { Button } from '@/components/ui/button';
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/table';
 import { Tooltip, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
-import { Check, Copy, WrapText, ArrowLeftRight, Download } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useToast } from '@/lib/contexts/ToastContext';
-// Removed useThrottledValue import - no longer throttling content for smooth streaming
+import { useTheme } from '@/lib/theme-provider';
+import { getIconPath } from '@/lib/icon-utils';
+import { highlightCode } from '@/lib/shiki';
+import {
+  YouTubeEmbed,
+  TwitterEmbed,
+  RedditEmbed,
+  SpotifyEmbed,
+  GistEmbed,
+  PdfEmbed,
+  VegaLiteEmbed,
+  PlantUMLEmbed,
+  ExcalidrawEmbed,
+  CodepenEmbed,
+} from '@/components/embeds';
+import { getEmbedType } from '@/lib/embed-utils';
 
 // Performance constants
 const THROTTLE_DELAY_MS = 150;
@@ -64,6 +81,22 @@ interface ProcessedContentResult {
 // Fallback monospace font stack (Geist_Mono not available)
 const MONOSPACE_FONT = "'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace";
 
+// Escape HTML entities for fallback
+function escapeHtml(text: string): string {
+  const div = typeof document !== 'undefined' ? document.createElement('div') : null;
+  if (div) {
+    div.textContent = text;
+    return div.innerHTML;
+  }
+  // Server-side fallback
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 // Check if URL is external (not relative)
 const isExternalUrl = (href: string): boolean => {
   // If it starts with http:// or https://, it's definitely external
@@ -89,28 +122,191 @@ interface CodeBlockProps {
   elementKey: string;
 }
 
+// Icon Component for theme-aware icons
+const Icon: React.FC<{
+  name: string;
+  alt: string;
+  className?: string;
+}> = ({ name, alt, className }) => {
+  const { resolvedTheme, mounted } = useTheme();
+
+  return (
+    <Image
+      src={getIconPath(name, resolvedTheme, false, mounted)}
+      alt={alt}
+      width={14}
+      height={14}
+      className={className}
+    />
+  );
+};
+
+// Initialize Mermaid
+if (typeof window !== 'undefined') {
+  mermaid.initialize({
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+  });
+}
+
+// Mermaid Diagram Component
+const MermaidDiagram: React.FC<{ code: string }> = React.memo(({ code }) => {
+  const [svg, setSvg] = useState<string>('');
+  const [error, setError] = useState<string>('');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function renderDiagram() {
+      try {
+        const { svg } = await mermaid.render(`mermaid-${Math.random().toString(36).substr(2, 9)}`, code);
+        if (!cancelled) {
+          setSvg(svg);
+          setError('');
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error('Mermaid rendering error:', err);
+          setError('Failed to render diagram');
+        }
+      }
+    }
+
+    renderDiagram();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [code]);
+
+  if (error) {
+    return (
+      <div className="my-5 p-4 border border-border rounded-md bg-destructive/10 text-destructive">
+        <p className="text-sm">Failed to render Mermaid diagram</p>
+        <pre className="mt-2 text-xs overflow-x-auto">{code}</pre>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="my-5 flex justify-center"
+      dangerouslySetInnerHTML={{ __html: svg }}
+    />
+  );
+});
+
+MermaidDiagram.displayName = 'MermaidDiagram';
+
+// Link Preview Component
+const LinkPreview: React.FC<{ href: string; children: React.ReactNode }> = ({ href, children }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const [preview, setPreview] = useState<{ title: string; description: string; image: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleMouseEnter = useCallback(async () => {
+    // Only fetch preview if not already loaded
+    if (preview || isLoading) return;
+
+    setIsLoading(true);
+    try {
+      // Use a proxy service or metadata fetching
+      // For now, we'll do a simple implementation
+      const response = await fetch(`/api/link-preview?url=${encodeURIComponent(href)}`);
+      if (response.ok) {
+        const data = await response.json();
+        setPreview(data);
+      }
+    } catch (error) {
+      console.warn('Failed to fetch link preview:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [href, preview, isLoading]);
+
+  return (
+    <Tooltip open={isOpen} onOpenChange={setIsOpen}>
+      <TooltipTrigger asChild>
+        <span onMouseEnter={handleMouseEnter}>{children}</span>
+      </TooltipTrigger>
+      <TooltipContent side="bottom" className="max-w-xs p-0" hideArrow>
+        {isLoading ? (
+          <div className="p-3">
+            <div className="animate-pulse space-y-2">
+              <div className="h-3 bg-muted rounded w-3/4"></div>
+              <div className="h-2 bg-muted rounded w-full"></div>
+              <div className="h-2 bg-muted rounded w-1/2"></div>
+            </div>
+          </div>
+        ) : preview ? (
+          <div className="p-0">
+            {preview.image && (
+              <img
+                src={preview.image}
+                alt=""
+                className="w-full h-24 object-cover rounded-t-md"
+              />
+            )}
+            <div className="p-2.5">
+              <p className="font-semibold text-xs text-foreground">{preview.title}</p>
+              {preview.description && (
+                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{preview.description}</p>
+              )}
+              <p className="text-xs text-muted-foreground mt-1.5 truncate">{new URL(href).hostname}</p>
+            </div>
+          </div>
+        ) : (
+          <div className="p-2.5">
+            <p className="text-xs text-foreground">{new URL(href).hostname}</p>
+          </div>
+        )}
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
 // Lazy-loaded CodeBlock component for large blocks
 const LazyCodeBlockComponent: React.FC<CodeBlockProps> = ({ children, language, elementKey }) => {
-  const [isCopied, setIsCopied] = useState(false);
-  const [isWrapped, setIsWrapped] = useState(false);
   const toast = useToast();
-  const lineCount = useMemo(() => children.split('\n').length, [children]);
+  const { resolvedTheme } = useTheme();
+  const [highlightedCode, setHighlightedCode] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Synchronous highlighting for better performance
-  const highlightedCode = useMemo(() => {
-    try {
-      return children.length < 10000 ? highlight(children) : children;
-    } catch (error) {
-      console.warn('Syntax highlighting failed, using plain text:', error);
-      return children;
+  useEffect(() => {
+    let cancelled = false;
+
+    async function highlight() {
+      setIsLoading(true);
+      try {
+        const html = await highlightCode(
+          children,
+          language || 'text',
+          resolvedTheme === 'dark'
+        );
+        if (!cancelled) {
+          setHighlightedCode(html);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.warn('Syntax highlighting failed, using plain text:', error);
+        if (!cancelled) {
+          setHighlightedCode(escapeHtml(children));
+          setIsLoading(false);
+        }
+      }
     }
-  }, [children]);
+
+    highlight();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [children, language, resolvedTheme]);
 
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(children);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
       toast.success('Code copied to clipboard');
     } catch (error) {
       console.error('Failed to copy code:', error);
@@ -118,62 +314,42 @@ const LazyCodeBlockComponent: React.FC<CodeBlockProps> = ({ children, language, 
     }
   }, [children, toast]);
 
-  const toggleWrap = useCallback(() => {
-    setIsWrapped((prev) => {
-      const newState = !prev;
-      toast.success(newState ? 'Code wrap enabled' : 'Code wrap disabled');
-      return newState;
-    });
-  }, [toast]);
-
   return (
     <div className="group relative my-5 rounded-md border border-border bg-accent overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 bg-accent border-b border-border">
         <div className="flex items-center gap-2">
           {language && (
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{language}</span>
+            <span className="text-xs font-medium text-muted-foreground lowercase">{language}</span>
           )}
-          <span className="text-xs text-muted-foreground">{lineCount} lines</span>
         </div>
 
         <div className="flex gap-1">
           <button
-            onClick={toggleWrap}
-            className={cn(
-              'p-1 rounded border border-border bg-background shadow-sm transition-colors',
-              isWrapped ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
-            )}
-            title={isWrapped ? 'Disable wrap' : 'Enable wrap'}
-          >
-            {isWrapped ? <ArrowLeftRight size={12} /> : <WrapText size={12} />}
-          </button>
-          <button
             onClick={handleCopy}
-            className={cn(
-              'p-1 rounded border border-border bg-background shadow-sm transition-colors',
-              isCopied ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
-            )}
-            title={isCopied ? 'Copied!' : 'Copy code'}
+            className="p-1 rounded border border-border bg-background shadow-sm transition-all duration-200 hover:bg-muted hover:scale-105 text-muted-foreground"
+            title="Copy code"
           >
-            {isCopied ? <Check size={12} /> : <Copy size={12} />}
+            <Icon name="copy" alt="Copy" />
           </button>
         </div>
       </div>
 
       <div className="relative">
-        <div
-          className={cn(
-            'font-mono text-sm leading-relaxed p-2',
-            isWrapped && 'whitespace-pre-wrap break-words',
-            !isWrapped && 'whitespace-pre overflow-x-auto',
-          )}
-          style={{
-            fontFamily: MONOSPACE_FONT,
-          }}
-          dangerouslySetInnerHTML={{
-            __html: highlightedCode,
-          }}
-        />
+        {isLoading ? (
+          <div className="font-mono text-sm leading-relaxed p-2 text-muted-foreground animate-pulse">
+            Loading syntax highlighter...
+          </div>
+        ) : (
+          <div
+            className="shiki-wrapper text-sm leading-relaxed p-2 overflow-x-auto"
+            style={{
+              fontFamily: MONOSPACE_FONT,
+            }}
+            dangerouslySetInnerHTML={{
+              __html: highlightedCode,
+            }}
+          />
+        )}
       </div>
     </div>
   );
@@ -183,25 +359,45 @@ const LazyCodeBlock = lazy(() => Promise.resolve({ default: LazyCodeBlockCompone
 
 // Synchronous CodeBlock component for smaller blocks
 const SyncCodeBlock: React.FC<CodeBlockProps> = ({ language, children, elementKey }) => {
-  const [isCopied, setIsCopied] = useState(false);
-  const [isWrapped, setIsWrapped] = useState(false);
   const toast = useToast();
-  const lineCount = useMemo(() => children.split('\n').length, [children]);
+  const { resolvedTheme } = useTheme();
+  const [highlightedCode, setHighlightedCode] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(true);
 
-  const highlightedCode = useMemo(() => {
-    try {
-      return highlight(children);
-    } catch (error) {
-      console.warn('Syntax highlighting failed, using plain text:', error);
-      return children;
+  useEffect(() => {
+    let cancelled = false;
+
+    async function highlight() {
+      setIsLoading(true);
+      try {
+        const html = await highlightCode(
+          children,
+          language || 'text',
+          resolvedTheme === 'dark'
+        );
+        if (!cancelled) {
+          setHighlightedCode(html);
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.warn('Syntax highlighting failed, using plain text:', error);
+        if (!cancelled) {
+          setHighlightedCode(escapeHtml(children));
+          setIsLoading(false);
+        }
+      }
     }
-  }, [children]);
+
+    highlight();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [children, language, resolvedTheme]);
 
   const handleCopy = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(children);
-      setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
       toast.success('Code copied to clipboard');
     } catch (error) {
       console.error('Failed to copy code:', error);
@@ -209,62 +405,42 @@ const SyncCodeBlock: React.FC<CodeBlockProps> = ({ language, children, elementKe
     }
   }, [children, toast]);
 
-  const toggleWrap = useCallback(() => {
-    setIsWrapped((prev) => {
-      const newState = !prev;
-      toast.success(newState ? 'Code wrap enabled' : 'Code wrap disabled');
-      return newState;
-    });
-  }, [toast]);
-
   return (
     <div className="group relative my-5 rounded-md border border-border bg-accent overflow-hidden">
       <div className="flex items-center justify-between px-4 py-2 bg-accent border-b border-border">
         <div className="flex items-center gap-2">
           {language && (
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{language}</span>
+            <span className="text-xs font-medium text-muted-foreground lowercase">{language}</span>
           )}
-          <span className="text-xs text-muted-foreground">{lineCount} lines</span>
         </div>
 
         <div className="flex gap-1">
           <button
-            onClick={toggleWrap}
-            className={cn(
-              'p-1 rounded border border-border bg-background shadow-sm transition-colors',
-              isWrapped ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
-            )}
-            title={isWrapped ? 'Disable wrap' : 'Enable wrap'}
-          >
-            {isWrapped ? <ArrowLeftRight size={12} /> : <WrapText size={12} />}
-          </button>
-          <button
             onClick={handleCopy}
-            className={cn(
-              'p-1 rounded border border-border bg-background shadow-sm transition-colors',
-              isCopied ? 'text-primary' : 'text-muted-foreground hover:text-foreground',
-            )}
-            title={isCopied ? 'Copied!' : 'Copy code'}
+            className="p-1 rounded border border-border bg-background shadow-sm transition-all duration-200 hover:bg-muted hover:scale-105 text-muted-foreground"
+            title="Copy code"
           >
-            {isCopied ? <Check size={12} /> : <Copy size={12} />}
+            <Icon name="copy" alt="Copy" />
           </button>
         </div>
       </div>
 
       <div className="relative">
-        <div
-          className={cn(
-            'font-mono text-sm leading-relaxed p-2',
-            isWrapped && 'whitespace-pre-wrap break-words',
-            !isWrapped && 'whitespace-pre overflow-x-auto',
-          )}
-          style={{
-            fontFamily: MONOSPACE_FONT,
-          }}
-          dangerouslySetInnerHTML={{
-            __html: highlightedCode,
-          }}
-        />
+        {isLoading ? (
+          <div className="font-mono text-sm leading-relaxed p-2 text-muted-foreground animate-pulse">
+            Loading syntax highlighter...
+          </div>
+        ) : (
+          <div
+            className="shiki-wrapper text-sm leading-relaxed p-2 overflow-x-auto"
+            style={{
+              fontFamily: MONOSPACE_FONT,
+            }}
+            dangerouslySetInnerHTML={{
+              __html: highlightedCode,
+            }}
+          />
+        )}
       </div>
     </div>
   );
@@ -280,9 +456,8 @@ const CodeBlock: React.FC<CodeBlockProps> = React.memo(
             <div className="flex items-center justify-between px-4 py-2 bg-accent border-b border-border">
               <div className="flex items-center gap-2">
                 {language && (
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{language}</span>
+                  <span className="text-xs font-medium text-muted-foreground lowercase">{language}</span>
                 )}
-                <span className="text-xs text-muted-foreground">{children.split('\n').length} lines</span>
               </div>
             </div>
             <div className="font-mono text-sm leading-relaxed p-2 text-muted-foreground">
@@ -314,7 +489,7 @@ CodeBlock.displayName = 'CodeBlock';
 /**
  * Calculate adaptive throttle delay based on content size
  * Larger content needs more processing time, so we throttle more aggressively
- * 
+ *
  * @param contentLength - Current content length in characters
  * @param isStreaming - Whether content is actively streaming
  * @returns Throttle delay in milliseconds (0 if not streaming)
@@ -327,22 +502,22 @@ function getAdaptiveThrottleDelay(contentLength: number, isStreaming: boolean): 
   if (contentLength < ADAPTIVE_THROTTLE_SMALL) {
     return THROTTLE_DELAY_SMALL; // 150ms for small content
   }
-  
+
   if (contentLength < ADAPTIVE_THROTTLE_MEDIUM) {
     return THROTTLE_DELAY_MEDIUM; // 250ms for medium content
   }
-  
+
   if (contentLength < ADAPTIVE_THROTTLE_LARGE) {
     return THROTTLE_DELAY_LARGE; // 400ms for large content
   }
-  
+
   return THROTTLE_DELAY_VERY_LARGE; // 600ms for very large content
 }
 
 /**
  * Detect fast streaming by measuring content growth rate
  * Returns true if content is growing faster than threshold
- * 
+ *
  * @param content - Current content string
  * @param isStreaming - Whether content is actively streaming
  * @returns True if streaming is fast (>5k chars/sec)
@@ -367,7 +542,7 @@ function useFastStreamingDetection(content: string, isStreaming: boolean): boole
     // Calculate growth rate (characters per second)
     if (timeDelta > 0 && contentDelta > 0) {
       const growthRate = (contentDelta / timeDelta) * 1000; // chars per second
-      
+
       // Consider fast if growing faster than threshold
       setIsFastStreaming(growthRate > FAST_STREAMING_RATE);
     }
@@ -518,9 +693,9 @@ const useProcessedContent = (
       // Extract LaTeX blocks AFTER monetary amounts are protected
       const allLatexPatterns = [
         { patterns: [/\\\[([\s\S]*?)\\\]/g, /\$\$([\s\S]*?)\$\$/g], isBlock: true, prefix: 'LATEXBLOCK' },
-        { 
+        {
           patterns: [
-            /\\\(([\s\S]*?)\\\)/g, 
+            /\\\(([\s\S]*?)\\\)/g,
             // Match $ expressions containing LaTeX commands, superscripts, subscripts, or braces
             /\$[^\$\n]*[\\^_{}][^\$\n]*\$/g,
             // Match algebraic expressions with parentheses and variables
@@ -533,9 +708,9 @@ const useProcessedContent = (
             /\$[0-9][^\$\n]*[\\^_≤≥≠∈∉⊂⊃∪∩θΘπΠαβγδεζηλμνξρσςτφχψωΑΒΓΔΕΖΗΛΜΝΞΡΣΤΦΧΨΩ°][^\$\n]*\$/g,
             // Match simple mathematical variables (single letter or Greek letters, but not plain numbers)
             /\$[a-zA-ZθΘπΠαβγδεζηλμνξρσςτφχψωΑΒΓΔΕΖΗΛΜΝΞΡΣΤΦΧΨΩ]+\$/g
-          ], 
-          isBlock: false, 
-          prefix: 'LATEXINLINE' 
+          ],
+          isBlock: false,
+          prefix: 'LATEXINLINE'
         },
       ];
 
@@ -699,18 +874,18 @@ function processFullContentSync(content: string): ProcessedContentResult {
     // Extract LaTeX blocks AFTER monetary amounts are protected
     const allLatexPatterns = [
       { patterns: [/\\\[([\s\S]*?)\\\]/g, /\$\$([\s\S]*?)\$\$/g], isBlock: true, prefix: 'LATEXBLOCK' },
-      { 
+      {
         patterns: [
-          /\\\(([\s\S]*?)\\\)/g, 
+          /\\\(([\s\S]*?)\\\)/g,
           /\$[^\$\n]*[\\^_{}][^\$\n]*\$/g,
           /\$[^\$\n]*\([^\)]*[a-zA-Z][^\)]*\)[^\$\n]*\$/g,
           /\$[^\$\n]*\|[^\|]*\|[^\$\n]*\$/g,
           /\$[a-zA-Z]\s*[=<>≤≥≠]\s*[0-9a-zA-Z][^\$\n]*\$/g,
           /\$[0-9][^\$\n]*[\\^_≤≥≠∈∉⊂⊃∪∩θΘπΠαβγδεζηλμνξρσςτφχψωΑΒΓΔΕΖΗΛΜΝΞΡΣΤΦΧΨΩ°][^\$\n]*\$/g,
           /\$[a-zA-ZθΘπΠαβγδεζηλμνξρσςτφχψωΑΒΓΔΕΖΗΛΜΝΞΡΣΤΦΧΨΩ]+\$/g
-        ], 
-        isBlock: false, 
-        prefix: 'LATEXINLINE' 
+        ],
+        isBlock: false,
+        prefix: 'LATEXINLINE'
       },
     ];
 
@@ -816,7 +991,7 @@ function processFullContentSync(content: string): ProcessedContentResult {
  * Defer full processing until streaming completes
  * During streaming: uses minimal/streaming mode
  * After streaming: processes full content in background
- * 
+ *
  * @param content - Full content string
  * @param isStreaming - Whether content is actively streaming
  * @param currentProcessed - Currently processed content (minimal/streaming mode)
@@ -918,7 +1093,7 @@ InlineCode.displayName = 'InlineCode';
 
 const MarkdownTableWithActions: React.FC<{ children: React.ReactNode }> = React.memo(({ children }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [showActions, setShowActions] = useState(false);
+  const toast = useToast();
 
   const csvUtils = useMemo(
     () => ({
@@ -962,42 +1137,50 @@ const MarkdownTableWithActions: React.FC<{ children: React.ReactNode }> = React.
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      toast.success('Table downloaded');
     } catch (error) {
       console.error('Failed to download CSV:', error);
+      toast.error('Failed to download table');
     }
-  }, [csvUtils]);
+  }, [csvUtils, toast]);
+
+  const handleCopyTable = useCallback(() => {
+    const tableEl = containerRef.current?.querySelector('[data-slot="table"]') as HTMLTableElement | null;
+    if (!tableEl) return;
+
+    try {
+      const csv = csvUtils.buildCsvFromTable(tableEl);
+      navigator.clipboard.writeText(csv);
+      toast.success('Table copied to clipboard');
+    } catch (error) {
+      console.error('Failed to copy table:', error);
+      toast.error('Failed to copy table');
+    }
+  }, [csvUtils, toast]);
 
   return (
-    <div
-      className="relative group"
-      onMouseEnter={() => setShowActions(true)}
-      onMouseLeave={() => setShowActions(false)}
-    >
-      <div
-        className={cn(
-          'absolute -top-3 -right-3 z-10 transition-opacity duration-200',
-          showActions ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none group-hover:opacity-100',
-        )}
-      >
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="icon"
-              variant="outline"
-              className="size-7 text-xs shadow-sm rounded-sm"
-              onClick={handleDownloadCsv}
-              aria-label="Download CSV"
-            >
-              <Download className="size-4" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent side="right" sideOffset={2}>
-            Download CSV
-          </TooltipContent>
-        </Tooltip>
+    <div className="relative group">
+      <div className="absolute -top-3 -right-3 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <button
+          onClick={handleCopyTable}
+          className="p-1.5 rounded border border-border bg-background shadow-sm transition-all duration-200 hover:bg-muted hover:scale-105"
+          aria-label="Copy table"
+          title="Copy table"
+        >
+          <Icon name="copy" alt="Copy" />
+        </button>
+
+        <button
+          onClick={handleDownloadCsv}
+          className="p-1.5 rounded border border-border bg-background shadow-sm transition-all duration-200 hover:bg-muted hover:scale-105"
+          aria-label="Download CSV"
+          title="Download CSV"
+        >
+          <Icon name="download" alt="Download" />
+        </button>
       </div>
       <div ref={containerRef}>
-        <Table className="!border !rounded-lg !m-0">{children}</Table>
+        <Table className="border border-border !rounded-lg !m-0">{children}</Table>
       </div>
     </div>
   );
@@ -1005,7 +1188,11 @@ const MarkdownTableWithActions: React.FC<{ children: React.ReactNode }> = React.
 
 MarkdownTableWithActions.displayName = 'MarkdownTableWithActions';
 
-const LinkPreview = React.memo(({ href, title }: { href: string; title?: string }) => {
+// Inline link component with ChatGPT-style display
+const InlineExternalLink: React.FC<{
+  href: string;
+  text: React.ReactNode;
+}> = ({ href, text }) => {
   const domain = useMemo(() => {
     try {
       return new URL(href).hostname;
@@ -1014,31 +1201,28 @@ const LinkPreview = React.memo(({ href, title }: { href: string; title?: string 
     }
   }, [href]);
 
-  if (!domain) return null;
-
   return (
-    <div className="flex flex-col bg-accent text-xs m-0">
-      <div className="flex items-center h-6 space-x-1.5 px-2 pt-2 text-xs text-muted-foreground">
-        <img
-          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=128`}
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-primary no-underline hover:underline font-medium inline-flex items-center gap-1.5"
+    >
+      {text}
+      <span className="inline-flex items-center gap-1 text-muted-foreground text-xs ml-1">
+        <Image
+          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=16`}
           alt=""
           width={12}
           height={12}
-          className="rounded-sm"
+          className="rounded-sm opacity-70"
           loading="lazy"
         />
-        <span className="truncate font-medium">{domain}</span>
-      </div>
-      {title && (
-        <div className="px-2 pb-2 pt-1">
-          <h3 className="font-normal text-sm m-0 text-foreground line-clamp-3">{title}</h3>
-        </div>
-      )}
-    </div>
+        <span className="opacity-70">{domain}</span>
+      </span>
+    </a>
   );
-});
-
-LinkPreview.displayName = 'LinkPreview';
+};
 
 /**
  * Processing indicator shown when deferred processing is active
@@ -1073,12 +1257,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
   );
 
   // Extract values from final processed content
-  const { 
-    processedContent, 
-    citations: extractedCitations, 
-    latexBlocks, 
+  const {
+    processedContent,
+    citations: extractedCitations,
+    latexBlocks,
     isProcessing,
-    isMinimalMode 
+    isMinimalMode
   } = finalProcessed;
   const citationLinks = extractedCitations;
 
@@ -1120,60 +1304,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
     };
   }, [contentHash]);
 
-  const renderHoverCard = useCallback(
-    (href: string, text: React.ReactNode, isCitation: boolean = false, citationText?: string) => {
-      const title = citationText || (typeof text === 'string' ? text : '');
-      const external = isExternalUrl(href);
-      const linkClassName = isCitation
-        ? 'cursor-pointer text-xs no-underline text-primary py-0.5 px-1.25 !m-0 bg-primary/10 rounded-sm font-medium inline-flex items-center -translate-y-[1px] leading-none hover:bg-primary/20 focus:outline-none focus:ring-1 focus:ring-primary align-baseline'
-        : 'text-primary bg-primary/10 no-underline hover:underline font-medium';
-
-      const linkProps = external
-        ? {
-            href,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            className: linkClassName,
-          }
-        : {
-            href,
-            className: linkClassName,
-          };
-
-      return (
-        <HoverCard openDelay={10}>
-          <HoverCardTrigger asChild>
-            {external ? (
-              <a {...linkProps}>{text}</a>
-            ) : (
-              <Link {...linkProps}>{text}</Link>
-            )}
-          </HoverCardTrigger>
-          <HoverCardContent
-            side="top"
-            align="start"
-            sideOffset={5}
-            className="w-64 p-0 shadow-lg border border-primary/30 rounded-md overflow-hidden bg-background"
-          >
-            <LinkPreview href={href} title={title} />
-          </HoverCardContent>
-        </HoverCard>
-      );
-    },
-    [],
-  );
-
-  const renderCitation = useCallback(
-    (index: number, citationText: string, href: string, key: string) => {
-      return (
-        <span className="inline-flex items-baseline relative whitespace-normal" key={key}>
-          {renderHoverCard(href, index + 1, true, citationText)}
-        </span>
-      );
-    },
-    [renderHoverCard],
-  );
-
   const renderer: Partial<ReactRenderer> = useMemo(
     () => ({
       text(text: string) {
@@ -1189,6 +1319,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
 
         const components: any[] = [];
         let lastEnd = 0;
+        const baseKey = getElementKey('text', text);
         const allMatches: Array<{ match: RegExpExecArray; isBlock: boolean }> = [];
 
         let match;
@@ -1252,7 +1383,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           components.push(<span key={key}>{textContent}</span>);
         }
 
-        return components.length === 1 ? components[0] : <Fragment>{components}</Fragment>;
+        return components.length === 1
+          ? components[0]
+          : <Fragment>{components.map((c, i) => <React.Fragment key={`${baseKey}-fragment-${i}`}>{c}</React.Fragment>)}</Fragment>;
       },
       hr() {
         const key = getElementKey('hr');
@@ -1261,6 +1394,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       paragraph(children) {
         const key = getElementKey('paragraph', String(children));
 
+        // Check if this is a LaTeX block
         if (typeof children === 'string') {
           const blockMatch = children.match(/^LATEXBLOCK(\d+)END$/);
           if (blockMatch) {
@@ -1283,22 +1417,69 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           }
         }
 
+        // Check if children contain block-level embeds (divs, iframes, etc.)
+        const hasBlockContent = React.Children.toArray(children).some((child: any) => {
+          if (React.isValidElement(child)) {
+            const type = child.type;
+            return (
+              type === YouTubeEmbed ||
+              type === TwitterEmbed ||
+              type === RedditEmbed ||
+              type === SpotifyEmbed ||
+              type === GistEmbed ||
+              type === PdfEmbed ||
+              type === VegaLiteEmbed ||
+              type === PlantUMLEmbed ||
+              type === ExcalidrawEmbed ||
+              type === CodepenEmbed ||
+              type === MermaidDiagram
+            );
+          }
+          return false;
+        });
+
+        // Render as div if contains block elements, otherwise as paragraph
+        const Tag = hasBlockContent ? 'div' : 'p';
+        const className = hasBlockContent
+          ? 'my-5 leading-relaxed text-foreground'
+          : `${isUserMessage ? 'leading-relaxed text-foreground !m-0' : ''} my-5 leading-relaxed text-foreground`;
+
         return (
-          <p
+          <Tag
             key={key}
-            className={`${isUserMessage ? 'leading-relaxed text-foreground !m-0' : ''} my-5 leading-relaxed text-foreground`}
+            className={className}
           >
             {children}
-          </p>
+          </Tag>
         );
       },
       code(children, language) {
         const key = getElementKey('code', String(children));
-        return (
-          <CodeBlock language={language} elementKey={key} key={key}>
-            {String(children)}
-          </CodeBlock>
-        );
+        const code = String(children);
+
+        // Special language renderers
+        switch (language) {
+          case 'mermaid':
+            return <MermaidDiagram key={key} code={code} />;
+          case 'vega-lite':
+          case 'vegalite':
+            return <VegaLiteEmbed key={key} code={code} />;
+          case 'plantuml':
+          case 'puml':
+            return <PlantUMLEmbed key={key} code={code} />;
+          case 'excalidraw':
+            return <ExcalidrawEmbed key={key} code={code} />;
+          case 'codepen':
+            return <CodepenEmbed key={key} code={code} type="codepen" />;
+          case 'codesandbox':
+            return <CodepenEmbed key={key} code={code} type="codesandbox" />;
+          default:
+            return (
+              <CodeBlock language={language} elementKey={key} key={key}>
+                {code}
+              </CodeBlock>
+            );
+        }
       },
       codespan(code) {
         const codeString = typeof code === 'string' ? code : String(code || '');
@@ -1315,6 +1496,31 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
               {email}
             </span>
           );
+        }
+
+        // Check if this is an embeddable URL
+        const embedType = getEmbedType(href);
+
+        if (embedType && !isUserMessage) {
+          switch (embedType) {
+            case 'youtube':
+              return <YouTubeEmbed key={key} url={href} />;
+            case 'twitter':
+              return <TwitterEmbed key={key} url={href} />;
+            case 'reddit':
+              return <RedditEmbed key={key} url={href} />;
+            case 'spotify':
+              return <SpotifyEmbed key={key} url={href} />;
+            case 'gist':
+              return <GistEmbed key={key} url={href} />;
+            case 'pdf':
+              return <PdfEmbed key={key} url={href} />;
+            case 'codepen':
+            case 'codesandbox':
+            case 'figma':
+              // These are handled via code blocks, not links
+              break;
+          }
         }
 
         const linkText = typeof text === 'string' ? text : href;
@@ -1335,20 +1541,63 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           );
         }
 
-        // If there's descriptive link text, render a normal anchor with hover preview.
-        // This preserves full text inside tables and prevents truncation to citation chips.
+        const external = isExternalUrl(href);
+
+        // If there's descriptive link text, render as ChatGPT-style inline link
         if (linkText && linkText !== href) {
-          return renderHoverCard(href, linkText, false);
+          const linkContent = external ? (
+            <InlineExternalLink key={key} href={href} text={linkText} />
+          ) : (
+            <Link key={key} href={href} className="text-primary no-underline hover:underline font-medium">
+              {linkText}
+            </Link>
+          );
+
+          // Add preview for external links (but not embeds)
+          return external && !embedType ? (
+            <LinkPreview key={key} href={href}>
+              {linkContent}
+            </LinkPreview>
+          ) : linkContent;
         }
 
-        // For bare URLs, render as citation chips
-        let citationIndex = citationLinks.findIndex((link) => link.link === href);
-        if (citationIndex === -1) {
-          citationLinks.push({ text: href, link: href });
-          citationIndex = citationLinks.length - 1;
-        }
-        const citationText = citationLinks[citationIndex].text;
-        return renderCitation(citationIndex, citationText, href, key);
+        // For bare URLs, render as inline link with domain
+        const domain = useMemo(() => {
+          try {
+            return new URL(href).hostname;
+          } catch {
+            return href;
+          }
+        }, [href]);
+
+        const bareUrlLink = (
+          <a
+            key={key}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-primary no-underline hover:underline font-medium inline-flex items-center gap-1.5"
+          >
+            <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
+              <Image
+                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=16`}
+                alt=""
+                width={12}
+                height={12}
+                className="rounded-sm opacity-70"
+                loading="lazy"
+              />
+              <span className="opacity-70">{domain}</span>
+            </span>
+          </a>
+        );
+
+        // Add preview for external bare URLs (but not embeds)
+        return external && !embedType ? (
+          <LinkPreview key={key} href={href}>
+            {bareUrlLink}
+          </LinkPreview>
+        ) : bareUrlLink;
       },
       heading(children, level) {
         const key = getElementKey('heading', String(children));
@@ -1394,7 +1643,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         return (
           <blockquote
             key={key}
-            className="my-6 border-l-4 border-primary/30 pl-4 py-1 text-foreground italic bg-muted/50 rounded-r-md"
+            className="my-6 border-l-4 border-primary pl-4 py-1 text-foreground italic bg-primary/5 rounded-r-md"
           >
             {children}
           </blockquote>
@@ -1406,7 +1655,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       },
       tableRow(children) {
         const key = getElementKey('tableRow');
-        return <TableRow key={key}>{children}</TableRow>;
+        return <TableRow key={key} className="border-b border-border">{children}</TableRow>;
       },
       tableCell(children, flags) {
         const key = getElementKey('tableCell');
@@ -1418,7 +1667,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
             key={key}
             className={cn(
               alignClass,
-              'border-r border-border last:border-r-0 bg-muted/50 font-semibold !p-2 !m-1 !text-wrap',
+              'border-r last:border-r-0 bg-muted/30 font-semibold !p-2 !m-1 !text-wrap',
+              'border-border',
             )}
           >
             {children}
@@ -1426,7 +1676,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         ) : (
           <TableCell
             key={key}
-            className={cn(alignClass, 'border-r border-border last:border-r-0 !p-2 !m-1 !text-wrap')}
+            className={cn(alignClass, 'border-r last:border-r-0 !p-2 !m-1 !text-wrap', 'border-border')}
           >
             {children}
           </TableCell>
@@ -1435,7 +1685,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       tableHeader(children) {
         const key = getElementKey('table');
         return (
-          <TableHeader key={key} className="!p-1 !m-1">
+          <TableHeader key={key} className="!p-1 !m-1 [&_tr]:border-b [&_tr]:border-border">
             {children}
           </TableHeader>
         );
@@ -1449,7 +1699,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         );
       },
     }),
-    [latexBlocks, isUserMessage, renderCitation, renderHoverCard, getElementKey, citationLinks],
+    [latexBlocks, isUserMessage, getElementKey],
   );
 
   // Show a progressive loading state for large content
@@ -1495,50 +1745,50 @@ MarkdownRenderer.displayName = 'MarkdownRenderer';
 const VirtualMarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false, isStreaming = false }) => {
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 });
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   // Split content into chunks for virtual scrolling
   const contentChunks = useMemo(() => {
     const lines = content.split('\n');
     const chunkSize = 20; // Lines per chunk
     const chunks = [];
-    
+
     for (let i = 0; i < lines.length; i += chunkSize) {
       chunks.push(lines.slice(i, i + chunkSize).join('\n'));
     }
-    
+
     return chunks;
   }, [content]);
 
   const handleScroll = useCallback(() => {
     if (!containerRef.current) return;
-    
+
     const { scrollTop, clientHeight } = containerRef.current;
     const lineHeight = 24; // Approximate line height
     const start = Math.floor(scrollTop / lineHeight);
     const end = Math.min(start + Math.ceil(clientHeight / lineHeight) + 10, contentChunks.length);
-    
+
     setVisibleRange({ start: Math.max(0, start - 5), end });
   }, [contentChunks.length]);
 
   // Lower threshold during streaming for better performance
   // Match OptimizedMarkdownRenderer threshold for consistency
   const virtualScrollThreshold = isStreaming ? VIRTUAL_SCROLL_THRESHOLD_STREAMING : VIRTUAL_SCROLL_THRESHOLD_NORMAL;
-  
+
   // Only use virtual scrolling for very large content
   if (content.length < virtualScrollThreshold) {
     return <MarkdownRenderer content={content} isUserMessage={isUserMessage} isStreaming={isStreaming} />;
   }
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="markdown-body prose prose-neutral dark:prose-invert max-w-none text-foreground font-sans max-h-96 overflow-y-auto"
       onScroll={handleScroll}
     >
       {contentChunks.slice(visibleRange.start, visibleRange.end).map((chunk, index) => (
-        <MarkdownRenderer 
+        <MarkdownRenderer
           key={`chunk-${visibleRange.start + index}`}
-          content={chunk} 
+          content={chunk}
           isUserMessage={isUserMessage}
           isStreaming={isStreaming}
         />
@@ -1571,7 +1821,7 @@ export const CopyButton = React.memo(({ text }: { text: string }) => {
 
   return (
     <Button variant="ghost" size="sm" onClick={handleCopy} className="h-8 px-2 text-xs rounded-full">
-      {isCopied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+      {isCopied ? <Check className="h-4 w-4" /> : <Icon name="copy" alt="Copy" />}
     </Button>
   );
 });
@@ -1581,11 +1831,11 @@ CopyButton.displayName = 'CopyButton';
 // Performance monitoring hook
 const usePerformanceMonitor = (content: string) => {
   const renderStartTime = useRef<number>(0);
-  
+
   useEffect(() => {
     renderStartTime.current = performance.now();
   }, [content]);
-  
+
   useEffect(() => {
     const renderTime = performance.now() - renderStartTime.current;
     if (renderTime > 100) {
@@ -1597,20 +1847,20 @@ const usePerformanceMonitor = (content: string) => {
 // Main optimized markdown component with automatic optimization selection
 const OptimizedMarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false, isStreaming = false }) => {
   usePerformanceMonitor(content);
-  
+
   // Detect fast streaming for threshold adjustment
   const isFastStreaming = useFastStreamingDetection(content, isStreaming);
-  
+
   // Lower threshold for fast streaming
   const virtualScrollThreshold = isFastStreaming
     ? VIRTUAL_SCROLL_FAST_STREAMING // 10k for fast streaming
     : (isStreaming ? VIRTUAL_SCROLL_THRESHOLD_STREAMING : VIRTUAL_SCROLL_THRESHOLD_NORMAL);
-  
+
   // Automatically choose the best rendering strategy based on content size
   if (content.length > virtualScrollThreshold) {
     return <VirtualMarkdownRenderer content={content} isUserMessage={isUserMessage} isStreaming={isStreaming} />;
   }
-  
+
   return <MarkdownRenderer content={content} isUserMessage={isUserMessage} isStreaming={isStreaming} />;
 }, (prevProps, nextProps) => {
   return (
@@ -1623,4 +1873,3 @@ const OptimizedMarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({
 OptimizedMarkdownRenderer.displayName = 'OptimizedMarkdownRenderer';
 
 export { MarkdownRenderer, VirtualMarkdownRenderer, OptimizedMarkdownRenderer as default };
-
