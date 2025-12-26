@@ -73,7 +73,12 @@ export async function POST() {
     const cancelUrl = process.env.DODO_PAYMENTS_CANCEL_URL || 'https://www.qurse.site/checkout/cancelled';
 
     // Build checkout URL with user metadata
-    const checkoutUrl = new URL(`https://checkout.dodopayments.com/${DODO_PRODUCT_ID}`);
+    // Format: https://checkout.dodopayments.com/buy/{PRODUCT_ID} for live mode
+    //         https://test.checkout.dodopayments.com/buy/{PRODUCT_ID} for test mode
+    const checkoutBaseUrl = DODO_ENVIRONMENT === 'live_mode'
+      ? 'https://checkout.dodopayments.com'
+      : 'https://test.checkout.dodopayments.com';
+    const checkoutUrl = new URL(`${checkoutBaseUrl}/buy/${DODO_PRODUCT_ID}`);
     checkoutUrl.searchParams.set('return_url', returnUrl);
     checkoutUrl.searchParams.set('cancel_url', cancelUrl);
 
