@@ -29,7 +29,7 @@ function verifyWebhookSignature(
     // Build signed message: webhookId.timestamp.payload
     const signedContent = `${webhookId}.${timestamp}.${payload}`;
 
-    logger.debug('Signature verification debug', {
+    logger.info('Signature verification debug', {
       webhookId,
       timestamp,
       signaturePreview: signature.substring(0, 30),
@@ -55,7 +55,7 @@ function verifyWebhookSignature(
     // Decode signature from base64 to raw bytes
     const signatureBuffer = Buffer.from(signatureHash, 'base64');
 
-    logger.debug('Signature comparison', {
+    logger.info('Signature comparison', {
       digestLength: digest.length,
       signatureBufferLength: signatureBuffer.length,
       digestBase64: digest.toString('base64').substring(0, 30),
@@ -72,7 +72,7 @@ function verifyWebhookSignature(
     }
 
     const result = crypto.timingSafeEqual(digest, signatureBuffer);
-    logger.debug('Signature verification result', { result });
+    logger.info('Signature verification result', { result });
     return result;
   } catch (error) {
     logger.error('Signature verification error', error);
