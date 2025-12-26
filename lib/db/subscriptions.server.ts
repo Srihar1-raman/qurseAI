@@ -3,7 +3,7 @@
  * Subscription management database operations
  */
 
-import { createClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/server';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { handleDbError } from '@/lib/utils/error-handler';
 import type { Subscription } from '@/lib/types';
@@ -16,7 +16,7 @@ const logger = createScopedLogger('db/subscriptions.server');
 export async function getUserSubscriptionServerSide(
   userId: string
 ): Promise<Subscription | null> {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
 
   const { data, error } = await supabase
     .from('subscriptions')
@@ -62,7 +62,7 @@ export async function updateSubscriptionServerSide(
   userId: string,
   subscription: Partial<Omit<Subscription, 'id' | 'user_id' | 'created_at' | 'updated_at'>>
 ): Promise<Subscription> {
-  const supabase = await createClient();
+  const supabase = await createAdminClient();
 
   // Validate subscription period dates
   // If both dates are provided, end must be after start

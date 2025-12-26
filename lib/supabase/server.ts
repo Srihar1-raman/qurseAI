@@ -33,3 +33,25 @@ export async function createClient() {
   );
 }
 
+/**
+ * Supabase Admin Client
+ * Uses service role key to bypass RLS - for webhooks and admin operations
+ * WARNING: This client can bypass all security policies. Use only in server-side contexts.
+ */
+export async function createAdminClient() {
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return [];
+        },
+        setAll() {
+          // Admin client doesn't need to set cookies
+        },
+      },
+    }
+  );
+}
+
