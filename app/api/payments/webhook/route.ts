@@ -308,8 +308,14 @@ export async function POST(request: NextRequest) {
 
     const rawPayload = await request.text();
 
-    // TEMPORARILY DISABLED: Skip signature verification due to Vercel env var bug
-    const isValid = true;
+    // Verify webhook signature
+    const isValid = verifyWebhookSignature(
+      rawPayload,
+      webhookSignature,
+      webhookTimestamp,
+      webhookId,
+      DODO_WEBHOOK_KEY
+    );
 
     if (!isValid) {
       logger.error('Invalid webhook signature', {
@@ -322,8 +328,6 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    logger.warn('⚠️ SIGNATURE VERIFICATION DISABLED - Webhook proceeding without verification');
 
     // ============================================
     // Stage 2: Parse webhook payload

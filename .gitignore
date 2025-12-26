@@ -97,3 +97,4 @@ TEST_*.md
 *_SUMMARY.md
 md/
 claude_code_zai_env.sh
+.env*.local
