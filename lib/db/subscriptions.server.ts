@@ -115,8 +115,15 @@ export async function updateSubscriptionServerSide(
       .single();
 
     if (error) {
+      logger.error('Error updating subscription', {
+        userId,
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error.details,
+        errorHint: error.hint,
+        fullError: JSON.stringify(error),
+      });
       const userMessage = handleDbError(error, 'db/subscriptions.server/updateSubscriptionServerSide');
-      logger.error('Error updating subscription', error, { userId });
       const dbError = new Error(userMessage);
       throw dbError;
     }
@@ -163,8 +170,15 @@ export async function updateSubscriptionServerSide(
       .single();
 
     if (error) {
+      logger.error('Error creating subscription', {
+        userId,
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error.details,
+        errorHint: error.hint,
+        fullError: JSON.stringify(error),
+      });
       const userMessage = handleDbError(error, 'db/subscriptions.server/updateSubscriptionServerSide');
-      logger.error('Error creating subscription', error, { userId });
       const dbError = new Error(userMessage);
       throw dbError;
     }
