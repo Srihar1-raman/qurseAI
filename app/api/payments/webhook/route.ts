@@ -11,8 +11,8 @@ import crypto from 'crypto';
 
 const logger = createScopedLogger('api/payments/webhook');
 
-// TEMPORARY: Hardcoded key to test if env var truncation is the issue
-const DODO_WEBHOOK_KEY = process.env.DODO_PAYMENTS_WEBHOOK_KEY || 'whsec_steRblTuNlDqM8yQyvtEU6StFgeSvyNA';
+// TEMPORARY: Hardcoded key - bypassing env var completely due to truncation issue
+const DODO_WEBHOOK_KEY = 'whsec_steRblTuNlDqM8yQyvtEU6StFgeSvyNA';
 
 /**
  * Verify webhook signature using Standard Webhooks spec
