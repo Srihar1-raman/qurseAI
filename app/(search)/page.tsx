@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, Suspense } from 'react';
 import { useQueryState } from 'nuqs';
 import { messageParser } from '@/lib/url-params/parsers';
 import dynamicImport from 'next/dynamic';
@@ -37,7 +37,7 @@ function HomePageContent() {
   const conversationId = useConversationId();
 
   // Check if URL has message params (for Phase 2 - MainInput uses URL params)
-  // Using nuqs - no Suspense needed!
+  // Using nuqs with Suspense
   const [message] = useQueryState('message', messageParser);
   const hasInitialMessageParam = useMemo(() => {
     return !!message;
@@ -131,5 +131,9 @@ function HomePageContent() {
 }
 
 export default function HomePage() {
-  return <HomePageContent />;
+  return (
+    <Suspense fallback={<ConversationPageSkeleton />}>
+      <HomePageContent />
+    </Suspense>
+  );
 }
