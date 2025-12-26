@@ -49,60 +49,78 @@ function verifyWebhookSignature(
     hmacPayloadOnly.update(payload);
     const digestPayloadOnly = hmacPayloadOnly.digest();
 
-    // Signature format: "v1,base64_hash" - extract base64 hash
-    const signatureParts = signature.split(',');
-    if (signatureParts[0] !== 'v1' || !signatureParts[1]) {
-      logger.warn('Invalid signature format', { signature });
-      return false;
-    }
+    // Signature format: "v1,base64_hash" - can have MULTIPLE signatures (space-delimited)
+    // for key rotation support
+    logger.info('Full signature header', { signature });
 
-    const signatureHash = signatureParts[1];
+    const signatures = signature.split(' ').filter(s => s.trim());
+    logger.info('Found signatures', { count: signatures.length, signatures });
 
-    // Decode signature from base64 to raw bytes
-    const signatureBuffer = Buffer.from(signatureHash, 'base64');
+    // Try each signature until one matches
+    for (const sig of signatures) {
+      const signatureParts = sig.split(',');
+      if (signatureParts[0] !== 'v1' || !signatureParts[1]) {
+        logger.warn('Invalid signature format', { sig });
+        continue;
+      }
 
-    logger.info('Signature comparison', {
-      digestLength: digest.length,
-      signatureBufferLength: signatureBuffer.length,
-      digestBase64: digest.toString('base64').substring(0, 30),
-      receivedSignature: signatureHash.substring(0, 30),
-      // Also log payload-only signature for comparison
-      digestPayloadOnlyBase64: digestPayloadOnly.toString('base64').substring(0, 30),
-    });
+      const signatureHash = signatureParts[1];
 
-    // Use timing-safe comparison to prevent timing attacks
-    if (digest.length !== signatureBuffer.length) {
-      logger.warn('Signature length mismatch', {
+      // Decode signature from base64 to raw bytes
+      const signatureBuffer = Buffer.from(signatureHash, 'base64');
+
+      logger.info('Signature comparison', {
         digestLength: digest.length,
         signatureBufferLength: signatureBuffer.length,
-      });
-      return false;
-    }
-
-    // Try Standard Webhooks method first (webhookId.timestamp.payload)
-    let result = crypto.timingSafeEqual(digest, signatureBuffer);
-
-    // If that fails, try payload-only method (Python example)
-    if (!result) {
-      const resultPayloadOnly = crypto.timingSafeEqual(digestPayloadOnly, signatureBuffer);
-      logger.info('Signature verification result', {
-        standardWebhooksMethod: result,
-        payloadOnlyMethod: resultPayloadOnly,
-        usedMethod: resultPayloadOnly ? 'payload-only (Python)' : 'none',
+        digestBase64: digest.toString('base64').substring(0, 30),
+        receivedSignature: signatureHash.substring(0, 30),
+        // Also log payload-only signature for comparison
+        digestPayloadOnlyBase64: digestPayloadOnly.toString('base64').substring(0, 30),
       });
 
-      // If payload-only method matches, use that result
-      if (resultPayloadOnly) {
+      // Use timing-safe comparison to prevent timing attacks
+      if (digest.length !== signatureBuffer.length) {
+        logger.warn('Signature length mismatch', {
+          digestLength: digest.length,
+          signatureBufferLength: signatureBuffer.length,
+        });
+        continue;
+      }
+
+      // Try Standard Webhooks method first (webhookId.timestamp.payload)
+      let result = crypto.timingSafeEqual(digest, signatureBuffer);
+
+      // If that fails, try payload-only method (Python example)
+      if (!result) {
+        const resultPayloadOnly = crypto.timingSafeEqual(digestPayloadOnly, signatureBuffer);
+        logger.info('Signature verification attempt', {
+          standardWebhooksMethod: result,
+          payloadOnlyMethod: resultPayloadOnly,
+        });
+
+        // If payload-only method matches, return success
+        if (resultPayloadOnly) {
+          logger.info('Signature verification result', {
+            result: true,
+            usedMethod: 'payload-only (Python)',
+          });
+          return true;
+        }
+      } else {
+        logger.info('Signature verification result', {
+          result: true,
+          usedMethod: 'Standard Webhooks (webhookId.timestamp.payload)',
+        });
         return true;
       }
-    } else {
-      logger.info('Signature verification result', {
-        result: true,
-        usedMethod: 'Standard Webhooks (webhookId.timestamp.payload)',
-      });
     }
 
-    return result;
+    // If we get here, none of the signatures matched
+    logger.info('Signature verification result', {
+      result: false,
+      usedMethod: 'none - all signatures failed',
+    });
+    return false;
   } catch (error) {
     logger.error('Signature verification error', error);
     return false;
