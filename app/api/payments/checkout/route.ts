@@ -71,10 +71,24 @@ export async function POST() {
     const returnUrl = process.env.DODO_PAYMENTS_RETURN_URL || 'https://www.qurse.site/checkout/success';
     const cancelUrl = process.env.DODO_PAYMENTS_CANCEL_URL || 'https://www.qurse.site/checkout/cancelled';
 
-    // Prepare checkout request - create subscription directly
-    const checkoutRequest = {
-      product_id: DODO_PRODUCT_ID,
-      quantity: 1,
+    logger.debug('Creating Dodo checkout session', {
+      userId: lightweightUser.userId,
+      productId: DODO_PRODUCT_ID,
+      environment: DODO_ENVIRONMENT,
+    });
+
+    // Call Dodo Payments API to create checkout session (recommended method)
+    // Use test for test_mode, live for live_mode
+    const baseUrl = DODO_ENVIRONMENT === 'test_mode'
+      ? 'https://test.dodopayments.com'
+      : 'https://live.dodopayments.com';
+
+    // Prepare checkout session request
+    const checkoutSessionRequest = {
+      product_cart: [{
+        product_id: DODO_PRODUCT_ID,
+        quantity: 1,
+      }],
       customer: {
         email: fullUser.email || '',
         name: fullUser.user_metadata?.full_name || fullUser.user_metadata?.name || '',
@@ -83,29 +97,17 @@ export async function POST() {
         user_id: lightweightUser.userId,
         environment: DODO_ENVIRONMENT,
       },
-      return_url: returnUrl,
+      success_url: returnUrl,
       cancel_url: cancelUrl,
     };
 
-    logger.debug('Creating Dodo checkout session', {
-      userId: lightweightUser.userId,
-      productId: DODO_PRODUCT_ID,
-      environment: DODO_ENVIRONMENT,
-    });
-
-    // Call Dodo Payments API to create subscription
-    // Use sandbox for test_mode, live for live_mode
-    const baseUrl = DODO_ENVIRONMENT === 'test_mode'
-      ? 'https://sandbox.dodopayments.com'
-      : 'https://live.dodopayments.com';
-
-    const dodoResponse = await fetch(`${baseUrl}/v1/subscriptions`, {
+    const dodoResponse = await fetch(`${baseUrl}/v1/checkout-sessions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${DODO_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(checkoutRequest),
+      body: JSON.stringify(checkoutSessionRequest),
     });
 
     if (!dodoResponse.ok) {
