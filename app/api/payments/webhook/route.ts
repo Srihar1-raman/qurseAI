@@ -36,6 +36,8 @@ function verifyWebhookSignature(
       payloadLength: payload.length,
       signedContentLength: signedContent.length,
       webhookKeyLength: webhookKey.length,
+      webhookKeyPreview: webhookKey.substring(0, 10),
+      webhookKeyEnd: webhookKey.substring(webhookKey.length - 10),
     });
 
     // Create HMAC SHA256 signature (raw bytes, not hex)
