@@ -15,7 +15,7 @@ const DODO_WEBHOOK_KEY = process.env.DODO_PAYMENTS_WEBHOOK_KEY;
 
 /**
  * Verify webhook signature using Standard Webhooks spec
- * Format: webhook-id + timestamp + payload separated by periods
+ * Format: v1,{base64_hash} where hash is HMAC-SHA256(webhookId.timestamp.payload)
  */
 function verifyWebhookSignature(
   payload: string,
@@ -29,31 +29,29 @@ function verifyWebhookSignature(
     // Build signed message: webhookId.timestamp.payload
     const signedContent = `${webhookId}.${timestamp}.${payload}`;
 
-    // Create HMAC SHA256 signature
+    // Create HMAC SHA256 signature (raw bytes, not hex)
     const hmac = crypto.createHmac('sha256', webhookKey);
     hmac.update(signedContent);
-    const digest = hmac.digest('hex');
+    const digest = hmac.digest();
 
-    // Signature format: "v1,hash1,v2,hash2,..." - extract first hash
+    // Signature format: "v1,base64_hash" - extract base64 hash
     const signatureParts = signature.split(',');
-    const signatureHash = signatureParts.find((part, i) =>
-      i % 2 === 1 && part.startsWith('sha256=')
-    )?.replace('sha256=', '') || signatureParts[1];
-
-    if (!signatureHash) {
+    if (signatureParts[0] !== 'v1' || !signatureParts[1]) {
       logger.warn('Invalid signature format', { signature });
       return false;
     }
 
-    // Use timing-safe comparison to prevent timing attacks
-    const digestBuffer = Buffer.from(digest, 'utf8');
-    const signatureBuffer = Buffer.from(signatureHash, 'utf8');
+    const signatureHash = signatureParts[1];
 
-    if (digestBuffer.length !== signatureBuffer.length) {
+    // Decode signature from base64 to raw bytes
+    const signatureBuffer = Buffer.from(signatureHash, 'base64');
+
+    // Use timing-safe comparison to prevent timing attacks
+    if (digest.length !== signatureBuffer.length) {
       return false;
     }
 
-    return crypto.timingSafeEqual(digestBuffer, signatureBuffer);
+    return crypto.timingSafeEqual(digest, signatureBuffer);
   } catch (error) {
     logger.error('Signature verification error', error);
     return false;
