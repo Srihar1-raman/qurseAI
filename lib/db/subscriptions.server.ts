@@ -91,10 +91,25 @@ export async function updateSubscriptionServerSide(
     .maybeSingle();
 
   if (existing) {
-    // Update existing subscription
+    // Update existing subscription - include Dodo Payments fields
+    const updateData: any = {
+      plan: subscription.plan,
+      status: subscription.status,
+      current_period_start: subscription.current_period_start,
+      current_period_end: subscription.current_period_end,
+      cancel_at_period_end: subscription.cancel_at_period_end,
+    };
+
+    // Add Dodo Payments fields if provided
+    if (subscription.dodo_customer_id !== undefined) updateData.dodo_customer_id = subscription.dodo_customer_id;
+    if (subscription.dodo_subscription_id !== undefined) updateData.dodo_subscription_id = subscription.dodo_subscription_id;
+    if (subscription.last_payment_at !== undefined) updateData.last_payment_at = subscription.last_payment_at;
+    if (subscription.next_billing_at !== undefined) updateData.next_billing_at = subscription.next_billing_at;
+    if (subscription.cancelled_at !== undefined) updateData.cancelled_at = subscription.cancelled_at;
+
     const { data, error } = await supabase
       .from('subscriptions')
-      .update(subscription)
+      .update(updateData)
       .eq('user_id', userId)
       .select()
       .single();
@@ -124,17 +139,26 @@ export async function updateSubscriptionServerSide(
       cancelled_at: data.cancelled_at ?? undefined,
     };
   } else {
-    // Create new subscription
+    // Create new subscription - include Dodo Payments fields
+    const insertData: any = {
+      user_id: userId,
+      plan: subscription.plan ?? 'free',
+      status: subscription.status ?? 'active',
+      current_period_start: subscription.current_period_start,
+      current_period_end: subscription.current_period_end,
+      cancel_at_period_end: subscription.cancel_at_period_end ?? false,
+    };
+
+    // Add Dodo Payments fields if provided
+    if (subscription.dodo_customer_id !== undefined) insertData.dodo_customer_id = subscription.dodo_customer_id;
+    if (subscription.dodo_subscription_id !== undefined) insertData.dodo_subscription_id = subscription.dodo_subscription_id;
+    if (subscription.last_payment_at !== undefined) insertData.last_payment_at = subscription.last_payment_at;
+    if (subscription.next_billing_at !== undefined) insertData.next_billing_at = subscription.next_billing_at;
+    if (subscription.cancelled_at !== undefined) insertData.cancelled_at = subscription.cancelled_at;
+
     const { data, error } = await supabase
       .from('subscriptions')
-      .insert({
-        user_id: userId,
-        plan: subscription.plan ?? 'free',
-        status: subscription.status ?? 'active',
-        current_period_start: subscription.current_period_start,
-        current_period_end: subscription.current_period_end,
-        cancel_at_period_end: subscription.cancel_at_period_end ?? false,
-      })
+      .insert(insertData)
       .select()
       .single();
 
