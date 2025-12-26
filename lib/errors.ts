@@ -91,7 +91,7 @@ export class ProviderError extends Error {
  */
 export class ValidationError extends Error {
   statusCode: number = 400;
-  
+
   constructor(
     message: string,
     public validationErrors?: Array<{ field: string; message: string }>
@@ -99,6 +99,47 @@ export class ValidationError extends Error {
     super(message);
     this.name = 'ValidationError';
     Object.setPrototypeOf(this, ValidationError.prototype);
+  }
+}
+
+/**
+ * Payment Error
+ * Thrown when payment operations fail
+ */
+export class PaymentError extends Error {
+  statusCode: number = 500;
+
+  constructor(
+    message: string,
+    public readonly code?: string
+  ) {
+    super(message);
+    this.name = 'PaymentError';
+    Object.setPrototypeOf(this, PaymentError.prototype);
+  }
+}
+
+/**
+ * Checkout Error
+ * Thrown when checkout session creation fails
+ */
+export class CheckoutError extends PaymentError {
+  constructor(message: string) {
+    super(message, 'CHECKOUT_ERROR');
+    this.name = 'CheckoutError';
+    this.statusCode = 500;
+  }
+}
+
+/**
+ * Webhook Error
+ * Thrown when webhook processing fails
+ */
+export class WebhookError extends PaymentError {
+  constructor(message: string) {
+    super(message, 'WEBHOOK_ERROR');
+    this.name = 'WebhookError';
+    this.statusCode = 500;
   }
 }
 

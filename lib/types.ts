@@ -50,6 +50,31 @@ export interface Subscription {
   cancel_at_period_end: boolean;
   created_at: string;
   updated_at: string;
+
+  // Dodo Payments integration fields
+  dodo_customer_id?: string;
+  dodo_subscription_id?: string;
+  last_payment_at?: string;
+  next_billing_at?: string;
+  cancelled_at?: string;
+}
+
+/**
+ * Payment transaction record
+ * Complete audit log of all payment and subscription events
+ */
+export interface PaymentTransaction {
+  id: string;
+  user_id: string;
+  subscription_id?: string;
+  dodo_payment_id: string;
+  dodo_subscription_id?: string;
+  event_type: string;
+  amount?: number;
+  currency: string;
+  status: 'succeeded' | 'failed' | 'pending' | 'refunded';
+  metadata: Record<string, unknown>;
+  created_at: string;
 }
 
 export interface RateLimit {

@@ -8,6 +8,7 @@ import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useSidebar } from '@/lib/contexts/SidebarContext';
 import { useRateLimit } from '@/lib/contexts/RateLimitContext';
+import { useToast } from '@/lib/contexts/ToastContext';
 import { GuestRateLimitPopup, FreeUserRateLimitPopup } from '@/components/rate-limit';
 import { useRouter } from 'next/navigation';
 import { useMobile } from '@/hooks/use-mobile';
@@ -23,6 +24,7 @@ export default function MainInput() {
   const { user } = useAuth();
   const { addConversationOptimistically } = useSidebar();
   const { state: rateLimitState, setRateLimitState } = useRateLimit();
+  const { error: showToastError } = useToast();
   const router = useRouter();
   
   // Track send attempts while rate limited to show popup again
@@ -311,8 +313,32 @@ export default function MainInput() {
           onClose={() => {
             // Don't clear state - user is still rate limited
           }}
-          onUpgrade={() => {
-            router.push('/pricing');
+          onUpgrade={async () => {
+            try {
+              const response = await fetch('/api/payments/checkout', {
+                method: 'POST',
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create checkout session');
+              }
+
+              const data = await response.json();
+
+              if (!data.checkout_url) {
+                throw new Error('No checkout URL returned');
+              }
+
+              window.location.href = data.checkout_url;
+            } catch (error) {
+              console.error('Checkout error:', error);
+              showToastError(
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to start checkout. Please try again.'
+              );
+            }
           }}
           reset={rateLimitState.resetTime || Date.now()}
         />

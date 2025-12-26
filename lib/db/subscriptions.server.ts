@@ -45,6 +45,12 @@ export async function getUserSubscriptionServerSide(
     cancel_at_period_end: data.cancel_at_period_end,
     created_at: data.created_at,
     updated_at: data.updated_at,
+    // Dodo Payments fields
+    dodo_customer_id: data.dodo_customer_id ?? undefined,
+    dodo_subscription_id: data.dodo_subscription_id ?? undefined,
+    last_payment_at: data.last_payment_at ?? undefined,
+    next_billing_at: data.next_billing_at ?? undefined,
+    cancelled_at: data.cancelled_at ?? undefined,
   };
 }
 
@@ -110,6 +116,12 @@ export async function updateSubscriptionServerSide(
       cancel_at_period_end: data.cancel_at_period_end,
       created_at: data.created_at,
       updated_at: data.updated_at,
+      // Dodo Payments fields
+      dodo_customer_id: data.dodo_customer_id ?? undefined,
+      dodo_subscription_id: data.dodo_subscription_id ?? undefined,
+      last_payment_at: data.last_payment_at ?? undefined,
+      next_billing_at: data.next_billing_at ?? undefined,
+      cancelled_at: data.cancelled_at ?? undefined,
     };
   } else {
     // Create new subscription
@@ -143,6 +155,12 @@ export async function updateSubscriptionServerSide(
       cancel_at_period_end: data.cancel_at_period_end,
       created_at: data.created_at,
       updated_at: data.updated_at,
+      // Dodo Payments fields
+      dodo_customer_id: data.dodo_customer_id ?? undefined,
+      dodo_subscription_id: data.dodo_subscription_id ?? undefined,
+      last_payment_at: data.last_payment_at ?? undefined,
+      next_billing_at: data.next_billing_at ?? undefined,
+      cancelled_at: data.cancelled_at ?? undefined,
     };
   }
 }

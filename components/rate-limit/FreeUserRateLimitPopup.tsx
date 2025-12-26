@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { HeroBlock } from '@/components/rate-limit/HeroBlock';
 import { formatResetTime } from '@/components/rate-limit/utils';
 import { RATE_LIMIT_CONSTANTS } from '@/components/rate-limit/constants';
+import { useToast } from '@/lib/contexts/ToastContext';
 
 export interface FreeUserRateLimitPopupProps {
   isOpen: boolean;
@@ -24,13 +25,15 @@ export function FreeUserRateLimitPopup({
   customMessage,
 }: FreeUserRateLimitPopupProps) {
   const resetTime = formatResetTime(reset);
-  
+  const toast = useToast();
+
   // Local state to control popup visibility (allows wait button to close it)
   const [isVisible, setIsVisible] = useState(false);
-  
+
   // Tooltip state (rendered at root level outside modal)
   const [hoveredIconName, setHoveredIconName] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [isProcessingCheckout, setIsProcessingCheckout] = useState(false);
   
   // Show popup when isOpen becomes true (new rate limit detected)
   useEffect(() => {
@@ -167,8 +170,40 @@ export function FreeUserRateLimitPopup({
         <HeroBlock isOpen={isOpen} showPricing onIconHover={handleIconHover}>
           {/* Upgrade button */}
           <div className="auth-buttons">
-            <button 
-              onClick={onUpgrade}
+            <button
+              onClick={async () => {
+                setIsProcessingCheckout(true);
+                try {
+                  const response = await fetch('/api/payments/checkout', {
+                    method: 'POST',
+                  });
+
+                  if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || 'Failed to create checkout session');
+                  }
+
+                  const data = await response.json();
+
+                  if (!data.checkout_url) {
+                    throw new Error('No checkout URL returned');
+                  }
+
+                  // Close popup and redirect
+                  onClose();
+                  window.location.href = data.checkout_url;
+                } catch (error) {
+                  console.error('Checkout error:', error);
+                  toast.error(
+                    error instanceof Error
+                      ? error.message
+                      : 'Failed to start checkout. Please try again.'
+                  );
+                } finally {
+                  setIsProcessingCheckout(false);
+                }
+              }}
+              disabled={isProcessingCheckout}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -181,20 +216,23 @@ export function FreeUserRateLimitPopup({
                 color: 'var(--color-text)',
                 fontSize: '14px',
                 fontWeight: 500,
-                cursor: 'pointer',
+                cursor: isProcessingCheckout ? 'not-allowed' : 'pointer',
                 transition: 'all 0.2s',
                 width: '100%',
+                opacity: isProcessingCheckout ? 0.6 : 1,
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--color-bg-hover)';
-                e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                if (!isProcessingCheckout) {
+                  e.currentTarget.style.background = 'var(--color-bg-hover)';
+                  e.currentTarget.style.borderColor = 'var(--color-border-hover)';
+                }
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'var(--color-bg)';
                 e.currentTarget.style.borderColor = 'var(--color-border)';
               }}
             >
-              Upgrade to Pro
+              {isProcessingCheckout ? 'Processing...' : 'Upgrade to Pro'}
             </button>
           </div>
 

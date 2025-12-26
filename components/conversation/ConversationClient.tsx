@@ -479,8 +479,32 @@ export function ConversationClient({
           onClose={() => {
             // Don't clear state - user is still rate limited
           }}
-          onUpgrade={() => {
-            router.push('/pricing');
+          onUpgrade={async () => {
+            try {
+              const response = await fetch('/api/payments/checkout', {
+                method: 'POST',
+              });
+
+              if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Failed to create checkout session');
+              }
+
+              const data = await response.json();
+
+              if (!data.checkout_url) {
+                throw new Error('No checkout URL returned');
+              }
+
+              window.location.href = data.checkout_url;
+            } catch (error) {
+              console.error('Checkout error:', error);
+              showToastError(
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to start checkout. Please try again.'
+              );
+            }
           }}
           reset={rateLimitState.resetTime || Date.now()}
         />

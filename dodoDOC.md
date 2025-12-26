@@ -3,7 +3,7 @@ Source: https://docs.dodopayments.com/developer-resources/astro-adaptor
 
 Learn how to integrate Dodo Payments with your Astro App Router project using our Astro Adaptor. Covers checkout, customer portal, webhooks, and secure environment setup.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Handler" icon="cart-shopping" href="#checkout-route-handler">
     Integrate Dodo Payments checkout into your Astro app.
   </Card>
@@ -23,7 +23,7 @@ Learn how to integrate Dodo Payments with your Astro App Router project using ou
   <Step title="Install the package">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/astro
     ```
   </Step>
@@ -212,103 +212,103 @@ Learn how to integrate Dodo Payments with your Astro App Router project using ou
   <Accordion title="Static Checkout (GET)">
     ### Supported Query Parameters
 
-    <ParamField query="productId" type="string" required>
+    <ParamField type="string">
       Product identifier (e.g., <code>?productId=pdt\_nZuwz45WAs64n3l07zpQR</code>).
     </ParamField>
 
-    <ParamField query="quantity" type="integer">
+    <ParamField type="integer">
       Quantity of the product.
     </ParamField>
 
-    <ParamField query="fullName" type="string">
+    <ParamField type="string">
       Customer's full name.
     </ParamField>
 
-    <ParamField query="firstName" type="string">
+    <ParamField type="string">
       Customer's first name.
     </ParamField>
 
-    <ParamField query="lastName" type="string">
+    <ParamField type="string">
       Customer's last name.
     </ParamField>
 
-    <ParamField query="email" type="string">
+    <ParamField type="string">
       Customer's email address.
     </ParamField>
 
-    <ParamField query="country" type="string">
+    <ParamField type="string">
       Customer's country.
     </ParamField>
 
-    <ParamField query="addressLine" type="string">
+    <ParamField type="string">
       Customer's address line.
     </ParamField>
 
-    <ParamField query="city" type="string">
+    <ParamField type="string">
       Customer's city.
     </ParamField>
 
-    <ParamField query="state" type="string">
+    <ParamField type="string">
       Customer's state/province.
     </ParamField>
 
-    <ParamField query="zipCode" type="string">
+    <ParamField type="string">
       Customer's zip/postal code.
     </ParamField>
 
-    <ParamField query="disableFullName" type="boolean">
+    <ParamField type="boolean">
       Disable full name field.
     </ParamField>
 
-    <ParamField query="disableFirstName" type="boolean">
+    <ParamField type="boolean">
       Disable first name field.
     </ParamField>
 
-    <ParamField query="disableLastName" type="boolean">
+    <ParamField type="boolean">
       Disable last name field.
     </ParamField>
 
-    <ParamField query="disableEmail" type="boolean">
+    <ParamField type="boolean">
       Disable email field.
     </ParamField>
 
-    <ParamField query="disableCountry" type="boolean">
+    <ParamField type="boolean">
       Disable country field.
     </ParamField>
 
-    <ParamField query="disableAddressLine" type="boolean">
+    <ParamField type="boolean">
       Disable address line field.
     </ParamField>
 
-    <ParamField query="disableCity" type="boolean">
+    <ParamField type="boolean">
       Disable city field.
     </ParamField>
 
-    <ParamField query="disableState" type="boolean">
+    <ParamField type="boolean">
       Disable state field.
     </ParamField>
 
-    <ParamField query="disableZipCode" type="boolean">
+    <ParamField type="boolean">
       Disable zip code field.
     </ParamField>
 
-    <ParamField query="paymentCurrency" type="string">
+    <ParamField type="string">
       Specify the payment currency (e.g., <code>USD</code>).
     </ParamField>
 
-    <ParamField query="showCurrencySelector" type="boolean">
+    <ParamField type="boolean">
       Show currency selector.
     </ParamField>
 
-    <ParamField query="paymentAmount" type="integer">
+    <ParamField type="integer">
       Specify the payment amount (e.g., <code>1000</code> for \$10.00).
     </ParamField>
 
-    <ParamField query="showDiscounts" type="boolean">
+    <ParamField type="boolean">
       Show discount fields.
     </ParamField>
 
-    <ParamField query="metadata_*" type="string">
+    <ParamField type="string">
       Any query parameter starting with <code>metadata\_</code> will be passed as metadata.
     </ParamField>
 
@@ -320,7 +320,7 @@ Learn how to integrate Dodo Payments with your Astro App Router project using ou
 
     Static checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -338,7 +338,7 @@ Learn how to integrate Dodo Payments with your Astro App Router project using ou
 
     Dynamic checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -354,7 +354,7 @@ Learn how to integrate Dodo Payments with your Astro App Router project using ou
 
     Checkout sessions return a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/session/..."
     }
@@ -368,11 +368,11 @@ The Customer Portal Route Handler enables you to seamlessly integrate the Dodo P
 
 ### Query Parameters
 
-<ParamField query="customer_id" type="string" required>
+<ParamField type="string">
   The customer ID for the portal session (e.g., <code>?customer\_id=cus\_123</code>).
 </ParamField>
 
-<ParamField query="send_email" type="boolean">
+<ParamField type="boolean">
   If set to <code>true</code>, sends an email to the customer with the portal link.
 </ParamField>
 
@@ -693,14 +693,14 @@ Before you begin, make sure you have:
 
 <Steps>
   <Step title="Clone the Repository">
-    ```bash  theme={null}
+    ```bash theme={null}
     git clone https://github.com/dodopayments/dodo-astro-minimal-boilerplate.git
     cd dodo-astro-minimal-boilerplate
     ```
   </Step>
 
   <Step title="Install Dependencies">
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install
     ```
   </Step>
@@ -719,13 +719,13 @@ Before you begin, make sure you have:
   <Step title="Configure Environment Variables">
     Create a `.env` file in the root directory:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     cp .env.example .env
     ```
 
     Update the values with your Dodo Payments credentials:
 
-    ```env  theme={null}
+    ```env theme={null}
     DODO_PAYMENTS_API_KEY=your_api_key_here
     DODO_PAYMENTS_WEBHOOK_KEY=your_webhook_signing_key_here
     DODO_PAYMENTS_RETURN_URL=http://localhost:4321/
@@ -740,7 +740,7 @@ Before you begin, make sure you have:
   <Step title="Add Your Products">
     Update `src/lib/products.ts` with your actual product IDs from Dodo Payments:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     export const products: Product[] = [
       {
         product_id: "pdt_001", // Replace with your product ID
@@ -760,7 +760,7 @@ Before you begin, make sure you have:
   </Step>
 
   <Step title="Run the Development Server">
-    ```bash  theme={null}
+    ```bash theme={null}
     npm run dev
     ```
 
@@ -770,7 +770,7 @@ Before you begin, make sure you have:
 
 ## Project Structure
 
-```text  theme={null}
+```text theme={null}
 src/
 ├── components/
 │   ├── Footer.astro           # Reusable footer
@@ -805,7 +805,7 @@ Edit `src/lib/products.ts` to modify:
 
 In `src/components/ProductCard.astro`, replace the hardcoded values with your actual user data:
 
-```typescript  theme={null}
+```typescript theme={null}
 customer: {
   name: "John Doe",
   email: "john@example.com",
@@ -816,7 +816,7 @@ customer: {
 
 In `src/components/Header.astro`, replace the hardcoded customer ID with the actual customer ID from your auth system or database:
 
-```typescript  theme={null}
+```typescript theme={null}
 const CUSTOMER_ID = "cus_001"; // Replace with actual customer ID
 ```
 
@@ -831,7 +831,7 @@ The boilerplate demonstrates handling webhook events in `src/pages/api/webhook.t
 
 Add your business logic inside these handlers:
 
-```typescript  theme={null}
+```typescript theme={null}
 onSubscriptionActive: async (payload) => {
   // Grant access to your product
   // Update user database
@@ -859,7 +859,7 @@ See [Astro's deployment guides](https://docs.astro.build/en/guides/deploy/) for 
 
 After deploying, update your webhook URL in the [Dodo Payments Dashboard](https://app.dodopayments.com/developer/webhooks):
 
-```text  theme={null}
+```text theme={null}
 https://your-domain.com/api/webhook
 ```
 
@@ -871,7 +871,7 @@ Also remember to update the `DODO_PAYMENTS_WEBHOOK_KEY` environment variable in 
   <Accordion title="Module not found or build errors">
     Delete `node_modules` and reinstall dependencies:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     rm -rf node_modules package-lock.json
     npm install
     ```
@@ -888,7 +888,7 @@ Also remember to update the `DODO_PAYMENTS_WEBHOOK_KEY` environment variable in 
   <Accordion title="Webhooks not receiving events">
     For local testing, use [ngrok](https://ngrok.com) to expose your server:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     ngrok http 4321
     ```
 
@@ -955,7 +955,7 @@ The <b>Better Auth Adapter</b> for Dodo Payments provides:
   <Step title="Install dependencies">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/better-auth dodopayments better-auth zod
     ```
 
@@ -1108,7 +1108,7 @@ The <b>Better Auth Adapter</b> for Dodo Payments provides:
 <Info>
   Similar to the legacy <code>checkout</code> method,
   <code>checkoutSession</code> takes customer's email and name from their
-  better-auth session, however, you can override it by passing the{" "}
+  better-auth session, however, you can override it by passing the
   <code>customer</code> object with email and name.
 </Info>
 
@@ -1242,7 +1242,7 @@ if (usage?.items) {
 
 <Info>
   The webhooks plugin processes real-time payment events from Dodo Payments with
-  secure signature verification. The default endpoint is{" "}
+  secure signature verification. The default endpoint is
   <code>/api/auth/dodopayments/webhooks</code>.
 </Info>
 
@@ -1250,7 +1250,7 @@ if (usage?.items) {
   <Step title="Generate and set webhook secret">
     Generate a webhook secret for your endpoint URL (e.g., <code>https\://\<your-domain>/api/auth/dodopayments/webhooks</code>) in the Dodo Payments Dashboard and set it in your <code>.env</code> file:
 
-    ```env  theme={null}
+    ```env theme={null}
     DODO_PAYMENTS_WEBHOOK_SECRET=your_webhook_secret_here
     ```
   </Step>
@@ -1302,15 +1302,15 @@ if (usage?.items) {
 
 <AccordionGroup>
   <Accordion title="Plugin Options">
-    * <b>client</b> (required): DodoPayments client instance -{" "}
+    * <b>client</b> (required): DodoPayments client instance -
       <b>createCustomerOnSignUp</b> (optional): Auto-create customers on user
       signup - <b>use</b> (required): Array of plugins to enable (checkout,
       portal, usage, webhooks)
   </Accordion>
 
   <Accordion title="Checkout Plugin Options">
-    * <b>products</b>: Array of products or async function returning products -{" "}
-      <b>successUrl</b>: URL to redirect after successful payment -{" "}
+    * <b>products</b>: Array of products or async function returning products -
+      <b>successUrl</b>: URL to redirect after successful payment -
       <b>authenticatedUsersOnly</b>: Require user authentication (default: false)
   </Accordion>
 </AccordionGroup>
@@ -1319,15 +1319,15 @@ if (usage?.items) {
 
 <AccordionGroup>
   <Accordion title="Common Issues">
-    * <b>Invalid API key</b>: Double-check your{" "}
-      <code>DODO\_PAYMENTS\_API\_KEY</code> in <code>.env</code>. -{" "}
+    * <b>Invalid API key</b>: Double-check your
+      <code>DODO\_PAYMENTS\_API\_KEY</code> in <code>.env</code>. -
       <b>Webhook signature mismatch</b>: Ensure the webhook secret matches the one
-      set in the Dodo Payments Dashboard. - <b>Customer not created</b>: Confirm{" "}
+      set in the Dodo Payments Dashboard. - <b>Customer not created</b>: Confirm
       <code>createCustomerOnSignUp</code> is set to <code>true</code>.
   </Accordion>
 
   <Accordion title="Best Practices">
-    * Use environment variables for all secrets and keys. - Test in{" "}
+    * Use environment variables for all secrets and keys. - Test in
       <code>test\_mode</code> before switching to <code>live\_mode</code>. - Log
       webhook events for debugging and auditing.
   </Accordion>
@@ -1758,7 +1758,7 @@ Source: https://docs.dodopayments.com/developer-resources/billingsdk
 Complete billing infrastructure for modern web applications with React components, CLI tooling, and full-stack integration
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/32RVbEllEi0" title="Billing SDK | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Billing SDK | Dodo Payments" />
 </Frame>
 
 Billing SDK is a comprehensive open-source solution that provides complete billing infrastructure for modern web applications. It includes React components, CLI tooling, and full-stack integration support for multiple frameworks with Dodo Payments.
@@ -1780,13 +1780,13 @@ Get started with Billing SDK in minutes:
   <Step title="Install the CLI">
     Use npx to run the CLI without installation:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npx @billingsdk/cli --help
     ```
 
     Or install it globally for frequent use:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install -g @billingsdk/cli
     ```
   </Step>
@@ -1794,7 +1794,7 @@ Get started with Billing SDK in minutes:
   <Step title="Initialize a Project">
     Run the interactive setup to create a new billing project:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npx @billingsdk/cli init
     ```
 
@@ -1807,7 +1807,7 @@ Get started with Billing SDK in minutes:
   <Step title="Add Components">
     Add individual billing components to your project:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npx @billingsdk/cli add pricing-table-one
     npx @billingsdk/cli add subscription-management
     ```
@@ -1841,7 +1841,7 @@ Initialize a new billing project with complete setup including framework configu
 
 **Example:**
 
-```bash  theme={null}
+```bash theme={null}
 npx @billingsdk/cli init
 ```
 
@@ -1851,7 +1851,7 @@ Add individual billing components to your existing project using the shadcn/ui r
 
 **Examples:**
 
-```bash  theme={null}
+```bash theme={null}
 # Add a pricing table
 npx @billingsdk/cli add pricing-table-one
 
@@ -1902,7 +1902,7 @@ your-project/
 
 Configure your environment variables after initialization:
 
-```bash  theme={null}
+```bash theme={null}
 # DodoPayments
 DODO_PAYMENTS_API_KEY=your_api_key_here
 DODO_PAYMENTS_ENVIRONMENT=test_mode
@@ -1959,7 +1959,7 @@ We welcome contributions! See our [contribution guide](https://billingsdk.com/do
 
 ## Learn More
 
-<CardGroup cols={3}>
+<CardGroup>
   <Card title="Full Documentation" icon="book" href="https://billingsdk.com/docs">
     Complete guide to Billing SDK with examples and best practices
   </Card>
@@ -1979,7 +1979,7 @@ Source: https://docs.dodopayments.com/developer-resources/convex-component
 
 Learn how to integrate Dodo Payments with your Convex backend using our Convex Component. Covers checkout functions, customer portal, webhooks, and secure environment setup.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Function" icon="cart-shopping" href="#checkout-function">
     Integrate Dodo Payments checkout with session-based flow.
   </Card>
@@ -1999,7 +1999,7 @@ Learn how to integrate Dodo Payments with your Convex backend using our Convex C
   <Step title="Install the package">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/convex
     ```
   </Step>
@@ -2007,7 +2007,7 @@ Learn how to integrate Dodo Payments with your Convex backend using our Convex C
   <Step title="Add Component to Convex Config">
     Add the Dodo Payments component to your Convex configuration:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     // convex/convex.config.ts
     import { defineApp } from "convex/server";
     import dodopayments from "@dodopayments/convex/convex.config";
@@ -2023,7 +2023,7 @@ Learn how to integrate Dodo Payments with your Convex backend using our Convex C
   <Step title="Set up environment variables">
     Set up environment variables in your Convex dashboard (**Settings** → **Environment Variables**). You can access the dashboard by running:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npx convex dashboard
     ```
 
@@ -2049,7 +2049,7 @@ Learn how to integrate Dodo Payments with your Convex backend using our Convex C
       Before using this query, make sure to define the appropriate schema in your `convex/schema.ts` file or change the query to match your existing schema.
     </Warning>
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     // convex/customers.ts
     import { internalQuery } from "./_generated/server";
     import { v } from "convex/values";
@@ -2256,7 +2256,7 @@ Learn how to integrate Dodo Payments with your Convex backend using our Convex C
 
 ### Usage
 
-```typescript  theme={null}
+```typescript theme={null}
 const result = await checkout(ctx, {
   payload: {
     product_cart: [{ product_id: "prod_123", quantity: 1 }],
@@ -2272,7 +2272,7 @@ Refer [Checkout Sessions](/developer-resources/checkout-session) for more detail
 
 The checkout function returns a JSON response with the checkout URL:
 
-```json  theme={null}
+```json theme={null}
 {
   "checkout_url": "https://checkout.dodopayments.com/session/..."
 }
@@ -2284,7 +2284,7 @@ The Customer Portal Function enables you to seamlessly integrate the Dodo Paymen
 
 ### Usage
 
-```typescript  theme={null}
+```typescript theme={null}
 const result = await customerPortal(ctx, {
   send_email: false
 });
@@ -2292,7 +2292,7 @@ const result = await customerPortal(ctx, {
 
 ### Parameters
 
-<ParamField query="send_email" type="boolean">
+<ParamField type="boolean">
   If set to <code>true</code>, sends an email to the customer with the portal link.
 </ParamField>
 
@@ -2722,7 +2722,7 @@ Dodo Payments provides official SDKs for multiple programming languages, each de
 
 Choose the SDK that matches your tech stack:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="TypeScript SDK" icon="js" href="/developer-resources/sdks/typescript">
     Type-safe integration for TypeScript and Node.js with promise-based API and auto-pagination
   </Card>
@@ -2774,25 +2774,25 @@ Get started with any SDK in minutes:
 
     <Tabs>
       <Tab title="TypeScript/Node.js">
-        ```bash  theme={null}
+        ```bash theme={null}
         npm install dodopayments
         ```
       </Tab>
 
       <Tab title="Python">
-        ```bash  theme={null}
+        ```bash theme={null}
         pip install dodopayments
         ```
       </Tab>
 
       <Tab title="PHP">
-        ```bash  theme={null}
+        ```bash theme={null}
         composer require dodopayments/client
         ```
       </Tab>
 
       <Tab title="Go">
-        ```bash  theme={null}
+        ```bash theme={null}
         go get github.com/dodopayments/dodopayments-go
         ```
       </Tab>
@@ -2804,28 +2804,28 @@ Get started with any SDK in minutes:
 
     <Tabs>
       <Tab title="TypeScript">
-        ```typescript  theme={null}
+        ```typescript theme={null}
         import DodoPayments from 'dodopayments';
         const client = new DodoPayments({ bearerToken: 'your_api_key' });
         ```
       </Tab>
 
       <Tab title="Python">
-        ```python  theme={null}
+        ```python theme={null}
         from dodopayments import DodoPayments
         client = DodoPayments(bearer_token="your_api_key")
         ```
       </Tab>
 
       <Tab title="PHP">
-        ```php  theme={null}
+        ```php theme={null}
         use Dodopayments\Client;
         $client = new Client(bearerToken: 'your_api_key');
         ```
       </Tab>
 
       <Tab title="Go">
-        ```go  theme={null}
+        ```go theme={null}
         import "github.com/dodopayments/dodopayments-go"
         client := dodopayments.NewClient(option.WithBearerToken("your_api_key"))
         ```
@@ -2892,7 +2892,7 @@ For terminal-based workflows and automation:
 * Shell completion for bash, zsh, and fish
 * Perfect for scripting and CI/CD automation
 
-```bash  theme={null}
+```bash theme={null}
 # Quick example
 dodopayments payments list --format json | jq '.data[] | {id, amount}'
 ```
@@ -2909,7 +2909,7 @@ Integrate in under 10 lines of code with our framework adapters. Choose from our
 
 ### Recommended Frameworks
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Next.js" icon="atom" href="/developer-resources/nextjs-adaptor">
     React-based full-stack framework with App Router support
   </Card>
@@ -2929,7 +2929,7 @@ Integrate in under 10 lines of code with our framework adapters. Choose from our
 
 <AccordionGroup>
   <Accordion title="Show other 8+ supported frameworks">
-    <CardGroup cols={4}>
+    <CardGroup>
       <Card title="SvelteKit" icon="js" href="/developer-resources/sveltekit-adaptor" />
 
       <Card title="Nuxt" icon="vuejs" href="/developer-resources/nuxt-adaptor" />
@@ -2986,7 +2986,7 @@ Dodo Payments provides a built-in database sync feature that automatically synch
 
 Our database sync feature supports synchronizing the following Dodo Payments entities to your database:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Payments" icon="credit-card">
     Sync all payment transactions, including one-time payments, refunds, and payment status updates.
   </Card>
@@ -3043,19 +3043,19 @@ The CLI supports two modes: **Interactive Mode** for guided setup, and **Manual 
 
 **Interactive Mode**: Simply run the command without arguments to start the interactive setup wizard.
 
-```bash  theme={null}
+```bash theme={null}
 dodo-sync
 ```
 
 **Manual Mode**: Pass arguments directly to skip the wizard.
 
-```bash  theme={null}
+```bash theme={null}
 dodo-sync -i [interval] -d [database] -u [database_uri] --scopes [scopes] --api-key [api_key] --env [environment]
 ```
 
 **Examples:**
 
-```bash  theme={null}
+```bash theme={null}
 # MongoDB
 dodo-sync -i 600 -d mongodb -u mongodb://mymongodb.url --scopes "licences,payments,customers,subscriptions" --api-key YOUR_API_KEY --env test_mode
 
@@ -3071,15 +3071,15 @@ dodo-sync -i 600 -d clickhouse -u http://localhost:8123 --scopes "licences,payme
 
 #### CLI Arguments
 
-<ParamField path="--interval" type="number" alias="-i">
+<ParamField type="number">
   Sync interval in seconds. Determines how frequently the sync operation runs. If not provided, the sync will run once and exit.
 </ParamField>
 
-<ParamField path="--database" type="string" alias="-d" required>
+<ParamField type="string">
   Database type to use. Supported values: `"mongodb"`, `"postgres"`, `"mysql"`, or `"clickhouse"`.
 </ParamField>
 
-<ParamField path="--database-uri" type="string" alias="-u" required>
+<ParamField type="string">
   Connection URI for your database:
 
   * **MongoDB**: `mongodb://localhost:27017` or `mongodb+srv://user:pass@cluster.mongodb.net/`
@@ -3088,19 +3088,19 @@ dodo-sync -i 600 -d clickhouse -u http://localhost:8123 --scopes "licences,payme
   * **ClickHouse**: `http://localhost:8123`
 </ParamField>
 
-<ParamField path="--scopes" type="string" required>
+<ParamField type="string">
   Comma-separated list of data entities to sync. Available scopes: `licences`, `payments`, `customers`, `subscriptions`. Example: `"payments,customers"`.
 </ParamField>
 
-<ParamField path="--api-key" type="string" required>
+<ParamField type="string">
   Your Dodo Payments API key. Should start with `dp_live_` for live mode or `dp_test_` for test mode.
 </ParamField>
 
-<ParamField path="--env" type="string" required>
+<ParamField type="string">
   Environment target. Must be either `"live_mode"` or `"test_mode"`. This determines which Dodo Payments environment to sync from.
 </ParamField>
 
-<ParamField path="--rate-limit" type="number" alias="--rl">
+<ParamField type="number">
   Rate limit in requests per second. Controls how fast the sync engine makes API requests to avoid overwhelming the Dodo Payments API.
 </ParamField>
 
@@ -3122,7 +3122,7 @@ For programmatic control, integrate the sync feature directly into your applicat
 
 Use automatic sync when you want the sync to run continuously at regular intervals:
 
-```typescript  theme={null}
+```typescript theme={null}
 import { DodoSync } from 'dodo-sync';
 
 const syncDodoPayments = new DodoSync({
@@ -3151,7 +3151,7 @@ syncDodoPayments.start();
 
 Use manual sync when you want to trigger sync operations on-demand (e.g., from a cron job or API endpoint):
 
-```typescript  theme={null}
+```typescript theme={null}
 import { DodoSync } from 'dodo-sync';
 
 const syncDodoPayments = new DodoSync({
@@ -3179,7 +3179,7 @@ await syncDodoPayments.run();
 
 Here's how to use `dodo-sync` with PostgreSQL:
 
-```typescript  theme={null}
+```typescript theme={null}
 import { DodoSync } from 'dodo-sync';
 
 const syncDodoPayments = new DodoSync({
@@ -3201,7 +3201,7 @@ syncDodoPayments.start();
 
 Here's how to use `dodo-sync` with MySQL:
 
-```typescript  theme={null}
+```typescript theme={null}
 import { DodoSync } from 'dodo-sync';
 
 const syncDodoPayments = new DodoSync({
@@ -3223,7 +3223,7 @@ syncDodoPayments.start();
 
 Here's how to use `dodo-sync` with ClickHouse:
 
-```typescript  theme={null}
+```typescript theme={null}
 import { DodoSync } from 'dodo-sync';
 
 const syncDodoPayments = new DodoSync({
@@ -3243,11 +3243,11 @@ syncDodoPayments.start();
 
 #### Constructor Options
 
-<ParamField body="database" type="string" required>
+<ParamField type="string">
   Name of the database to use. Supported values: `"mongodb"`, `"postgres"`, `"mysql"`, or `"clickhouse"`.
 </ParamField>
 
-<ParamField body="databaseURI" type="string" required>
+<ParamField type="string">
   Connection string for your database:
 
   * **MongoDB**: `mongodb://localhost:27017` or `mongodb+srv://...`
@@ -3256,11 +3256,11 @@ syncDodoPayments.start();
   * **ClickHouse**: `http://localhost:8123`
 </ParamField>
 
-<ParamField body="scopes" type="string[]" required>
+<ParamField type="string[]">
   Array of entities to sync. Available options: `"licences"`, `"payments"`, `"customers"`, `"subscriptions"`. You can include any combination of these.
 </ParamField>
 
-<ParamField body="dodoPaymentsOptions" type="object" required>
+<ParamField type="object">
   Dodo Payments API configuration for authentication and environment selection. See the [TypeScript SDK types](https://github.com/dodopayments/dodopayments-typescript/blob/main/src/client.ts) for complete options.
 
   **Required properties:**
@@ -3269,11 +3269,11 @@ syncDodoPayments.start();
   * `environment`: Either `"test_mode"` or `"live_mode"`
 </ParamField>
 
-<ParamField body="interval" type="number">
+<ParamField type="number">
   Time in seconds between automatic syncs. Required when using `.start()` for automatic syncing. Optional when using `.run()` for manual syncing.
 </ParamField>
 
-<ParamField body="rateLimit" type="number">
+<ParamField type="number">
   Number of requests per second. Controls how fast the sync engine makes API requests to avoid overwhelming the Dodo Payments API.
 </ParamField>
 
@@ -3295,7 +3295,7 @@ syncDodoPayments.start();
 
 ## Additional Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodo-sync">
     View source code, report issues, or contribute improvements
   </Card>
@@ -3324,7 +3324,7 @@ A production-ready boilerplate for integrating Dodo Payments into Expo/React Nat
 </Info>
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/78N1qw14m0Y" title="Expo Boilerplate Demo | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Expo Boilerplate Demo | Dodo Payments" />
 </Frame>
 
 ## Prerequisites
@@ -3340,7 +3340,7 @@ A production-ready boilerplate for integrating Dodo Payments into Expo/React Nat
   <Step title="Clone the Repository">
     Clone the boilerplate repository and navigate to the project directory:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     git clone https://github.com/dodopayments/expo-boilerplate.git
     cd expo-boilerplate
     ```
@@ -3359,7 +3359,7 @@ A production-ready boilerplate for integrating Dodo Payments into Expo/React Nat
   <Step title="Configure Environment Variables">
     Create a `.env` file in the root directory:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     touch .env
     ```
 
@@ -3377,7 +3377,7 @@ A production-ready boilerplate for integrating Dodo Payments into Expo/React Nat
   <Step title="Install Dependencies">
     Install the required npm packages:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install
     ```
   </Step>
@@ -3385,7 +3385,7 @@ A production-ready boilerplate for integrating Dodo Payments into Expo/React Nat
   <Step title="Start the Development Server">
     Start the Expo development server:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npx expo start
     ```
 
@@ -3401,7 +3401,7 @@ A production-ready boilerplate for integrating Dodo Payments into Expo/React Nat
 
 The boilerplate comes with pre-configured essentials:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Integration" icon="shopping-cart">
     Example implementation for creating and handling checkout sessions
   </Card>
@@ -3461,13 +3461,13 @@ Once you have the boilerplate running:
 
 <Steps>
   <Step title="Install EAS CLI">
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install -g eas-cli
     ```
   </Step>
 
   <Step title="Configure EAS">
-    ```bash  theme={null}
+    ```bash theme={null}
     eas build:configure
     ```
   </Step>
@@ -3475,13 +3475,13 @@ Once you have the boilerplate running:
   <Step title="Build Your App">
     For iOS:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     eas build --platform ios
     ```
 
     For Android:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     eas build --platform android
     ```
   </Step>
@@ -3489,7 +3489,7 @@ Once you have the boilerplate running:
 
 ## Additional Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Mobile Integration Guide" icon="mobile" href="/developer-resources/mobile-integration">
     Detailed guide for implementing payments in mobile apps
   </Card>
@@ -3521,7 +3521,7 @@ Source: https://docs.dodopayments.com/developer-resources/express-adaptor
 
 Learn how to integrate Dodo Payments with your Express App Router project using our Express Adaptor. Covers checkout, customer portal, webhooks, and secure environment setup.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Handler" icon="cart-shopping" href="#checkout-route-handler">
     Integrate Dodo Payments checkout into your Express app.
   </Card>
@@ -3541,7 +3541,7 @@ Learn how to integrate Dodo Payments with your Express App Router project using 
   <Step title="Install the package">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/express
     ```
   </Step>
@@ -3722,103 +3722,103 @@ Learn how to integrate Dodo Payments with your Express App Router project using 
   <Accordion title="Static Checkout (GET)">
     ### Supported Query Parameters
 
-    <ParamField query="productId" type="string" required>
+    <ParamField type="string">
       Product identifier (e.g., <code>?productId=pdt\_nZuwz45WAs64n3l07zpQR</code>).
     </ParamField>
 
-    <ParamField query="quantity" type="integer">
+    <ParamField type="integer">
       Quantity of the product.
     </ParamField>
 
-    <ParamField query="fullName" type="string">
+    <ParamField type="string">
       Customer's full name.
     </ParamField>
 
-    <ParamField query="firstName" type="string">
+    <ParamField type="string">
       Customer's first name.
     </ParamField>
 
-    <ParamField query="lastName" type="string">
+    <ParamField type="string">
       Customer's last name.
     </ParamField>
 
-    <ParamField query="email" type="string">
+    <ParamField type="string">
       Customer's email address.
     </ParamField>
 
-    <ParamField query="country" type="string">
+    <ParamField type="string">
       Customer's country.
     </ParamField>
 
-    <ParamField query="addressLine" type="string">
+    <ParamField type="string">
       Customer's address line.
     </ParamField>
 
-    <ParamField query="city" type="string">
+    <ParamField type="string">
       Customer's city.
     </ParamField>
 
-    <ParamField query="state" type="string">
+    <ParamField type="string">
       Customer's state/province.
     </ParamField>
 
-    <ParamField query="zipCode" type="string">
+    <ParamField type="string">
       Customer's zip/postal code.
     </ParamField>
 
-    <ParamField query="disableFullName" type="boolean">
+    <ParamField type="boolean">
       Disable full name field.
     </ParamField>
 
-    <ParamField query="disableFirstName" type="boolean">
+    <ParamField type="boolean">
       Disable first name field.
     </ParamField>
 
-    <ParamField query="disableLastName" type="boolean">
+    <ParamField type="boolean">
       Disable last name field.
     </ParamField>
 
-    <ParamField query="disableEmail" type="boolean">
+    <ParamField type="boolean">
       Disable email field.
     </ParamField>
 
-    <ParamField query="disableCountry" type="boolean">
+    <ParamField type="boolean">
       Disable country field.
     </ParamField>
 
-    <ParamField query="disableAddressLine" type="boolean">
+    <ParamField type="boolean">
       Disable address line field.
     </ParamField>
 
-    <ParamField query="disableCity" type="boolean">
+    <ParamField type="boolean">
       Disable city field.
     </ParamField>
 
-    <ParamField query="disableState" type="boolean">
+    <ParamField type="boolean">
       Disable state field.
     </ParamField>
 
-    <ParamField query="disableZipCode" type="boolean">
+    <ParamField type="boolean">
       Disable zip code field.
     </ParamField>
 
-    <ParamField query="paymentCurrency" type="string">
+    <ParamField type="string">
       Specify the payment currency (e.g., <code>USD</code>).
     </ParamField>
 
-    <ParamField query="showCurrencySelector" type="boolean">
+    <ParamField type="boolean">
       Show currency selector.
     </ParamField>
 
-    <ParamField query="paymentAmount" type="integer">
+    <ParamField type="integer">
       Specify the payment amount (e.g., <code>1000</code> for \$10.00).
     </ParamField>
 
-    <ParamField query="showDiscounts" type="boolean">
+    <ParamField type="boolean">
       Show discount fields.
     </ParamField>
 
-    <ParamField query="metadata_*" type="string">
+    <ParamField type="string">
       Any query parameter starting with <code>metadata\_</code> will be passed as metadata.
     </ParamField>
 
@@ -3830,7 +3830,7 @@ Learn how to integrate Dodo Payments with your Express App Router project using 
 
     Static checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -3848,7 +3848,7 @@ Learn how to integrate Dodo Payments with your Express App Router project using 
 
     Dynamic checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -3864,7 +3864,7 @@ Learn how to integrate Dodo Payments with your Express App Router project using 
 
     Checkout sessions return a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/session/..."
     }
@@ -3878,11 +3878,11 @@ The Customer Portal Route Handler enables you to seamlessly integrate the Dodo P
 
 ### Query Parameters
 
-<ParamField query="customer_id" type="string" required>
+<ParamField type="string">
   The customer ID for the portal session (e.g., <code>?customer\_id=cus\_123</code>).
 </ParamField>
 
-<ParamField query="send_email" type="boolean">
+<ParamField type="boolean">
   If set to <code>true</code>, sends an email to the customer with the portal link.
 </ParamField>
 
@@ -4153,7 +4153,7 @@ Before you begin, make sure you have:
 
 <Steps>
   <Step title="Clone the Repository">
-    ```bash  theme={null}
+    ```bash theme={null}
     git clone https://github.com/dodopayments/fastapi-boilerplate.git
     cd fastapi-boilerplate
     ```
@@ -4162,27 +4162,27 @@ Before you begin, make sure you have:
   <Step title="Create Virtual Environment">
     Set up an isolated Python environment:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     python -m venv venv
     source venv/bin/activate  # On Windows: venv\Scripts\activate
     ```
 
     Or using uv for faster dependency management:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     uv venv
     source .venv/bin/activate
     ```
   </Step>
 
   <Step title="Install Dependencies">
-    ```bash  theme={null}
+    ```bash theme={null}
     pip install -r requirements.txt
     ```
 
     Or with uv:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     uv pip install -r requirements.txt
     ```
   </Step>
@@ -4201,7 +4201,7 @@ Before you begin, make sure you have:
   <Step title="Configure Environment Variables">
     Create a `.env` file in the root directory:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     cp .env.example .env
     ```
 
@@ -4219,7 +4219,7 @@ Before you begin, make sure you have:
   </Step>
 
   <Step title="Run the Development Server">
-    ```bash  theme={null}
+    ```bash theme={null}
     uvicorn main:app --reload
     ```
 
@@ -4233,7 +4233,7 @@ Before you begin, make sure you have:
 
 ## Project Structure
 
-```text  theme={null}
+```text theme={null}
 fastapi-boilerplate/
 ├── main.py                 # FastAPI application entry point
 ├── routers/
@@ -4260,7 +4260,7 @@ The boilerplate includes the following pre-configured endpoints:
 
 ### Creating a Checkout Session
 
-```python  theme={null}
+```python theme={null}
 from fastapi import APIRouter, HTTPException
 from dodopayments import AsyncDodoPayments
 from pydantic import BaseModel
@@ -4299,7 +4299,7 @@ async def create_checkout(request: CheckoutRequest):
 
 ### Handling Webhooks
 
-```python  theme={null}
+```python theme={null}
 from fastapi import APIRouter, Request, HTTPException
 import hmac
 import hashlib
@@ -4347,7 +4347,7 @@ async def handle_webhook(request: Request):
 
 ### Customer Portal Integration
 
-```python  theme={null}
+```python theme={null}
 from fastapi import APIRouter, HTTPException
 from dodopayments import AsyncDodoPayments
 from pydantic import BaseModel
@@ -4396,7 +4396,7 @@ Add your business logic inside the webhook handler to:
 
 For local development, use tools like [ngrok](https://ngrok.com/) to expose your local server:
 
-```bash  theme={null}
+```bash theme={null}
 ngrok http 8000
 ```
 
@@ -4410,7 +4410,7 @@ https://your-ngrok-url.ngrok.io/webhook
 
 ### Docker
 
-```dockerfile  theme={null}
+```dockerfile theme={null}
 FROM python:3.11-slim
 
 WORKDIR /app
@@ -4425,7 +4425,7 @@ CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
 
 Build and run:
 
-```bash  theme={null}
+```bash theme={null}
 docker build -t fastapi-dodo .
 docker run -p 8000:8000 --env-file .env fastapi-dodo
 ```
@@ -4447,7 +4447,7 @@ docker run -p 8000:8000 --env-file .env fastapi-dodo
   <Accordion title="Import errors or missing modules">
     Ensure your virtual environment is activated and dependencies are installed:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     source venv/bin/activate
     pip install -r requirements.txt
     ```
@@ -4464,7 +4464,7 @@ docker run -p 8000:8000 --env-file .env fastapi-dodo
   <Accordion title="Webhooks not receiving events">
     For local testing, use [ngrok](https://ngrok.com) to expose your server:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     ngrok http 8000
     ```
 
@@ -4480,7 +4480,7 @@ docker run -p 8000:8000 --env-file .env fastapi-dodo
 
 ## Learn More
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Python SDK" icon="python" href="/developer-resources/sdks/python">
     Complete Python SDK documentation with async support
   </Card>
@@ -4512,7 +4512,7 @@ Source: https://docs.dodopayments.com/developer-resources/fastify-adaptor
 
 Learn how to integrate Dodo Payments with your Fastify App Router project using our NextJS Adaptor. Covers checkout, customer portal, webhooks, and secure environment setup.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Handler" icon="cart-shopping" href="#checkout-route-handler">
     Integrate Dodo Payments checkout into your Fastify app.
   </Card>
@@ -4532,7 +4532,7 @@ Learn how to integrate Dodo Payments with your Fastify App Router project using 
   <Step title="Install the package">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/fastify
     ```
   </Step>
@@ -4736,103 +4736,103 @@ Learn how to integrate Dodo Payments with your Fastify App Router project using 
   <Accordion title="Static Checkout (GET)">
     ### Supported Query Parameters
 
-    <ParamField query="productId" type="string" required>
+    <ParamField type="string">
       Product identifier (e.g., <code>?productId=pdt\_nZuwz45WAs64n3l07zpQR</code>).
     </ParamField>
 
-    <ParamField query="quantity" type="integer">
+    <ParamField type="integer">
       Quantity of the product.
     </ParamField>
 
-    <ParamField query="fullName" type="string">
+    <ParamField type="string">
       Customer's full name.
     </ParamField>
 
-    <ParamField query="firstName" type="string">
+    <ParamField type="string">
       Customer's first name.
     </ParamField>
 
-    <ParamField query="lastName" type="string">
+    <ParamField type="string">
       Customer's last name.
     </ParamField>
 
-    <ParamField query="email" type="string">
+    <ParamField type="string">
       Customer's email address.
     </ParamField>
 
-    <ParamField query="country" type="string">
+    <ParamField type="string">
       Customer's country.
     </ParamField>
 
-    <ParamField query="addressLine" type="string">
+    <ParamField type="string">
       Customer's address line.
     </ParamField>
 
-    <ParamField query="city" type="string">
+    <ParamField type="string">
       Customer's city.
     </ParamField>
 
-    <ParamField query="state" type="string">
+    <ParamField type="string">
       Customer's state/province.
     </ParamField>
 
-    <ParamField query="zipCode" type="string">
+    <ParamField type="string">
       Customer's zip/postal code.
     </ParamField>
 
-    <ParamField query="disableFullName" type="boolean">
+    <ParamField type="boolean">
       Disable full name field.
     </ParamField>
 
-    <ParamField query="disableFirstName" type="boolean">
+    <ParamField type="boolean">
       Disable first name field.
     </ParamField>
 
-    <ParamField query="disableLastName" type="boolean">
+    <ParamField type="boolean">
       Disable last name field.
     </ParamField>
 
-    <ParamField query="disableEmail" type="boolean">
+    <ParamField type="boolean">
       Disable email field.
     </ParamField>
 
-    <ParamField query="disableCountry" type="boolean">
+    <ParamField type="boolean">
       Disable country field.
     </ParamField>
 
-    <ParamField query="disableAddressLine" type="boolean">
+    <ParamField type="boolean">
       Disable address line field.
     </ParamField>
 
-    <ParamField query="disableCity" type="boolean">
+    <ParamField type="boolean">
       Disable city field.
     </ParamField>
 
-    <ParamField query="disableState" type="boolean">
+    <ParamField type="boolean">
       Disable state field.
     </ParamField>
 
-    <ParamField query="disableZipCode" type="boolean">
+    <ParamField type="boolean">
       Disable zip code field.
     </ParamField>
 
-    <ParamField query="paymentCurrency" type="string">
+    <ParamField type="string">
       Specify the payment currency (e.g., <code>USD</code>).
     </ParamField>
 
-    <ParamField query="showCurrencySelector" type="boolean">
+    <ParamField type="boolean">
       Show currency selector.
     </ParamField>
 
-    <ParamField query="paymentAmount" type="integer">
+    <ParamField type="integer">
       Specify the payment amount (e.g., <code>1000</code> for \$10.00).
     </ParamField>
 
-    <ParamField query="showDiscounts" type="boolean">
+    <ParamField type="boolean">
       Show discount fields.
     </ParamField>
 
-    <ParamField query="metadata_*" type="string">
+    <ParamField type="string">
       Any query parameter starting with <code>metadata\_</code> will be passed as metadata.
     </ParamField>
 
@@ -4844,7 +4844,7 @@ Learn how to integrate Dodo Payments with your Fastify App Router project using 
 
     Static checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -4862,7 +4862,7 @@ Learn how to integrate Dodo Payments with your Fastify App Router project using 
 
     Dynamic checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -4878,7 +4878,7 @@ Learn how to integrate Dodo Payments with your Fastify App Router project using 
 
     Checkout sessions return a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/session/..."
     }
@@ -4892,11 +4892,11 @@ The Customer Portal Route Handler enables you to seamlessly integrate the Dodo P
 
 ### Query Parameters
 
-<ParamField query="customer_id" type="string" required>
+<ParamField type="string">
   The customer ID for the portal session (e.g., <code>?customer\_id=cus\_123</code>).
 </ParamField>
 
-<ParamField query="send_email" type="boolean">
+<ParamField type="boolean">
   If set to <code>true</code>, sends an email to the customer with the portal link.
 </ParamField>
 
@@ -5140,12 +5140,365 @@ Security Note: Do NOT commit secrets to version control. Use .env files locally 
 ```
 
 
+# Go Boilerplate
+Source: https://docs.dodopayments.com/developer-resources/go-boilerplate
+
+Get started quickly with our minimal Go boilerplate for integrating Dodo Payments into your Go backend applications
+
+<Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/go-boilerplate">
+  Minimal Go + Dodo Payments boilerplate
+</Card>
+
+## Overview
+
+The Go boilerplate provides a production-ready starting point for integrating Dodo Payments with your Go backend. This template includes checkout session handling, webhook verification, customer portal integration, and follows Go best practices to help you start accepting payments quickly.
+
+<Info>
+  This boilerplate uses Go 1.21+ with clean architecture patterns (`cmd`, `internal`, `templates`), HTML templates, and the `dodopayments-go` SDK for seamless API integration.
+</Info>
+
+### Features
+
+* **Quick Setup** - Get started in under 5 minutes
+* **Payment Integration** - Pre-configured checkout flow using `dodopayments-go` SDK
+* **Modern UI** - Clean, dark-themed pricing page with HTML templates
+* **Webhook Handling** - Securely verify and process payment events
+* **Customer Portal** - Self-serve subscription management
+* **Go Best Practices** - Clean architecture with `cmd`, `internal`, and `templates`
+* **Pre-filled Checkout** - Demonstrates passing customer data to improve UX
+
+## Prerequisites
+
+Before you begin, make sure you have:
+
+* **Go 1.21+**
+* **Dodo Payments account** (to access API and Webhook Keys from dashboard)
+
+## Quick Start
+
+<Steps>
+  <Step title="Clone the Repository">
+    ```bash theme={null}
+    git clone https://github.com/dodopayments/go-boilerplate.git
+    cd go-boilerplate
+    ```
+  </Step>
+
+  <Step title="Install Dependencies">
+    ```bash theme={null}
+    make install
+    ```
+
+    Or manually:
+
+    ```bash theme={null}
+    go mod download
+    ```
+  </Step>
+
+  <Step title="Get API Credentials">
+    Sign up at [Dodo Payments](https://dodopayments.com/) and get your credentials from the dashboard:
+
+    * **API Key:** [Dashboard → Developer → API Keys](https://app.dodopayments.com/developer/api-keys)
+    * **Webhook Key:** [Dashboard → Developer → Webhooks](https://app.dodopayments.com/developer/webhooks)
+
+    <Tip>
+      Make sure you're in **Test Mode** while developing!
+    </Tip>
+  </Step>
+
+  <Step title="Configure Environment Variables">
+    Create a `.env` file in the root directory:
+
+    ```bash theme={null}
+    cp .env.example .env
+    ```
+
+    Update the values with your Dodo Payments credentials:
+
+    ```bash .env theme={null}
+    DODO_PAYMENTS_API_KEY=your_api_key_here
+    DODO_PAYMENTS_WEBHOOK_KEY=your_webhook_signing_key_here
+    DODO_PAYMENTS_RETURN_URL=http://localhost:8000
+    DODO_PAYMENTS_ENVIRONMENT=test_mode
+    ```
+
+    <Warning>
+      Never commit your `.env` file to version control. It's already included in `.gitignore`.
+    </Warning>
+  </Step>
+
+  <Step title="Add Your Products">
+    Update `internal/lib/products.go` with your actual product IDs from Dodo Payments:
+
+    ```go theme={null}
+    var Products = []Product{
+        {
+            ProductID:   "pdt_001", // Replace with your product ID
+            Name:        "Basic Plan",
+            Description: "Get access to basic features and support",
+            Price:       9999, // in cents
+            Features: []string{
+                "Access to basic features",
+                "Email support",
+                "1 Team member",
+                "Basic analytics",
+            },
+        },
+        // ... add more products
+    }
+    ```
+  </Step>
+
+  <Step title="Run the Development Server">
+    ```bash theme={null}
+    make run
+    ```
+
+    Or manually:
+
+    ```bash theme={null}
+    go run cmd/server/main.go
+    ```
+
+    Open [http://localhost:8000](http://localhost:8000) to see your pricing page!
+
+    <Check>
+      You should see a dark-themed pricing page with your products ready to purchase.
+    </Check>
+  </Step>
+</Steps>
+
+## Project Structure
+
+```text theme={null}
+go-boilerplate/
+├── cmd/
+│   └── server/             # Application entry point
+├── internal/
+│   ├── api/                # API handlers (Checkout, Portal, Webhook)
+│   ├── core/               # Configuration and system core
+│   └── lib/                # Shared logic (Products, Customer utils)
+├── templates/              # HTML templates
+├── Makefile                # Build and run commands
+├── go.mod                  # Go module definition
+├── go.sum                  # Dependency checksums
+├── .env.example            # Environment template
+└── README.md
+```
+
+## API Endpoints
+
+The boilerplate includes the following pre-configured endpoints:
+
+| Endpoint               | Method | Description                       |
+| ---------------------- | ------ | --------------------------------- |
+| `/`                    | GET    | Pricing page with product listing |
+| `/api/checkout`        | POST   | Create a new checkout session     |
+| `/api/webhook`         | POST   | Handle Dodo Payments webhooks     |
+| `/api/customer-portal` | POST   | Generate customer portal URL      |
+
+## Customization
+
+### Update Product Information
+
+Edit `internal/lib/products.go` to modify:
+
+* Product IDs (from your Dodo dashboard)
+* Pricing
+* Features
+* Descriptions
+
+```go theme={null}
+var Products = []Product{
+    {
+        ProductID:   "pdt_001", // Replace with your product ID
+        Name:        "Basic Plan",
+        Description: "Get access to basic features and support",
+        Price:       9999,
+        Features: []string{
+            "Access to basic features",
+            "Email support",
+            "1 Team member",
+            "Basic analytics",
+        },
+    },
+}
+```
+
+### Pre-fill Customer Data
+
+In `templates/index.html`, replace the hardcoded customer data with your actual user data:
+
+```javascript theme={null}
+const customerData = {
+    name: "John Doe",       // Replace with actual logged-in user's name
+    email: "john@example.com"  // Replace with actual logged-in user's email
+};
+```
+
+In a production app, you would dynamically inject these values from your authentication system.
+
+## Webhook Events
+
+The boilerplate demonstrates handling webhook events in `internal/api/webhook.go`. Supported events include:
+
+| Event                 | Description                                  |
+| --------------------- | -------------------------------------------- |
+| `subscription.active` | Triggered when a subscription becomes active |
+| `payment.succeeded`   | Triggered when a payment is successful       |
+
+Add your business logic inside the webhook handler to:
+
+* Update user permissions in your database
+* Send confirmation emails
+* Provision access to digital products
+* Track analytics and metrics
+
+## Testing Webhooks Locally
+
+For local development, use tools like [ngrok](https://ngrok.com/) to expose your local server:
+
+```bash theme={null}
+ngrok http 8000
+```
+
+Update the webhook URL in your [Dodo Payments Dashboard](https://app.dodopayments.com/developer/webhooks):
+
+```
+https://your-ngrok-url.ngrok.io/api/webhook
+```
+
+## Deployment
+
+### Build for Production
+
+```bash theme={null}
+make build
+```
+
+Or manually:
+
+```bash theme={null}
+go build -o bin/server cmd/server/main.go
+./bin/server
+```
+
+### Deploy to Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/dodopayments/go-boilerplate)
+
+### Docker
+
+Create a `Dockerfile`:
+
+```dockerfile theme={null}
+FROM golang:1.21-alpine AS builder
+
+WORKDIR /app
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN go build -o bin/server cmd/server/main.go
+
+FROM alpine:latest
+WORKDIR /app
+COPY --from=builder /app/bin/server .
+COPY --from=builder /app/templates ./templates
+
+EXPOSE 8000
+CMD ["./server"]
+```
+
+Build and run:
+
+```bash theme={null}
+docker build -t go-dodo .
+docker run -p 8000:8000 --env-file .env go-dodo
+```
+
+### Production Considerations
+
+<Warning>
+  Before deploying to production:
+
+  * Switch `DODO_PAYMENTS_ENVIRONMENT` to `live_mode`
+  * Use production API keys from the dashboard
+  * Update the webhook URL to your production domain
+  * Enable HTTPS for all endpoints
+</Warning>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Build errors or missing dependencies">
+    Ensure Go modules are properly downloaded:
+
+    ```bash theme={null}
+    go mod tidy
+    go mod download
+    ```
+  </Accordion>
+
+  <Accordion title="Checkout session creation fails">
+    **Common causes:**
+
+    * Invalid product ID - verify it exists in your Dodo dashboard
+    * Wrong API key or environment setting in `.env`
+    * Check the server logs for detailed error messages
+  </Accordion>
+
+  <Accordion title="Webhooks not receiving events">
+    For local testing, use [ngrok](https://ngrok.com) to expose your server:
+
+    ```bash theme={null}
+    ngrok http 8000
+    ```
+
+    Update the webhook URL in your [Dodo dashboard](https://app.dodopayments.com/developer/webhooks) to the ngrok URL. Make sure to update your `.env` file with the correct webhook verification key.
+  </Accordion>
+
+  <Accordion title="Templates not loading">
+    Ensure you're running the server from the project root directory, or that the templates path is correctly configured in your code.
+  </Accordion>
+</AccordionGroup>
+
+## Learn More
+
+<CardGroup>
+  <Card title="Go SDK" icon="golang" href="/developer-resources/sdks/go">
+    Complete Go SDK documentation
+  </Card>
+
+  <Card title="Webhooks Documentation" icon="webhook" href="/developer-resources/webhooks">
+    Learn about all webhook events and best practices
+  </Card>
+
+  <Card title="Checkout Sessions" icon="credit-card" href="/developer-resources/checkout-session">
+    Deep dive into checkout session configuration
+  </Card>
+
+  <Card title="API Reference" icon="book" href="/api-reference/introduction">
+    Complete Dodo Payments API documentation
+  </Card>
+</CardGroup>
+
+## Support
+
+Need help with the boilerplate?
+
+* Join our [Discord community](https://discord.gg/bYqAp4ayYh) for questions and discussions
+* Check the [GitHub repository](https://github.com/dodopayments/go-boilerplate) for issues and updates
+* Contact our [support team](mailto:support@dodopayments.com) for assistance
+
+
 # Hono Adaptor
 Source: https://docs.dodopayments.com/developer-resources/hono-adaptor
 
 Learn how to integrate Dodo Payments with your Hono App Router project using our NextJS Adaptor. Covers checkout, customer portal, webhooks, and secure environment setup.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Handler" icon="cart-shopping" href="#checkout-route-handler">
     Integrate Dodo Payments checkout into your Hono app.
   </Card>
@@ -5165,7 +5518,7 @@ Learn how to integrate Dodo Payments with your Hono App Router project using our
   <Step title="Install the package">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/hono
     ```
   </Step>
@@ -5376,103 +5729,103 @@ Learn how to integrate Dodo Payments with your Hono App Router project using our
   <Accordion title="Static Checkout (GET)">
     ### Supported Query Parameters
 
-    <ParamField query="productId" type="string" required>
+    <ParamField type="string">
       Product identifier (e.g., <code>?productId=pdt\_nZuwz45WAs64n3l07zpQR</code>).
     </ParamField>
 
-    <ParamField query="quantity" type="integer">
+    <ParamField type="integer">
       Quantity of the product.
     </ParamField>
 
-    <ParamField query="fullName" type="string">
+    <ParamField type="string">
       Customer's full name.
     </ParamField>
 
-    <ParamField query="firstName" type="string">
+    <ParamField type="string">
       Customer's first name.
     </ParamField>
 
-    <ParamField query="lastName" type="string">
+    <ParamField type="string">
       Customer's last name.
     </ParamField>
 
-    <ParamField query="email" type="string">
+    <ParamField type="string">
       Customer's email address.
     </ParamField>
 
-    <ParamField query="country" type="string">
+    <ParamField type="string">
       Customer's country.
     </ParamField>
 
-    <ParamField query="addressLine" type="string">
+    <ParamField type="string">
       Customer's address line.
     </ParamField>
 
-    <ParamField query="city" type="string">
+    <ParamField type="string">
       Customer's city.
     </ParamField>
 
-    <ParamField query="state" type="string">
+    <ParamField type="string">
       Customer's state/province.
     </ParamField>
 
-    <ParamField query="zipCode" type="string">
+    <ParamField type="string">
       Customer's zip/postal code.
     </ParamField>
 
-    <ParamField query="disableFullName" type="boolean">
+    <ParamField type="boolean">
       Disable full name field.
     </ParamField>
 
-    <ParamField query="disableFirstName" type="boolean">
+    <ParamField type="boolean">
       Disable first name field.
     </ParamField>
 
-    <ParamField query="disableLastName" type="boolean">
+    <ParamField type="boolean">
       Disable last name field.
     </ParamField>
 
-    <ParamField query="disableEmail" type="boolean">
+    <ParamField type="boolean">
       Disable email field.
     </ParamField>
 
-    <ParamField query="disableCountry" type="boolean">
+    <ParamField type="boolean">
       Disable country field.
     </ParamField>
 
-    <ParamField query="disableAddressLine" type="boolean">
+    <ParamField type="boolean">
       Disable address line field.
     </ParamField>
 
-    <ParamField query="disableCity" type="boolean">
+    <ParamField type="boolean">
       Disable city field.
     </ParamField>
 
-    <ParamField query="disableState" type="boolean">
+    <ParamField type="boolean">
       Disable state field.
     </ParamField>
 
-    <ParamField query="disableZipCode" type="boolean">
+    <ParamField type="boolean">
       Disable zip code field.
     </ParamField>
 
-    <ParamField query="paymentCurrency" type="string">
+    <ParamField type="string">
       Specify the payment currency (e.g., <code>USD</code>).
     </ParamField>
 
-    <ParamField query="showCurrencySelector" type="boolean">
+    <ParamField type="boolean">
       Show currency selector.
     </ParamField>
 
-    <ParamField query="paymentAmount" type="integer">
+    <ParamField type="integer">
       Specify the payment amount (e.g., <code>1000</code> for \$10.00).
     </ParamField>
 
-    <ParamField query="showDiscounts" type="boolean">
+    <ParamField type="boolean">
       Show discount fields.
     </ParamField>
 
-    <ParamField query="metadata_*" type="string">
+    <ParamField type="string">
       Any query parameter starting with <code>metadata\_</code> will be passed as metadata.
     </ParamField>
 
@@ -5484,7 +5837,7 @@ Learn how to integrate Dodo Payments with your Hono App Router project using our
 
     Static checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -5502,7 +5855,7 @@ Learn how to integrate Dodo Payments with your Hono App Router project using our
 
     Dynamic checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -5518,7 +5871,7 @@ Learn how to integrate Dodo Payments with your Hono App Router project using our
 
     Checkout sessions return a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/session/..."
     }
@@ -5532,11 +5885,11 @@ The Customer Portal Route Handler enables you to seamlessly integrate the Dodo P
 
 ### Query Parameters
 
-<ParamField query="customer_id" type="string" required>
+<ParamField type="string">
   The customer ID for the portal session (e.g., <code>?customer\_id=cus\_123</code>).
 </ParamField>
 
-<ParamField query="send_email" type="boolean">
+<ParamField type="boolean">
   If set to <code>true</code>, sends an email to the customer with the portal link.
 </ParamField>
 
@@ -5786,7 +6139,7 @@ Track API calls and gateway-level usage for billing. Perfect for API-as-a-servic
 
 Explore common scenarios supported by the API Gateway Blueprint:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="API-as-a-Service" icon="server">
     Track usage per customer for API platforms and charge based on number of calls.
   </Card>
@@ -5814,7 +6167,7 @@ Track API calls at the gateway level with automatic batching for high-volume sce
 
 <Steps>
   <Step title="Install the SDK">
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/ingestion-blueprints
     ```
   </Step>
@@ -5935,35 +6288,35 @@ Track API calls at the gateway level with automatic batching for high-volume sce
 
 ### Ingestion Configuration
 
-<ParamField path="apiKey" type="string" required>
+<ParamField type="string">
   Your Dodo Payments API key from the dashboard.
 </ParamField>
 
-<ParamField path="environment" type="string" required>
+<ParamField type="string">
   Environment mode: `test_mode` or `live_mode`.
 </ParamField>
 
-<ParamField path="eventName" type="string" required>
+<ParamField type="string">
   Event name that matches your meter configuration.
 </ParamField>
 
 ### Track API Call Options
 
-<ParamField path="customerId" type="string" required>
+<ParamField type="string">
   The customer ID for billing attribution.
 </ParamField>
 
-<ParamField path="metadata" type="object">
+<ParamField type="object">
   Optional metadata about the API call like endpoint, method, status code, response time, etc.
 </ParamField>
 
 ### Batch Configuration
 
-<ParamField path="maxSize" type="number">
+<ParamField type="number">
   Maximum number of events before auto-flush. Default: `100`.
 </ParamField>
 
-<ParamField path="flushInterval" type="number">
+<ParamField type="number">
   Auto-flush interval in milliseconds. Default: `5000` (5 seconds).
 </ParamField>
 
@@ -5983,7 +6336,7 @@ Source: https://docs.dodopayments.com/developer-resources/ingestion-blueprints/l
 
 Effortlessly track LLM token usage for usage-based billing with automatic ingestion to Dodo Payments. Works with AI SDK, OpenAI, Anthropic, OpenRouter, Groq, and Google Gemini.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Quick Start" icon="rocket" href="#quick-start">
     Get started in 2 minutes with automatic token tracking.
   </Card>
@@ -6013,7 +6366,7 @@ Get started with automatic LLM token tracking in just 2 minutes:
   <Step title="Install the SDK">
     Install the Dodo Payments Ingestion Blueprints:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/ingestion-blueprints
     ```
   </Step>
@@ -6240,21 +6593,21 @@ Get started with automatic LLM token tracking in just 2 minutes:
 
 Create a tracker once at application startup with these required parameters:
 
-<ParamField path="apiKey" type="string" required>
+<ParamField type="string">
   Your Dodo Payments API key. Get it from the [API Keys page](https://app.dodopayments.com/developer/api-keys).
 
-  ```javascript  theme={null}
+  ```javascript theme={null}
   apiKey: process.env.DODO_PAYMENTS_API_KEY
   ```
 </ParamField>
 
-<ParamField path="environment" type="string" required>
+<ParamField type="string">
   The environment mode for the tracker.
 
   * `test_mode` - Use for development and testing
   * `live_mode` - Use for production
 
-  ```javascript  theme={null}
+  ```javascript theme={null}
   environment: 'test_mode' // or 'live_mode'
   ```
 
@@ -6263,10 +6616,10 @@ Create a tracker once at application startup with these required parameters:
   </Warning>
 </ParamField>
 
-<ParamField path="eventName" type="string" required>
+<ParamField type="string">
   The event name that triggers your meter. Must match exactly what you configured in your Dodo Payments meter (case-sensitive).
 
-  ```javascript  theme={null}
+  ```javascript theme={null}
   eventName: 'llm.chat_completion'
   ```
 
@@ -6279,18 +6632,18 @@ Create a tracker once at application startup with these required parameters:
 
 When wrapping your LLM client, provide these parameters:
 
-<ParamField path="client" type="object" required>
+<ParamField type="object">
   Your LLM client instance (OpenAI, Anthropic, Groq, etc.).
 
-  ```javascript  theme={null}
+  ```javascript theme={null}
   client: openai
   ```
 </ParamField>
 
-<ParamField path="customerId" type="string" required>
+<ParamField type="string">
   The unique customer identifier for billing. This should match your customer ID in Dodo Payments.
 
-  ```javascript  theme={null}
+  ```javascript theme={null}
   customerId: 'customer_123'
   ```
 
@@ -6299,10 +6652,10 @@ When wrapping your LLM client, provide these parameters:
   </Tip>
 </ParamField>
 
-<ParamField path="metadata" type="object">
+<ParamField type="object">
   Optional additional data to attach to the tracking event. Useful for filtering and analysis.
 
-  ```javascript  theme={null}
+  ```javascript theme={null}
   metadata: {
     feature: 'chat',
     userTier: 'premium',
@@ -6799,25 +7152,25 @@ Every LLM API call automatically sends a usage event to Dodo Payments with the f
 
 ### Event Fields
 
-<ParamField path="event_id" type="string">
+<ParamField type="string">
   Unique identifier for this specific event. Automatically generated by the SDK.
 
   Format: `llm_[timestamp]_[random]`
 </ParamField>
 
-<ParamField path="customer_id" type="string">
+<ParamField type="string">
   The customer ID you provided when wrapping the client. Used for billing.
 </ParamField>
 
-<ParamField path="event_name" type="string">
+<ParamField type="string">
   The event name that triggers your meter. Matches your tracker configuration.
 </ParamField>
 
-<ParamField path="timestamp" type="string">
+<ParamField type="string">
   ISO 8601 timestamp when the event occurred.
 </ParamField>
 
-<ParamField path="metadata" type="object">
+<ParamField type="object">
   Token usage and additional tracking data:
 
   * `inputTokens` - Number of input/prompt tokens used
@@ -6848,7 +7201,7 @@ Track file uploads and storage usage for S3, Google Cloud Storage, Azure Blob, a
 
 Explore common scenarios supported by the Object Storage Blueprint:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="File Hosting" icon="folder">
     Bill customers based on total storage usage and upload volume.
   </Card>
@@ -6876,7 +7229,7 @@ Track object storage uploads with bytes consumed:
 
 <Steps>
   <Step title="Install the SDK">
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/ingestion-blueprints
     ```
   </Step>
@@ -6966,29 +7319,29 @@ Track object storage uploads with bytes consumed:
 
 ### Ingestion Configuration
 
-<ParamField path="apiKey" type="string" required>
+<ParamField type="string">
   Your Dodo Payments API key from the dashboard.
 </ParamField>
 
-<ParamField path="environment" type="string" required>
+<ParamField type="string">
   Environment mode: `test_mode` or `live_mode`.
 </ParamField>
 
-<ParamField path="eventName" type="string" required>
+<ParamField type="string">
   Event name that matches your meter configuration.
 </ParamField>
 
 ### Track Object Storage Options
 
-<ParamField path="customerId" type="string" required>
+<ParamField type="string">
   The customer ID for billing attribution.
 </ParamField>
 
-<ParamField path="bytes" type="number">
+<ParamField type="number">
   Number of bytes uploaded. Required for byte-based billing.
 </ParamField>
 
-<ParamField path="metadata" type="object">
+<ParamField type="object">
   Optional metadata about the upload like bucket name, content type, etc.
 </ParamField>
 
@@ -7012,7 +7365,7 @@ Track streaming data consumption for video, audio, live streams, and real-time d
 
 Explore common scenarios supported by the Stream Blueprint:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Video Platforms" icon="video">
     Bill customers based on video bandwidth consumption and streaming quality.
   </Card>
@@ -7040,7 +7393,7 @@ Track streaming bytes consumed by your customers:
 
 <Steps>
   <Step title="Install the SDK">
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/ingestion-blueprints
     ```
   </Step>
@@ -7085,29 +7438,29 @@ Track streaming bytes consumed by your customers:
 
 ### Ingestion Configuration
 
-<ParamField path="apiKey" type="string" required>
+<ParamField type="string">
   Your Dodo Payments API key from the dashboard.
 </ParamField>
 
-<ParamField path="environment" type="string" required>
+<ParamField type="string">
   Environment mode: `test_mode` or `live_mode`.
 </ParamField>
 
-<ParamField path="eventName" type="string" required>
+<ParamField type="string">
   Event name that matches your meter configuration.
 </ParamField>
 
 ### Track Stream Bytes Options
 
-<ParamField path="customerId" type="string" required>
+<ParamField type="string">
   The customer ID for billing attribution.
 </ParamField>
 
-<ParamField path="bytes" type="number">
+<ParamField type="number">
   Number of bytes consumed in the stream. Required for bandwidth-based billing.
 </ParamField>
 
-<ParamField path="metadata" type="object">
+<ParamField type="object">
   Optional metadata about the stream like stream type, quality, sessionId, etc.
 </ParamField>
 
@@ -7131,7 +7484,7 @@ Track resource consumption based on elapsed time for compute, serverless functio
 
 Explore common scenarios supported by the Time Range Blueprint:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Serverless Functions" icon="function">
     Bill based on function execution time and memory usage.
   </Card>
@@ -7159,7 +7512,7 @@ Track resource usage by time duration:
 
 <Steps>
   <Step title="Install the SDK">
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/ingestion-blueprints
     ```
   </Step>
@@ -7240,37 +7593,37 @@ Track resource usage by time duration:
 
 ### Ingestion Configuration
 
-<ParamField path="apiKey" type="string" required>
+<ParamField type="string">
   Your Dodo Payments API key from the dashboard.
 </ParamField>
 
-<ParamField path="environment" type="string" required>
+<ParamField type="string">
   Environment mode: `test_mode` or `live_mode`.
 </ParamField>
 
-<ParamField path="eventName" type="string" required>
+<ParamField type="string">
   Event name that matches your meter configuration.
 </ParamField>
 
 ### Track Time Range Options
 
-<ParamField path="customerId" type="string" required>
+<ParamField type="string">
   The customer ID for billing attribution.
 </ParamField>
 
-<ParamField path="durationMs" type="number">
+<ParamField type="number">
   Duration in milliseconds. Use for sub-second precision.
 </ParamField>
 
-<ParamField path="durationSeconds" type="number">
+<ParamField type="number">
   Duration in seconds. Most common for function execution and short tasks.
 </ParamField>
 
-<ParamField path="durationMinutes" type="number">
+<ParamField type="number">
   Duration in minutes. Useful for longer-running resources like VMs.
 </ParamField>
 
-<ParamField path="metadata" type="object">
+<ParamField type="object">
   Optional metadata about the resource like CPU, memory, region, etc.
 </ParamField>
 
@@ -7285,6 +7638,587 @@ Track resource usage by time duration:
 </Warning>
 
 
+# Inline Checkout
+Source: https://docs.dodopayments.com/developer-resources/inline-checkout
+
+Embed Dodo Payments checkout directly into your website for a seamless, branded payment experience.
+
+## Overview
+
+Inline checkout lets you create fully integrated checkout experiences that blend seamlessly with your website or application. Unlike the [overlay checkout](/developer-resources/overlay-checkout), which opens as a modal on top of your page, inline checkout embeds the payment form directly into your page layout.
+
+Using inline checkout, you can:
+
+* Create checkout experiences that are fully integrated with your app or website
+* Let Dodo Payments securely capture customer and payment information in an optimized checkout frame
+* Display items, totals, and other information from Dodo Payments on your page
+* Use SDK methods and events to build advanced checkout experiences
+
+<Frame>
+  <img alt="Inline Checkout Cover Image" />
+</Frame>
+
+## How It Works
+
+Inline checkout works by embedding a secure Dodo Payments frame into your website or app.
+
+The checkout frame handles collecting customer information and capturing payment details. Your page displays the items list, totals, and options for changing what's on the checkout. The SDK lets your page and the checkout frame interact with each other.
+
+Dodo Payments automatically creates a subscription when a checkout completes, ready for you to provision.
+
+<Note>
+  The inline checkout frame securely handles all sensitive payment information, ensuring PCI compliance without additional certification on your end.
+</Note>
+
+## What Makes a Good Inline Checkout?
+
+It's important that customers know who they're buying from, what they're buying, and how much they're paying.
+
+To build an inline checkout that's compliant and optimized for conversion, your implementation must include:
+
+<Frame>
+  <img alt="Inline checkout example with required elements labeled" />
+</Frame>
+
+1. **Recurring information**: If recurring, how often it recurs and the total to pay on renewal. If a trial, how long the trial lasts.
+2. **Item descriptions**: A description of what's being purchased.
+3. **Transaction totals**: Transaction totals, including subtotal, total tax, and grand total. Be sure to include the currency too.
+4. **Dodo Payments footer**: The full inline checkout frame, including the checkout footer that has information about Dodo Payments, our terms of sale, and our privacy policy.
+5. **Refund policy**: A link to your refund policy, if it differs from the Dodo Payments standard refund policy.
+
+<Warning>
+  Always display the complete inline checkout frame, including the footer. Removing or hiding legal information violates compliance requirements.
+</Warning>
+
+## Customer Journey
+
+The checkout flow is determined by your checkout session configuration. Depending on how you configure the checkout session, customers will experience a checkout that may present all information on a single page or across multiple steps.
+
+<Steps>
+  <Step title="Customer opens checkout">
+    You can open inline checkout by passing items or an existing transaction. Use the SDK to show and update on-page information, and SDK methods to update items based on customer interaction.
+
+    <img alt="Initial checkout page with items list and payment form" />
+  </Step>
+
+  <Step title="Customer enters their details">
+    Inline checkout first asks customers to enter their email address, select their country, and (where required) enter their ZIP or postal code. This step gathers all necessary information to determine taxes and available payment options.
+
+    You can prefill customer details and present saved addresses to streamline the experience.
+  </Step>
+
+  <Step title="Customer selects payment method">
+    After entering their details, customers are presented with available payment methods and the payment form. Options may include credit or debit card, PayPal, Apple Pay, Google Pay, and other local payment methods based on their location.
+
+    Display saved payment methods if available to speed up checkout.
+
+    <img alt="Available payment methods and card details form" />
+  </Step>
+
+  <Step title="Checkout completed">
+    Dodo Payments routes every payment to the best acquirer for that sale to get the best possible chance of success. Customers enter a success workflow that you can build.
+
+    <img alt="Success screen with confirmation checkmark" />
+  </Step>
+
+  <Step title="Dodo Payments creates subscription">
+    Dodo Payments automatically creates a subscription for the customer, ready for you to provision. The payment method the customer used is held on file for renewals or subscription changes.
+
+    <img alt="Subscription created with webhook notification" />
+  </Step>
+</Steps>
+
+## Quick Start
+
+Get started with the Dodo Payments Inline Checkout in just a few lines of code:
+
+```typescript theme={null}
+import { DodoPayments } from "dodopayments-checkout";
+
+// Initialize the SDK for inline mode
+DodoPayments.Initialize({
+  mode: "test",
+  displayType: "inline",
+  onEvent: (event) => {
+    console.log("Checkout event:", event);
+  },
+});
+
+// Open checkout in a specific container
+DodoPayments.Checkout.open({
+  checkoutUrl: "https://test.dodopayments.com/session/cks_123",
+  elementId: "dodo-inline-checkout" // ID of the container element
+});
+```
+
+<Tip>
+  Ensure you have a container element with the corresponding `id` on your page: `<div id="dodo-inline-checkout"></div>`.
+</Tip>
+
+## Step-by-Step Integration Guide
+
+<Steps>
+  <Step title="Install the SDK">
+    Install the Dodo Payments Checkout SDK:
+
+    <CodeGroup>
+      ```bash npm theme={null}
+      npm install dodopayments-checkout
+      ```
+
+      ```bash yarn theme={null}
+      yarn add dodopayments-checkout
+      ```
+
+      ```bash pnpm theme={null}
+      pnpm add dodopayments-checkout
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Initialize the SDK for Inline Display">
+    Initialize the SDK and specify `displayType: 'inline'`. You should also listen for the `checkout.breakdown` event to update your UI with real-time tax and total calculations.
+
+    ```typescript theme={null}
+    import { DodoPayments } from "dodopayments-checkout";
+
+    DodoPayments.Initialize({
+      mode: "test",
+      displayType: "inline",
+      onEvent: (event) => {
+        if (event.event_type === "checkout.breakdown") {
+          const breakdown = event.data?.message;
+          // Update your UI with breakdown.subTotal, breakdown.tax, breakdown.total, etc.
+        }
+      },
+    });
+    ```
+  </Step>
+
+  <Step title="Create a Container Element">
+    Add an element to your HTML where the checkout frame will be injected:
+
+    ```html theme={null}
+    <div id="dodo-inline-checkout"></div>
+    ```
+  </Step>
+
+  <Step title="Open the Checkout">
+    Call `DodoPayments.Checkout.open()` with the `checkoutUrl` and the `elementId` of your container:
+
+    ```typescript theme={null}
+    DodoPayments.Checkout.open({
+      checkoutUrl: "https://test.dodopayments.com/session/cks_123",
+      elementId: "dodo-inline-checkout"
+    });
+    ```
+  </Step>
+
+  <Step title="Test Your Integration">
+    1. Start your development server:
+
+    ```bash theme={null}
+    npm run dev
+    ```
+
+    2. Test the checkout flow:
+       * Enter your email and address details in the inline frame.
+       * Verify that your custom order summary updates in real-time.
+       * Test the payment flow using test credentials.
+       * Confirm redirects work correctly.
+
+    <Check>
+      You should see `checkout.breakdown` events logged in your browser console if you added a console log in the `onEvent` callback.
+    </Check>
+  </Step>
+
+  <Step title="Go Live">
+    When you're ready for production:
+
+    1. Change the mode to `'live'`:
+
+    ```typescript theme={null}
+    DodoPayments.Initialize({
+      mode: "live",
+      displayType: "inline",
+      onEvent: (event) => {
+        // Handle events
+      }
+    });
+    ```
+
+    2. Update your checkout URLs to use live checkout sessions from your backend.
+    3. Test the complete flow in production.
+  </Step>
+</Steps>
+
+## Complete React Example
+
+This example demonstrates how to implement a custom order summary alongside the inline checkout, keeping them in sync using the `checkout.breakdown` event.
+
+```tsx theme={null}
+"use client";
+
+import { useEffect, useState } from 'react';
+import { DodoPayments, CheckoutBreakdownData } from 'dodopayments-checkout';
+
+export default function CheckoutPage() {
+  const [breakdown, setBreakdown] = useState<Partial<CheckoutBreakdownData>>({});
+
+  useEffect(() => {
+    // 1. Initialize the SDK
+    DodoPayments.Initialize({
+      mode: 'test',
+      displayType: 'inline',
+      onEvent: (event) => {
+        // 2. Listen for the 'checkout.breakdown' event
+        if (event.event_type === "checkout.breakdown") {
+          const message = event.data?.message as CheckoutBreakdownData;
+          if (message) setBreakdown(message);
+        }
+      }
+    });
+
+    // 3. Open the checkout in the specified container
+    DodoPayments.Checkout.open({
+      checkoutUrl: 'https://test.dodopayments.com/session/cks_123',
+      elementId: 'dodo-inline-checkout'
+    });
+
+    return () => DodoPayments.Checkout.close();
+  }, []);
+
+  const format = (amt: number | null | undefined, curr: string | null | undefined) => 
+    amt != null && curr ? `${curr} ${(amt/100).toFixed(2)}` : '0.00';
+
+  const currency = breakdown.currency ?? breakdown.finalTotalCurrency ?? '';
+
+  return (
+    <div className="flex flex-col md:flex-row min-h-screen">
+      {/* Left Side - Checkout Form */}
+      <div className="w-full md:w-1/2 flex items-center">
+        <div id="dodo-inline-checkout" className='w-full' />
+      </div>
+
+      {/* Right Side - Custom Order Summary */}
+      <div className="w-full md:w-1/2 p-8 bg-gray-50">
+        <h2 className="text-2xl font-bold mb-4">Order Summary</h2>
+        <div className="space-y-2">
+          {breakdown.subTotal && (
+            <div className="flex justify-between">
+              <span>Subtotal</span>
+              <span>{format(breakdown.subTotal, currency)}</span>
+            </div>
+          )}
+          {breakdown.discount && (
+            <div className="flex justify-between">
+              <span>Discount</span>
+              <span>{format(breakdown.discount, currency)}</span>
+            </div>
+          )}
+          {breakdown.tax != null && (
+            <div className="flex justify-between">
+              <span>Tax</span>
+              <span>{format(breakdown.tax, currency)}</span>
+            </div>
+          )}
+          <hr />
+          {(breakdown.finalTotal ?? breakdown.total) && (
+            <div className="flex justify-between font-bold text-xl">
+              <span>Total</span>
+              <span>{format(breakdown.finalTotal ?? breakdown.total, breakdown.finalTotalCurrency ?? currency)}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+```
+
+## API Reference
+
+### Configuration
+
+#### Initialize Options
+
+```typescript theme={null}
+interface InitializeOptions {
+  mode: "test" | "live";
+  displayType: "inline"; // Required for inline checkout
+  onEvent: (event: CheckoutEvent) => void;
+}
+```
+
+| Option        | Type                    | Required | Description                                      |
+| ------------- | ----------------------- | -------- | ------------------------------------------------ |
+| `mode`        | `"test" \| "live"`      | Yes      | Environment mode.                                |
+| `displayType` | `"inline" \| "overlay"` | Yes      | Must be set to `"inline"` to embed the checkout. |
+| `onEvent`     | `function`              | Yes      | Callback function for handling checkout events.  |
+
+#### Checkout Options
+
+```typescript theme={null}
+interface CheckoutOptions {
+  checkoutUrl: string;
+  elementId: string; // Required for inline checkout
+}
+```
+
+| Option        | Type     | Required | Description                                                        |
+| ------------- | -------- | -------- | ------------------------------------------------------------------ |
+| `checkoutUrl` | `string` | Yes      | Checkout session URL.                                              |
+| `elementId`   | `string` | Yes      | The `id` of the DOM element where the checkout should be rendered. |
+
+### Methods
+
+#### Open Checkout
+
+Opens the checkout frame in the specified container.
+
+```typescript theme={null}
+DodoPayments.Checkout.open({
+  checkoutUrl: "https://test.dodopayments.com/session/cks_123",
+  elementId: "dodo-inline-checkout"
+});
+```
+
+#### Close Checkout
+
+Programmatically removes the checkout frame and cleans up event listeners.
+
+```typescript theme={null}
+DodoPayments.Checkout.close();
+```
+
+#### Check Status
+
+Returns whether the checkout frame is currently injected.
+
+```typescript theme={null}
+const isOpen = DodoPayments.Checkout.isOpen();
+// Returns: boolean
+```
+
+### Events
+
+The SDK provides real-time events through the `onEvent` callback. For inline checkout, `checkout.breakdown` is particularly useful for syncing your UI.
+
+| Event Type                            | Description                                              |
+| ------------------------------------- | -------------------------------------------------------- |
+| `checkout.opened`                     | Checkout frame has been loaded.                          |
+| `checkout.breakdown`                  | Fired when prices, taxes, or discounts are updated.      |
+| `checkout.customer_details_submitted` | Customer details have been submitted.                    |
+| `checkout.redirect`                   | Checkout will perform a redirect (e.g., to a bank page). |
+| `checkout.error`                      | An error occurred during checkout.                       |
+
+#### Checkout Breakdown Data
+
+The `checkout.breakdown` event provides the following data:
+
+```typescript theme={null}
+interface CheckoutBreakdownData {
+  subTotal?: number;          // Amount in cents
+  discount?: number;         // Amount in cents
+  tax?: number;              // Amount in cents
+  total?: number;            // Amount in cents
+  currency?: string;         // e.g., "USD"
+  finalTotal?: number;       // Final amount including adjustments
+  finalTotalCurrency?: string; // Currency for the final total
+}
+```
+
+#### Understanding the Breakdown Event
+
+The `checkout.breakdown` event is the primary way to keep your application's UI in sync with the Dodo Payments checkout state.
+
+**When it fires:**
+
+* **On initialization**: Immediately after the checkout frame is loaded and ready.
+* **On address change**: Whenever the customer selects a country or enters a postal code that results in a tax recalculation.
+
+**Field Details:**
+
+| Field                | Description                                                                                                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `subTotal`           | The sum of all line items in the session before any discounts or taxes are applied.                                                                                             |
+| `discount`           | The total value of all applied discounts.                                                                                                                                       |
+| `tax`                | The calculated tax amount. In `inline` mode, this updates dynamically as the user interacts with the address fields.                                                            |
+| `total`              | The mathematical result of `subTotal - discount + tax` in the session's base currency.                                                                                          |
+| `currency`           | The ISO currency code (e.g., `"USD"`) for the standard subtotal, discount, and tax values.                                                                                      |
+| `finalTotal`         | The actual amount the customer is charged. This may include additional foreign exchange adjustments or local payment method fees that aren't part of the basic price breakdown. |
+| `finalTotalCurrency` | The currency in which the customer is actually paying. This can differ from `currency` if purchasing power parity or local currency conversion is active.                       |
+
+**Key Integration Tips:**
+
+1. **Currency Formatting**: Prices are always returned as integers in the smallest currency unit (e.g., cents for USD, yen for JPY). To display them, divide by 100 (or the appropriate power of 10) or use a formatting library like `Intl.NumberFormat`.
+2. **Handling Initial States**: When the checkout first loads, `tax` and `discount` may be `0` or `null` until the user provides their billing information or applies a code. Your UI should handle these states gracefully (e.g., showing a dash `—` or hiding the row).
+3. **The "Final Total" vs "Total"**: While `total` gives you the standard price calculation, `finalTotal` is the source of truth for the transaction. If `finalTotal` is present, it reflects exactly what will be charged to the customer's card, including any dynamic adjustments.
+4. **Real-time Feedback**: Use the `tax` field to show users that taxes are being calculated in real-time. This provides a "live" feel to your checkout page and reduces friction during the address entry step.
+
+## Implementation Options
+
+### Package Manager Installation
+
+Install via npm, yarn, or pnpm as shown in the [Step-by-Step Integration Guide](#step-by-step-integration-guide).
+
+### CDN Implementation
+
+For quick integration without a build step, you can use our CDN:
+
+```html theme={null}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dodo Payments Inline Checkout</title>
+    
+    <!-- Load DodoPayments -->
+    <script src="https://cdn.jsdelivr.net/npm/dodopayments-checkout@latest/dist/index.js"></script>
+    <script>
+        // Initialize the SDK
+        DodoPaymentsCheckout.DodoPayments.Initialize({
+            mode: "test",
+            displayType: "inline",
+            onEvent: (event) => {
+                console.log('Checkout event:', event);
+            }
+        });
+    </script>
+</head>
+<body>
+    <div id="dodo-inline-checkout"></div>
+
+    <script>
+        // Open the checkout
+        DodoPaymentsCheckout.DodoPayments.Checkout.open({
+            checkoutUrl: "https://test.dodopayments.com/session/cks_123",
+            elementId: "dodo-inline-checkout"
+        });
+    </script>
+</body>
+</html>
+```
+
+## TypeScript Support
+
+The SDK is written in TypeScript and includes comprehensive type definitions.
+
+```typescript theme={null}
+import { DodoPayments, CheckoutEvent } from "dodopayments-checkout";
+
+DodoPayments.Initialize({
+  mode: "test",
+  displayType: "inline",
+  onEvent: (event: CheckoutEvent) => {
+    // event is fully typed
+    console.log(event.event_type, event.data);
+  },
+});
+```
+
+## Error Handling
+
+The SDK provides detailed error information through the event system. Always implement proper error handling in your `onEvent` callback:
+
+```typescript theme={null}
+DodoPayments.Initialize({
+  mode: "test",
+  displayType: "inline",
+  onEvent: (event: CheckoutEvent) => {
+    if (event.event_type === "checkout.error") {
+      console.error("Checkout error:", event.data?.message);
+      // Handle error appropriately
+    }
+  }
+});
+```
+
+<Warning>
+  Always handle the `checkout.error` event to provide a good user experience when issues occur.
+</Warning>
+
+## Best Practices
+
+1. **Responsive Design**: Ensure your container element has enough width and height. The iframe will typically expand to fill its container.
+2. **Synchronization**: Use the `checkout.breakdown` event to keep your custom order summary or pricing tables in sync with what the user sees in the checkout frame.
+3. **Skeleton States**: Show a loading indicator in your container until the `checkout.opened` event fires.
+4. **Cleanup**: Call `DodoPayments.Checkout.close()` when your component unmounts to clean up the iframe and event listeners.
+
+<Info>
+  For dark mode implementations, it's recommended to use `#0d0d0d` as the background color for optimal visual integration with the inline checkout frame.
+</Info>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Checkout frame is not appearing">
+    * Verify that `elementId` matches the `id` of a `div` that actually exists in the DOM.
+    * Ensure `displayType: 'inline'` was passed to `Initialize`.
+    * Check that the `checkoutUrl` is valid.
+  </Accordion>
+
+  <Accordion title="Taxes are not updating in my UI">
+    * Ensure you are listening for the `checkout.breakdown` event.
+    * Taxes are only calculated after the user enters a valid country and postal code in the checkout frame.
+  </Accordion>
+</AccordionGroup>
+
+## Browser Support
+
+The Dodo Payments Checkout SDK supports the following browsers:
+
+* Chrome (latest)
+* Firefox (latest)
+* Safari (latest)
+* Edge (latest)
+* IE11+
+
+<Note>
+  Apple Pay is not currently supported in the inline checkout experience. We plan to add support for Apple Pay in a future release.
+</Note>
+
+## Inline vs Overlay Checkout
+
+Choose the right checkout type for your use case:
+
+| Feature               | Inline Checkout                              | Overlay Checkout                  |
+| --------------------- | -------------------------------------------- | --------------------------------- |
+| Integration depth     | Fully embedded in page                       | Modal on top of page              |
+| Layout control        | Full control                                 | Limited                           |
+| Branding              | Seamless                                     | Separate from page                |
+| Implementation effort | Higher                                       | Lower                             |
+| Best for              | Custom checkout pages, high-conversion flows | Quick integration, existing pages |
+
+<Tip>
+  Use **inline checkout** when you want maximum control over the checkout experience and seamless branding. Use **overlay checkout** for faster integration with minimal changes to your existing pages.
+</Tip>
+
+## Related Resources
+
+<CardGroup>
+  <Card title="Overlay Checkout" icon="layer-group" href="/developer-resources/overlay-checkout">
+    Use the overlay checkout for quick modal-based integration.
+  </Card>
+
+  <Card title="Checkout Sessions API" icon="code" href="/api-reference/checkout-sessions/create">
+    Create checkout sessions to power your checkout experiences.
+  </Card>
+
+  <Card title="Webhooks" icon="webhook" href="/developer-resources/webhooks">
+    Handle payment events server-side with webhooks.
+  </Card>
+
+  <Card title="Integration Guide" icon="book" href="/developer-resources/integration-guide">
+    Complete guide to integrating Dodo Payments.
+  </Card>
+</CardGroup>
+
+For more help, visit our [Discord community](https://discord.gg/bYqAp4ayYh) or contact our developer support team.
+
+
 # MCP Server
 Source: https://docs.dodopayments.com/developer-resources/mcp-server
 
@@ -7293,6 +8227,8 @@ Enable AI assistants to interact with the Dodo Payments API through the Model Co
 ## Overview
 
 The Model Context Protocol (MCP) is an open standard that enables AI applications to securely connect to external data sources and APIs. The Dodo Payments MCP Server provides AI assistants like Claude, Cursor, and other MCP-compatible clients with structured access to your payment infrastructure.
+
+The Dodo Payments MCP Server is built with [Stainless](https://www.stainless.com/) and uses the **Code Mode** architecture, which enables AI agents to write and execute TypeScript code against the Dodo Payments SDK in an isolated sandbox environment.
 
 ### Key capabilities
 
@@ -7303,6 +8239,19 @@ The Model Context Protocol (MCP) is an open standard that enables AI application
 * **License Management**: Activate, validate, and manage software licenses
 * **Usage-Based Billing**: Track and bill for metered usage
 
+## How Code Mode Works
+
+The Dodo Payments MCP Server uses Code Mode, providing your AI agent with two powerful tools:
+
+1. **Docs Search Tool**: Query documentation about the Dodo Payments API and SDK to understand available operations and parameters
+2. **Code Execution Tool**: Write TypeScript code against the SDK that executes in a secure sandbox environment without web or filesystem access
+
+This architecture enables AI agents to perform complex, multi-step payment operations deterministically and repeatably.
+
+<Tip>
+  Using Code Mode, agents can chain multiple API calls, handle conditional logic, and perform calculations—all in a single tool invocation.
+</Tip>
+
 ## Installation
 
 Choose the installation method that best fits your workflow.
@@ -7312,7 +8261,7 @@ Choose the installation method that best fits your workflow.
 Access the hosted MCP server without any local setup or installation. This is the fastest way to get started.
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/TxGgYxNmkT4" title="Using Dodo Payment's Remote MCP Server" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Using Dodo Payment's Remote MCP Server" />
 </Frame>
 
 <Steps>
@@ -7323,7 +8272,7 @@ Access the hosted MCP server without any local setup or installation. This is th
   <Step title="Configure your MCP client">
     Copy the provided JSON configuration for your specific client. For Cursor or Claude Desktop, add this to your MCP settings:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "mcpServers": {
         "dodopayments_api": {
@@ -7362,9 +8311,11 @@ Install and run the MCP server locally using NPM.
 
 <Tabs>
   <Tab title="NPX (No Installation)">
-    ```bash  theme={null}
-    # Set your API key
+    ```bash theme={null}
+    # Set your environment variables
     export DODO_PAYMENTS_API_KEY="dodo_test_..."
+    export DODO_PAYMENTS_WEBHOOK_KEY="your_webhook_key"
+    export DODO_PAYMENTS_ENVIRONMENT="live_mode"
 
     # Run the latest version
     npx -y dodopayments-mcp@latest
@@ -7372,14 +8323,16 @@ Install and run the MCP server locally using NPM.
   </Tab>
 
   <Tab title="MCP Client Configuration">
-    ```json  theme={null}
+    ```json theme={null}
     {
       "mcpServers": {
         "dodopayments_api": {
           "command": "npx",
           "args": ["-y", "dodopayments-mcp@latest"],
           "env": {
-            "DODO_PAYMENTS_API_KEY": "dodo_test_..."
+            "DODO_PAYMENTS_API_KEY": "dodo_test_...",
+            "DODO_PAYMENTS_WEBHOOK_KEY": "your_webhook_key",
+            "DODO_PAYMENTS_ENVIRONMENT": "live_mode"
           }
         }
       }
@@ -7403,7 +8356,8 @@ Run the MCP server in a containerized environment for consistent deployment.
 
   # Run the container
   docker run -e DODO_PAYMENTS_API_KEY="dodo_test_..." \
-    -p 3000:3000 \
+    -e DODO_PAYMENTS_WEBHOOK_KEY="your_webhook_key" \
+    -e DODO_PAYMENTS_ENVIRONMENT="live_mode" \
     ghcr.io/dodopayments/mcp:latest
   ```
 
@@ -7413,8 +8367,8 @@ Run the MCP server in a containerized environment for consistent deployment.
       image: ghcr.io/dodopayments/mcp:latest
       environment:
         - DODO_PAYMENTS_API_KEY=dodo_test_...
-      ports:
-        - "3000:3000"
+        - DODO_PAYMENTS_WEBHOOK_KEY=your_webhook_key
+        - DODO_PAYMENTS_ENVIRONMENT=live_mode
       restart: unless-stopped
   ```
 </CodeGroup>
@@ -7431,6 +8385,16 @@ Configure the Dodo Payments MCP server in your preferred AI client.
   <Tab title="Cursor">
     Set up the Dodo Payments MCP server in Cursor to enable conversational access to your payments data.
 
+    **One-Click Install**
+
+    Use the button below to install the MCP server directly in Cursor:
+
+    [![Add to Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/en-US/install-mcp?name=dodopayments-mcp\&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsImRvZG9wYXltZW50cy1tY3AiXSwiZW52Ijp7IkRPRE9fUEFZTUVOVFNfQVBJX0tFWSI6IlNldCB5b3VyIERPRE9fUEFZTUVOVFNfQVBJX0tFWSBoZXJlLiIsIkRPRE9fUEFZTUVOVFNfV0VCSE9PS19LRVkiOiJTZXQgeW91ciBET0RPX1BBWU1FTlRTX1dFQkhPT0tfS0VZIGhlcmUuIn19)
+
+    After clicking, set your environment variables in Cursor's `mcp.json` via **Cursor Settings** > **Tools & MCP** > **New MCP Server**.
+
+    **Manual Configuration**
+
     <Steps>
       <Step title="Open Cursor settings">
         Navigate to **Cursor Settings** > **Features** > **Model Context Protocol** or press `Cmd/Ctrl + Shift + P` and search for "MCP Settings".
@@ -7445,7 +8409,7 @@ Configure the Dodo Payments MCP server in your preferred AI client.
 
         **Remote Server (Recommended)**
 
-        ```json  theme={null}
+        ```json theme={null}
         {
           "mcpServers": {
             "dodopayments": {
@@ -7458,14 +8422,15 @@ Configure the Dodo Payments MCP server in your preferred AI client.
 
         **Local NPX**
 
-        ```json  theme={null}
+        ```json theme={null}
         {
           "mcpServers": {
             "dodopayments": {
               "command": "npx",
               "args": ["-y", "dodopayments-mcp@latest"],
               "env": {
-                "DODO_PAYMENTS_API_KEY": "dodo_test_..."
+                "DODO_PAYMENTS_API_KEY": "dodo_test_...",
+                "DODO_PAYMENTS_WEBHOOK_KEY": "your_webhook_key"
               }
             }
           }
@@ -7500,7 +8465,7 @@ Configure the Dodo Payments MCP server in your preferred AI client.
 
         **Remote Server (Recommended)**
 
-        ```json  theme={null}
+        ```json theme={null}
         {
           "mcpServers": {
             "dodopayments": {
@@ -7513,14 +8478,15 @@ Configure the Dodo Payments MCP server in your preferred AI client.
 
         **Local NPX**
 
-        ```json  theme={null}
+        ```json theme={null}
         {
           "mcpServers": {
             "dodopayments": {
               "command": "npx",
               "args": ["-y", "dodopayments-mcp@latest"],
               "env": {
-                "DODO_PAYMENTS_API_KEY": "dodo_test_..."
+                "DODO_PAYMENTS_API_KEY": "dodo_test_...",
+                "DODO_PAYMENTS_WEBHOOK_KEY": "your_webhook_key"
               }
             }
           }
@@ -7534,6 +8500,66 @@ Configure the Dodo Payments MCP server in your preferred AI client.
         <Tip>
           Look for the 🔌 icon in Claude Desktop to confirm the MCP server is connected.
         </Tip>
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Claude Code">
+    Set up the Dodo Payments MCP server in Claude Code CLI.
+
+    Run the following command in your terminal:
+
+    ```bash theme={null}
+    claude mcp add --transport stdio dodopayments_api \
+      --env DODO_PAYMENTS_API_KEY="dodo_test_..." \
+      DODO_PAYMENTS_WEBHOOK_KEY="your_webhook_key" \
+      -- npx -y dodopayments-mcp
+    ```
+
+    The configuration will be stored in your home directory's `.claude.json` file.
+
+    <Tip>
+      Claude Code automatically picks up environment variables from your shell, so you can also export them before running the command.
+    </Tip>
+  </Tab>
+
+  <Tab title="VS Code">
+    Set up the Dodo Payments MCP server in VS Code.
+
+    **One-Click Install**
+
+    [Open VS Code](https://vscode.stainless.com/mcp/%7B%22name%22%3A%22dodopayments-mcp%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22dodopayments-mcp%22%5D%2C%22env%22%3A%7B%22DODO_PAYMENTS_API_KEY%22%3A%22Set%20your%20DODO_PAYMENTS_API_KEY%20here.%22%2C%22DODO_PAYMENTS_WEBHOOK_KEY%22%3A%22Set%20your%20DODO_PAYMENTS_WEBHOOK_KEY%20here.%22%7D%7D)
+
+    After clicking, set your environment variables in VS Code's `mcp.json` via **Command Palette** > **MCP: Open User Configuration**.
+
+    **Manual Configuration**
+
+    <Steps>
+      <Step title="Open MCP configuration">
+        Open the Command Palette (`Cmd/Ctrl + Shift + P`) and search for "MCP: Open User Configuration".
+      </Step>
+
+      <Step title="Add server configuration">
+        Add the Dodo Payments MCP server:
+
+        ```json theme={null}
+        {
+          "mcpServers": {
+            "dodopayments": {
+              "command": "npx",
+              "args": ["-y", "dodopayments-mcp@latest"],
+              "env": {
+                "DODO_PAYMENTS_API_KEY": "dodo_test_...",
+                "DODO_PAYMENTS_WEBHOOK_KEY": "your_webhook_key"
+              }
+            }
+          }
+        }
+        ```
+      </Step>
+
+      <Step title="Reload window">
+        Reload VS Code (`Cmd/Ctrl + Shift + P` > "Reload Window") to activate the MCP server.
       </Step>
     </Steps>
   </Tab>
@@ -7553,14 +8579,15 @@ Configure the Dodo Payments MCP server in your preferred AI client.
       <Step title="Configure MCP server">
         Add the Dodo Payments MCP server configuration:
 
-        ```json  theme={null}
+        ```json theme={null}
         {
           "mcpServers": {
             "dodopayments": {
               "command": "npx",
               "args": ["-y", "dodopayments-mcp@latest"],
               "env": {
-                "DODO_PAYMENTS_API_KEY": "dodo_test_..."
+                "DODO_PAYMENTS_API_KEY": "dodo_test_...",
+                "DODO_PAYMENTS_WEBHOOK_KEY": "your_webhook_key"
               }
             }
           }
@@ -7585,14 +8612,15 @@ Configure the Dodo Payments MCP server in your preferred AI client.
       <Step title="Add server configuration">
         Add the following configuration:
 
-        ```json  theme={null}
+        ```json theme={null}
         {
           "mcpServers": {
             "dodopayments": {
               "command": "npx",
               "args": ["-y", "dodopayments-mcp@latest"],
               "env": {
-                "DODO_PAYMENTS_API_KEY": "dodo_test_..."
+                "DODO_PAYMENTS_API_KEY": "dodo_test_...",
+                "DODO_PAYMENTS_WEBHOOK_KEY": "your_webhook_key"
               }
             }
           }
@@ -7607,11 +8635,11 @@ Configure the Dodo Payments MCP server in your preferred AI client.
   </Tab>
 
   <Tab title="Other Clients">
-    Set up the Dodo Payments MCP server in other MCP-compatible clients to enable conversational access to your payments data.
+    Set up the Dodo Payments MCP server in other MCP-compatible clients.
 
     **Remote Server (Recommended)**
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "mcpServers": {
         "dodopayments": {
@@ -7624,14 +8652,15 @@ Configure the Dodo Payments MCP server in your preferred AI client.
 
     **Local NPX**
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "mcpServers": {
         "dodopayments": {
           "command": "npx",
           "args": ["-y", "dodopayments-mcp@latest"],
           "env": {
-            "DODO_PAYMENTS_API_KEY": "dodo_test_..."
+            "DODO_PAYMENTS_API_KEY": "dodo_test_...",
+            "DODO_PAYMENTS_WEBHOOK_KEY": "your_webhook_key"
           }
         }
       }
@@ -7644,6 +8673,101 @@ Configure the Dodo Payments MCP server in your preferred AI client.
   </Tab>
 </Tabs>
 
+## Environment Variables
+
+Configure the MCP server behavior using environment variables.
+
+| Variable                    | Description                       | Required |
+| --------------------------- | --------------------------------- | -------- |
+| `DODO_PAYMENTS_API_KEY`     | Your Dodo Payments API key        | Yes      |
+| `DODO_PAYMENTS_WEBHOOK_KEY` | Your webhook signing key          | No       |
+| `DODO_PAYMENTS_ENVIRONMENT` | Set to `live_mode` for production | No       |
+
+## Running Remotely
+
+Deploy the MCP server as a remote HTTP server for web-based clients or agentic workflows.
+
+```bash theme={null}
+# Start as remote server
+npx -y dodopayments-mcp --transport=http
+
+# Specify a custom port
+npx -y dodopayments-mcp --transport=http --port=3000
+```
+
+### Remote Server Configuration
+
+Once deployed, clients can connect using the server URL:
+
+```json theme={null}
+{
+  "mcpServers": {
+    "dodopayments_api": {
+      "url": "http://localhost:3000",
+      "headers": {
+        "Authorization": "Bearer your_api_key"
+      }
+    }
+  }
+}
+```
+
+### Authorization Headers
+
+The remote server accepts authentication via the following headers:
+
+| Header                    | Description                 |
+| ------------------------- | --------------------------- |
+| `Authorization`           | Bearer token authentication |
+| `x-dodo-payments-api-key` | Direct API key header       |
+
+## Client Capabilities
+
+Different MCP clients have varying levels of support for the MCP specification. The server can automatically adjust tool schemas to work around these limitations.
+
+```bash theme={null}
+# Auto-detect client (default)
+npx dodopayments-mcp --client=infer
+
+# Configure for specific clients
+npx dodopayments-mcp --client=cursor
+npx dodopayments-mcp --client=claude
+npx dodopayments-mcp --client=claude-code
+npx dodopayments-mcp --client=openai-agents
+```
+
+### Available Client Presets
+
+| Client          | Description                  |
+| --------------- | ---------------------------- |
+| `infer`         | Auto-detect client (default) |
+| `cursor`        | Cursor editor                |
+| `claude`        | Claude AI web or desktop     |
+| `claude-code`   | Claude Code CLI              |
+| `openai-agents` | OpenAI agents platform       |
+
+### Manual Capability Configuration
+
+For clients not listed above, manually configure capabilities:
+
+```bash theme={null}
+# Disable $ref pointer support and set max tool name length
+npx dodopayments-mcp --no-capability=refs --capability=tool-name-length=40
+```
+
+Available capabilities:
+
+* `top-level-unions` - Support for top-level union types
+* `valid-json` - Correct JSON string argument parsing
+* `refs` - Support for \$ref pointers in schemas
+* `unions` - Support for union types (anyOf)
+* `formats` - Support for format validations
+* `tool-name-length=N` - Maximum tool name length
+
+<Tip>
+  Run `npx dodopayments-mcp --describe-capabilities` for detailed capability information.
+</Tip>
+
 ## Tool Filtering
 
 Control which API operations are exposed to your AI assistant to optimize performance and maintain security.
@@ -7652,7 +8776,7 @@ Control which API operations are exposed to your AI assistant to optimize perfor
 
 Restrict access to read-only or write operations.
 
-```bash  theme={null}
+```bash theme={null}
 # Only expose read operations (GET requests)
 npx dodopayments-mcp --operation=read
 
@@ -7668,24 +8792,30 @@ npx dodopayments-mcp --operation=write
 
 Limit tools to specific API resources.
 
-```bash  theme={null}
+```bash theme={null}
 # Only expose payment-related tools
 npx dodopayments-mcp --resource=payments
 
 # Expose multiple resources
 npx dodopayments-mcp --resource=payments --resource=customers
+
+# Use wildcards for resource groups
+npx dodopayments-mcp --resource=subscription*
 ```
 
 ### Include or exclude specific tools
 
 Fine-tune which individual tools are available.
 
-```bash  theme={null}
+```bash theme={null}
 # Include only specific tools
 npx dodopayments-mcp --tool=create_payments --tool=list_payments
 
 # Exclude specific tools
 npx dodopayments-mcp --no-tool=delete_products
+
+# Disable the docs search tool
+npx dodopayments-mcp --no-tools=docs
 
 # List all available tools
 npx dodopayments-mcp --list
@@ -7695,9 +8825,41 @@ npx dodopayments-mcp --list
 
 Apply multiple filters simultaneously for precise control.
 
-```bash  theme={null}
+```bash theme={null}
 # Only payment and subscription read operations
 npx dodopayments-mcp --operation=read --resource=payments --resource=subscriptions
+```
+
+### URL Query Parameter Filtering (Remote Server)
+
+When using the remote server, apply filters via URL query parameters:
+
+```
+https://mcp.dodopayments.com/?operation=read
+https://mcp.dodopayments.com/?resource=payments
+```
+
+## Dynamic Tools Mode
+
+For large APIs, loading all tools at once can overwhelm the AI's context window. Dynamic tools mode provides a more efficient alternative.
+
+```bash theme={null}
+npx dodopayments-mcp --tools=dynamic
+```
+
+In dynamic mode, three meta-tools replace individual API tools:
+
+1. **`list_api_endpoints`** - Discovers available methods with optional filtering
+2. **`get_api_endpoint_schema`** - Gets detailed schema for a specific method
+3. **`invoke_api_endpoint`** - Executes any method with appropriate parameters
+
+<Info>
+  Dynamic tools are automatically enabled for APIs with more than 50 methods. Override with `--tools=all` to include all tools.
+</Info>
+
+```bash theme={null}
+# Use both dynamic tools and specific resources
+npx dodopayments-mcp --tools=dynamic --resource=payments
 ```
 
 ## Advanced Usage
@@ -7706,7 +8868,7 @@ npx dodopayments-mcp --operation=read --resource=payments --resource=subscriptio
 
 Build custom MCP servers or extend the existing one programmatically.
 
-```javascript  theme={null}
+```javascript theme={null}
 import { server, endpoints, init } from "dodopayments-mcp/server";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 
@@ -7722,7 +8884,7 @@ await server.connect(transport);
 
 Extend the MCP server with your own tools and business logic.
 
-```javascript  theme={null}
+```javascript theme={null}
 import { server, init } from "dodopayments-mcp/server";
 import createPayments from "dodopayments-mcp/tools/payments/create-payments";
 import { zodToJsonSchema } from "zod-to-json-schema";
@@ -7768,7 +8930,7 @@ Protect your API credentials and maintain secure integrations.
 
     Store API keys in environment variables or secure secret management systems.
 
-    ```bash  theme={null}
+    ```bash theme={null}
     # Use environment variables
     export DODO_PAYMENTS_API_KEY="dodo_test_..."
 
@@ -7790,7 +8952,7 @@ Protect your API credentials and maintain secure integrations.
 
     Limit exposed operations to only what your AI assistant needs.
 
-    ```bash  theme={null}
+    ```bash theme={null}
     # Production: read-only access
     npx dodopayments-mcp --operation=read
 
@@ -7798,9 +8960,9 @@ Protect your API credentials and maintain secure integrations.
     npx dodopayments-mcp
     ```
 
-    **Implement authentication for custom endpoints**
+    **Implement authentication for remote servers**
 
-    Validate requests and enforce authorization in your custom tool handlers.
+    When deploying remotely, always require authentication via the `Authorization` header or `x-dodo-payments-api-key` header.
 
     **Monitor API usage**
 
@@ -7830,7 +8992,7 @@ Protect your API credentials and maintain secure integrations.
 
     Ensure your API key is correctly set and has the necessary permissions.
 
-    ```bash  theme={null}
+    ```bash theme={null}
     # Test your API key
     curl -H "Authorization: Bearer dodo_test_..." \
       https://api.dodopayments.com/payments
@@ -7850,9 +9012,9 @@ Protect your API credentials and maintain secure integrations.
 
     Ensure you're using test keys with test endpoints and live keys with production endpoints.
 
-    **Check key permissions**
+    **Check environment variable**
 
-    Verify your API key has permissions for the operations you're attempting.
+    Verify `DODO_PAYMENTS_ENVIRONMENT` is set correctly (`live_mode` for production).
 
     **Regenerate credentials**
 
@@ -7872,17 +9034,39 @@ Protect your API credentials and maintain secure integrations.
 
     Verify the operation works when calling the Dodo Payments API directly via curl or Postman.
   </Accordion>
+
+  <Accordion title="Client compatibility issues">
+    **Try a different client preset**
+
+    If tools aren't working correctly, try specifying your client explicitly:
+
+    ```bash theme={null}
+    npx dodopayments-mcp --client=cursor
+    ```
+
+    **Check capability support**
+
+    Some clients don't support all JSON schema features. Use `--describe-capabilities` to understand what's supported.
+  </Accordion>
 </AccordionGroup>
 
 ## Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="API Reference" icon="book" href="/api-reference/introduction">
     Explore the complete Dodo Payments API documentation
   </Card>
 
   <Card title="MCP Protocol" icon="link" href="https://modelcontextprotocol.io">
     Learn more about the Model Context Protocol standard
+  </Card>
+
+  <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodopayments-typescript/tree/main/packages/mcp-server">
+    View the MCP server source code and contribute
+  </Card>
+
+  <Card title="NPM Package" icon="npm" href="https://www.npmjs.com/package/dodopayments-mcp">
+    Install the MCP server from NPM
   </Card>
 </CardGroup>
 
@@ -7892,7 +9076,7 @@ Source: https://docs.dodopayments.com/developer-resources/nextjs-adaptor
 
 Learn how to integrate Dodo Payments with your Next.js App Router project using our NextJS Adaptor. Covers checkout, customer portal, webhooks, and secure environment setup.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Handler" icon="cart-shopping" href="#checkout-route-handler">
     Integrate Dodo Payments checkout with static, dynamic, and session flows.
   </Card>
@@ -7912,7 +9096,7 @@ Learn how to integrate Dodo Payments with your Next.js App Router project using 
   <Step title="Install the package">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/nextjs
     ```
   </Step>
@@ -7920,7 +9104,7 @@ Learn how to integrate Dodo Payments with your Next.js App Router project using 
   <Step title="Set up environment variables">
     Create a <code>.env</code> file in your project root:
 
-    ```env  theme={null}
+    ```env theme={null}
     DODO_PAYMENTS_API_KEY=your-api-key
     DODO_PAYMENTS_WEBHOOK_KEY=your-webhook-secret
     DODO_PAYMENTS_RETURN_URL=https://yourdomain.com/checkout/success
@@ -8100,103 +9284,103 @@ Learn how to integrate Dodo Payments with your Next.js App Router project using 
   <Accordion title="Static Checkout (GET)">
     ### Supported Query Parameters
 
-    <ParamField query="productId" type="string" required>
+    <ParamField type="string">
       Product identifier (e.g., <code>?productId=pdt\_nZuwz45WAs64n3l07zpQR</code>).
     </ParamField>
 
-    <ParamField query="quantity" type="integer">
+    <ParamField type="integer">
       Quantity of the product.
     </ParamField>
 
-    <ParamField query="fullName" type="string">
+    <ParamField type="string">
       Customer's full name.
     </ParamField>
 
-    <ParamField query="firstName" type="string">
+    <ParamField type="string">
       Customer's first name.
     </ParamField>
 
-    <ParamField query="lastName" type="string">
+    <ParamField type="string">
       Customer's last name.
     </ParamField>
 
-    <ParamField query="email" type="string">
+    <ParamField type="string">
       Customer's email address.
     </ParamField>
 
-    <ParamField query="country" type="string">
+    <ParamField type="string">
       Customer's country.
     </ParamField>
 
-    <ParamField query="addressLine" type="string">
+    <ParamField type="string">
       Customer's address line.
     </ParamField>
 
-    <ParamField query="city" type="string">
+    <ParamField type="string">
       Customer's city.
     </ParamField>
 
-    <ParamField query="state" type="string">
+    <ParamField type="string">
       Customer's state/province.
     </ParamField>
 
-    <ParamField query="zipCode" type="string">
+    <ParamField type="string">
       Customer's zip/postal code.
     </ParamField>
 
-    <ParamField query="disableFullName" type="boolean">
+    <ParamField type="boolean">
       Disable full name field.
     </ParamField>
 
-    <ParamField query="disableFirstName" type="boolean">
+    <ParamField type="boolean">
       Disable first name field.
     </ParamField>
 
-    <ParamField query="disableLastName" type="boolean">
+    <ParamField type="boolean">
       Disable last name field.
     </ParamField>
 
-    <ParamField query="disableEmail" type="boolean">
+    <ParamField type="boolean">
       Disable email field.
     </ParamField>
 
-    <ParamField query="disableCountry" type="boolean">
+    <ParamField type="boolean">
       Disable country field.
     </ParamField>
 
-    <ParamField query="disableAddressLine" type="boolean">
+    <ParamField type="boolean">
       Disable address line field.
     </ParamField>
 
-    <ParamField query="disableCity" type="boolean">
+    <ParamField type="boolean">
       Disable city field.
     </ParamField>
 
-    <ParamField query="disableState" type="boolean">
+    <ParamField type="boolean">
       Disable state field.
     </ParamField>
 
-    <ParamField query="disableZipCode" type="boolean">
+    <ParamField type="boolean">
       Disable zip code field.
     </ParamField>
 
-    <ParamField query="paymentCurrency" type="string">
+    <ParamField type="string">
       Specify the payment currency (e.g., <code>USD</code>).
     </ParamField>
 
-    <ParamField query="showCurrencySelector" type="boolean">
+    <ParamField type="boolean">
       Show currency selector.
     </ParamField>
 
-    <ParamField query="paymentAmount" type="integer">
+    <ParamField type="integer">
       Specify the payment amount (e.g., <code>1000</code> for \$10.00).
     </ParamField>
 
-    <ParamField query="showDiscounts" type="boolean">
+    <ParamField type="boolean">
       Show discount fields.
     </ParamField>
 
-    <ParamField query="metadata_*" type="string">
+    <ParamField type="string">
       Any query parameter starting with <code>metadata\_</code> will be passed as metadata.
     </ParamField>
 
@@ -8208,7 +9392,7 @@ Learn how to integrate Dodo Payments with your Next.js App Router project using 
 
     Static checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -8226,7 +9410,7 @@ Learn how to integrate Dodo Payments with your Next.js App Router project using 
 
     Dynamic checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -8242,7 +9426,7 @@ Learn how to integrate Dodo Payments with your Next.js App Router project using 
 
     Checkout sessions return a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/session/..."
     }
@@ -8256,11 +9440,11 @@ The Customer Portal Route Handler enables you to seamlessly integrate the Dodo P
 
 ### Query Parameters
 
-<ParamField query="customer_id" type="string" required>
+<ParamField type="string">
   The customer ID for the portal session (e.g., <code>?customer\_id=cus\_123</code>).
 </ParamField>
 
-<ParamField query="send_email" type="boolean">
+<ParamField type="boolean">
   If set to <code>true</code>, sends an email to the customer with the portal link.
 </ParamField>
 
@@ -8570,14 +9754,14 @@ Before you begin, make sure you have:
 
 <Steps>
   <Step title="Clone the Repository">
-    ```bash  theme={null}
+    ```bash theme={null}
     git clone https://github.com/dodopayments/dodo-nextjs-minimal-boilerplate.git
     cd dodo-nextjs-minimal-boilerplate
     ```
   </Step>
 
   <Step title="Install Dependencies">
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install
     ```
   </Step>
@@ -8596,13 +9780,13 @@ Before you begin, make sure you have:
   <Step title="Configure Environment Variables">
     Create a `.env` file in the root directory:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     cp .env.example .env
     ```
 
     Update the values with your Dodo Payments credentials:
 
-    ```env  theme={null}
+    ```env theme={null}
     DODO_PAYMENTS_API_KEY=your_api_key_here
     DODO_PAYMENTS_WEBHOOK_KEY=your_webhook_signing_key_here
     DODO_PAYMENTS_RETURN_URL=http://localhost:3000
@@ -8617,7 +9801,7 @@ Before you begin, make sure you have:
   <Step title="Add Your Products">
     Update `src/lib/products.ts` with your actual product IDs from Dodo Payments:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     export const products: Product[] = [
       {
         product_id: "pdt_001", // Replace with your product ID
@@ -8637,7 +9821,7 @@ Before you begin, make sure you have:
   </Step>
 
   <Step title="Run the Development Server">
-    ```bash  theme={null}
+    ```bash theme={null}
     npm run dev
     ```
 
@@ -8647,7 +9831,7 @@ Before you begin, make sure you have:
 
 ## Project Structure
 
-```text  theme={null}
+```text theme={null}
 src/
 ├── app/
 │   ├── api/
@@ -8680,7 +9864,7 @@ Edit `src/lib/products.ts` to modify:
 
 In `src/app/components/ProductCard.tsx`, replace the hardcoded values with your actual user data:
 
-```typescript  theme={null}
+```typescript theme={null}
 customer: {
   name: "John Doe",
   email: "john@example.com",
@@ -8691,7 +9875,7 @@ customer: {
 
 In `src/app/components/Header.tsx`, replace the hardcoded customer ID:
 
-```typescript  theme={null}
+```typescript theme={null}
 const CUSTOMER_ID = "cus_001"; // Replace with actual customer ID
 ```
 
@@ -8706,7 +9890,7 @@ The boilerplate demonstrates handling two webhook events in `src/app/api/webhook
 
 Add your business logic inside these handlers:
 
-```typescript  theme={null}
+```typescript theme={null}
 onSubscriptionActive: async (payload) => {
   // Grant access to your product
   // Update user database
@@ -8722,7 +9906,7 @@ For local development, you can use tools like [ngrok](https://ngrok.com/) to cre
 
 ### Build for Production
 
-```bash  theme={null}
+```bash theme={null}
 npm run build
 npm start
 ```
@@ -8747,7 +9931,7 @@ https://example.com/api/webhook
   <Accordion title="Module not found or build errors">
     Delete `node_modules` and reinstall dependencies:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     rm -rf node_modules package-lock.json
     npm install
     ```
@@ -8764,7 +9948,7 @@ https://example.com/api/webhook
   <Accordion title="Webhooks not receiving events">
     For local testing, use [ngrok](https://ngrok.com) to expose your server:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     ngrok http 3000
     ```
 
@@ -8798,7 +9982,7 @@ Source: https://docs.dodopayments.com/developer-resources/nuxt-adaptor
 
 Integrate Dodo Payments with your Nuxt project using the official Nuxt module. Covers checkout, customer portal, webhooks, and secure environment setup.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout API Route" icon="cart-shopping" href="#checkout-api-route">
     Integrate Dodo Payments checkout into your Nuxt app using a server route.
   </Card>
@@ -8824,7 +10008,7 @@ Integrate Dodo Payments with your Nuxt project using the official Nuxt module. C
   <Step title="Install the Nuxt module">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/nuxt
     ```
   </Step>
@@ -9077,103 +10261,103 @@ Integrate Dodo Payments with your Nuxt project using the official Nuxt module. C
   <Accordion title="Static Checkout (GET)">
     ### Supported Query Parameters
 
-    <ParamField query="productId" type="string" required>
+    <ParamField type="string">
       Product identifier (e.g., <code>?productId=pdt\_nZuwz45WAs64n3l07zpQR</code>).
     </ParamField>
 
-    <ParamField query="quantity" type="integer">
+    <ParamField type="integer">
       Quantity of the product.
     </ParamField>
 
-    <ParamField query="fullName" type="string">
+    <ParamField type="string">
       Customer's full name.
     </ParamField>
 
-    <ParamField query="firstName" type="string">
+    <ParamField type="string">
       Customer's first name.
     </ParamField>
 
-    <ParamField query="lastName" type="string">
+    <ParamField type="string">
       Customer's last name.
     </ParamField>
 
-    <ParamField query="email" type="string">
+    <ParamField type="string">
       Customer's email address.
     </ParamField>
 
-    <ParamField query="country" type="string">
+    <ParamField type="string">
       Customer's country.
     </ParamField>
 
-    <ParamField query="addressLine" type="string">
+    <ParamField type="string">
       Customer's address line.
     </ParamField>
 
-    <ParamField query="city" type="string">
+    <ParamField type="string">
       Customer's city.
     </ParamField>
 
-    <ParamField query="state" type="string">
+    <ParamField type="string">
       Customer's state/province.
     </ParamField>
 
-    <ParamField query="zipCode" type="string">
+    <ParamField type="string">
       Customer's zip/postal code.
     </ParamField>
 
-    <ParamField query="disableFullName" type="boolean">
+    <ParamField type="boolean">
       Disable full name field.
     </ParamField>
 
-    <ParamField query="disableFirstName" type="boolean">
+    <ParamField type="boolean">
       Disable first name field.
     </ParamField>
 
-    <ParamField query="disableLastName" type="boolean">
+    <ParamField type="boolean">
       Disable last name field.
     </ParamField>
 
-    <ParamField query="disableEmail" type="boolean">
+    <ParamField type="boolean">
       Disable email field.
     </ParamField>
 
-    <ParamField query="disableCountry" type="boolean">
+    <ParamField type="boolean">
       Disable country field.
     </ParamField>
 
-    <ParamField query="disableAddressLine" type="boolean">
+    <ParamField type="boolean">
       Disable address line field.
     </ParamField>
 
-    <ParamField query="disableCity" type="boolean">
+    <ParamField type="boolean">
       Disable city field.
     </ParamField>
 
-    <ParamField query="disableState" type="boolean">
+    <ParamField type="boolean">
       Disable state field.
     </ParamField>
 
-    <ParamField query="disableZipCode" type="boolean">
+    <ParamField type="boolean">
       Disable zip code field.
     </ParamField>
 
-    <ParamField query="paymentCurrency" type="string">
+    <ParamField type="string">
       Specify the payment currency (e.g., <code>USD</code>).
     </ParamField>
 
-    <ParamField query="showCurrencySelector" type="boolean">
+    <ParamField type="boolean">
       Show currency selector.
     </ParamField>
 
-    <ParamField query="paymentAmount" type="integer">
+    <ParamField type="integer">
       Specify the payment amount (e.g., <code>1000</code> for \$10.00).
     </ParamField>
 
-    <ParamField query="showDiscounts" type="boolean">
+    <ParamField type="boolean">
       Show discount fields.
     </ParamField>
 
-    <ParamField query="metadata_*" type="string">
+    <ParamField type="string">
       Any query parameter starting with <code>metadata\_</code> will be passed as metadata.
     </ParamField>
 
@@ -9185,7 +10369,7 @@ Integrate Dodo Payments with your Nuxt project using the official Nuxt module. C
 
     Static checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -9203,7 +10387,7 @@ Integrate Dodo Payments with your Nuxt project using the official Nuxt module. C
 
     Dynamic checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -9219,7 +10403,7 @@ Integrate Dodo Payments with your Nuxt project using the official Nuxt module. C
 
     Checkout sessions return a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/session/..."
     }
@@ -9233,11 +10417,11 @@ The Customer Portal Route Handler enables you to seamlessly integrate the Dodo P
 
 ### Query Parameters
 
-<ParamField query="customer_id" type="string" required>
+<ParamField type="string">
   The customer ID for the portal session (e.g., <code>?customer\_id=cus\_123</code>).
 </ParamField>
 
-<ParamField query="send_email" type="boolean">
+<ParamField type="boolean">
   If set to <code>true</code>, sends an email to the customer with the portal link.
 </ParamField>
 
@@ -9484,10 +10668,10 @@ Integrate on-demand subscriptions by authorizing mandates, creating variable cha
 
 ## Overview
 
-On-demand subscriptions let you authorize a customer’s payment method once and then charge variable amounts whenever you need, instead of on a fixed schedule.
+On-demand subscriptions let you authorize a customer's payment method once and then charge variable amounts whenever you need, instead of on a fixed schedule.
 
 <Info>
-  This feature may need to be enabled on your account. Contact support if you don’t see it in your dashboard.
+  On-demand subscriptions are now available for all businesses. This feature enables flexible billing control for usage-based and metered services.
 </Info>
 
 Use this guide to:
@@ -9522,47 +10706,47 @@ Key request fields (body):
 
 <AccordionGroup>
   <Accordion title="Request Body Parameters">
-    <ParamField body="product_id" type="string" required>
+    <ParamField type="string">
       Product ID for the subscription.
     </ParamField>
 
-    <ParamField body="quantity" type="integer" required>
+    <ParamField type="integer">
       Number of units. Minimum 1.
     </ParamField>
 
-    <ParamField body="billing" type="object" required>
+    <ParamField type="object">
       Billing address for the customer.
     </ParamField>
 
-    <ParamField body="customer" type="object" required>
+    <ParamField type="object">
       Either attach an existing customer or provide customer details.
     </ParamField>
 
-    <ParamField body="payment_link" type="boolean" default="false">
+    <ParamField type="boolean">
       If true, creates a hosted checkout link for mandate authorization and optional initial payment.
     </ParamField>
 
-    <ParamField body="return_url" type="string">
+    <ParamField type="string">
       Where to redirect the customer after completing hosted checkout.
     </ParamField>
 
-    <ParamField body="on_demand.mandate_only" type="boolean" required>
+    <ParamField type="boolean">
       If true, authorizes the payment method without charging the customer during creation.
     </ParamField>
 
-    <ParamField body="on_demand.product_price" type="integer">
+    <ParamField type="integer">
       Initial charge amount (in the smallest currency unit). If specified, this value overrides the product’s original price set during product creation. If omitted, the product’s stored price is used. Example: to charge \$1.00, pass <code>100</code>.
     </ParamField>
 
-    <ParamField body="on_demand.product_currency" type="string">
+    <ParamField type="string">
       Optional currency override for the initial charge. Defaults to the product currency.
     </ParamField>
 
-    <ParamField body="on_demand.product_description" type="string">
+    <ParamField type="string">
       Optional description override for billing and line items.
     </ParamField>
 
-    <ParamField body="on_demand.adaptive_currency_fees_inclusive" type="boolean">
+    <ParamField type="boolean">
       If true, includes adaptive currency fees within <code>product\_price</code>. If false, fees are added on top. Ignored when adaptive pricing is disabled.
     </ParamField>
   </Accordion>
@@ -9572,7 +10756,7 @@ Key request fields (body):
 
 <Tabs>
   <Tab title="Node.js SDK">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     import DodoPayments from 'dodopayments';
 
     const client = new DodoPayments({
@@ -9606,7 +10790,7 @@ Key request fields (body):
   </Tab>
 
   <Tab title="Python SDK">
-    ```python  theme={null}
+    ```python theme={null}
     import os
     from dodopayments import DodoPayments
 
@@ -9642,7 +10826,7 @@ Key request fields (body):
   </Tab>
 
   <Tab title="Go SDK">
-    ```go  theme={null}
+    ```go theme={null}
     package main
 
     import (
@@ -9686,7 +10870,7 @@ Key request fields (body):
   </Tab>
 
   <Tab title="cURL">
-    ```bash  theme={null}
+    ```bash theme={null}
     curl -X POST "$DODO_API/subscriptions" \
       -H "Authorization: Bearer $DODO_API_KEY" \
       -H "Content-Type: application/json" \
@@ -9730,23 +10914,23 @@ Key request fields (body):
 
 <AccordionGroup>
   <Accordion title="Charge request body parameters">
-    <ParamField body="product_price" type="integer" required>
+    <ParamField type="integer">
       Amount to charge (in the smallest currency unit). Example: to charge \$25.00, pass <code>2500</code>.
     </ParamField>
 
-    <ParamField body="product_currency" type="string">
+    <ParamField type="string">
       Optional currency override for the charge.
     </ParamField>
 
-    <ParamField body="product_description" type="string">
+    <ParamField type="string">
       Optional description override for this charge.
     </ParamField>
 
-    <ParamField body="adaptive_currency_fees_inclusive" type="boolean">
+    <ParamField type="boolean">
       If true, includes adaptive currency fees within <code>product\_price</code>. If false, fees are added on top.
     </ParamField>
 
-    <ParamField body="metadata" type="object">
+    <ParamField type="object">
       Additional metadata for the payment. If omitted, the subscription metadata is used.
     </ParamField>
   </Accordion>
@@ -9754,7 +10938,7 @@ Key request fields (body):
 
 <Tabs>
   <Tab title="Node.js SDK">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     import DodoPayments from 'dodopayments';
 
     const client = new DodoPayments({
@@ -9772,7 +10956,7 @@ Key request fields (body):
   </Tab>
 
   <Tab title="Python SDK">
-    ```python  theme={null}
+    ```python theme={null}
     import os
     from dodopayments import DodoPayments
 
@@ -9791,7 +10975,7 @@ Key request fields (body):
   </Tab>
 
   <Tab title="Go SDK">
-    ```go  theme={null}
+    ```go theme={null}
     package main
 
     import (
@@ -9813,7 +10997,7 @@ Key request fields (body):
   </Tab>
 
   <Tab title="cURL">
-    ```bash  theme={null}
+    ```bash theme={null}
     curl -X POST "$DODO_API/subscriptions/sub_123/charge" \
       -H "Authorization: Bearer $DODO_API_KEY" \
       -H "Content-Type: application/json" \
@@ -9942,7 +11126,7 @@ A modern TypeScript library for embedding Dodo Payments overlay checkout and lis
 The Dodo Payments Checkout SDK provides a seamless way to integrate our payment overlay into your web application. Built with TypeScript and modern web standards, it offers a robust solution for handling payments with real-time event handling and customizable themes.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=15d90c695e92914a9d54b10509d6fe47" alt="Overlay Checkout Cover Image" data-og-width="3826" width="3826" data-og-height="2160" height="2160" data-path="images/cover-images/overlay-checkout.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=67930ac9b97b42692611ffaa063b0338 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=5bc275c0c82994faf7507699f3443cda 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=d85ff73e834510f856f521d74e8d9ecd 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=2fadc48d6b3d40665366b1922e458ca3 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=0f552d1695faa8239eec542a0b1eeefe 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=3e25457d894290ee38da2f9319edb999 2500w" />
+  <img alt="Overlay Checkout Cover Image" />
 </Frame>
 
 ## Demo
@@ -9955,7 +11139,7 @@ The Dodo Payments Checkout SDK provides a seamless way to integrate our payment 
 
 Get started with the Dodo Payments Checkout SDK in just a few lines of code:
 
-```typescript  theme={null}
+```typescript theme={null}
 import { DodoPayments } from "dodopayments-checkout";
 
 // Initialize the SDK
@@ -10000,7 +11184,7 @@ DodoPayments.Checkout.open({
   <Step title="Initialize the SDK">
     Initialize the SDK in your application, typically in your main component or app entry point:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     import { DodoPayments } from "dodopayments-checkout";
 
     DodoPayments.Initialize({
@@ -10033,7 +11217,7 @@ DodoPayments.Checkout.open({
   <Step title="Create a Checkout Button Component">
     Create a component that opens the checkout overlay:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     // components/CheckoutButton.tsx
     "use client";
 
@@ -10089,7 +11273,7 @@ DodoPayments.Checkout.open({
   <Step title="Add Checkout to Your Page">
     Use the checkout button component in your application:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     // app/page.tsx
     import { CheckoutButton } from "@/components/CheckoutButton";
 
@@ -10107,7 +11291,7 @@ DodoPayments.Checkout.open({
   <Step title="Handle Success and Failure Pages">
     Create pages to handle checkout redirects:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     // app/success/page.tsx
     export default function SuccessPage() {
       return (
@@ -10133,7 +11317,7 @@ DodoPayments.Checkout.open({
   <Step title="Test Your Integration">
     1. Start your development server:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm run dev
     ```
 
@@ -10153,7 +11337,7 @@ DodoPayments.Checkout.open({
 
     1. Change the mode to `'live'`:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     DodoPayments.Initialize({
       mode: "live",
       onEvent: (event) => {
@@ -10174,7 +11358,7 @@ DodoPayments.Checkout.open({
 
 #### Initialize Options
 
-```typescript  theme={null}
+```typescript theme={null}
 interface InitializeOptions {
   mode: "test" | "live";
   onEvent: (event: CheckoutEvent) => void;
@@ -10188,7 +11372,7 @@ interface InitializeOptions {
 
 #### Checkout Options
 
-```typescript  theme={null}
+```typescript theme={null}
 interface CheckoutOptions {
   checkoutUrl: string;
 }
@@ -10204,7 +11388,7 @@ interface CheckoutOptions {
 
 Opens the checkout overlay with the specified checkout session URL.
 
-```typescript  theme={null}
+```typescript theme={null}
 DodoPayments.Checkout.open({
   checkoutUrl: "https://checkout.dodopayments.com/session/cks_123"
 });
@@ -10214,7 +11398,7 @@ DodoPayments.Checkout.open({
 
 Programmatically closes the checkout overlay.
 
-```typescript  theme={null}
+```typescript theme={null}
 DodoPayments.Checkout.close();
 ```
 
@@ -10222,7 +11406,7 @@ DodoPayments.Checkout.close();
 
 Returns whether the checkout overlay is currently open.
 
-```typescript  theme={null}
+```typescript theme={null}
 const isOpen = DodoPayments.Checkout.isOpen();
 // Returns: boolean
 ```
@@ -10231,7 +11415,7 @@ const isOpen = DodoPayments.Checkout.isOpen();
 
 The SDK provides real-time events that you can listen to through the `onEvent` callback:
 
-```typescript  theme={null}
+```typescript theme={null}
 DodoPayments.Initialize({
   onEvent: (event: CheckoutEvent) => {
     switch (event.event_type) {
@@ -10278,7 +11462,7 @@ Install via npm, yarn, or pnpm as shown in the [Step-by-Step Integration Guide](
 
 For quick integration without a build step, you can use our CDN:
 
-```html  theme={null}
+```html theme={null}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -10316,7 +11500,7 @@ For quick integration without a build step, you can use our CDN:
 
 The SDK is written in TypeScript and includes comprehensive type definitions. All public APIs are fully typed for better developer experience and IntelliSense support.
 
-```typescript  theme={null}
+```typescript theme={null}
 import { DodoPayments, CheckoutEvent } from "dodopayments-checkout";
 
 DodoPayments.Initialize({
@@ -10332,7 +11516,7 @@ DodoPayments.Initialize({
 
 The SDK provides detailed error information through the event system. Always implement proper error handling in your `onEvent` callback:
 
-```typescript  theme={null}
+```typescript theme={null}
 DodoPayments.Initialize({
   onEvent: (event: CheckoutEvent) => {
     if (event.event_type === "checkout.error") {
@@ -10423,6 +11607,42 @@ The Dodo Payments Checkout SDK supports the following browsers:
   Apple Pay is not currently supported in the overlay checkout experience. We plan to add support for Apple Pay in a future release.
 </Note>
 
+## Overlay vs Inline Checkout
+
+Choose the right checkout type for your use case:
+
+| Feature               | Overlay Checkout                  | Inline Checkout                              |
+| --------------------- | --------------------------------- | -------------------------------------------- |
+| Integration depth     | Modal on top of page              | Fully embedded in page                       |
+| Layout control        | Limited                           | Full control                                 |
+| Branding              | Separate from page                | Seamless                                     |
+| Implementation effort | Lower                             | Higher                                       |
+| Best for              | Quick integration, existing pages | Custom checkout pages, high-conversion flows |
+
+<Tip>
+  Use **overlay checkout** for faster integration with minimal changes to your existing pages. Use **inline checkout** when you want maximum control over the checkout experience and seamless branding.
+</Tip>
+
+## Related Resources
+
+<CardGroup>
+  <Card title="Inline Checkout" icon="credit-card" href="/developer-resources/inline-checkout">
+    Embed checkout directly into your page for fully integrated experiences.
+  </Card>
+
+  <Card title="Checkout Sessions API" icon="code" href="/api-reference/checkout-sessions/create">
+    Create checkout sessions to power your checkout experiences.
+  </Card>
+
+  <Card title="Webhooks" icon="webhook" href="/developer-resources/webhooks">
+    Handle payment events server-side with webhooks.
+  </Card>
+
+  <Card title="Integration Guide" icon="book" href="/developer-resources/integration-guide">
+    Complete guide to integrating Dodo Payments.
+  </Card>
+</CardGroup>
+
 For more help, visit our [Discord community](https://discord.gg/bYqAp4ayYh) or contact our developer support team.
 
 
@@ -10440,12 +11660,12 @@ The Dodo Payments React Native SDK enables you to build secure payment experienc
 * 🎥 Watch our [demo video](https://youtu.be/eicctkqK04Y) to see the Dodo Payments SDK in action
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/eicctkqK04Y" title="React Native SDK Demo | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="React Native SDK Demo | Dodo Payments" />
 </Frame>
 
 ## Features
 
-<CardGroup cols={1}>
+<CardGroup>
   <Card title="Simplified Security" icon="shield-check">
     Collect sensitive payment data securely while remaining PCI compliant
   </Card>
@@ -10471,13 +11691,13 @@ The Dodo Payments React Native SDK enables you to build secure payment experienc
 
     <Tabs>
       <Tab title="npm">
-        ```bash  theme={null}
+        ```bash theme={null}
         npm install dodopayments-react-native-sdk
         ```
       </Tab>
 
       <Tab title="yarn">
-        ```bash  theme={null}
+        ```bash theme={null}
         yarn add dodopayments-react-native-sdk
         ```
       </Tab>
@@ -10489,7 +11709,7 @@ The Dodo Payments React Native SDK enables you to build secure payment experienc
       <Tab title="iOS">
         Run pod install in your iOS folder:
 
-        ```bash  theme={null}
+        ```bash theme={null}
         cd ios && pod install && npm run ios
         ```
       </Tab>
@@ -10497,7 +11717,7 @@ The Dodo Payments React Native SDK enables you to build secure payment experienc
       <Tab title="Android">
         Run the following command:
 
-        ```bash  theme={null}
+        ```bash theme={null}
         npm run android
         ```
       </Tab>
@@ -10685,19 +11905,19 @@ The Dodo Payments React Native SDK enables you to build secure payment experienc
 
 ### Session Parameters
 
-<ParamField path="clientSecret" type="string" required>
+<ParamField type="string">
   The client secret from your payment intent, obtained from One time payment or subscription API.
 </ParamField>
 
-<ParamField path="mode" type="string" required>
+<ParamField type="string">
   The mode of the payment session (test or live).
 </ParamField>
 
-<ParamField path="configuration.appearance" type="object">
+<ParamField type="object">
   Customization options for the payment sheet appearance
 </ParamField>
 
-<ParamField path="configuration.appearance.themes" type="string">
+<ParamField type="string">
   Theme mode: `'light'` or `'dark'`
 </ParamField>
 
@@ -10725,7 +11945,7 @@ Each color category determines the color of one or more components in the UI. Fo
 
 Example configuration with light and dark mode support:
 
-```tsx  theme={null}
+```tsx theme={null}
 const appearance = {
   colors: {
     light: {
@@ -10762,7 +11982,7 @@ const appearance = {
 
 You can customize the border radius, border width, and shadow used throughout the payment interface:
 
-```tsx  theme={null}
+```tsx theme={null}
 const appearance = {
   shapes: {
     borderRadius: 10, // Border radius for input fields, tabs, and components
@@ -10775,7 +11995,7 @@ const appearance = {
 
 You can customize specific UI components like the primary button (Pay button). These settings take precedence over the global appearance settings:
 
-```tsx  theme={null}
+```tsx theme={null}
 const appearance = {
   primaryButton: {
     colors: {
@@ -10793,7 +12013,7 @@ const appearance = {
 
 To apply these customizations, include them in your payment session configuration:
 
-```tsx  theme={null}
+```tsx theme={null}
 const params: sessionParams = {
   ...paymentSheetParams,
   configuration: {
@@ -10809,7 +12029,7 @@ const params: sessionParams = {
 
 Handle different payment states in your checkout function:
 
-```tsx  theme={null}
+```tsx theme={null}
 const handlePaymentResult = (paymentSheetResponse) => {
   switch (paymentSheetResponse?.status) {
     case 'cancelled':
@@ -10863,7 +12083,7 @@ Source: https://docs.dodopayments.com/developer-resources/remix-adaptor
 
 Learn how to integrate Dodo Payments with your Remix App Router project using our Remix Adaptor. Covers checkout, customer portal, webhooks, and secure environment setup.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Handler" icon="cart-shopping" href="#checkout-route-handler">
     Integrate Dodo Payments checkout into your Remix app.
   </Card>
@@ -10883,7 +12103,7 @@ Learn how to integrate Dodo Payments with your Remix App Router project using ou
   <Step title="Install the package">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/remix
     ```
   </Step>
@@ -11084,103 +12304,103 @@ Learn how to integrate Dodo Payments with your Remix App Router project using ou
   <Accordion title="Static Checkout (GET)">
     ### Supported Query Parameters
 
-    <ParamField query="productId" type="string" required>
+    <ParamField type="string">
       Product identifier (e.g., <code>?productId=pdt\_nZuwz45WAs64n3l07zpQR</code>).
     </ParamField>
 
-    <ParamField query="quantity" type="integer">
+    <ParamField type="integer">
       Quantity of the product.
     </ParamField>
 
-    <ParamField query="fullName" type="string">
+    <ParamField type="string">
       Customer's full name.
     </ParamField>
 
-    <ParamField query="firstName" type="string">
+    <ParamField type="string">
       Customer's first name.
     </ParamField>
 
-    <ParamField query="lastName" type="string">
+    <ParamField type="string">
       Customer's last name.
     </ParamField>
 
-    <ParamField query="email" type="string">
+    <ParamField type="string">
       Customer's email address.
     </ParamField>
 
-    <ParamField query="country" type="string">
+    <ParamField type="string">
       Customer's country.
     </ParamField>
 
-    <ParamField query="addressLine" type="string">
+    <ParamField type="string">
       Customer's address line.
     </ParamField>
 
-    <ParamField query="city" type="string">
+    <ParamField type="string">
       Customer's city.
     </ParamField>
 
-    <ParamField query="state" type="string">
+    <ParamField type="string">
       Customer's state/province.
     </ParamField>
 
-    <ParamField query="zipCode" type="string">
+    <ParamField type="string">
       Customer's zip/postal code.
     </ParamField>
 
-    <ParamField query="disableFullName" type="boolean">
+    <ParamField type="boolean">
       Disable full name field.
     </ParamField>
 
-    <ParamField query="disableFirstName" type="boolean">
+    <ParamField type="boolean">
       Disable first name field.
     </ParamField>
 
-    <ParamField query="disableLastName" type="boolean">
+    <ParamField type="boolean">
       Disable last name field.
     </ParamField>
 
-    <ParamField query="disableEmail" type="boolean">
+    <ParamField type="boolean">
       Disable email field.
     </ParamField>
 
-    <ParamField query="disableCountry" type="boolean">
+    <ParamField type="boolean">
       Disable country field.
     </ParamField>
 
-    <ParamField query="disableAddressLine" type="boolean">
+    <ParamField type="boolean">
       Disable address line field.
     </ParamField>
 
-    <ParamField query="disableCity" type="boolean">
+    <ParamField type="boolean">
       Disable city field.
     </ParamField>
 
-    <ParamField query="disableState" type="boolean">
+    <ParamField type="boolean">
       Disable state field.
     </ParamField>
 
-    <ParamField query="disableZipCode" type="boolean">
+    <ParamField type="boolean">
       Disable zip code field.
     </ParamField>
 
-    <ParamField query="paymentCurrency" type="string">
+    <ParamField type="string">
       Specify the payment currency (e.g., <code>USD</code>).
     </ParamField>
 
-    <ParamField query="showCurrencySelector" type="boolean">
+    <ParamField type="boolean">
       Show currency selector.
     </ParamField>
 
-    <ParamField query="paymentAmount" type="integer">
+    <ParamField type="integer">
       Specify the payment amount (e.g., <code>1000</code> for \$10.00).
     </ParamField>
 
-    <ParamField query="showDiscounts" type="boolean">
+    <ParamField type="boolean">
       Show discount fields.
     </ParamField>
 
-    <ParamField query="metadata_*" type="string">
+    <ParamField type="string">
       Any query parameter starting with <code>metadata\_</code> will be passed as metadata.
     </ParamField>
 
@@ -11192,7 +12412,7 @@ Learn how to integrate Dodo Payments with your Remix App Router project using ou
 
     Static checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -11210,7 +12430,7 @@ Learn how to integrate Dodo Payments with your Remix App Router project using ou
 
     Dynamic checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -11226,7 +12446,7 @@ Learn how to integrate Dodo Payments with your Remix App Router project using ou
 
     Checkout sessions return a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/session/..."
     }
@@ -11240,11 +12460,11 @@ The Customer Portal Route Handler enables you to seamlessly integrate the Dodo P
 
 ### Query Parameters
 
-<ParamField query="customer_id" type="string" required>
+<ParamField type="string">
   The customer ID for the portal session (e.g., <code>?customer\_id=cus\_123</code>).
 </ParamField>
 
-<ParamField query="send_email" type="boolean">
+<ParamField type="boolean">
   If set to <code>true</code>, sends an email to the customer with the portal link.
 </ParamField>
 
@@ -11515,13 +12735,13 @@ Command-line interface for interacting with the Dodo Payments API from your term
 
 ### Go Install
 
-```bash  theme={null}
+```bash theme={null}
 go install github.com/dodopayments/dodopayments-cli/cmd/dodopayments@latest
 ```
 
 ### From Source
 
-```bash  theme={null}
+```bash theme={null}
 git clone https://github.com/dodopayments/dodopayments-cli.git
 cd dodopayments-cli
 go install ./cmd/dodopayments
@@ -11531,19 +12751,19 @@ go install ./cmd/dodopayments
 
 Set your API key:
 
-```bash  theme={null}
+```bash theme={null}
 export DODO_PAYMENTS_API_KEY=your_api_key_here
 ```
 
 Basic command structure:
 
-```bash  theme={null}
+```bash theme={null}
 dodopayments [resource] [command] [flags]
 ```
 
 Create a checkout session:
 
-```bash  theme={null}
+```bash theme={null}
 dodopayments checkout-sessions create \
   --product-cart.product_id prod_123 \
   --product-cart.quantity 1 \
@@ -11563,7 +12783,7 @@ dodopayments checkout-sessions create \
 
 ### Payments
 
-```bash  theme={null}
+```bash theme={null}
 # List payments
 dodopayments payments list --limit 20 --format json
 
@@ -11576,7 +12796,7 @@ dodopayments payments line-items pay_123
 
 ### Customers
 
-```bash  theme={null}
+```bash theme={null}
 # Create customer
 dodopayments customers create \
   --email customer@example.com \
@@ -11591,7 +12811,7 @@ dodopayments customers update cus_123 --name "Jane Doe"
 
 ### Subscriptions
 
-```bash  theme={null}
+```bash theme={null}
 # Create subscription
 dodopayments subscriptions create \
   --customer-id cus_123 \
@@ -11606,7 +12826,7 @@ dodopayments subscriptions usage-history sub_123
 
 ### Products
 
-```bash  theme={null}
+```bash theme={null}
 # Create product
 dodopayments products create \
   --name "Premium Plan" \
@@ -11621,7 +12841,7 @@ dodopayments products list
 
 ### Ingest Events
 
-```bash  theme={null}
+```bash theme={null}
 dodopayments usage-events ingest \
   --events.event_id api_call_12345 \
   --events.customer_id cus_abc123 \
@@ -11632,7 +12852,7 @@ dodopayments usage-events ingest \
 
 ### Manage Meters
 
-```bash  theme={null}
+```bash theme={null}
 # Create meter
 dodopayments meters create \
   --name "API Requests" \
@@ -11647,25 +12867,25 @@ dodopayments meters list
 
 ### JSON (for scripting)
 
-```bash  theme={null}
+```bash theme={null}
 dodopayments payments list --format json | jq '.data[] | {id, amount}'
 ```
 
 ### Pretty (for reading)
 
-```bash  theme={null}
+```bash theme={null}
 dodopayments payments retrieve pay_123 --format pretty
 ```
 
 ### Interactive Explore
 
-```bash  theme={null}
+```bash theme={null}
 dodopayments payments list --format explore
 ```
 
 ### Transform with gjson
 
-```bash  theme={null}
+```bash theme={null}
 # Extract all payment IDs
 dodopayments payments list --transform "data.#.id"
 
@@ -11679,7 +12899,7 @@ dodopayments payments list --transform "data.#(amount>5000)#.id"
 
 ## Scripting Example
 
-```bash  theme={null}
+```bash theme={null}
 #!/bin/bash
 
 # Export all payments to CSV
@@ -11699,7 +12919,7 @@ done < customers.csv
 
 Enable auto-completion:
 
-```bash  theme={null}
+```bash theme={null}
 # Bash
 eval "$(dodopayments completion bash)"
 
@@ -11736,7 +12956,7 @@ The CLI provides commands for 24 resource categories:
 
 ## Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodopayments-cli">
     View source code and releases
   </Card>
@@ -11770,7 +12990,7 @@ The C# SDK provides convenient access to the Dodo Payments REST API from applica
 
 Install the SDK using the .NET CLI:
 
-```bash  theme={null}
+```bash theme={null}
 dotnet add package DodoPayments.Client
 ```
 
@@ -11782,7 +13002,7 @@ dotnet add package DodoPayments.Client
 
 Initialize the client and create a checkout session:
 
-```csharp  theme={null}
+```csharp theme={null}
 using System;
 using DodoPayments.Client;
 using DodoPayments.Client.Models.CheckoutSessions;
@@ -11813,7 +13033,7 @@ Console.WriteLine(checkoutSessionResponse.SessionId);
 
 ## Core Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Async/Await" icon="bolt">
     Full async Task-based API for non-blocking operations
   </Card>
@@ -11841,7 +13061,7 @@ Configure using environment variables:
 DODO_PAYMENTS_API_KEY=your_api_key_here
 ```
 
-```csharp  theme={null}
+```csharp theme={null}
 // Automatically reads from environment variables
 DodoPaymentsClient client = new();
 ```
@@ -11850,7 +13070,7 @@ DodoPaymentsClient client = new();
 
 Configure manually with bearer token:
 
-```csharp  theme={null}
+```csharp theme={null}
 DodoPaymentsClient client = new() { BearerToken = "My Bearer Token" };
 ```
 
@@ -11860,7 +13080,7 @@ DodoPaymentsClient client = new() { BearerToken = "My Bearer Token" };
 
 Generate a checkout session:
 
-```csharp  theme={null}
+```csharp theme={null}
 var parameters = new CheckoutSessionCreateParams
 {
     ProductCart =
@@ -11882,7 +13102,7 @@ Console.WriteLine($"Checkout URL: {session.Url}");
 
 Create and retrieve customer information:
 
-```csharp  theme={null}
+```csharp theme={null}
 // Create a customer
 var createParams = new CustomerCreateParams
 {
@@ -11905,7 +13125,7 @@ Console.WriteLine($"Customer: {retrieved.Name} ({retrieved.Email})");
 
 Create and manage recurring subscriptions:
 
-```csharp  theme={null}
+```csharp theme={null}
 // Create a subscription
 var subscriptionParams = new SubscriptionCreateParams
 {
@@ -11964,7 +13184,7 @@ Add configuration in `appsettings.json`:
 
 Create a controller using dependency injection:
 
-```csharp  theme={null}
+```csharp theme={null}
 using Microsoft.AspNetCore.Mvc;
 using DodoPayments.Client;
 using DodoPayments.Client.Models.CheckoutSessions;
@@ -12012,7 +13232,7 @@ public record CheckoutRequest(List<ProductCartItem> Items);
 
 Create a service for business logic:
 
-```csharp  theme={null}
+```csharp theme={null}
 public interface IPaymentService
 {
     Task<CheckoutSessionResponse> CreateCheckoutAsync(List<ProductCartItem> items);
@@ -12070,7 +13290,7 @@ public class PaymentService : IPaymentService
 
 For development, use user secrets to store API keys:
 
-```bash  theme={null}
+```bash theme={null}
 dotnet user-secrets init
 dotnet user-secrets set "DodoPayments:ApiKey" "your_api_key_here"
 ```
@@ -12079,7 +13299,7 @@ dotnet user-secrets set "DodoPayments:ApiKey" "your_api_key_here"
 
 Example unit test using xUnit:
 
-```csharp  theme={null}
+```csharp theme={null}
 using Xunit;
 using DodoPayments.Client;
 using DodoPayments.Client.Models.CheckoutSessions;
@@ -12124,7 +13344,7 @@ public class PaymentServiceTests
 
 ## Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodopayments-csharp">
     View source code and contribute
   </Card>
@@ -12166,7 +13386,7 @@ The Go SDK provides a clean and idiomatic Go interface for integrating Dodo Paym
 
 Install the SDK using Go modules:
 
-```bash  theme={null}
+```bash theme={null}
 go get github.com/dodopayments/dodopayments-go
 ```
 
@@ -12178,7 +13398,7 @@ go get github.com/dodopayments/dodopayments-go
 
 Initialize the client and create your first checkout session:
 
-```go  theme={null}
+```go theme={null}
 package main
 
 import (
@@ -12217,7 +13437,7 @@ func main() {
 
 ## Core Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Context Support" icon="clock">
     Full support for context.Context for cancellation and timeouts
   </Card>
@@ -12241,7 +13461,7 @@ func main() {
 
 Leverage Go's context for timeouts and cancellation:
 
-```go  theme={null}
+```go theme={null}
 import (
 	"context"
 	"time"
@@ -12272,7 +13492,7 @@ if err != nil {
 
 Configure automatic retry behavior:
 
-```go  theme={null}
+```go theme={null}
 // Configure default for all requests (default is 2)
 client := dodopayments.NewClient(
 	option.WithMaxRetries(0), // disable retries
@@ -12299,7 +13519,7 @@ client.CheckoutSessions.New(
 
 Generate a checkout session:
 
-```go  theme={null}
+```go theme={null}
 session, err := client.CheckoutSessions.New(ctx, dodopayments.CheckoutSessionNewParams{
 	CheckoutSessionRequest: dodopayments.CheckoutSessionRequestParam{
 		ProductCart: dodopayments.F([]dodopayments.CheckoutSessionRequestProductCartParam{{
@@ -12320,7 +13540,7 @@ fmt.Printf("Checkout URL: %s\n", session.URL)
 
 Create and retrieve customer information:
 
-```go  theme={null}
+```go theme={null}
 // Create a customer
 customer, err := client.Customers.New(ctx, dodopayments.CustomerNewParams{
 	Email: dodopayments.F("customer@example.com"),
@@ -12346,7 +13566,7 @@ fmt.Printf("Customer: %s (%s)\n", customer.Name, customer.Email)
 
 Create and manage recurring subscriptions:
 
-```go  theme={null}
+```go theme={null}
 // Create a subscription
 subscription, err := client.Subscriptions.New(ctx, dodopayments.SubscriptionNewParams{
 	CustomerID: dodopayments.F("cus_123"),
@@ -12377,7 +13597,7 @@ if err != nil {
 
 Track custom events:
 
-```go  theme={null}
+```go theme={null}
 import "github.com/dodopayments/dodopayments-go"
 
 response, err := client.UsageEvents.Ingest(ctx, dodopayments.UsageEventIngestParams{
@@ -12400,7 +13620,7 @@ if err != nil {
 
 ### List Usage Events
 
-```go  theme={null}
+```go theme={null}
 // List events with filters
 params := dodopayments.UsageEventListParams{
 	CustomerID: dodopayments.F("cus_abc123"),
@@ -12421,7 +13641,7 @@ for _, event := range events.Data {
 
 Handle specific error types:
 
-```go  theme={null}
+```go theme={null}
 payment, err := client.Payments.Create(ctx, dodopayments.PaymentCreateParams{
 	Amount:   5000,
 	Currency: "USD",
@@ -12453,7 +13673,7 @@ if err != nil {
 
 Add custom middleware for logging or metrics:
 
-```go  theme={null}
+```go theme={null}
 func Logger(req *http.Request, next option.MiddlewareNext) (res *http.Response, err error) {
 	// Before the request
 	start := time.Now()
@@ -12478,7 +13698,7 @@ client := dodopayments.NewClient(
 
 The client is safe for concurrent use:
 
-```go  theme={null}
+```go theme={null}
 package main
 
 import (
@@ -12518,7 +13738,7 @@ func main() {
 
 ## Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodopayments-go">
     View source code and contribute
   </Card>
@@ -12590,7 +13810,7 @@ implementation("com.dodopayments.api:dodo-payments-java:1.61.5")
 
 Initialize the client and create a checkout session:
 
-```java  theme={null}
+```java theme={null}
 import com.dodopayments.api.client.DodoPaymentsClient;
 import com.dodopayments.api.client.okhttp.DodoPaymentsOkHttpClient;
 import com.dodopayments.api.models.checkoutsessions.CheckoutSessionRequest;
@@ -12617,7 +13837,7 @@ System.out.println(checkoutSessionResponse.sessionId());
 
 ## Core Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Type Safety" icon="shield-check">
     Strongly typed API with compile-time safety
   </Card>
@@ -12646,7 +13866,7 @@ DODO_PAYMENTS_API_KEY=your_api_key_here
 DODO_PAYMENTS_BASE_URL=https://live.dodopayments.com
 ```
 
-```java  theme={null}
+```java theme={null}
 // Automatically reads from environment variables
 DodoPaymentsClient client = DodoPaymentsOkHttpClient.fromEnv();
 ```
@@ -12655,7 +13875,7 @@ DodoPaymentsClient client = DodoPaymentsOkHttpClient.fromEnv();
 
 Configure manually with all options:
 
-```java  theme={null}
+```java theme={null}
 import java.time.Duration;
 
 DodoPaymentsClient client = DodoPaymentsOkHttpClient.builder()
@@ -12671,7 +13891,7 @@ DodoPaymentsClient client = DodoPaymentsOkHttpClient.builder()
 
 Configure for test/sandbox environment:
 
-```java  theme={null}
+```java theme={null}
 DodoPaymentsClient testClient = DodoPaymentsOkHttpClient.builder()
     .fromEnv()
     .testMode()
@@ -12684,7 +13904,7 @@ DodoPaymentsClient testClient = DodoPaymentsOkHttpClient.builder()
 
 Generate a checkout session:
 
-```java  theme={null}
+```java theme={null}
 CheckoutSessionRequest params = CheckoutSessionRequest.builder()
     .addProductCart(CheckoutSessionRequest.ProductCart.builder()
         .productId("prod_123")
@@ -12701,7 +13921,7 @@ System.out.println("Checkout URL: " + session.url());
 
 Create and retrieve customer information:
 
-```java  theme={null}
+```java theme={null}
 import com.dodopayments.api.models.customers.Customer;
 import com.dodopayments.api.models.customers.CustomerCreateParams;
 
@@ -12723,7 +13943,7 @@ System.out.println("Customer: " + retrieved.name() + " (" + retrieved.email() + 
 
 Create and manage recurring subscriptions:
 
-```java  theme={null}
+```java theme={null}
 import com.dodopayments.api.models.subscriptions.*;
 
 // Create a subscription
@@ -12750,7 +13970,7 @@ SubscriptionChargeResponse chargeResponse = client.subscriptions()
 
 Create and manage meters for tracking usage:
 
-```java  theme={null}
+```java theme={null}
 import com.dodopayments.api.models.meters.*;
 
 // Create API calls meter
@@ -12774,7 +13994,7 @@ client.meters().list()
 
 Track custom events:
 
-```java  theme={null}
+```java theme={null}
 import com.dodopayments.api.models.usageevents.*;
 import java.time.OffsetDateTime;
 
@@ -12799,7 +14019,7 @@ System.out.println("Processed: " + response.processedEvents());
 
 Ingest multiple events efficiently (max 1000 per request):
 
-```java  theme={null}
+```java theme={null}
 UsageEventIngestParams.Builder batchBuilder = UsageEventIngestParams.builder();
 
 for (int i = 0; i < 100; i++) {
@@ -12821,7 +14041,7 @@ System.out.println("Batch processed: " + batchResponse.processedEvents() + " eve
 
 Comprehensive error handling for different scenarios:
 
-```java  theme={null}
+```java theme={null}
 import com.dodopayments.api.errors.*;
 
 try {
@@ -12854,7 +14074,7 @@ try {
 
 Use CompletableFuture for asynchronous operations:
 
-```java  theme={null}
+```java theme={null}
 import java.util.concurrent.CompletableFuture;
 
 CompletableFuture<CheckoutSessionResponse> future = client.async()
@@ -12874,7 +14094,7 @@ future.thenAccept(response -> {
 
 ### Configuration Class
 
-```java  theme={null}
+```java theme={null}
 import com.dodopayments.api.client.DodoPaymentsClient;
 import com.dodopayments.api.client.okhttp.DodoPaymentsOkHttpClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -12904,7 +14124,7 @@ public class DodoPaymentsConfig {
 
 ### Service Layer
 
-```java  theme={null}
+```java theme={null}
 import com.dodopayments.api.client.DodoPaymentsClient;
 import com.dodopayments.api.models.checkoutsessions.*;
 import org.springframework.stereotype.Service;
@@ -12931,7 +14151,7 @@ public class PaymentService {
 
 ## Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodopayments-java">
     View source code and contribute
   </Card>
@@ -13003,7 +14223,7 @@ Add the dependency to your `pom.xml`:
 
 Initialize the client and create a checkout session:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import com.dodopayments.api.client.DodoPaymentsClient
 import com.dodopayments.api.client.okhttp.DodoPaymentsOkHttpClient
 import com.dodopayments.api.models.checkoutsessions.CheckoutSessionRequest
@@ -13030,7 +14250,7 @@ println(checkoutSessionResponse.sessionId())
 
 ## Core Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Coroutines" icon="bolt">
     Full support for Kotlin coroutines for asynchronous operations
   </Card>
@@ -13054,7 +14274,7 @@ println(checkoutSessionResponse.sessionId())
 
 Initialize from environment variables or system properties:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 val client: DodoPaymentsClient = DodoPaymentsOkHttpClient.fromEnv()
 ```
 
@@ -13062,7 +14282,7 @@ val client: DodoPaymentsClient = DodoPaymentsOkHttpClient.fromEnv()
 
 Configure manually with all options:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import java.time.Duration
 
 val client = DodoPaymentsOkHttpClient.builder()
@@ -13077,7 +14297,7 @@ val client = DodoPaymentsOkHttpClient.builder()
 
 Configure for test/sandbox environment:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 val testClient = DodoPaymentsOkHttpClient.builder()
     .fromEnv()
     .testMode()
@@ -13088,7 +14308,7 @@ val testClient = DodoPaymentsOkHttpClient.builder()
 
 Configure globally or per-request:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import com.dodopayments.api.core.RequestOptions
 
 // Global configuration
@@ -13113,7 +14333,7 @@ val product = client.products().retrieve(
 
 Generate a checkout session:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 val params = CheckoutSessionRequest.builder()
     .addProductCart(CheckoutSessionRequest.ProductCart.builder()
         .productId("prod_123")
@@ -13130,7 +14350,7 @@ println("Checkout URL: ${session.url()}")
 
 Create products with detailed configuration:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import com.dodopayments.api.models.products.Product
 import com.dodopayments.api.models.products.ProductCreateParams
 import com.dodopayments.api.models.misc.Currency
@@ -13158,7 +14378,7 @@ println("Created product ID: ${product.productId()}")
 
 Activate license keys for customers:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import com.dodopayments.api.models.licenses.LicenseActivateParams
 import com.dodopayments.api.models.licenses.LicenseActivateResponse
 
@@ -13185,7 +14405,7 @@ try {
 
 Track usage for meters:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import com.dodopayments.api.models.usageevents.UsageEventCreateParams
 import java.time.OffsetDateTime
 
@@ -13206,7 +14426,7 @@ println("Usage event recorded")
 
 Use the async client for coroutine-based operations:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import com.dodopayments.api.client.DodoPaymentsClientAsync
 import com.dodopayments.api.client.okhttp.DodoPaymentsOkHttpClientAsync
 import kotlinx.coroutines.runBlocking
@@ -13223,7 +14443,7 @@ runBlocking {
 
 Handle errors with Kotlin's exception handling:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import com.dodopayments.api.errors.*
 
 try {
@@ -13245,7 +14465,7 @@ try {
 
 Use `Result` for functional error handling:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 fun safeCreatePayment(client: DodoPaymentsClient): Result<Payment> = runCatching {
     client.payments().create(params)
 }
@@ -13264,7 +14484,7 @@ safe CreatePayment(client)
 
 Use with Android applications:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import android.app.Application
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13294,7 +14514,7 @@ class PaymentViewModel(application: Application) : ViewModel() {
 
 Enable response validation:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import com.dodopayments.api.core.RequestOptions
 
 // Per-request validation
@@ -13315,7 +14535,7 @@ val validatedProduct = product.validate()
 
 Configure proxy settings:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import java.net.InetSocketAddress
 import java.net.Proxy
 
@@ -13334,7 +14554,7 @@ val client = DodoPaymentsOkHttpClient.builder()
 
 Modify client configuration temporarily:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 val customClient = client.withOptions {
     it.baseUrl("https://example.com")
     it.maxRetries(5)
@@ -13345,7 +14565,7 @@ val customClient = client.withOptions {
 
 Integrate with Ktor server applications:
 
-```kotlin  theme={null}
+```kotlin theme={null}
 import io.ktor.server.application.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -13372,7 +14592,7 @@ fun Application.configureRouting() {
 
 ## Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodopayments-kotlin">
     View source code and contribute
   </Card>
@@ -13411,15 +14631,18 @@ Integrate Dodo Payments into your PHP applications with a modern, PSR-4 complian
 The PHP SDK provides a robust and flexible way to integrate Dodo Payments into your PHP applications. Built following modern PHP standards with PSR-4 autoloading, it offers extensive test coverage and detailed documentation.
 
 <Note>
-  The Dodo Payments PHP API Library is currently in **beta**. We're excited for you to experiment with it! Please share any suggestions, bug reports, or feature requests by [filing an issue](https://github.com/dodopayments/dodopayments-php/issues).
+  The Dodo Payments PHP API Library is currently in **beta**. We're excited for
+  you to experiment with it! Please share any suggestions, bug reports, or
+  feature requests by [filing an
+  issue](https://github.com/dodopayments/dodopayments-php/issues).
 </Note>
 
 ## Installation
 
 Install the SDK using Composer:
 
-```bash  theme={null}
-composer require "dodopayments/client:^3.5.0"
+```bash theme={null}
+composer require dodopayments/client
 ```
 
 <Info>
@@ -13430,14 +14653,15 @@ composer require "dodopayments/client:^3.5.0"
 
 Initialize the client and create a checkout session:
 
-```php  theme={null}
+```php theme={null}
 <?php
 
 use Dodopayments\Client;
 
 $client = new Client(
-  bearerToken: getenv("DODO_PAYMENTS_API_KEY") ?: "My Bearer Token",
-  environment: "test_mode",
+  bearerToken: getenv('DODO_PAYMENTS_API_KEY') ?: 'My Bearer Token',
+  // use 'https://test.dodopayments.com' for test mode
+  baseUrl: 'https://live.dodopayments.com'
 );
 
 $checkoutSessionResponse = $client->checkoutSessions->create(
@@ -13448,12 +14672,13 @@ var_dump($checkoutSessionResponse->session_id);
 ```
 
 <Warning>
-  Store your API keys securely using environment variables. Never expose them in your codebase or commit them to version control.
+  Store your API keys securely using environment variables. Never expose them in
+  your codebase or commit them to version control.
 </Warning>
 
 ## Core Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="PSR-4 Compliant" icon="check">
     Follows PHP Standards Recommendations for modern PHP development
   </Card>
@@ -13475,7 +14700,7 @@ var_dump($checkoutSessionResponse->session_id);
 
 The SDK uses named parameters to specify optional arguments. You can initialize value objects using the static `with` constructor:
 
-```php  theme={null}
+```php theme={null}
 <?php
 
 use Dodopayments\Customers\AttachExistingCustomer;
@@ -13486,7 +14711,7 @@ $customer = AttachExistingCustomer::with(customerID: "customer_id");
 
 Builders are also available as an alternative pattern:
 
-```php  theme={null}
+```php theme={null}
 <?php
 
 use Dodopayments\Customers\AttachExistingCustomer;
@@ -13510,7 +14735,7 @@ Certain errors are automatically retried 2 times by default with a short exponen
 
 Configure retry behavior globally or per-request:
 
-```php  theme={null}
+```php theme={null}
 <?php
 
 use Dodopayments\Client;
@@ -13532,7 +14757,7 @@ $result = $client->checkoutSessions->create(
 
 Generate a checkout session:
 
-```php  theme={null}
+```php theme={null}
 $session = $client->checkoutSessions->create(
   productCart: [
     ["productID" => "prod_123", "quantity" => 1]
@@ -13547,7 +14772,7 @@ header('Location: ' . $session->url);
 
 Create and retrieve customer information:
 
-```php  theme={null}
+```php theme={null}
 // Create a customer
 $customer = $client->customers->create(
   email: "customer@example.com",
@@ -13566,7 +14791,7 @@ echo "Customer: {$customer->name} ({$customer->email})";
 
 Create and manage recurring subscriptions:
 
-```php  theme={null}
+```php theme={null}
 // Create a subscription
 $subscription = $client->subscriptions->create(
   customerID: "cus_123",
@@ -13582,7 +14807,7 @@ $client->subscriptions->cancel($subscription->id);
 
 Work with paginated list responses:
 
-```php  theme={null}
+```php theme={null}
 $page = $client->payments->list();
 
 var_dump($page);
@@ -13602,7 +14827,7 @@ foreach ($page->pagingEachItem() as $item) {
 
 When the library cannot connect to the API or receives a non-success status code (4xx or 5xx), a subclass of `APIException` is thrown:
 
-```php  theme={null}
+```php theme={null}
 <?php
 
 use Dodopayments\Core\Exceptions\APIConnectionException;
@@ -13641,7 +14866,8 @@ try {
 | Network error    | `APIConnectionException`       |
 
 <Tip>
-  Always wrap API calls in try-catch blocks to handle potential errors gracefully and provide meaningful feedback to users.
+  Always wrap API calls in try-catch blocks to handle potential errors
+  gracefully and provide meaningful feedback to users.
 </Tip>
 
 ## Advanced Usage
@@ -13650,7 +14876,7 @@ try {
 
 Make requests to undocumented endpoints:
 
-```php  theme={null}
+```php theme={null}
 <?php
 
 $response = $client->request(
@@ -13666,7 +14892,7 @@ $response = $client->request(
 
 Send undocumented parameters to any endpoint or read undocumented response properties:
 
-```php  theme={null}
+```php theme={null}
 <?php
 
 use Dodopayments\RequestOptions;
@@ -13691,7 +14917,7 @@ $checkoutSessionResponse = $client->checkoutSessions->create(
 
 Create a service for Laravel applications:
 
-```php  theme={null}
+```php theme={null}
 <?php
 
 namespace App\Services;
@@ -13721,7 +14947,7 @@ class PaymentService
 
 Add configuration in `config/services.php`:
 
-```php  theme={null}
+```php theme={null}
 'dodo' => [
     'api_key' => env('DODO_API_KEY'),
     'environment' => env('DODO_ENVIRONMENT', 'sandbox')
@@ -13732,7 +14958,7 @@ Add configuration in `config/services.php`:
 
 Create a service in Symfony:
 
-```php  theme={null}
+```php theme={null}
 <?php
 
 namespace App\Service;
@@ -13761,16 +14987,16 @@ class DodoPaymentService
 
 Register in `config/services.yaml`:
 
-```yaml  theme={null}
+```yaml theme={null}
 services:
-    App\Service\DodoPaymentService:
-        arguments:
-            $apiKey: '%env(DODO_API_KEY)%'
+  App\Service\DodoPaymentService:
+    arguments:
+      $apiKey: "%env(DODO_API_KEY)%"
 ```
 
 ## Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodopayments-php">
     View source code and contribute
   </Card>
@@ -13812,13 +15038,13 @@ The Python SDK offers a Pythonic interface to the Dodo Payments API, providing b
 
 Install the SDK using pip:
 
-```bash  theme={null}
+```bash theme={null}
 pip install dodopayments
 ```
 
 For enhanced async performance with aiohttp:
 
-```bash  theme={null}
+```bash theme={null}
 pip install dodopayments[aiohttp]
 ```
 
@@ -13830,7 +15056,7 @@ pip install dodopayments[aiohttp]
 
 ### Synchronous Client
 
-```python  theme={null}
+```python theme={null}
 import os
 from dodopayments import DodoPayments
 
@@ -13852,7 +15078,7 @@ print(checkout_session_response.session_id)
 
 ### Asynchronous Client
 
-```python  theme={null}
+```python theme={null}
 import os
 import asyncio
 from dodopayments import AsyncDodoPayments
@@ -13884,7 +15110,7 @@ asyncio.run(main())
 
 ## Core Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Pythonic Interface" icon="code">
     Clean, idiomatic Python code that follows PEP 8 guidelines and Python conventions
   </Card>
@@ -13916,7 +15142,7 @@ DODO_PAYMENTS_API_KEY=your_api_key_here
 
 Configure request timeouts globally or per-request:
 
-```python  theme={null}
+```python theme={null}
 import httpx
 from dodopayments import DodoPayments
 
@@ -13945,7 +15171,7 @@ client.with_options(timeout=5.0).checkout_sessions.create(
 
 Configure automatic retry behavior:
 
-```python  theme={null}
+```python theme={null}
 from dodopayments import DodoPayments
 
 # Configure default for all requests (default is 2)
@@ -13970,7 +15196,7 @@ client.with_options(max_retries=5).checkout_sessions.create(
 
 Generate a checkout session:
 
-```python  theme={null}
+```python theme={null}
 session = client.checkout_sessions.create(
     product_cart=[
         {
@@ -13988,7 +15214,7 @@ print(f"Checkout URL: {session.url}")
 
 Create and retrieve customer information:
 
-```python  theme={null}
+```python theme={null}
 # Create a customer
 customer = client.customers.create(
     email="customer@example.com",
@@ -14007,7 +15233,7 @@ print(f"Customer: {customer.name} ({customer.email})")
 
 Create and manage recurring subscriptions:
 
-```python  theme={null}
+```python theme={null}
 # Create a subscription
 subscription = client.subscriptions.create(
     customer_id="cus_123",
@@ -14028,7 +15254,7 @@ usage_history = client.subscriptions.retrieve_usage_history(
 
 Track custom events for usage-based billing:
 
-```python  theme={null}
+```python theme={null}
 response = client.usage_events.ingest(
     events=[
         {
@@ -14048,7 +15274,7 @@ response = client.usage_events.ingest(
 
 ### List and Retrieve Events
 
-```python  theme={null}
+```python theme={null}
 # Get a specific event
 event = client.usage_events.retrieve("api_call_12345")
 
@@ -14069,7 +15295,7 @@ for event in events.data:
 
 Iterate through all items automatically:
 
-```python  theme={null}
+```python theme={null}
 from dodopayments import DodoPayments
 
 client = DodoPayments()
@@ -14083,7 +15309,7 @@ print(all_payments)
 
 ### Async Pagination
 
-```python  theme={null}
+```python theme={null}
 import asyncio
 from dodopayments import AsyncDodoPayments
 
@@ -14105,7 +15331,7 @@ asyncio.run(main())
 
 For more control over pagination:
 
-```python  theme={null}
+```python theme={null}
 # Access items from current page
 first_page = client.payments.list()
 for payment in first_page.items:
@@ -14121,7 +15347,7 @@ if first_page.has_next_page():
 
 Customize the underlying `httpx` client:
 
-```python  theme={null}
+```python theme={null}
 import httpx
 from dodopayments import DodoPayments, DefaultHttpxClient
 
@@ -14138,7 +15364,7 @@ client = DodoPayments(
 
 Use aiohttp for enhanced async performance:
 
-```python  theme={null}
+```python theme={null}
 import asyncio
 from dodopayments import DefaultAioHttpClient
 from dodopayments import AsyncDodoPayments
@@ -14167,13 +15393,13 @@ asyncio.run(main())
 
 Enable logging by setting the environment variable:
 
-```bash  theme={null}
+```bash theme={null}
 export DODO_PAYMENTS_LOG=info
 ```
 
 Or for debug-level logging:
 
-```bash  theme={null}
+```bash theme={null}
 export DODO_PAYMENTS_LOG=debug
 ```
 
@@ -14181,7 +15407,7 @@ export DODO_PAYMENTS_LOG=debug
 
 ### FastAPI
 
-```python  theme={null}
+```python theme={null}
 from fastapi import FastAPI, HTTPException
 from dodopayments import AsyncDodoPayments
 from pydantic import BaseModel
@@ -14211,7 +15437,7 @@ async def create_checkout(request: CheckoutRequest):
 
 ### Django
 
-```python  theme={null}
+```python theme={null}
 from django.http import JsonResponse
 from dodopayments import DodoPayments
 import os
@@ -14238,7 +15464,7 @@ def create_payment(request):
 
 ## Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodopayments-python">
     View source code and contribute
   </Card>
@@ -14290,7 +15516,7 @@ gem "dodopayments", "~> 1.61.5"
 
 Then run:
 
-```bash  theme={null}
+```bash theme={null}
 bundle install
 ```
 
@@ -14302,7 +15528,7 @@ bundle install
 
 Initialize the client and create a checkout session:
 
-```ruby  theme={null}
+```ruby theme={null}
 require "bundler/setup"
 require "dodopayments"
 
@@ -14324,7 +15550,7 @@ puts(checkout_session_response.session_id)
 
 ## Core Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Ruby Conventions" icon="gem">
     Follows Ruby naming conventions and idiomatic patterns
   </Card>
@@ -14348,7 +15574,7 @@ puts(checkout_session_response.session_id)
 
 Configure request timeouts:
 
-```ruby  theme={null}
+```ruby theme={null}
 # Configure default for all requests (default is 60 seconds)
 dodo_payments = Dodopayments::Client.new(
   timeout: nil # disable timeout
@@ -14365,7 +15591,7 @@ dodo_payments.checkout_sessions.create(
 
 Configure automatic retry behavior:
 
-```ruby  theme={null}
+```ruby theme={null}
 # Configure default for all requests (default is 2)
 dodo_payments = Dodopayments::Client.new(
   max_retries: 0 # disable retries
@@ -14384,7 +15610,7 @@ dodo_payments.checkout_sessions.create(
 
 Generate a checkout session:
 
-```ruby  theme={null}
+```ruby theme={null}
 session = dodo_payments.checkout_sessions.create(
   product_cart: [
     {
@@ -14403,7 +15629,7 @@ redirect_to session.url
 
 Create and retrieve customer information:
 
-```ruby  theme={null}
+```ruby theme={null}
 # Create a customer
 customer = dodo_payments.customers.create(
   email: "customer@example.com",
@@ -14422,7 +15648,7 @@ puts "Customer: #{customer.name} (#{customer.email})"
 
 Create and manage recurring subscriptions:
 
-```ruby  theme={null}
+```ruby theme={null}
 # Create a subscription
 subscription = dodo_payments.subscriptions.create(
   customer_id: "cus_123",
@@ -14446,7 +15672,7 @@ dodo_payments.subscriptions.cancel(subscription.id)
 
 Automatically iterate through all pages:
 
-```ruby  theme={null}
+```ruby theme={null}
 page = dodo_payments.payments.list
 
 # Fetch single item from page
@@ -14463,7 +15689,7 @@ end
 
 For more control over pagination:
 
-```ruby  theme={null}
+```ruby theme={null}
 page = dodo_payments.payments.list
 
 if page.next_page?
@@ -14476,7 +15702,7 @@ end
 
 Handle various Dodo Payments API errors:
 
-```ruby  theme={null}
+```ruby theme={null}
 begin
   checkout_session = dodo_payments.checkout_sessions.create(
     product_cart: [{product_id: "product_id", quantity: 0}]
@@ -14500,7 +15726,7 @@ end
 
 Use Sorbet for type-safe request parameters:
 
-```ruby  theme={null}
+```ruby theme={null}
 # Type-safe using Sorbet RBI definitions
 dodo_payments.checkout_sessions.create(
   product_cart: [
@@ -14534,7 +15760,7 @@ dodo_payments.checkout_sessions.create(**params)
 
 Make requests to undocumented endpoints:
 
-```ruby  theme={null}
+```ruby theme={null}
 response = dodo_payments.request(
   method: :post,
   path: '/undocumented/endpoint',
@@ -14548,7 +15774,7 @@ response = dodo_payments.request(
 
 Send undocumented parameters:
 
-```ruby  theme={null}
+```ruby theme={null}
 checkout_session_response = dodo_payments.checkout_sessions.create(
   product_cart: [{product_id: "product_id", quantity: 0}],
   request_options: {
@@ -14568,7 +15794,7 @@ puts(checkout_session_response[:my_undocumented_property])
 
 Create `config/initializers/dodo_payments.rb`:
 
-```ruby  theme={null}
+```ruby theme={null}
 require "dodopayments"
 
 DODO_CLIENT = Dodopayments::Client.new(
@@ -14581,7 +15807,7 @@ DODO_CLIENT = Dodopayments::Client.new(
 
 Create a payment service:
 
-```ruby  theme={null}
+```ruby theme={null}
 # app/services/payment_service.rb
 class PaymentService
   def initialize
@@ -14609,7 +15835,7 @@ end
 
 Use in your Rails controllers:
 
-```ruby  theme={null}
+```ruby theme={null}
 # app/controllers/checkouts_controller.rb
 class CheckoutsController < ApplicationController
   def create
@@ -14634,7 +15860,7 @@ end
 
 Use with Sinatra applications:
 
-```ruby  theme={null}
+```ruby theme={null}
 require "sinatra"
 require "dodopayments"
 
@@ -14663,7 +15889,7 @@ end
 
 ## Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodopayments-ruby">
     View source code and contribute
   </Card>
@@ -14723,7 +15949,7 @@ Install the SDK using your package manager of choice:
 
 Initialize the client with your API key and start processing payments:
 
-```javascript  theme={null}
+```javascript theme={null}
 import DodoPayments from 'dodopayments';
 
 const client = new DodoPayments({
@@ -14744,7 +15970,7 @@ console.log(checkoutSessionResponse.session_id);
 
 ## Core Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="TypeScript First" icon="shield-check">
     Full TypeScript support with comprehensive type definitions for all API endpoints
   </Card>
@@ -14776,7 +16002,7 @@ DODO_PAYMENTS_API_KEY=your_api_key_here
 
 Configure request timeouts globally or per-request:
 
-```typescript  theme={null}
+```typescript theme={null}
 // Configure default timeout for all requests (default is 1 minute)
 const client = new DodoPayments({
   timeout: 20 * 1000, // 20 seconds
@@ -14793,7 +16019,7 @@ await client.checkoutSessions.create(
 
 Configure automatic retry behavior:
 
-```javascript  theme={null}
+```javascript theme={null}
 // Configure default for all requests (default is 2 retries)
 const client = new DodoPayments({
   maxRetries: 0, // disable retries
@@ -14816,7 +16042,7 @@ await client.checkoutSessions.create(
 
 Generate a checkout session for collecting payment information:
 
-```typescript  theme={null}
+```typescript theme={null}
 const session = await client.checkoutSessions.create({
   product_cart: [
     {
@@ -14834,7 +16060,7 @@ console.log('Redirect to:', session.url);
 
 Create and retrieve customer information:
 
-```typescript  theme={null}
+```typescript theme={null}
 // Create a customer
 const customer = await client.customers.create({
   email: 'customer@example.com',
@@ -14853,7 +16079,7 @@ console.log(`Customer: ${retrieved.name} (${retrieved.email})`);
 
 Create and manage recurring subscriptions:
 
-```typescript  theme={null}
+```typescript theme={null}
 // Create a subscription
 const subscription = await client.subscriptions.create({
   customer_id: 'cus_123',
@@ -14874,7 +16100,7 @@ const usageHistory = await client.subscriptions.retrieveUsageHistory('sub_123', 
 
 Track custom events for usage-based billing:
 
-```typescript  theme={null}
+```typescript theme={null}
 await client.usageEvents.ingest({
   events: [
     {
@@ -14900,7 +16126,7 @@ await client.usageEvents.ingest({
 
 Fetch detailed information about usage events:
 
-```typescript  theme={null}
+```typescript theme={null}
 // Get a specific event
 const event = await client.usageEvents.retrieve('api_call_12345');
 
@@ -14919,7 +16145,7 @@ Configure proxy settings for different runtimes:
 
 ### Node.js (using undici)
 
-```typescript  theme={null}
+```typescript theme={null}
 import DodoPayments from 'dodopayments';
 import * as undici from 'undici';
 
@@ -14933,7 +16159,7 @@ const client = new DodoPayments({
 
 ### Bun
 
-```typescript  theme={null}
+```typescript theme={null}
 import DodoPayments from 'dodopayments';
 
 const client = new DodoPayments({
@@ -14945,7 +16171,7 @@ const client = new DodoPayments({
 
 ### Deno
 
-```typescript  theme={null}
+```typescript theme={null}
 import DodoPayments from 'npm:dodopayments';
 
 const httpClient = Deno.createHttpClient({ proxy: { url: 'http://localhost:8888' } });
@@ -14960,14 +16186,14 @@ const client = new DodoPayments({
 
 Control log verbosity using environment variables or client options:
 
-```typescript  theme={null}
+```typescript theme={null}
 // Via client option
 const client = new DodoPayments({
   logLevel: 'debug', // Show all log messages
 });
 ```
 
-```bash  theme={null}
+```bash theme={null}
 # Via environment variable
 export DODO_PAYMENTS_LOG=debug
 ```
@@ -14994,7 +16220,7 @@ If you're upgrading from the legacy Node.js SDK, the TypeScript SDK offers impro
 
 ## Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodopayments-typescript">
     View source code and contribute
   </Card>
@@ -15031,7 +16257,7 @@ Source: https://docs.dodopayments.com/developer-resources/sentra
 Install the Sentra extension for VS Code, Cursor, or Windsurf to integrate billing and payments into your app using AI-powered assistance.
 
 <Frame>
-  <iframe width="100%" height="400" src="https://www.youtube.com/embed/177o3L5MOf4" title="Sentra Extension Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen />
+  <iframe title="Sentra Extension Demo" />
 </Frame>
 
 ## Overview
@@ -15055,7 +16281,7 @@ Sentra is available as an extension for VS Code, Cursor, and Windsurf. Choose yo
         3. Search for "Sentra by Dodo Payments" in the marketplace.
 
         <Frame>
-          <img src="https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/vscode.png?fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=71c93be5456921bad87edb591d12d4c3" alt="VS Code Extensions Marketplace showing Sentra extension" data-og-width="2744" width="2744" data-og-height="1186" height="1186" data-path="images/sentra/vscode.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/vscode.png?w=280&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=d11d71165ecef468dada2f9518390413 280w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/vscode.png?w=560&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=02b97af2a4c4d98d00e9fb851c4f057d 560w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/vscode.png?w=840&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=df036b222405ed0ed2cf9d7df886cfd6 840w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/vscode.png?w=1100&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=faf0b6c2d359d2368a20dcb77fdb9134 1100w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/vscode.png?w=1650&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=f44193d75d6e94f59f5445f2b1994d72 1650w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/vscode.png?w=2500&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=777c10cd9baf32b14d1b6cf92bcb517d 2500w" />
+          <img alt="VS Code Extensions Marketplace showing Sentra extension" />
         </Frame>
       </Step>
 
@@ -15142,7 +16368,7 @@ Once installed, you need to configure Sentra with your Dodo Payments API key and
     4. Enter your Dodo Payments API key when prompted.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/setup.png?fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=15e47c48c17fa2950abeb07dd97e4ab6" alt="Sentra configuration screen with API key input and environment selection" width="50%" data-og-width="990" data-og-height="1458" data-path="images/sentra/setup.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/setup.png?w=280&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=7e5c5f0210fbaa942833718694e073f5 280w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/setup.png?w=560&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=ed65f39437b0db69b85247cee71b5f6f 560w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/setup.png?w=840&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=9a0fcb5c558910da203a13d25ceb726a 840w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/setup.png?w=1100&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=151b3c0ddb142408919aaccb7002bc3b 1100w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/setup.png?w=1650&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=69426e1613fd924ae21e23ce71ca2cd2 1650w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/setup.png?w=2500&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=d08432ca990d494c43c942c0a7f42c0e 2500w" />
+      <img alt="Sentra configuration screen with API key input and environment selection" />
     </Frame>
   </Step>
 
@@ -15183,7 +16409,7 @@ Sentra follows a simple four-step process from prompt to production:
     Type what you want to build. For example: "Add usage-based billing with a free trial for my Pro plan."
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/welcome.png?fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=6dc75f60d43e81d44e8f83f1925c4cc5" alt="Sentra interface showing prompt input with example task" width="50%" data-og-width="930" data-og-height="1342" data-path="images/sentra/welcome.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/welcome.png?w=280&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=25e49b3371742178a174363829ab97f8 280w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/welcome.png?w=560&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=b166ed8bb71db61a83e9cdbcff52507b 560w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/welcome.png?w=840&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=3cd1c81474641864f0281137ad403295 840w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/welcome.png?w=1100&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=3c4eb8f82bfa0a3afbe55d3dce0341dc 1100w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/welcome.png?w=1650&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=36a8e3b042d5c936fcd85e99f5e8856d 1650w, https://mintcdn.com/dodopayments/LTTtFnnP9hnNapJj/images/sentra/welcome.png?w=2500&fit=max&auto=format&n=LTTtFnnP9hnNapJj&q=85&s=2b6b352b412a94a9cd5381a0ec4fafc8 2500w" />
+      <img alt="Sentra interface showing prompt input with example task" />
     </Frame>
   </Step>
 
@@ -15295,7 +16521,7 @@ Sentra bridges engineering and business, so every team can ship monetization wit
 
 ## Additional Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Dodo Payments Docs" icon="book" href="/introduction">
     Learn more about Dodo Payments features and capabilities.
   </Card>
@@ -15319,7 +16545,7 @@ Source: https://docs.dodopayments.com/developer-resources/supabase-boilerplate
 
 Use the official Next.js + Supabase + Dodo Payments subscription starter to ship subscriptions fast. Includes auth, database schema, webhook handler, and pricing UI.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="GitHub Repository" icon="github" href="https://github.com/dodopayments/dodo-supabase-subscription-starter">
     Minimal Next.js + Supabase + Dodo Payments subscription boilerplate
   </Card>
@@ -15348,7 +16574,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
 
 <Steps>
   <Step title="Clone and install">
-    ```bash  theme={null}
+    ```bash theme={null}
     git clone https://github.com/dodopayments/dodo-supabase-subscription-starter.git
     cd dodo-supabase-subscription-starter
     # choose one
@@ -15378,7 +16604,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
   </Step>
 
   <Step title="Create .env.local">
-    ```env  theme={null}
+    ```env theme={null}
     # Supabase
     NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
     NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
@@ -15399,7 +16625,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
   </Step>
 
   <Step title="Provision database schema">
-    ```bash  theme={null}
+    ```bash theme={null}
     bun run db:push
     # or
     npm run db:push
@@ -15413,7 +16639,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
   </Step>
 
   <Step title="Deploy webhook function">
-    ```bash  theme={null}
+    ```bash theme={null}
     # login (one-time)
     bunx supabase login
     # or
@@ -15439,7 +16665,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
   <Step title="Add webhook in Dodo Payments">
     Set endpoint URL to:
 
-    ```text  theme={null}
+    ```text theme={null}
     https://[your-project-ref].supabase.co/functions/v1/dodo-webhook
     ```
 
@@ -15449,7 +16675,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
   <Step title="Create products and features">
     In Dodo dashboard → Products → Create Product. Optionally add metadata:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "features": ["Feature 1", "Feature 2", "Feature 3"]
     }
@@ -15459,7 +16685,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
   </Step>
 
   <Step title="Run the dev server">
-    ```bash  theme={null}
+    ```bash theme={null}
     bun run dev
     # or
     npm run dev
@@ -15487,7 +16713,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
 
 <Tabs>
   <Tab title="Edge Function">
-    ```text  theme={null}
+    ```text theme={null}
     supabase/functions/dodo-webhook/
       index.ts            # webhook handler verifying signatures
       deno.json           # permissions
@@ -15495,7 +16721,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
   </Tab>
 
   <Tab title="Next.js routes">
-    ```text  theme={null}
+    ```text theme={null}
     app/(marketing)/*     # landing + pricing UI
     app/(dashboard)/*     # protected pages
     app/api/*             # server actions & helpers
@@ -15503,7 +16729,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
   </Tab>
 
   <Tab title="Database (Drizzle)">
-    ```text  theme={null}
+    ```text theme={null}
     lib/db/schema.ts      # users, subscriptions, payments
     lib/db/index.ts       # client
     ```
@@ -15514,7 +16740,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
 
 <AccordionGroup>
   <Accordion title="Supabase">
-    ```env  theme={null}
+    ```env theme={null}
     NEXT_PUBLIC_SUPABASE_URL=
     NEXT_PUBLIC_SUPABASE_ANON_KEY=
     SUPABASE_SERVICE_ROLE_KEY=
@@ -15523,7 +16749,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
   </Accordion>
 
   <Accordion title="Dodo Payments">
-    ```env  theme={null}
+    ```env theme={null}
     DODO_PAYMENTS_API_KEY=
     DODO_WEBHOOK_SECRET=
     DODO_PAYMENTS_ENVIRONMENT=test_mode|live_mode
@@ -15531,7 +16757,7 @@ A production-ready boilerplate for subscriptions using Next.js 15, React 19, Sup
   </Accordion>
 
   <Accordion title="Google OAuth">
-    ```env  theme={null}
+    ```env theme={null}
     GOOGLE_CLIENT_ID=
     GOOGLE_CLIENT_SECRET=
     ```
@@ -15572,7 +16798,7 @@ Source: https://docs.dodopayments.com/developer-resources/sveltekit-adaptor
 
 Learn how to integrate Dodo Payments with your SveleteKit App Router project using our SveleteKit Adaptor. Covers checkout, customer portal, webhooks, and secure environment setup.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Handler" icon="cart-shopping" href="#checkout-route-handler">
     Integrate Dodo Payments checkout into your SveleteKit app.
   </Card>
@@ -15592,7 +16818,7 @@ Learn how to integrate Dodo Payments with your SveleteKit App Router project usi
   <Step title="Install the package">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/svelteKit
     ```
   </Step>
@@ -15771,103 +16997,103 @@ Learn how to integrate Dodo Payments with your SveleteKit App Router project usi
   <Accordion title="Static Checkout (GET)">
     ### Supported Query Parameters
 
-    <ParamField query="productId" type="string" required>
+    <ParamField type="string">
       Product identifier (e.g., <code>?productId=pdt\_nZuwz45WAs64n3l07zpQR</code>).
     </ParamField>
 
-    <ParamField query="quantity" type="integer">
+    <ParamField type="integer">
       Quantity of the product.
     </ParamField>
 
-    <ParamField query="fullName" type="string">
+    <ParamField type="string">
       Customer's full name.
     </ParamField>
 
-    <ParamField query="firstName" type="string">
+    <ParamField type="string">
       Customer's first name.
     </ParamField>
 
-    <ParamField query="lastName" type="string">
+    <ParamField type="string">
       Customer's last name.
     </ParamField>
 
-    <ParamField query="email" type="string">
+    <ParamField type="string">
       Customer's email address.
     </ParamField>
 
-    <ParamField query="country" type="string">
+    <ParamField type="string">
       Customer's country.
     </ParamField>
 
-    <ParamField query="addressLine" type="string">
+    <ParamField type="string">
       Customer's address line.
     </ParamField>
 
-    <ParamField query="city" type="string">
+    <ParamField type="string">
       Customer's city.
     </ParamField>
 
-    <ParamField query="state" type="string">
+    <ParamField type="string">
       Customer's state/province.
     </ParamField>
 
-    <ParamField query="zipCode" type="string">
+    <ParamField type="string">
       Customer's zip/postal code.
     </ParamField>
 
-    <ParamField query="disableFullName" type="boolean">
+    <ParamField type="boolean">
       Disable full name field.
     </ParamField>
 
-    <ParamField query="disableFirstName" type="boolean">
+    <ParamField type="boolean">
       Disable first name field.
     </ParamField>
 
-    <ParamField query="disableLastName" type="boolean">
+    <ParamField type="boolean">
       Disable last name field.
     </ParamField>
 
-    <ParamField query="disableEmail" type="boolean">
+    <ParamField type="boolean">
       Disable email field.
     </ParamField>
 
-    <ParamField query="disableCountry" type="boolean">
+    <ParamField type="boolean">
       Disable country field.
     </ParamField>
 
-    <ParamField query="disableAddressLine" type="boolean">
+    <ParamField type="boolean">
       Disable address line field.
     </ParamField>
 
-    <ParamField query="disableCity" type="boolean">
+    <ParamField type="boolean">
       Disable city field.
     </ParamField>
 
-    <ParamField query="disableState" type="boolean">
+    <ParamField type="boolean">
       Disable state field.
     </ParamField>
 
-    <ParamField query="disableZipCode" type="boolean">
+    <ParamField type="boolean">
       Disable zip code field.
     </ParamField>
 
-    <ParamField query="paymentCurrency" type="string">
+    <ParamField type="string">
       Specify the payment currency (e.g., <code>USD</code>).
     </ParamField>
 
-    <ParamField query="showCurrencySelector" type="boolean">
+    <ParamField type="boolean">
       Show currency selector.
     </ParamField>
 
-    <ParamField query="paymentAmount" type="integer">
+    <ParamField type="integer">
       Specify the payment amount (e.g., <code>1000</code> for \$10.00).
     </ParamField>
 
-    <ParamField query="showDiscounts" type="boolean">
+    <ParamField type="boolean">
       Show discount fields.
     </ParamField>
 
-    <ParamField query="metadata_*" type="string">
+    <ParamField type="string">
       Any query parameter starting with <code>metadata\_</code> will be passed as metadata.
     </ParamField>
 
@@ -15879,7 +17105,7 @@ Learn how to integrate Dodo Payments with your SveleteKit App Router project usi
 
     Static checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/"
     }
@@ -15897,7 +17123,7 @@ Learn how to integrate Dodo Payments with your SveleteKit App Router project usi
 
     Dynamic checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/"
     }
@@ -15913,7 +17139,7 @@ Learn how to integrate Dodo Payments with your SveleteKit App Router project usi
 
     Checkout sessions return a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/session/..."
     }
@@ -15927,11 +17153,11 @@ The Customer Portal Route Handler enables you to seamlessly integrate the Dodo P
 
 ### Query Parameters
 
-<ParamField query="customer_id" type="string" required>
+<ParamField type="string">
   The customer ID for the portal session (e.g., <code>?customer\_id=cus\_123</code>).
 </ParamField>
 
-<ParamField query="send_email" type="boolean">
+<ParamField type="boolean">
   If set to <code>true</code>, sends an email to the customer with the portal link.
 </ParamField>
 
@@ -16222,7 +17448,7 @@ Source: https://docs.dodopayments.com/developer-resources/tanstack-adaptor
 
 Learn how to integrate Dodo Payments with your Tanstack App Router project using our Tanstack Adaptor. Covers checkout, customer portal, webhooks, and secure environment setup.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Handler" icon="cart-shopping" href="#checkout-route-handler">
     Integrate Dodo Payments checkout into your Tanstack app.
   </Card>
@@ -16242,7 +17468,7 @@ Learn how to integrate Dodo Payments with your Tanstack App Router project using
   <Step title="Install the package">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install @dodopayments/tanstack
     ```
   </Step>
@@ -16442,103 +17668,103 @@ Learn how to integrate Dodo Payments with your Tanstack App Router project using
   <Accordion title="Static Checkout (GET)">
     ### Supported Query Parameters
 
-    <ParamField query="productId" type="string" required>
+    <ParamField type="string">
       Product identifier (e.g., <code>?productId=pdt\_nZuwz45WAs64n3l07zpQR</code>).
     </ParamField>
 
-    <ParamField query="quantity" type="integer">
+    <ParamField type="integer">
       Quantity of the product.
     </ParamField>
 
-    <ParamField query="fullName" type="string">
+    <ParamField type="string">
       Customer's full name.
     </ParamField>
 
-    <ParamField query="firstName" type="string">
+    <ParamField type="string">
       Customer's first name.
     </ParamField>
 
-    <ParamField query="lastName" type="string">
+    <ParamField type="string">
       Customer's last name.
     </ParamField>
 
-    <ParamField query="email" type="string">
+    <ParamField type="string">
       Customer's email address.
     </ParamField>
 
-    <ParamField query="country" type="string">
+    <ParamField type="string">
       Customer's country.
     </ParamField>
 
-    <ParamField query="addressLine" type="string">
+    <ParamField type="string">
       Customer's address line.
     </ParamField>
 
-    <ParamField query="city" type="string">
+    <ParamField type="string">
       Customer's city.
     </ParamField>
 
-    <ParamField query="state" type="string">
+    <ParamField type="string">
       Customer's state/province.
     </ParamField>
 
-    <ParamField query="zipCode" type="string">
+    <ParamField type="string">
       Customer's zip/postal code.
     </ParamField>
 
-    <ParamField query="disableFullName" type="boolean">
+    <ParamField type="boolean">
       Disable full name field.
     </ParamField>
 
-    <ParamField query="disableFirstName" type="boolean">
+    <ParamField type="boolean">
       Disable first name field.
     </ParamField>
 
-    <ParamField query="disableLastName" type="boolean">
+    <ParamField type="boolean">
       Disable last name field.
     </ParamField>
 
-    <ParamField query="disableEmail" type="boolean">
+    <ParamField type="boolean">
       Disable email field.
     </ParamField>
 
-    <ParamField query="disableCountry" type="boolean">
+    <ParamField type="boolean">
       Disable country field.
     </ParamField>
 
-    <ParamField query="disableAddressLine" type="boolean">
+    <ParamField type="boolean">
       Disable address line field.
     </ParamField>
 
-    <ParamField query="disableCity" type="boolean">
+    <ParamField type="boolean">
       Disable city field.
     </ParamField>
 
-    <ParamField query="disableState" type="boolean">
+    <ParamField type="boolean">
       Disable state field.
     </ParamField>
 
-    <ParamField query="disableZipCode" type="boolean">
+    <ParamField type="boolean">
       Disable zip code field.
     </ParamField>
 
-    <ParamField query="paymentCurrency" type="string">
+    <ParamField type="string">
       Specify the payment currency (e.g., <code>USD</code>).
     </ParamField>
 
-    <ParamField query="showCurrencySelector" type="boolean">
+    <ParamField type="boolean">
       Show currency selector.
     </ParamField>
 
-    <ParamField query="paymentAmount" type="integer">
+    <ParamField type="integer">
       Specify the payment amount (e.g., <code>1000</code> for \$10.00).
     </ParamField>
 
-    <ParamField query="showDiscounts" type="boolean">
+    <ParamField type="boolean">
       Show discount fields.
     </ParamField>
 
-    <ParamField query="metadata_*" type="string">
+    <ParamField type="string">
       Any query parameter starting with <code>metadata\_</code> will be passed as metadata.
     </ParamField>
 
@@ -16550,7 +17776,7 @@ Learn how to integrate Dodo Payments with your Tanstack App Router project using
 
     Static checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -16568,7 +17794,7 @@ Learn how to integrate Dodo Payments with your Tanstack App Router project using
 
     Dynamic checkout returns a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/..."
     }
@@ -16584,7 +17810,7 @@ Learn how to integrate Dodo Payments with your Tanstack App Router project using
 
     Checkout sessions return a JSON response with the checkout URL:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "checkout_url": "https://checkout.dodopayments.com/session/..."
     }
@@ -16598,11 +17824,11 @@ The Customer Portal Route Handler enables you to seamlessly integrate the Dodo P
 
 ### Query Parameters
 
-<ParamField query="customer_id" type="string" required>
+<ParamField type="string">
   The customer ID for the portal session (e.g., <code>?customer\_id=cus\_123</code>).
 </ParamField>
 
-<ParamField query="send_email" type="boolean">
+<ParamField type="boolean">
   If set to <code>true</code>, sends an email to the customer with the portal link.
 </ParamField>
 
@@ -16904,7 +18130,7 @@ Source: https://docs.dodopayments.com/developer-resources/webhooks
 Receive real-time notifications when events occur in Dodo Payments. Automate workflows and keep your systems synchronized with instant event delivery.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Webhooks.webp?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=477435b1004773582aa51236b5cc58e7" alt="Webhook Cover Image" data-og-width="1200" width="1200" data-og-height="630" height="630" data-path="images/cover-images/Webhooks.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Webhooks.webp?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=4499081979872a5281c76ec5c2fca3d4 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Webhooks.webp?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=81bdc2f85d8d2fc0b3bf6b15488aac95 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Webhooks.webp?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=a7895a74bca4f5f08cdda49aee2fcf1c 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Webhooks.webp?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=1756398be4696df7d9c5b732b8ed7f84 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Webhooks.webp?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=fcc1e8d80719712e8c60d9a0a395d725 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Webhooks.webp?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=ed239cefb0cce030f7a58c2b91266f27 2500w" />
+  <img alt="Webhook Cover Image" />
 </Frame>
 
 Webhooks provide real-time notifications when specific events occur in your Dodo Payments account. Use webhooks to automate workflows, update your database, send notifications, and keep your systems synchronized.
@@ -16915,7 +18141,7 @@ Webhooks provide real-time notifications when specific events occur in your Dodo
 
 ## Key Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Real-time Delivery" icon="bolt">
     Receive instant notifications when events occur
   </Card>
@@ -16944,7 +18170,7 @@ Webhooks provide real-time notifications when specific events occur in your Dodo
     Click on `Add Webhook` to create a new webhook endpoint.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/create-endpoint.png?fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=fc60e939a2bd92b6761c98f5ad58a226" alt="Add Webhook" data-og-width="2872" width="2872" data-og-height="1574" height="1574" data-path="images/webhooks/create-endpoint.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/create-endpoint.png?w=280&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=42e9e9a129a525dc1ea8449d858920a7 280w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/create-endpoint.png?w=560&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=eb96a65147487c60df78573195f6c693 560w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/create-endpoint.png?w=840&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=716342e6ff539cfd077cac4fb262c6e7 840w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/create-endpoint.png?w=1100&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=2d3b589aa66ec2e306099460987ea937 1100w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/create-endpoint.png?w=1650&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=348de527b56321897f7f3addc3e70795 1650w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/create-endpoint.png?w=2500&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=b66f245b8e85cda8d2af30ca62a38440 2500w" />
+      <img alt="Add Webhook" />
     </Frame>
   </Step>
 
@@ -17070,7 +18296,7 @@ If a webhook delivery fails, Dodo Payments automatically retries with exponentia
 
 Each webhook event includes a unique `webhook-id` header. Use this identifier to implement idempotency and prevent duplicate processing.
 
-```javascript  theme={null}
+```javascript theme={null}
 // Example: Storing webhook IDs to prevent duplicate processing
 const processedWebhooks = new Set();
 
@@ -17232,7 +18458,7 @@ If you are not using an SDK, you can verify signatures yourself following the St
   <Accordion title="Respond immediately" icon="bolt">
     Return a `200` status code immediately upon receiving the webhook. Process the event asynchronously to avoid timeouts.
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     app.post('/webhook', async (req, res) => {
       // Acknowledge receipt immediately
       res.status(200).json({ received: true });
@@ -17258,40 +18484,40 @@ Understanding the webhook payload structure helps you parse and process events c
 
 ### Request Format
 
-```http  theme={null}
+```http theme={null}
 POST /your-webhook-url
 Content-Type: application/json
 ```
 
 ### Headers
 
-<ParamField header="webhook-id" type="string" required>
+<ParamField type="string">
   Unique identifier for this webhook event. Use this for idempotency checks.
 </ParamField>
 
-<ParamField header="webhook-signature" type="string" required>
+<ParamField type="string">
   HMAC SHA256 signature for verifying the webhook authenticity.
 </ParamField>
 
-<ParamField header="webhook-timestamp" type="string" required>
+<ParamField type="string">
   Unix timestamp (in seconds) when the webhook was sent.
 </ParamField>
 
 ### Request Body
 
-<ResponseField name="business_id" type="string" required>
+<ResponseField name="business_id" type="string">
   Your Dodo Payments business identifier.
 </ResponseField>
 
-<ResponseField name="type" type="string" required>
+<ResponseField name="type" type="string">
   Event type that triggered this webhook (e.g., `payment.succeeded`, `subscription.created`).
 </ResponseField>
 
-<ResponseField name="timestamp" type="string" required>
+<ResponseField name="timestamp" type="string">
   ISO 8601 formatted timestamp of when the event occurred.
 </ResponseField>
 
-<ResponseField name="data" type="object" required>
+<ResponseField name="data" type="object">
   Event-specific payload containing detailed information about the event.
 
   <Expandable title="Data object properties">
@@ -17305,7 +18531,7 @@ Content-Type: application/json
 
 ### Example Payload
 
-```json  theme={null}
+```json theme={null}
 {
   "business_id": "string",
   "type": "payment.succeeded | payment.failed |...",
@@ -17317,7 +18543,7 @@ Content-Type: application/json
 }
 ```
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Event Types" icon="list" href="/developer-resources/webhooks/intents/webhook-events-guide">
     Browse all available webhook event types
   </Card>
@@ -17332,7 +18558,7 @@ Content-Type: application/json
 You can test your webhook integration directly from the Dodo Payments dashboard to ensure your endpoint is working correctly before going live.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/endpoints.png?fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=b0dfd4a19af0d5b7163c15728e215e89" alt="Endpoint Details" data-og-width="2880" width="2880" data-og-height="1576" height="1576" data-path="images/webhooks/endpoints.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/endpoints.png?w=280&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=7aed11a1fbfb9a70415bd344d9482413 280w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/endpoints.png?w=560&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=dce335811476847a18399c246549a95f 560w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/endpoints.png?w=840&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=329b38c8f03671888b24e448be5d270f 840w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/endpoints.png?w=1100&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=4e2425a1165edbe24b23326cd3f06d9f 1100w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/endpoints.png?w=1650&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=9d48ad24ab915cd879bb802a98b4d2c6 1650w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/endpoints.png?w=2500&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=9592db9397b85880483109a0af195e7e 2500w" />
+  <img alt="Endpoint Details" />
 </Frame>
 
 ### Accessing the Testing Interface
@@ -17582,7 +18808,7 @@ Transformations allow you to modify a webhook's payload and redirect it to a dif
 The Logs tab provides comprehensive visibility into your webhook delivery status, allowing you to monitor, debug, and manage webhook events effectively.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/logs.png?fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=97555b00a8ed1ca89ae1246a987f853f" alt="Logs" data-og-width="2880" width="2880" data-og-height="1576" height="1576" data-path="images/webhooks/logs.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/logs.png?w=280&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=09ead56bfe74ebb19dd8d2c5ce1e162e 280w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/logs.png?w=560&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=9ce2f0fdc740b8a190d4841d6cbe94c7 560w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/logs.png?w=840&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=1e3a2027a6540fc0b797698251eae1fd 840w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/logs.png?w=1100&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=a924fa13f129698934e910a6fcccbe7c 1100w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/logs.png?w=1650&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=ef12fd2a486b09ca3a3d4f3d5676dadb 1650w, https://mintcdn.com/dodopayments/BHDbjXQkGsSXJEiK/images/webhooks/logs.png?w=2500&fit=max&auto=format&n=BHDbjXQkGsSXJEiK&q=85&s=85805e3d15023ce66914a5e449158dac 2500w" />
+  <img alt="Logs" />
 </Frame>
 
 ## Activity Monitoring
@@ -17590,7 +18816,7 @@ The Logs tab provides comprehensive visibility into your webhook delivery status
 The Activity tab provides real-time insights into your webhook delivery performance with visual analytics.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/kDL9h03D3wN164Ru/images/webhooks/activity.png?fit=max&auto=format&n=kDL9h03D3wN164Ru&q=85&s=7958b2bdfa5d516cca3bb263ae6a1ef5" alt="Activity" data-og-width="2876" width="2876" data-og-height="1570" height="1570" data-path="images/webhooks/activity.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/kDL9h03D3wN164Ru/images/webhooks/activity.png?w=280&fit=max&auto=format&n=kDL9h03D3wN164Ru&q=85&s=af6ec67849508a8d38b5e67308802ee4 280w, https://mintcdn.com/dodopayments/kDL9h03D3wN164Ru/images/webhooks/activity.png?w=560&fit=max&auto=format&n=kDL9h03D3wN164Ru&q=85&s=9e716f2609b1e0cc749cefb01e690ec5 560w, https://mintcdn.com/dodopayments/kDL9h03D3wN164Ru/images/webhooks/activity.png?w=840&fit=max&auto=format&n=kDL9h03D3wN164Ru&q=85&s=6a84a454e6e856138665828bf56b8b1e 840w, https://mintcdn.com/dodopayments/kDL9h03D3wN164Ru/images/webhooks/activity.png?w=1100&fit=max&auto=format&n=kDL9h03D3wN164Ru&q=85&s=d731f882c298b6d6e5b7707ee116c76b 1100w, https://mintcdn.com/dodopayments/kDL9h03D3wN164Ru/images/webhooks/activity.png?w=1650&fit=max&auto=format&n=kDL9h03D3wN164Ru&q=85&s=663069962158eceb1bb4f3de9519354d 1650w, https://mintcdn.com/dodopayments/kDL9h03D3wN164Ru/images/webhooks/activity.png?w=2500&fit=max&auto=format&n=kDL9h03D3wN164Ru&q=85&s=41a4079e8698e0903b262f85eca5e543 2500w" />
+  <img alt="Activity" />
 </Frame>
 
 ## Email Alerts
@@ -17598,7 +18824,7 @@ The Activity tab provides real-time insights into your webhook delivery performa
 Stay informed about your webhook health with automatic email notifications. When webhook deliveries start failing or your endpoint stops responding, you'll receive email alerts so you can quickly address issues and keep your integrations running smoothly.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/uUqnqbXnxLP9Xiux/images/webhooks/alerting.png?fit=max&auto=format&n=uUqnqbXnxLP9Xiux&q=85&s=25382b6e34a81c78695d550cb1cedc79" alt="Webhook Alerting Settings showing email notifications configuration" data-og-width="1684" width="1684" data-og-height="1054" height="1054" data-path="images/webhooks/alerting.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/uUqnqbXnxLP9Xiux/images/webhooks/alerting.png?w=280&fit=max&auto=format&n=uUqnqbXnxLP9Xiux&q=85&s=8d9faeb8c18b0b171277723162f4c85f 280w, https://mintcdn.com/dodopayments/uUqnqbXnxLP9Xiux/images/webhooks/alerting.png?w=560&fit=max&auto=format&n=uUqnqbXnxLP9Xiux&q=85&s=afddb13a7282d24d709bb55b0a081ae5 560w, https://mintcdn.com/dodopayments/uUqnqbXnxLP9Xiux/images/webhooks/alerting.png?w=840&fit=max&auto=format&n=uUqnqbXnxLP9Xiux&q=85&s=99af3e84e13b80fc3671ecc596e596f0 840w, https://mintcdn.com/dodopayments/uUqnqbXnxLP9Xiux/images/webhooks/alerting.png?w=1100&fit=max&auto=format&n=uUqnqbXnxLP9Xiux&q=85&s=447ac605f867e01f8e3abc0557a05523 1100w, https://mintcdn.com/dodopayments/uUqnqbXnxLP9Xiux/images/webhooks/alerting.png?w=1650&fit=max&auto=format&n=uUqnqbXnxLP9Xiux&q=85&s=a04110debdf0f1e65655c3424838bb21 1650w, https://mintcdn.com/dodopayments/uUqnqbXnxLP9Xiux/images/webhooks/alerting.png?w=2500&fit=max&auto=format&n=uUqnqbXnxLP9Xiux&q=85&s=45fa53c1b37e4f5f631ee1e6ec1f053d 2500w" />
+  <img alt="Webhook Alerting Settings showing email notifications configuration" />
 </Frame>
 
 ### Enable Email Alerts
@@ -17625,7 +18851,7 @@ Stay informed about your webhook health with automatic email notifications. When
 
 Ready to deploy your webhook handler to production? We provide platform-specific guides to help you deploy webhooks to popular cloud providers with best practices for each platform.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Vercel" icon="triangle" href="/developer-resources/webhooks/examples/vercel-example">
     Deploy webhooks to Vercel with serverless functions
   </Card>
@@ -17667,7 +18893,7 @@ Deploy DodoPayments webhooks to Cloudflare Workers
 
 ### 2. Install Dependencies
 
-```bash  theme={null}
+```bash theme={null}
 npm install -g wrangler
 wrangler login
 git clone https://github.com/dodopayments/cloud-functions.git
@@ -17686,7 +18912,7 @@ npm install
 
 ### 4. Configure Initial Secrets
 
-```bash  theme={null}
+```bash theme={null}
 # Set your Neon database URL
 wrangler secret put DATABASE_URL
 
@@ -17700,13 +18926,13 @@ wrangler secret put DODO_PAYMENTS_API_KEY
 
 Edit `wrangler.toml` and set your worker name:
 
-```toml  theme={null}
+```toml theme={null}
 name = "my-dodo-webhook"
 ```
 
 ### 6. Deploy
 
-```bash  theme={null}
+```bash theme={null}
 npm run deploy
 ```
 
@@ -17731,7 +18957,7 @@ https://[worker-name].[your-subdomain].workers.dev
 
 ### 9. Set Webhook Key & Redeploy
 
-```bash  theme={null}
+```bash theme={null}
 wrangler secret put DODO_PAYMENTS_WEBHOOK_KEY
 npm run deploy
 ```
@@ -18192,7 +19418,7 @@ The webhook handler:
 
 **Local development:**
 
-```bash  theme={null}
+```bash theme={null}
 npm run dev  # Available at http://localhost:8787
 ```
 
@@ -18237,7 +19463,7 @@ Deploy DodoPayments webhooks to Netlify Functions
 
 ### 2. Install Dependencies
 
-```bash  theme={null}
+```bash theme={null}
 npm install -g netlify-cli
 netlify login
 git clone https://github.com/dodopayments/cloud-functions.git
@@ -18256,7 +19482,7 @@ npm install
 
 ### 4. Set Initial Environment Variables
 
-```bash  theme={null}
+```bash theme={null}
 netlify env:set DATABASE_URL "your-neon-connection-string"
 netlify env:set DODO_PAYMENTS_API_KEY "your-api-key"
 ```
@@ -18265,7 +19491,7 @@ netlify env:set DODO_PAYMENTS_API_KEY "your-api-key"
 
 ### 5. Initialize & Deploy
 
-```bash  theme={null}
+```bash theme={null}
 netlify init       # Link to your site (first time only)
 npm run deploy
 ```
@@ -18291,7 +19517,7 @@ https://[your-project].netlify.app/.netlify/functions/webhook
 
 ### 8. Set Webhook Key & Redeploy
 
-```bash  theme={null}
+```bash theme={null}
 netlify env:set DODO_PAYMENTS_WEBHOOK_KEY "your-webhook-signing-key"
 npm run deploy
 ```
@@ -18757,7 +19983,7 @@ The webhook handler:
 
 **Local development:**
 
-```bash  theme={null}
+```bash theme={null}
 npm run dev  # Available at http://localhost:8888/.netlify/functions/webhook
 ```
 
@@ -18804,7 +20030,7 @@ Deploy DodoPayments webhooks to Supabase Edge Functions
   <strong>Checkout the complete starter kit for supabase</strong><br />
   A minimal subscription starter kit built with Next.js, Supabase, and Dodo Payments. This boilerplate helps you quickly set up a subscription-based SaaS with authentication, payments, and webhooks.
 
-  <a href="https://github.com/dodopayments/dodo-supabase-subscription-starter" target="_blank" rel="noopener noreferrer">
+  <a href="https://github.com/dodopayments/dodo-supabase-subscription-starter">
     Dodo Payments Supabase Subscription Starter
   </a>
 </Tip>
@@ -18819,7 +20045,7 @@ Deploy DodoPayments webhooks to Supabase Edge Functions
 
 ### 2. Authenticate & Link
 
-```bash  theme={null}
+```bash theme={null}
 npx supabase login
 git clone https://github.com/dodopayments/cloud-functions.git
 cd cloud-functions/supabase
@@ -18840,7 +20066,7 @@ Get your project ref from [Supabase Dashboard](https://supabase.com/dashboard) �
 
 Supabase automatically provides `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` at runtime.
 
-```bash  theme={null}
+```bash theme={null}
 npx supabase secrets set DODO_PAYMENTS_API_KEY=your-api-key
 ```
 
@@ -18850,7 +20076,7 @@ npx supabase secrets set DODO_PAYMENTS_API_KEY=your-api-key
 
 The function is already set up in `functions/webhook/index.ts` - just deploy it:
 
-```bash  theme={null}
+```bash theme={null}
 npm run deploy
 ```
 
@@ -18875,7 +20101,7 @@ https://[project-ref].supabase.co/functions/v1/webhook
 
 ### 8. Set Webhook Key & Redeploy
 
-```bash  theme={null}
+```bash theme={null}
 npx supabase secrets set DODO_PAYMENTS_WEBHOOK_KEY=your-webhook-signing-key
 npm run deploy
 ```
@@ -19347,7 +20573,7 @@ The Deno-based Edge Function:
 
 **Local development:**
 
-```bash  theme={null}
+```bash theme={null}
 cd supabase
 npm run dev
 # Available at http://localhost:54321/functions/v1/webhook
@@ -19359,7 +20585,7 @@ npm run dev
 
 **View logs:**
 
-```bash  theme={null}
+```bash theme={null}
 npx supabase functions logs webhook
 ```
 
@@ -19408,7 +20634,7 @@ Deploy DodoPayments webhooks to Vercel
 
 ### 2. Install Dependencies
 
-```bash  theme={null}
+```bash theme={null}
 npm install -g vercel
 vercel login
 git clone https://github.com/dodopayments/cloud-functions.git
@@ -19429,7 +20655,7 @@ npm install
 
 Via Vercel CLI:
 
-```bash  theme={null}
+```bash theme={null}
 vercel env add DATABASE_URL
 vercel env add DODO_PAYMENTS_API_KEY
 ```
@@ -19438,7 +20664,7 @@ vercel env add DODO_PAYMENTS_API_KEY
 
 ### 5. Deploy
 
-```bash  theme={null}
+```bash theme={null}
 npm run deploy
 ```
 
@@ -19463,7 +20689,7 @@ https://[your-project].vercel.app/api/webhook
 
 ### 8. Set Webhook Key & Redeploy
 
-```bash  theme={null}
+```bash theme={null}
 vercel env add DODO_PAYMENTS_WEBHOOK_KEY
 npm run deploy
 ```
@@ -19898,7 +21124,7 @@ The webhook handler:
 
 **Local development:**
 
-```bash  theme={null}
+```bash theme={null}
 npm start
 ```
 
@@ -19984,7 +21210,7 @@ The following webhook events are available for tracking subscription lifecycle c
 
 The `subscription.updated` webhook fires whenever any subscription field changes, allowing you to keep your application state in sync without polling:
 
-```javascript  theme={null}
+```javascript theme={null}
 app.post('/webhooks/dodo', async (req, res) => {
   const event = req.body;
   
@@ -20082,7 +21308,7 @@ The **Balances** section provides merchants with a comprehensive overview of the
 ## Key Details
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/86riaeMBxlAcW9Bk/images/balances.png?fit=max&auto=format&n=86riaeMBxlAcW9Bk&q=85&s=d15b189037b8797e83c79d3f211638a5" alt="Balances dashboard showing wallet overview and transaction ledger" data-og-width="1884" width="1884" data-og-height="1058" height="1058" data-path="images/balances.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/86riaeMBxlAcW9Bk/images/balances.png?w=280&fit=max&auto=format&n=86riaeMBxlAcW9Bk&q=85&s=5ee9172d95644bd71f96efd13a5a90e9 280w, https://mintcdn.com/dodopayments/86riaeMBxlAcW9Bk/images/balances.png?w=560&fit=max&auto=format&n=86riaeMBxlAcW9Bk&q=85&s=767c6ec2376c9adf01f597c0be195149 560w, https://mintcdn.com/dodopayments/86riaeMBxlAcW9Bk/images/balances.png?w=840&fit=max&auto=format&n=86riaeMBxlAcW9Bk&q=85&s=6fd6c1abcb05937a5cf4324693b0b7e3 840w, https://mintcdn.com/dodopayments/86riaeMBxlAcW9Bk/images/balances.png?w=1100&fit=max&auto=format&n=86riaeMBxlAcW9Bk&q=85&s=96218310cc4efeca3f5ef3626d40c840 1100w, https://mintcdn.com/dodopayments/86riaeMBxlAcW9Bk/images/balances.png?w=1650&fit=max&auto=format&n=86riaeMBxlAcW9Bk&q=85&s=28c997367d72aa6d20f12b0e0f3a28cd 1650w, https://mintcdn.com/dodopayments/86riaeMBxlAcW9Bk/images/balances.png?w=2500&fit=max&auto=format&n=86riaeMBxlAcW9Bk&q=85&s=b4c56dc7bfc2d967961e146a2e120589 2500w" />
+  <img alt="Balances dashboard showing wallet overview and transaction ledger" />
 </Frame>
 
 ## Wallet Structure
@@ -20196,7 +21422,7 @@ Adaptive Currency displays product prices in the customer's local currency inste
 </Steps>
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/our-features/adaptive_currency.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=14a6ae2a3c6d45833adc68d88e1f9ba8" alt="Adaptive Currency" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/our-features/adaptive_currency.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/our-features/adaptive_currency.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=c60539f87923dc93920c4624bf6f324e 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/our-features/adaptive_currency.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=55e7a57b03f02a5210effc3fea143276 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/our-features/adaptive_currency.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=9335607d2d1d6079c259762296683cec 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/our-features/adaptive_currency.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=7574737072d2d64c335ef087b76fa556 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/our-features/adaptive_currency.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=48edb9407448e410cc6e9186156eae6b 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/our-features/adaptive_currency.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=d8c3b3abcd6bad723b36f822c20b5b0b 2500w" />
+  <img alt="Adaptive Currency" />
 </Frame>
 
 ## Customer Experience
@@ -20343,7 +21569,7 @@ Pass `billing_currency` to explicitly set the billing currency for the session.
   When Adaptive Pricing is disabled, `billing_currency` is ignored.
 </Info>
 
-```typescript  theme={null}
+```typescript theme={null}
 const session = await client.checkoutSessions.create({
   product_cart: [
     {
@@ -20370,7 +21596,7 @@ Enhance your subscription products with flexible add-ons for seat-based billing,
   Add-ons are additional products that can be attached to your main subscription products, enabling flexible pricing models and enhanced customer experiences. Whether you need seat-based billing, feature upgrades, or custom pricing structures, add-ons give you the power to create sophisticated subscription offerings.
 </Info>
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Seat-Based Billing" icon="users" href="/developer-resources/seat-based-pricing">
     Create add-ons for additional team seats, user licenses, or capacity upgrades with per-seat pricing.
   </Card>
@@ -20390,7 +21616,7 @@ Add-ons are supplementary products that customers can purchase alongside their m
 * **Service add-ons**: Professional services, training, or consultation hours
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=ea4ce0d437201c92590eea6c31a14e80" alt="Add-ons attached to subscription products in the dashboard" data-og-width="2338" width="2338" data-og-height="1196" height="1196" data-path="images/cookbooks/seat-based/seat-based-addons.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=280&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=8c93d311c3442791f2481c3a2dff9e6c 280w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=560&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=55639ef750b29eb146b763a275d39d7f 560w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=840&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=5222c17eb09251c3783e58aff7d3ed31 840w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=1100&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=d26f009d831e6ebfcb8b51f10223b1f9 1100w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=1650&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=2069508f22f5c842014ffba54a963c10 1650w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=2500&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=5a7995df4602d26e77e150ee537b9a9f 2500w" />
+  <img alt="Add-ons attached to subscription products in the dashboard" />
 </Frame>
 
 ## Key Benefits
@@ -20410,7 +21636,7 @@ Add-ons are created as separate products in your Dodo Payments dashboard and the
 * Update add-ons without affecting base subscriptions
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=d2c17b4a9f2f9a1b19f537f0507656a4" alt="Creating add-ons in the dashboard interface" data-og-width="2348" width="2348" data-og-height="1606" height="1606" data-path="images/cookbooks/seat-based/seat-based-addons-creation.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=280&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=5751534a0a21b9ed88453f8d811032b7 280w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=560&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=4144c9cd57f21f1d48f9b4c9fd0fc705 560w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=840&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=df7ce792d4437726a2087a569e7d62e9 840w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=1100&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=fef77260f735f8bb16e11e9b88082771 1100w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=1650&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=f9cf9247cbc5f58771a380637faef0af 1650w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=2500&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=ad6bea7122b008e67325e729704d663c 2500w" />
+  <img alt="Creating add-ons in the dashboard interface" />
 </Frame>
 
 ### Add-on Configuration
@@ -20510,7 +21736,7 @@ Dodo Payments provides a comprehensive API for managing add-ons programmatically
 
 When creating checkout sessions, you can include add-ons with custom quantities:
 
-```typescript  theme={null}
+```typescript theme={null}
 const session = await client.checkoutSessions.create({
   product_cart: [
     {
@@ -20532,7 +21758,7 @@ const session = await client.checkoutSessions.create({
 
 Modify existing subscriptions to add, remove, or update add-ons:
 
-```typescript  theme={null}
+```typescript theme={null}
 // Add add-ons to existing subscription
 await client.subscriptions.changePlan('sub_123', {
   product_id: 'prod_new',
@@ -20556,7 +21782,7 @@ await client.subscriptions.changePlan('sub_123', {
 
 Calculate total costs dynamically based on add-on selections:
 
-```typescript  theme={null}
+```typescript theme={null}
 function calculateTotalCost(basePrice: number, addons: AddonSelection[]) {
   const addonTotal = addons.reduce((sum, addon) => 
     sum + (addon.price * addon.quantity), 0
@@ -20594,7 +21820,7 @@ This guide walks you through how to track affiliate referrals, handle commission
 
 ## Key Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Automated Commission Attribution" icon="robot">
     No spreadsheets or manual tracking. Referrals are automatically attributed and logged when a purchase is made.
   </Card>
@@ -20621,7 +21847,7 @@ This guide walks you through how to track affiliate referrals, handle commission
 </CardGroup>
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/8tw8o9yOjsA" title="Affiliate Integration | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Affiliate Integration | Dodo Payments" />
 </Frame>
 
 ## Integration Steps
@@ -20677,7 +21903,7 @@ We have partnered with Affonso, a leading affiliate management platform to power
   <Step title="Add the Tracking Script">
     Place the Affonso pixel on your site to start tracking affiliate visits and conversions.
 
-    ```html  theme={null}
+    ```html theme={null}
     <!-- Place in <head> tag -->
     <script async defer
     src="https://affonso.io/js/pixel.min.js"
@@ -20700,7 +21926,7 @@ We have partnered with Affonso, a leading affiliate management platform to power
   <Step title="Track User Signups">
     To gain funnel visibility and optimize affiliate performance, track user signups as leads.
 
-    ```js  theme={null}
+    ```js theme={null}
     // After successful registration
     window.Affonso.signup(userEmail);
     ```
@@ -20720,7 +21946,7 @@ We have partnered with Affonso, a leading affiliate management platform to power
 
     ### Payments Integration
 
-    ```js  theme={null}
+    ```js theme={null}
     import DodoPayments from 'dodopayments';
 
     const referralId = window.affonso_referral;
@@ -20748,7 +21974,7 @@ We have partnered with Affonso, a leading affiliate management platform to power
 
     ### Subscription Integration
 
-    ```js  theme={null}
+    ```js theme={null}
     import DodoPayments from 'dodopayments';
 
     const referralId = window.affonso_referral;
@@ -20778,7 +22004,7 @@ We have partnered with Affonso, a leading affiliate management platform to power
 
     ### Payment Links
 
-    ```js  theme={null}
+    ```js theme={null}
     // Original Dodo Payments Link
     const originalLink = 'https://checkout.dodopayments.com/buy/<YOUR_PRODUCT_ID>';
 
@@ -20809,7 +22035,7 @@ We have partnered with Affonso, a leading affiliate management platform to power
 
 If you face any issues or need support during integration:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Affonso Support" icon="headset">
     * Chat with us via **live chat** on [affonso.io](https://affonso.io/)
     * Email us at **[support@affonso.io](mailto:support@affonso.io)**
@@ -20827,14 +22053,14 @@ Source: https://docs.dodopayments.com/features/analytics-and-reporting
 Gain actionable business insights with Dodo Payments' Analytics & Reporting dashboard. Learn to track revenue, customer trends, and transaction health, and download detailed reports.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/cover-images/Analytics%20and%20Reporting.webp?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=bae83b093bf129bcab92988d2f85fbe2" alt="Analytics and Reporting dashboard overview" data-og-width="1200" width="1200" data-og-height="630" height="630" data-path="images/cover-images/Analytics and Reporting.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/cover-images/Analytics%20and%20Reporting.webp?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=89241852091571351540e183db2b321c 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/cover-images/Analytics%20and%20Reporting.webp?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=0056f0e2c6e110446fb15067d5815644 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/cover-images/Analytics%20and%20Reporting.webp?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ee3455c3dec170ab01b2a08e2fa3271b 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/cover-images/Analytics%20and%20Reporting.webp?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=cc691eccca772716756e664e2528b392 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/cover-images/Analytics%20and%20Reporting.webp?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=a62adc9b4884dab81cc0cf3301b80d1b 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/cover-images/Analytics%20and%20Reporting.webp?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=0eac2fa2a375c3e2cafb15ac13215aab 2500w" />
+  <img alt="Analytics and Reporting dashboard overview" />
 </Frame>
 
 ## Introduction
 
 Dodo Payments' **Analytics & Reporting** dashboard empowers you to monitor your business performance, understand customer behavior, and make data-driven decisions. Access real-time metrics, visualize trends, and export detailed reports—all from a single, intuitive interface.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Revenue Insights" icon="chart-pie-simple">
     Track total revenue, growth trends, and top-performing products or countries.
   </Card>
@@ -20860,15 +22086,15 @@ The Analytics dashboard provides comprehensive insights into three key areas of 
 
 Track your income and payment activity to understand revenue trends and identify your top-performing markets.
 
-<Frame caption="Total revenue and 30-day trend">
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f1e965377d8809d7e834fe81ebe43cb2" alt="Total revenue and revenue trend chart" data-og-width="2864" width="2864" data-og-height="1524" height="1524" data-path="images/analytics/revenue.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=cf27459d910bc62a4693cebf0bb2564b 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=323fd92817805702c8ad92e9be715067 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=14dcc78df5931fb3bd507a9ef44d232e 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=9ace32e3162076e6d2a386a956f543c8 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=03f55a9c3098c26966b8df60ec53f6b5 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=5089ad40a89005510d0a4a3d1063b77a 2500w" />
+<Frame>
+  <img alt="Total revenue and revenue trend chart" />
 </Frame>
 
 * **Total Revenue:** Instantly see your all-time revenue and recent trends.
 * **Revenue Trend:** The 30-day chart helps you spot spikes or dips in income.
 
-<Frame caption="Top 5 revenue-generating countries and growth rate">
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-2.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=09d6d41c0e77497e29bcc06bc23e9c9f" alt="Top revenue countries and growth rate chart" data-og-width="1966" width="1966" data-og-height="1334" height="1334" data-path="images/analytics/revenue-2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-2.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=62eec43173d444d45923460a4a6bdefd 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-2.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=24dcbce29aa73f4e5957fae46f7d7c50 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-2.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=a89467a46889a55387b50a6a8fce6dce 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-2.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ed320b565b77691bab73ce81a6eb1b2b 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-2.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=734c1a6d1f06fa1c6c803a764900f748 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-2.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=623df340008204c221ab1fb23df40065 2500w" />
+<Frame>
+  <img alt="Top revenue countries and growth rate chart" />
 </Frame>
 
 * **Growth Rate:** Track monthly revenue growth to measure business momentum.
@@ -20890,7 +22116,7 @@ Track your recurring revenue metrics with detailed breakdowns:
 * **Net New MRR Chart**: Net revenue impact combining new, expansion, and churn MRR
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=66d1c0d64e6a69e6e7f22ac26c89bed7" alt="Revenue Breakdown dashboard showing projected ARR, MRR breakdown, and growth rates" data-og-width="1267" width="1267" data-og-height="867" height="867" data-path="images/analytics/revenue-breakdown.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=657e48bcc7a359b18d62254d285881db 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=398191fbd09fa41d6db2ae7eacf265e6 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=130b488adf15fc23a3a4aa7b8ea00a4a 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4a933e5fb3358463cba962d493d1914b 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c4715fce0f87f42445a95bdb99fc43e3 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=cffeec7feb2d1d72fc59a8c30b580560 2500w" />
+  <img alt="Revenue Breakdown dashboard showing projected ARR, MRR breakdown, and growth rates" />
 </Frame>
 
 ## Retention Analytics
@@ -20903,15 +22129,15 @@ Monitor customer retention and churn patterns:
 * **User Retention Matrix**: Cohort analysis showing customer retention rates across different time periods
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=daf77496683051cfd59db89c679fadea" alt="Retention Analytics dashboard showing customer churn rate, revenue churn rate, and churn rate trends" data-og-width="1299" width="1299" data-og-height="870" height="870" data-path="images/analytics/retention.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=342744274649b984cf7ab8a352654c1e 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=fcfd28314568d29759c87ac317252e6b 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ec74eb579b916e30cc80cf8537d0f052 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=17fcb7d02c5d24cf2826f6e19b9e1169 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b4d0ec16eb37e244d0da006244ab43ca 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=83251fbee51fb373d71c4c6d5d5a7fc7 2500w" />
+  <img alt="Retention Analytics dashboard showing customer churn rate, revenue churn rate, and churn rate trends" />
 </Frame>
 
 ## Customer Analytics
 
 Analyze customer acquisition, retention, and spending patterns to optimize your customer strategy.
 
-<Frame caption="ARPU, active customers, customer split, and top customers">
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=311b8a18deb3967aeaf0eac17c5376c9" alt="Customer analytics: ARPU, active customers, customer split, top customers" data-og-width="2876" width="2876" data-og-height="1514" height="1514" data-path="images/analytics/customer.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=1e162441cf113bf93d8ca78a39433171 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ae4e587045ba252ef6ea519fa296bb09 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=5d8cb7aa46f1b8856e41e058ebb7d58c 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=40acce18418619d9c360ab4b3c2c815b 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=037ea83cb0bc623402c42d3a2bb073e5 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=9c29003f21e6033c9aafb0da8a2d1953 2500w" />
+<Frame>
+  <img alt="Customer analytics: ARPU, active customers, customer split, top customers" />
 </Frame>
 
 * **ARPU (Average Revenue Per User):** Understand how much each customer contributes on average.
@@ -20927,8 +22153,8 @@ Analyze customer acquisition, retention, and spending patterns to optimize your 
 
 Monitor payment and refund success rates to identify and resolve transaction issues quickly.
 
-<Frame caption="Payment/refund success rates, failure reasons, and payment breakdown">
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c266504fe6db71cd0641f4b26b527ec5" alt="Payment and refund success rates, failure reasons, and payment breakdown" data-og-width="2878" width="2878" data-og-height="1514" height="1514" data-path="images/analytics/success-rate.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f3f834e7ef8a44c1ed319c1451dc11cf 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=073f1cbc78ff696da7225dcd00806303 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b4e79ad7f5013431c365782ea4825e1f 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e261e0b34601958b877365be9d19987a 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=fc2c6d93b1a7a87d7d028d55e17f1f8c 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e7728c47881384aec4ae5ca83896bc92 2500w" />
+<Frame>
+  <img alt="Payment and refund success rates, failure reasons, and payment breakdown" />
 </Frame>
 
 * **Payment Success Rate:** Track the percentage of successful payment attempts.
@@ -20972,7 +22198,7 @@ Available reports include:
 * **Account Summary Report**: Complete account overview and summary
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b2f16ff3401205461e70bb672c2e0dd1" alt="Reports 2.0 dashboard showing various report types" data-og-width="1481" width="1481" data-og-height="783" height="783" data-path="images/analytics/reports.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=65e53ee9f7e464ba4296594cafbbbc23 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=3f023812276906ef4b61e0ba2e52789f 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=35eec5370bd7a2bc080a814c63a56077 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d0663e86dbd90c064df91d4b8ea792de 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=1c7707cd6f5f9152bce3ef4e2a7b4941 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=668935b4b6a7166c985987455c7f066f 2500w" />
+  <img alt="Reports 2.0 dashboard showing various report types" />
 </Frame>
 
 ## Enhanced Payout Reporting
@@ -20980,7 +22206,7 @@ Available reports include:
 We've added detailed payout reports that provide clear visibility into fees and transaction details for each payout you receive from Dodo Payments. Access these enhanced reports in **Business > Payouts**.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e387ce347733bec1d1b57acdfbd1a6f2" alt="Payout Report dashboard showing detailed payout information" data-og-width="1058" width="1058" data-og-height="887" height="887" data-path="images/analytics/payout.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=851c36ae8dea33bac1fd2a28a277023b 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=76147da0d45b73f0b1c4a95ce603111a 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c130960bfcb92db470250ba11aa30311 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=6ee89bcdd13626568dc336eff7030992 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b048480e9da98d644f1f6c691e74dda5 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=59dc534307e199d8303dc07866d86cee 2500w" />
+  <img alt="Payout Report dashboard showing detailed payout information" />
 </Frame>
 
 ## Downloading & Exporting Reports
@@ -21019,7 +22245,7 @@ You can export detailed reports directly from the dashboard:
 
 ## Next Steps & Related Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Account Summary & Payout Wallet" icon="wallet" href="/features/account-summary-payout-wallet">
     Understand your earnings, deductions, and payout cycles.
   </Card>
@@ -21072,7 +22298,7 @@ Dodo Payments serves as your **Merchant of Record (MoR)**, managing critical asp
 
 ## Use Cases
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Subscriptions" icon="repeat">
     * Premium content or feature access
     * Recurring billing with flexible options, Free trials, Proration, or Upgrades and downgrades
@@ -21102,7 +22328,7 @@ Dodo Payments serves as your **Merchant of Record (MoR)**, managing critical asp
 
 You can integrate Dodo Payments into your app using our hosted checkout or in-app browser solution.
 
-```mermaid  theme={null}
+```mermaid theme={null}
 flowchart LR
   A[Mobile App] -->|Create Payment Link| B(Dodo API)
   B -->|Checkout URL| A
@@ -21194,7 +22420,7 @@ Source: https://docs.dodopayments.com/features/atlas-demo-website
 Explore Atlas, a fully functional AI art generation demo application showcasing usage-based billing, subscriptions, and one-time payments with Dodo Payments checkout integration.
 
 <Frame>
-  <img alt="Atlas Demo Product - AI art generation platform with integrated billing" src="https://mintcdn.com/dodopayments/kx9B5HGzBgLxFWey/images/atlas/atlas-demo-product.png?fit=max&auto=format&n=kx9B5HGzBgLxFWey&q=85&s=df07b04779a208c9e7a6a81e19c97f58" data-og-width="2880" width="2880" data-og-height="1556" height="1556" data-path="images/atlas/atlas-demo-product.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/kx9B5HGzBgLxFWey/images/atlas/atlas-demo-product.png?w=280&fit=max&auto=format&n=kx9B5HGzBgLxFWey&q=85&s=edaac89285c7288df134f1396e04ffa3 280w, https://mintcdn.com/dodopayments/kx9B5HGzBgLxFWey/images/atlas/atlas-demo-product.png?w=560&fit=max&auto=format&n=kx9B5HGzBgLxFWey&q=85&s=b012a5856e7188a666825bd454477f21 560w, https://mintcdn.com/dodopayments/kx9B5HGzBgLxFWey/images/atlas/atlas-demo-product.png?w=840&fit=max&auto=format&n=kx9B5HGzBgLxFWey&q=85&s=4c56f78b58e753c25f8d2a292705dcc5 840w, https://mintcdn.com/dodopayments/kx9B5HGzBgLxFWey/images/atlas/atlas-demo-product.png?w=1100&fit=max&auto=format&n=kx9B5HGzBgLxFWey&q=85&s=c641bab0aeee2850eec2cfdc1154e31e 1100w, https://mintcdn.com/dodopayments/kx9B5HGzBgLxFWey/images/atlas/atlas-demo-product.png?w=1650&fit=max&auto=format&n=kx9B5HGzBgLxFWey&q=85&s=33d3ae01e0951a9be933de24ddea2743 1650w, https://mintcdn.com/dodopayments/kx9B5HGzBgLxFWey/images/atlas/atlas-demo-product.png?w=2500&fit=max&auto=format&n=kx9B5HGzBgLxFWey&q=85&s=c122a05941721d87eb47ed1730867037 2500w" />
+  <img alt="Atlas Demo Product - AI art generation platform with integrated billing" />
 </Frame>
 
 Atlas is a fully functional demo application by Dodo Payments that showcases an AI art generation platform. It demonstrates all three billing models—**usage-based billing**, **one-time payments**, and **subscriptions**—with integrated checkout flows.
@@ -21333,7 +22559,7 @@ The Atlas Studio dashboard demonstrates how to implement billing-aware features 
 
 Atlas is built using the [Dodo Payments TypeScript SDK](/developer-resources/sdks/typescript), demonstrating how to integrate billing flows with just a few lines of code.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Integration Guide" icon="book" href="/developer-resources/integration-guide">
     Learn how to integrate Dodo Payments checkout flows into your application.
   </Card>
@@ -21380,214 +22606,12 @@ However, in specified cases like imports and other notified supplies, the liabil
 * The invoice will clearly indicate when a reverse charge applies, as per regulatory requirements.
 
 
-# Bypassing App Store & Play Store Fees using Dodo Payments
-Source: https://docs.dodopayments.com/features/bypassing-app-store-fees
-
-Learn how to legally bypass Apple and Google's 30% app store fees using Merchant of Record solutions and compliant payment strategies
-
-## The Platform Tollbooth Problem
-
-For over a decade, Apple and Google have operated their app stores not just as marketplaces, but as powerful toll booths. Any developer or startup offering digital goods within an app was forced to route payments through their respective billing systems: Apple's In-App Purchase (IAP) and Google's Play Billing-while forfeiting up to 30% of revenue.
-
-If that sounds like a steep cut, it's because it absolutely is.
-
-This "store tax" drew widespread criticism, particularly from developers from large apps like Spotify, Epic Games, and Netflix, who found the commissions not only excessive but anti-competitive. Apps couldn't even inform users about cheaper options outside the app. These policies-especially Apple's "anti-steering" rules-made app stores de facto monopolies for digital distribution.
-
-<Warning>
-  The 30% app store commission represents a significant revenue drain for digital businesses, especially for subscription-based services and SaaS applications.
-</Warning>
-
-## The Epic Games Catalyst
-
-Epic Games' CEO, Tim Sweeney, initiated Project Liberty as a strategic legal campaign to challenge the monopolistic practices of Apple and Google's app stores, particularly their 30% commission fees on in-app purchases. The project aimed to disrupt these platforms' control over app distribution and payments, advocating for a more open environment for developers.
-
-Tim Sweeney knew Apple would contest this and laid a bait. Epic updated Fortnite with a hidden direct-pay option, bypassing Apple's IAP. Apple fell for the bait, swiftly banned Fortnite, and Epic sued.
-
-The Epic Games v. Apple legal battle cracked open the conversation globally.
-
-## The Epic v. Apple Verdict
-
-In 2021, the U.S. District Judge ruled in a landmark decision:
-
-* **Apple did not violate antitrust laws outright**, meaning it could continue to control app distribution on iOS
-* **However, Apple's anti-steering policies were deemed anti-competitive**. The court issued a permanent injunction-Apple must allow developers to direct users to external payment methods
-
-After delays and appeals, Apple finally updated its App Store guidelines in May 2025 to allow external purchase links in U.S. apps.
-
-<Check>
-  This U.S. ruling spurred similar regulatory pressure and legal action across South Korea, Japan, the EU, and other regions. Combined with the EU's Digital Markets Act (DMA)-the tide turned decisively in favor of developers.
-</Check>
-
-## Global Overview: Where Developers Can Legally Bypass Fees
-
-| Region          | Apple Policy (2025)                   | Google Policy (2025)            |
-| --------------- | ------------------------------------- | ------------------------------- |
-| **USA**         | External links allowed (no Apple fee) | UCB allowed (reduced fee)       |
-| **EU (EEA)**    | Alt payments/links allowed (10–17%)   | UCB allowed for non-games       |
-| **South Korea** | Apple-approved PSPs (26% fee)         | UCB mandated (26% fee)          |
-| **Netherlands** | Dating apps only                      | UCB allowed                     |
-| **Japan**       | Reader apps can link out              | UCB allowed                     |
-| **India**       | No change                             | UCB allowed (4% fee reduction)  |
-| **Other**       | No change                             | UCB allowed in select countries |
-| **China**       | No external billing allowed           | Google Play not relevant        |
-
-<Info>
-  UCB stands for User Choice Billing, Google's alternative billing system that allows developers to use third-party payment processors.
-</Info>
-
-## Pre-2025 Loopholes: How Apps Circumvented App Store Rules
-
-Before regulations loosened their grip, some apps found "creative" ways to get around the 30% cut. These hacks were rarely compliant but undeniably clever.
-
-### Reader App Loophole
-
-One common tactic was the "reader app loophole," where apps like Kindle or Netflix claimed they were merely displaying previously purchased content. Apple couldn't fault apps for letting users access pre-purchased content. So as long as the app didn't explicitly link to external payment or prompt an in-app purchase, it was allowed to operate.
-
-### Hidden Payment Redirections
-
-Others experimented with code obfuscation, embedding hidden payment redirections. A few even used email notifications post-download to nudge users to pay outside the app.
-
-<Note>
-  Spotify was one such company that implemented this strategy. If you're in India and use Spotify, you've probably noticed that you can't buy the Premium plan inside the app. You have to pay on the web. This is why.
-</Note>
-
-All of this was risky, brittle, and usually led to takedowns once discovered. But it underscored one thing: developers were desperate to reclaim control over their margins and user data.
-
-## The Payment Gateway Trap: What Developers Often Miss
-
-At first glance, payment gateways (PGs) like Stripe or Razorpay seem like the obvious solution. But for in-app purchases, it's not that simple.
-
-<Warning>
-  If you're on iOS outside of allowed regions (like India or China), plugging in a PG directly into the app violates Apple's policies, risking an app takedown.
-</Warning>
-
-Even where it is legal, PGs come with limitations: they don't solve for tax compliance across geographies, invoicing, refund management, or regulatory filings.
-
-That's where Merchant-of-Record (MoR) platforms like Dodo Payments come in. We handle the full stack: payments, taxes, documentation, customer support, and legal accountability.
-
-It's not just about collecting money. It's about doing it cleanly, globally, and without risking your App Store listing.
-
-## Two Legal Workarounds for Developers
-
-### 1. App-to-Web Redirect (Link Out Flow)
-
-**What it is:** The app links users to a web-based checkout (hosted by Dodo Payments or the developer). Payment is completed outside the app, then access is granted in-app.
-
-**Legal Status:**
-
-* **iOS:** Legal in US, EU, South Korea, Netherlands (only dating apps), Japan (only reader apps)
-* **Android:** Legal in all UCB-supported markets
-
-**Advantages:**
-
-* Simple to implement
-* Fully compliant
-* No app-side PCI burden
-
-**Drawbacks:**
-
-* Slight friction - user leaves app to pay
-
-### 2. In-App SDK Integration (Third-Party SDK)
-
-**What it is:** Embed a payment UI - such as <a href="/developer-resources/react-native-integration">Dodo's React Native SDK</a> - directly in your app to enable seamless checkout without requiring users to leave the app.
-
-**Legal Status:**
-
-* **iOS:** Legal only in EU (under DMA terms); elsewhere it's still a violation
-* **Android:** Legal in UCB markets, if proper UX and reporting are followed
-
-**Advantages:**
-
-* Smooth UX
-* User stays in app
-* Can match IAP experience
-
-**Drawbacks:**
-
-* Integration complexity
-* Compliance risk outside allowed regions
-
-## Developer Strategy: Combine Legal Compliance with Revenue Efficiency
-
-An effective global rollout strategy could look like this:
-
-<Steps>
-  <Step title="U.S. Users">
-    Use App-to-Web (no Apple cut)
-  </Step>
-
-  <Step title="EU Users">
-    Use In-App SDK or App-to-Web (10–17% Apple cut)
-  </Step>
-
-  <Step title="Android Users in UCB Markets">
-    Use In-App SDK with Google-compliant UX
-  </Step>
-
-  <Step title="Other iOS Markets">
-    Use Apple IAP (or omit in-app purchases)
-  </Step>
-
-  <Step title="Other Android Markets">
-    Use Google Play billing or distribute via alt app stores
-  </Step>
-</Steps>
-
-## The Biggest Opportunity
-
-Among all the regulatory changes, the U.S. App Store presents the single largest opportunity for developers. With the 2025 guideline update following the Epic v. Apple ruling, developers can now legally include external links in their iOS apps that direct users to a web-based checkout.
-
-This means: **no mandatory Apple IAP, no 30% fee, and full control over customer relationships and revenue.**
-
-Given that the U.S. is the largest app revenue market globally, this change alone can significantly improve margins for any digital product business from subscriptions and SaaS tools to media and learning apps. For many, it's a 30% revenue unlock in their most lucrative geography.
-
-<Tip>
-  The U.S. market represents the largest opportunity for revenue recovery, with developers able to bypass the full 30% Apple commission through compliant external payment links.
-</Tip>
-
-## How Dodo Payments Enables This
-
-Dodo Payments acts as a Merchant of Record, handling:
-
-* **Global tax compliance** (VAT/GST)
-* **Payment processing** (cards, UPI, wallets)
-* **Invoicing, refunds, fraud prevention**
-* **SDK & hosted checkout integration**
-
-This simplifies compliance and operational load while offering fee-saving alternatives that are 100% legal in supported regions.
-
-<CardGroup cols={2}>
-  <Card title="Get Started" icon="rocket" href="/quickstart">
-    Begin your integration with Dodo Payments
-  </Card>
-
-  <Card title="Mobile Integration" icon="mobile" href="/developer-resources/mobile-integration">
-    Learn how to integrate payments in your mobile app
-  </Card>
-</CardGroup>
-
-## Conclusion: A Developer-Friendly Future Is Here
-
-For years, the 30% store tax was a take-it-or-leave-it ultimatum. Thanks to landmark cases like Epic v. Apple, regulatory pushback, and public pressure, that model is no longer universally enforceable.
-
-In 2025, developers finally have choices.
-
-By combining compliant workarounds like App-to-Web flows or SDK integrations with services like Merchant-of-Record platforms like Dodo Payments, it's now practically and legally feasible to retain more revenue and control.
-
-The app stores haven't opened the gates willingly but the gates are opening. And for developers, it's time to walk through.
-
-<Check>
-  The future of app monetization is here-one where developers can legally bypass excessive platform fees while maintaining compliance and user experience.
-</Check>
-
-
 # Customer Credits
 Source: https://docs.dodopayments.com/features/customer-credit
 
 Learn how to manage customer credit balances, issue service credits, and handle billing adjustments seamlessly with Dodo Payments.
 
-<CardGroup cols={1}>
+<CardGroup>
   <Card title="API Reference - Customer Credits" icon="code" href="/api-reference/customers/get-customer-wallets">
     Access the complete API documentation for managing customer credits and test credit operations interactively.
   </Card>
@@ -21706,22 +22730,22 @@ Increase customer account balances by adding credits for various business scenar
   <Step title="Configure Credit Details">
     Set up the credit transaction with the following information:
 
-    <ParamField path="Transaction Type" type="string" required>
+    <ParamField type="string">
       Select **Credit** to add funds to the customer's account balance.
     </ParamField>
 
-    <ParamField path="Amount" type="number" required>
+    <ParamField type="number">
       Enter the credit amount to add to the customer's account.
     </ParamField>
 
-    <ParamField path="Currency" type="string" required>
+    <ParamField type="string">
       Choose the currency for the credit transaction:
 
       * **USD** - US Dollars
       * **INR** - Indian Rupees
     </ParamField>
 
-    <ParamField path="Reason" type="string">
+    <ParamField type="string">
       Provide an optional explanation for the credit application, such as "Service compensation" or "Loyalty reward".
     </ParamField>
   </Step>
@@ -21747,19 +22771,19 @@ Remove funds from customer accounts when adjustments or corrections are needed:
   <Step title="Configure Debit Transaction">
     Set up the debit operation:
 
-    <ParamField path="Transaction Type" type="string" required>
+    <ParamField type="string">
       Select **Debit** to remove funds from the customer's account balance.
     </ParamField>
 
-    <ParamField path="Amount" type="number" required>
+    <ParamField type="number">
       Enter the amount to deduct from the customer's credit balance.
     </ParamField>
 
-    <ParamField path="Currency" type="string" required>
+    <ParamField type="string">
       Choose the appropriate currency (USD or INR).
     </ParamField>
 
-    <ParamField path="Reason" type="string">
+    <ParamField type="string">
       Provide an explanation for the debit, such as "Billing correction" or "Credit adjustment".
     </ParamField>
 
@@ -21897,7 +22921,7 @@ Empower customers to self-serve and manage their subscriptions, billing history,
   The Customer Portal is a secure, hosted area where your customers can manage subscriptions, view invoices and access license keys details—without contacting support.
 </Info>
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Create Portal Session (API)" icon="code" href="/api-reference/customers/create-customer-portal-session">
     Programmatically create secure, time‑bound portal sessions.
   </Card>
@@ -21910,7 +22934,7 @@ Empower customers to self-serve and manage their subscriptions, billing history,
 <br />
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/customer-portal-cover.png?fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=d70a1cde36bac53a3efac6e183645ba3" alt="Customer portal overview cover" data-og-width="2880" width="2880" data-og-height="1554" height="1554" data-path="images/customer-portal/customer-portal-cover.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/customer-portal-cover.png?w=280&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=6317886d59b2a70846b4b7a2574f70ee 280w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/customer-portal-cover.png?w=560&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=13a6ef1dc2626584cee607a00db2038f 560w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/customer-portal-cover.png?w=840&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=669eda3f958d71ecedac7cecfa833ba2 840w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/customer-portal-cover.png?w=1100&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=8d7df9a1dd59b2e28145857067642d3f 1100w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/customer-portal-cover.png?w=1650&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=dc507f4b29c4840e706be04420e67736 1650w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/customer-portal-cover.png?w=2500&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=cce03debf2d778fbd937c9468e85d218 2500w" />
+  <img alt="Customer portal overview cover" />
 </Frame>
 
 ## What Is the Customer Portal?
@@ -21941,20 +22965,20 @@ The static portal link format varies by environment:
 
 **Test Mode** (for testing and development):
 
-```bash  theme={null}
+```bash theme={null}
 https://test.customer.dodopayments.com/login/{business_id}
 ```
 
 **Live Mode** (for production with real transactions):
 
-```bash  theme={null}
+```bash theme={null}
 https://customer.dodopayments.com/login/{business_id}
 ```
 
 Replace `{business_id}` with your actual business identifier, then share the appropriate link with customers so they can enter their email and receive secure access to the portal.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/email-login.png?fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=bd8ee54177bc23e12e3657c87f487bae" alt="Email-based login screen" data-og-width="2880" width="2880" data-og-height="1550" height="1550" data-path="images/customer-portal/email-login.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/email-login.png?w=280&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=08134652124b9c6d3e5c12294cddd1de 280w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/email-login.png?w=560&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=f277c9004b44a998b4f1259efaf6f377 560w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/email-login.png?w=840&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=ae3018fa5197041098a756dd11345827 840w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/email-login.png?w=1100&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=580a40088c5a858cbe5917e6f7c185e2 1100w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/email-login.png?w=1650&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=1b22c534dae58a65bce8e92c1ef863e0 1650w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/email-login.png?w=2500&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=c8932ee3bd2acc2e05d4a666be084a78 2500w" />
+  <img alt="Email-based login screen" />
 </Frame>
 
 <Steps>
@@ -21984,7 +23008,7 @@ A personalized, one‑time magic link that sends customers directly into the por
 </Warning>
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/magic-link.png?fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=8e63714f40468bd6e42c811e194f2698" alt="Magic link direct access" data-og-width="2880" width="2880" data-og-height="1554" height="1554" data-path="images/customer-portal/magic-link.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/magic-link.png?w=280&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=52593758efc22b82186c822e07a935e5 280w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/magic-link.png?w=560&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=9a40fa973bf61d5e3047134b05d8a478 560w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/magic-link.png?w=840&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=3d4878cc3979c570a16215e207873195 840w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/magic-link.png?w=1100&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=6b59ebc7ac9b099a1627ac12bc23d6c3 1100w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/magic-link.png?w=1650&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=2ab57f6c9337e8a0df2e5e75dbd4f450 1650w, https://mintcdn.com/dodopayments/kIuKVjhdOQFWlzSx/images/customer-portal/magic-link.png?w=2500&fit=max&auto=format&n=kIuKVjhdOQFWlzSx&q=85&s=24f28d3482e762ed73cf9c4326523c39 2500w" />
+  <img alt="Magic link direct access" />
 </Frame>
 
 <Steps>
@@ -22002,7 +23026,7 @@ A personalized, one‑time magic link that sends customers directly into the por
 
 ## Portal Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Billing History" icon="file-invoice">
     View all transactions and invoice details. Download PDFs of every invoice from your account.
   </Card>
@@ -22029,7 +23053,7 @@ Customers can update their payment methods directly from the Customer Portal. Th
 From the subscription management page, customers can see their current payment method displayed alongside subscription details. The payment method section shows the card type, last four digits, and an "Edit" button to update it.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/subscription-payment-method.png?fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=77c3f82dbc9dd3f09f1792ae9af063e4" alt="Subscription details page showing current payment method with edit option" data-og-width="3104" width="3104" data-og-height="1962" height="1962" data-path="images/customer-portal/subscription-payment-method.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/subscription-payment-method.png?w=280&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=cdb37fe74e8e53b0cd6272bcd187c49f 280w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/subscription-payment-method.png?w=560&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=60b50ebb94758fa62500daef3f6d30f1 560w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/subscription-payment-method.png?w=840&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=6e565ebf7e1f6d5cf84bdbb287502b10 840w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/subscription-payment-method.png?w=1100&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=9e8745605b292e4a9e4930f873533057 1100w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/subscription-payment-method.png?w=1650&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=c7edb778efe654fc00cacda56e25b386 1650w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/subscription-payment-method.png?w=2500&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=94b33f5f782618b98246722ea3afeccd 2500w" />
+  <img alt="Subscription details page showing current payment method with edit option" />
 </Frame>
 
 ### Updating Payment Method
@@ -22037,12 +23061,12 @@ From the subscription management page, customers can see their current payment m
 When customers click "Edit" on the payment method section, they can:
 
 1. **Select an existing payment method**: Choose from previously saved payment methods
-   <Frame caption="Edit payment method modal showing saved payment methods">
-     <img src="https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/edit-payment-method.png?fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=2504d1bf11d6c2e8b38f5dc85803712f" data-og-width="3104" width="3104" data-og-height="1962" height="1962" data-path="images/customer-portal/edit-payment-method.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/edit-payment-method.png?w=280&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=c3add9f1910818c1ad3f31e6577038f3 280w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/edit-payment-method.png?w=560&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=36f5c49d630a25d64cf3877663a5bf8e 560w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/edit-payment-method.png?w=840&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=6920e8a0acf44acb58176634c707ad76 840w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/edit-payment-method.png?w=1100&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=7b31ac875032839bc235fc3332937f5e 1100w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/edit-payment-method.png?w=1650&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=689864c295cb71fc1dbb4691c772ad7d 1650w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/edit-payment-method.png?w=2500&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=51b8e87a492e046825cccb6a5abc2dd5 2500w" />
+   <Frame>
+     <img />
    </Frame>
 2. **Add a new payment method**: Enter new card details securely
-   <Frame caption="Payment method update form with card input fields">
-     <img src="https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/update-payment-method-form.png?fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=ca2e758f777a39b549d93d5d07cdfec4" data-og-width="3104" width="3104" data-og-height="1962" height="1962" data-path="images/customer-portal/update-payment-method-form.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/update-payment-method-form.png?w=280&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=3dd564a47fd7574941457d619990d72a 280w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/update-payment-method-form.png?w=560&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=140ca80ca756cbe875bb2e61b812e875 560w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/update-payment-method-form.png?w=840&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=0f158bfbcc3417069cf3b2aa9f48afa4 840w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/update-payment-method-form.png?w=1100&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=440db89859a4f99e0f6ab8f87b849b39 1100w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/update-payment-method-form.png?w=1650&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=8396ca4dde33928eef4bf1dde6ad48c4 1650w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/update-payment-method-form.png?w=2500&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=0a95728185027795e21f176710bd8710 2500w" />
+   <Frame>
+     <img />
    </Frame>
 
 ### Reactivating Subscriptions on Hold
@@ -22063,7 +23087,7 @@ When a subscription is placed on `on_hold` state due to a failed payment, custom
 </Info>
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/payment-successful.png?fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=58a0bd1d26811db51d65808960dcfe95" alt="Payment successful page confirming payment method update and subscription reactivation" data-og-width="3104" width="3104" data-og-height="1962" height="1962" data-path="images/customer-portal/payment-successful.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/payment-successful.png?w=280&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=8276257cb66420194c8dbb5752480f23 280w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/payment-successful.png?w=560&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=8528be6cb97b1f3e561473c678fc8533 560w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/payment-successful.png?w=840&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=2b9873f7580d2038fa17a31c24e1aee6 840w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/payment-successful.png?w=1100&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=c3d36d23a8db75b6358a46fc21e17523 1100w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/payment-successful.png?w=1650&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=30bb158355060bc5b3628e7b9a4d1a0f 1650w, https://mintcdn.com/dodopayments/mv9lDZsuGLKek7ql/images/customer-portal/payment-successful.png?w=2500&fit=max&auto=format&n=mv9lDZsuGLKek7ql&q=85&s=ea1740231fc08fa24cf4106452d9ee8b 2500w" />
+  <img alt="Payment successful page confirming payment method update and subscription reactivation" />
 </Frame>
 
 ### Payment Method Update Flow
@@ -22107,6 +23131,25 @@ Create a time‑bound Customer Portal session for a specific customer via API, t
   ```
 </CodeGroup>
 
+## Unified Customer Portal
+
+In addition to business-specific customer portals, Dodo Payments offers a **Unified Customer Portal** at [customer.dodopayments.com](https://customer.dodopayments.com) where customers can view and manage all their purchases and subscriptions across different businesses using Dodo Payments.
+
+<Frame>
+  <img alt="Unified Customer Portal" />
+</Frame>
+
+### Unified Portal Features
+
+* **Cross-business visibility**: View all purchases and subscriptions from any Dodo Payments merchant in one place
+* **Centralized management**: Manage subscriptions across different businesses from a single dashboard
+* **Unified billing history**: Access invoices and payment history from all purchases
+* **Single sign-on**: Log in once with email to access purchases from all Dodo Payments merchants
+
+<Tip>
+  The Unified Customer Portal complements business-specific portals. Customers can use either the branded merchant portal or the unified portal based on their preference.
+</Tip>
+
 ## Troubleshooting
 
 * **Link expired**: Generate and send a new dynamic link.
@@ -22120,7 +23163,7 @@ Source: https://docs.dodopayments.com/features/customer-wallet
 
 Build credit-based billing systems like OpenAI or Claude with customer wallets. Track balances, manage credits, and create sophisticated financial workflows.
 
-<CardGroup cols={3}>
+<CardGroup>
   <Card title="Get Customer Wallets" icon="code" href="/api-reference/customers/get-customer-wallets">
     Check customer wallet balances across currencies.
   </Card>
@@ -22149,7 +23192,7 @@ Think of customer wallets as digital piggy banks for your users. Every customer 
 </Info>
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/9oQrV7vsGpxeyDkL/images/customer/customer-wallet.png?fit=max&auto=format&n=9oQrV7vsGpxeyDkL&q=85&s=a4a7ff3c89f4074f37e19b8d99d49ef5" alt="Customer Wallets" data-og-width="2860" width="2860" data-og-height="1492" height="1492" data-path="images/customer/customer-wallet.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/9oQrV7vsGpxeyDkL/images/customer/customer-wallet.png?w=280&fit=max&auto=format&n=9oQrV7vsGpxeyDkL&q=85&s=5de571bd9128655c329924adc861cfcd 280w, https://mintcdn.com/dodopayments/9oQrV7vsGpxeyDkL/images/customer/customer-wallet.png?w=560&fit=max&auto=format&n=9oQrV7vsGpxeyDkL&q=85&s=343e5cf64b26f1a591dda80af564e017 560w, https://mintcdn.com/dodopayments/9oQrV7vsGpxeyDkL/images/customer/customer-wallet.png?w=840&fit=max&auto=format&n=9oQrV7vsGpxeyDkL&q=85&s=073bcc1abb395e4b7e890c1775d31edb 840w, https://mintcdn.com/dodopayments/9oQrV7vsGpxeyDkL/images/customer/customer-wallet.png?w=1100&fit=max&auto=format&n=9oQrV7vsGpxeyDkL&q=85&s=ae7ff7000a188fdf23a048c0305d48be 1100w, https://mintcdn.com/dodopayments/9oQrV7vsGpxeyDkL/images/customer/customer-wallet.png?w=1650&fit=max&auto=format&n=9oQrV7vsGpxeyDkL&q=85&s=e78170f205e6434c3e2e6a5af1c08213 1650w, https://mintcdn.com/dodopayments/9oQrV7vsGpxeyDkL/images/customer/customer-wallet.png?w=2500&fit=max&auto=format&n=9oQrV7vsGpxeyDkL&q=85&s=933cdc0694117d85433fd58ea6a53d93 2500w" />
+  <img alt="Customer Wallets" />
 </Frame>
 
 ## How It Works
@@ -22208,7 +23251,7 @@ See every credit and debit transaction for a customer. Great for debugging billi
 
 Build a system where customers buy credits and spend them on API calls:
 
-```javascript  theme={null}
+```javascript theme={null}
 // Give new customers welcome credits
 async function giveWelcomeCredits(customerId) {
   await client.customers.wallets.ledgerEntries.create(customerId, {
@@ -22246,7 +23289,7 @@ Let customers buy credits upfront and spend them over time:
   <Step title="Welcome New Customers">
     Give new customers some free credits to get started.
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     await client.customers.wallets.ledgerEntries.create(customerId, {
       amount: 5000, // $50 welcome bonus
       currency: 'USD',
@@ -22260,7 +23303,7 @@ Let customers buy credits upfront and spend them over time:
   <Step title="Handle Credit Purchases">
     When customers buy credits, add them to their wallet.
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     await client.customers.wallets.ledgerEntries.create(customerId, {
       amount: purchaseAmount, // Amount paid in cents
       currency: 'USD',
@@ -22274,7 +23317,7 @@ Let customers buy credits upfront and spend them over time:
   <Step title="Charge for Usage">
     Deduct credits when customers use your service.
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     await client.customers.wallets.ledgerEntries.create(customerId, {
       amount: usageCost,
       currency: 'USD', 
@@ -22288,7 +23331,7 @@ Let customers buy credits upfront and spend them over time:
   <Step title="Monitor Balances">
     Check if customers are running low on credits.
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     const wallets = await client.customers.wallets.list(customerId);
     const usdWallet = wallets.items.find(w => w.currency === 'USD');
     const balance = usdWallet.balance;
@@ -22309,7 +23352,7 @@ Handle customers in different countries:
   <Accordion title="US Customers">
     Give USD credits to US-based customers.
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     await client.customers.wallets.ledgerEntries.create(customerId, {
       amount: 20000, // $200 in cents
       currency: 'USD',
@@ -22323,9 +23366,9 @@ Handle customers in different countries:
   <Accordion title="Indian Customers">
     Give INR credits to Indian customers.
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     await client.customers.wallets.ledgerEntries.create(customerId, {
-      amount: 1500000, // ₹15,000 in paise
+      amount: 1500000, // Rs 15,000 in paise
       currency: 'INR',
       entry_type: 'credit',
       reason: 'INR credit purchase',
@@ -22341,7 +23384,7 @@ Handle customers in different countries:
 
 Use idempotency keys to make sure you don't accidentally charge customers twice for the same thing:
 
-```javascript  theme={null}
+```javascript theme={null}
 async function addCreditsSafely(customerId, amount, reason) {
   const idempotencyKey = `${reason}_${customerId}_${Date.now()}`;
   
@@ -22374,7 +23417,7 @@ async function addCreditsSafely(customerId, amount, reason) {
 
 Always verify customers have enough credits before processing expensive operations:
 
-```javascript  theme={null}
+```javascript theme={null}
 async function checkBalanceBeforeOperation(customerId, requiredAmount) {
   const wallets = await client.customers.wallets.list(customerId);
   const usdWallet = wallets.items.find(w => w.currency === 'USD');
@@ -22411,7 +23454,7 @@ Manage customer relationships, track purchase history, and provide self-service 
 
 The Customers feature in Dodo Payments provides a centralized hub for managing all your customer relationships. Track every customer interaction, view purchase history, manage subscriptions, access wallet credit ledgers, and enable self-service options - all from a single dashboard.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Customer Dashboard" icon="table-columns">
     View and manage all customers in one place with search and filtering capabilities.
   </Card>
@@ -22442,7 +23485,7 @@ The Customers feature in Dodo Payments provides a centralized hub for managing a
 </Steps>
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customers-list.png?fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=d110d27ad8c3fa8e623241b62d47601c" alt="Customers list page showing all customers with their details" data-og-width="1662" width="1662" data-og-height="782" height="782" data-path="images/customer/customers-list.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customers-list.png?w=280&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=6c22c35b5d87e891a6195ab2de072f7c 280w, https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customers-list.png?w=560&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=76733cd127b342b41dd1115972bb5dce 560w, https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customers-list.png?w=840&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=bce641f90fd3395301437d2fb84a14a8 840w, https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customers-list.png?w=1100&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=5a56e52168f094cd6705eb7806477910 1100w, https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customers-list.png?w=1650&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=e09594217790e616ec99623013cce348 1650w, https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customers-list.png?w=2500&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=589120ad297f6f5e4743db7062b489e5 2500w" />
+  <img alt="Customers list page showing all customers with their details" />
 </Frame>
 
 ## Customer Information
@@ -22474,7 +23517,7 @@ On the **Customers Page**, you can see a comprehensive overview of your entire c
 Click on any customer to view their detailed information page, which includes:
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customer-details.png?fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=4f1d97a2d31f5e64fb4a075dde6239ff" alt="Customer details page showing customer information and transaction history" data-og-width="1657" width="1657" data-og-height="931" height="931" data-path="images/customer/customer-details.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customer-details.png?w=280&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=705e3e4d7ddf73cd384b013575fdf7b7 280w, https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customer-details.png?w=560&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=74e7aaaedaab3055196ee0470245f2a8 560w, https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customer-details.png?w=840&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=fe27a6b0f185561d3cfdae3dea18d745 840w, https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customer-details.png?w=1100&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=4cd12f91aba6050db730ef016d9eef5a 1100w, https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customer-details.png?w=1650&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=a48e69b788d8ae53038b2001906cd082 1650w, https://mintcdn.com/dodopayments/IKECEhkZu9f1KFmK/images/customer/customer-details.png?w=2500&fit=max&auto=format&n=IKECEhkZu9f1KFmK&q=85&s=e8a47964842097d1679b146c6de145e9 2500w" />
+  <img alt="Customer details page showing customer information and transaction history" />
 </Frame>
 
 ### About Section
@@ -22566,7 +23609,7 @@ Dodo Payments provides a comprehensive REST API for programmatic customer manage
 
 ### Available API Endpoints
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Create Customer" icon="user-plus" href="/api-reference/customers/create-customer">
     Create a new customer in your Dodo Payments account with their details.
   </Card>
@@ -22606,7 +23649,7 @@ This feature supports both hosted file uploads and external download links, offe
 
 ## Key Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="File Upload" icon="upload">
     Upload and deliver digital files (PDF, ZIP, images, videos, etc.) directly to your customers.
   </Card>
@@ -22638,7 +23681,7 @@ This feature supports both hosted file uploads and external download links, offe
     * **External Download Link**: Paste a secure link hosted externally (e.g., Dropbox, Google Drive)
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=cef4c6587998b8b7ee00bfb314002571" alt="Digital product delivery configuration interface showing file upload and external link options" data-og-width="1920" width="1920" data-og-height="1080" height="1080" data-path="images/digital-product-delivery/1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=9d7e8424e5ac1a17955e949d87b57d12 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=f03ce39ea2bd6dac97eae3e52e6ac8e1 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=b4dc8e83004c799bf8020a14b883cc23 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=d53bb0617e0f7ce4b860281d56bd6753 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=e4c5131d3b8504c5e7c4a547daf64db9 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=1847ee99a10d2936cfcbfbc772d5f3b8 2500w" />
+      <img alt="Digital product delivery configuration interface showing file upload and external link options" />
     </Frame>
   </Step>
 
@@ -22658,7 +23701,7 @@ This feature supports both hosted file uploads and external download links, offe
 After a successful transaction, customers receive a purchase confirmation email containing download links for their digital products.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/2.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=54f5247f6d67fe5bb48736682995e23e" alt="Purchase confirmation email showing download links for digital products" data-og-width="1920" width="1920" data-og-height="1080" height="1080" data-path="images/digital-product-delivery/2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/2.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=1f371a4ddfeb72f5541981a10e190b14 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/2.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=8983987bdfc12a399432b27f9ab7bd1a 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/2.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=15e6bd4ac2e1975ef270c277ab0675b2 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/2.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=f98f76fab3e776c9140a0853dd29e33c 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/2.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=9d9f443c0b2c8be841a620e281c730a3 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/2.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=9ec90731f8c3e4389c9d3b1a9ebcf4d2 2500w" />
+  <img alt="Purchase confirmation email showing download links for digital products" />
 </Frame>
 
 ### Customer Portal Access
@@ -22670,7 +23713,7 @@ Customers can access their digital products through the Customer Portal:
 * Persistent access to purchased digital content
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/3.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=490c6755474c1f00a93f7adde7dabb63" alt="Customer portal interface showing available digital products for download" data-og-width="1920" width="1920" data-og-height="1080" height="1080" data-path="images/digital-product-delivery/3.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/3.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=6f7f328b4d7e3d598de647f33ff8816f 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/3.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=479ce69b7fd49d241b55713384b3be4b 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/3.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=abe3e3c29774c4b4a8dba8006e0d4df7 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/3.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=23a84d29538be3918477087aa9840e7f 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/3.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=ade2d7287d06faaa7cc607a90e06a723 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/3.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=decfdceb499772f9d16dbc46fdb95ed1 2500w" />
+  <img alt="Customer portal interface showing available digital products for download" />
 </Frame>
 
 <Check>
@@ -22691,12 +23734,12 @@ Source: https://docs.dodopayments.com/features/discount-codes
 Create promotional codes to drive conversions, run campaigns, and reward customers with fixed or percentage discounts across one‑time and subscription purchases.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/discount-codes/discount-code-cover.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=57f1a644801ddc5efc506b50541eaaba" alt="Discount codes overview cover" data-og-width="1200" width="1200" data-og-height="630" height="630" data-path="images/discount-codes/discount-code-cover.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/discount-codes/discount-code-cover.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=4d5c44eb8543a1d46dc53a7adedf50d8 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/discount-codes/discount-code-cover.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=8c0b0731745c40f5d8a996e5f03e70cd 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/discount-codes/discount-code-cover.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=d587e0289999b87aca605f8716c2536b 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/discount-codes/discount-code-cover.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=dd9163655f7aec8fb2922bb2d7d53daa 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/discount-codes/discount-code-cover.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=757ed030e06e972b3d547f5ad4b5f2da 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/discount-codes/discount-code-cover.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=81e4b9b5a2cc2719abdbf6a396ffdbd6 2500w" />
+  <img alt="Discount codes overview cover" />
 </Frame>
 
 Discount codes let you run targeted promotions and incentives. Create percentage or fixed-amount discounts, set limits and expirations, restrict to products, and apply them seamlessly in checkout.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Checkout Sessions" icon="cart-shopping" href="/developer-resources/checkout-session">
     Apply codes during hosted checkout with `discount_code` and UI controls.
   </Card>
@@ -22814,7 +23857,7 @@ Create discount codes in your Dodo Payments dashboard, then apply them in hosted
 
 Pre‑apply a discount and show the code input UI.
 
-```typescript  theme={null}
+```typescript theme={null}
 const session = await client.checkoutSessions.create({
   product_cart: [
     { product_id: 'prod_abc', quantity: 1 }
@@ -22829,7 +23872,7 @@ const session = await client.checkoutSessions.create({
 
 Let customers enter a code at checkout without passing one upfront.
 
-```typescript  theme={null}
+```typescript theme={null}
 const session = await client.checkoutSessions.create({
   product_cart: [
     { product_id: 'prod_abc', quantity: 1 }
@@ -22854,66 +23897,1167 @@ const session = await client.checkoutSessions.create({
 </Info>
 
 
-# Feature Request and Roadmap
-Source: https://docs.dodopayments.com/features/feature-request
+# Hybrid Billing Models
+Source: https://docs.dodopayments.com/features/hybrid-billing
 
-We value feedback from our merchants and aim to continuously improve Dodo Payments to meet your business needs. Submit feature requests, vote on existing ideas, and track our public roadmap through Featurebase.
+Combine multiple billing modes to create sophisticated pricing strategies: subscription + usage, seats + add-ons, base + overage, and more.
 
-We use [Featurebase](https://dodopayments.featurebase.app/) to manage feature requests and maintain our public roadmap. This platform allows you to submit ideas, vote on features you'd like to see, and track the development status of upcoming improvements.
+<Info>
+  Hybrid billing combines two or more billing models into a single pricing strategy. This lets you capture value from different dimensions—recurring fees, usage, seats, and features—while giving customers flexibility and predictability.
+</Info>
 
-<Card title="Visit Our Public Roadmap" icon="external-link" href="https://dodopayments.featurebase.app/">
-  View all feature requests, vote on ideas, and track our product roadmap on Featurebase.
-</Card>
+<CardGroup>
+  <Card title="Usage-Based Billing" icon="chart-line" href="/features/usage-based-billing/introduction">
+    Foundation for consumption-based pricing.
+  </Card>
 
-## **Request a New Feature**
+  <Card title="Subscriptions" icon="repeat" href="/features/subscription">
+    Foundation for recurring billing.
+  </Card>
 
-If you have an idea for a feature that would enhance your experience with Dodo Payments, you can submit a feature request directly on Featurebase.
+  <Card title="Add-ons" icon="puzzle" href="/features/addons">
+    Extend subscriptions with optional upgrades.
+  </Card>
 
-<img src="https://mintcdn.com/dodopayments/Mb_I33HpIv4r5G-9/images/feature-request/Feature.png?fit=max&auto=format&n=Mb_I33HpIv4r5G-9&q=85&s=a9aa693881a2c59368f05a07b233583b" alt="Feature Request" data-og-width="3016" width="3016" data-og-height="1874" height="1874" data-path="images/feature-request/Feature.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/Mb_I33HpIv4r5G-9/images/feature-request/Feature.png?w=280&fit=max&auto=format&n=Mb_I33HpIv4r5G-9&q=85&s=51ff2626741f9b05629a5217753eba33 280w, https://mintcdn.com/dodopayments/Mb_I33HpIv4r5G-9/images/feature-request/Feature.png?w=560&fit=max&auto=format&n=Mb_I33HpIv4r5G-9&q=85&s=58093ef9e9da5f25192632af757aaa71 560w, https://mintcdn.com/dodopayments/Mb_I33HpIv4r5G-9/images/feature-request/Feature.png?w=840&fit=max&auto=format&n=Mb_I33HpIv4r5G-9&q=85&s=50682258b5bd6f01a2d6ce34b1bafec6 840w, https://mintcdn.com/dodopayments/Mb_I33HpIv4r5G-9/images/feature-request/Feature.png?w=1100&fit=max&auto=format&n=Mb_I33HpIv4r5G-9&q=85&s=b0e2490d22434684080372587cb4c020 1100w, https://mintcdn.com/dodopayments/Mb_I33HpIv4r5G-9/images/feature-request/Feature.png?w=1650&fit=max&auto=format&n=Mb_I33HpIv4r5G-9&q=85&s=29b1744cac50cc6245ea346483f588a3 1650w, https://mintcdn.com/dodopayments/Mb_I33HpIv4r5G-9/images/feature-request/Feature.png?w=2500&fit=max&auto=format&n=Mb_I33HpIv4r5G-9&q=85&s=b4c2e4acf541344308c350058f9cd8de 2500w" />
+  <Card title="Seat-Based Billing" icon="users" href="/features/seat-based-billing">
+    Per-user pricing models.
+  </Card>
+</CardGroup>
 
-* **How to Request a Feature**:
-  1. Visit our [Featurebase portal](https://dodopayments.featurebase.app/).
-  2. Click on **"Post an idea"** or **"Submit a feature request"**.
-  3. Provide the following details:
-     * **Feature Name**: A concise title for your feature idea.
-     * **Feature Description**: A brief explanation of the feature, including why it's important and how it will help your business.
-  4. Submit the request.
-* **Tips for Effective Requests**:
-  * Be clear and concise.
-  * Highlight the business impact of the feature.
-  * Provide examples, if applicable.
-  * Include use cases that demonstrate the value.
+***
 
-## **Vote for Existing Feature Requests**
+## What is Hybrid Billing?
 
-We prioritize features that benefit the most merchants. You can browse existing feature requests on Featurebase and vote for those you find valuable.
+Hybrid billing combines multiple pricing dimensions into a single product offering. Instead of choosing between flat-rate subscriptions OR usage-based pricing, you use both together.
 
-* **How to Vote**:
-  1. Visit our [Featurebase portal](https://dodopayments.featurebase.app/).
-  2. Browse through the list of submitted requests.
-  3. Click the **upvote** button (👍) next to the feature(s) you support.
-* **Benefits of Voting**:
-  * Influence the development priority for features you care about.
-  * Help our team identify features that have widespread demand.
-  * Get notified when features you've voted for are released.
+### Why Use Hybrid Billing?
 
-## **View the Product Roadmap**
+| Business Goal                       | Hybrid Solution                     |
+| ----------------------------------- | ----------------------------------- |
+| Predictable revenue + growth upside | Base subscription + usage overage   |
+| Team pricing that scales            | Per-seat + feature add-ons          |
+| Land customers, expand later        | Low base fee + consumption charges  |
+| Enterprise flexibility              | Committed spend + on-demand charges |
+| Fair pricing for variable usage     | Included allowance + pay-per-use    |
 
-Stay informed about the status of feature development through our public roadmap on Featurebase.
+### Common Hybrid Patterns
 
-* **Roadmap Features**:
-  * **Planned**: Features that have been approved and are scheduled for development.
-  * **In Progress**: Features currently being worked on by our team.
-  * **Completed**: Features that have been successfully implemented and are live.
-* **How to Access**:
-  * Visit our [Featurebase portal](https://dodopayments.featurebase.app/).
-  * Navigate to the **Roadmap** section to view features by status.
-  * Browse the feature categories and their current statuses.
-  * Filter by status, category, or search for specific features.
+| Model                                   | Description                                    | Example                                         | Native Support |
+| --------------------------------------- | ---------------------------------------------- | ----------------------------------------------- | -------------- |
+| **1. Subscription + Usage**             | Base fee + consumption charges                 | \$49/mo + \$0.01/API call after 10K free        | ✅ Full         |
+| **2. Subscription + Seats**             | Platform fee + per-user charges                | \$99/mo + \$15/seat                             | ✅ Full         |
+| **3. Subscription + Feature Add-ons**   | Core plan + optional upgrades                  | \$29/mo + \$19/mo analytics + \$9/mo API access | ✅ Full         |
+| **4. Seats + Usage**                    | Per-user fee + consumption overage             | \$10/user/mo + \$0.05/GB after 5GB/user         | ⚠️ Workaround  |
+| **5. Subscription + Seats + Usage**     | Platform + users + consumption (triple hybrid) | \$199/mo + \$20/seat + usage overage            | ⚠️ Workaround  |
+| **6. Tiered Base + Usage Overage**      | Different tiers with different allowances      | Starter (5K calls) vs Pro (50K calls) + overage | ✅ Full         |
+| **7. Subscription + On-Demand Charges** | Recurring fee + variable manual charges        | \$99/mo retainer + hourly billing for work      | ✅ Full         |
+
+***
+
+## Hybrid Model 1: Subscription + Usage
+
+The most common hybrid model. Customers pay a base subscription fee plus charges for consumption that exceeds included allowances.
+
+### How It Works
+
+**Pro Plan: \$49/month**
+
+* **Included**: 10,000 API calls/month
+* **Overage**: \$0.005 per call after 10,000
+
+**Example calculation** (customer uses 25,000 calls this month):
+
+* Base subscription: \$49.00
+* Overage: (25,000 - 10,000) × $0.005 = $75.00
+* **Total: \$124.00**
+
+### Use Cases
+
+* **API platforms**: Base access + per-request charges
+* **AI/ML services**: Subscription + token/generation usage
+* **Storage services**: Base plan + per-GB overage
+* **Communication platforms**: Base + per-message/minute charges
+
+### Implementation
+
+<Steps>
+  <Step title="Create Usage Meter">
+    Set up a meter to track the billable usage dimension.
+
+    ```bash theme={null}
+    Dashboard: Meters → Create Meter
+    Event Name: "api.call"
+    Aggregation: Count
+    This tracks API calls per customer
+    ```
+  </Step>
+
+  <Step title="Create Subscription Product with Usage Pricing">
+    Create a subscription product and attach the usage meter with pricing.
+
+    ```bash theme={null}
+    Dashboard: Create Product → Subscription
+    Name: "Pro Plan"
+    Base Price: $49/month
+
+    Then attach usage pricing:
+    - Meter: api.call
+    - Price per unit: $0.005
+    - Free threshold: 10,000 (included in subscription)
+    ```
+
+    <Info>
+      The usage meter is attached directly to the subscription product. Usage charges are calculated and added to the subscription invoice automatically.
+    </Info>
+  </Step>
+
+  <Step title="Create Checkout Session">
+    Create a checkout session with your subscription product.
+
+    ```typescript theme={null}
+    const session = await client.checkoutSessions.create({
+      product_cart: [
+        { product_id: 'prod_pro_plan', quantity: 1 }
+      ],
+      customer: { email: 'customer@example.com' },
+      return_url: 'https://yourapp.com/success'
+    });
+    ```
+  </Step>
+
+  <Step title="Send Usage Events">
+    Track usage throughout the billing period.
+
+    ```typescript theme={null}
+    await fetch('https://api.dodopayments.com/events/ingest', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        events: [{
+          event_id: `call_${Date.now()}`,
+          customer_id: 'cus_123',
+          event_name: 'api.call',
+          timestamp: new Date().toISOString(),
+          metadata: { endpoint: '/v1/generate' }
+        }]
+      })
+    });
+    ```
+  </Step>
+</Steps>
+
+### Pricing Variations
+
+<Tabs>
+  <Tab title="Included Allowance">
+    Free threshold covers usage included in base subscription.
+
+    **Pro Plan: \$49/month**
+
+    * Includes: 10,000 API calls
+    * Overage: \$0.005/call after 10,000
+    * Customer uses 8,000 → Pays \$49 (no overage)
+  </Tab>
+
+  <Tab title="Zero Base + Pure Usage">
+    No base fee, every unit is billable from the first use.
+
+    **Pay-As-You-Go: \$0/month base**
+
+    * Includes: 0 API calls
+    * Usage: \$0.01/call from first call
+    * Customer uses 5,000 → Pays \$50
+  </Tab>
+
+  <Tab title="Tiered Allowances">
+    Different tiers include different allowances.
+
+    * **Starter**: \$19/month (1,000 calls included)
+    * **Pro**: \$49/month (10,000 calls included)
+    * **Enterprise**: \$199/month (100,000 calls included)
+    * All tiers: \$0.005/call overage
+  </Tab>
+</Tabs>
+
+***
+
+## Hybrid Model 2: Subscription + Seats
+
+Platform fee plus per-user charges. Ideal for team collaboration tools and B2B SaaS.
+
+### How It Works
+
+**Team Plan: $99/month + $15/seat**
+
+* **Base platform fee**: \$99/month (includes 3 seats)
+* **Additional seats**: \$15/seat/month
+
+**Example calculation** (team of 12 users):
+
+* Platform fee: \$99.00
+* Extra seats: (12 - 3) × $15 = $135.00
+* **Total: \$234.00/month**
+
+### Use Cases
+
+* **Collaboration tools**: Workspace fee + per-member
+* **CRM systems**: Platform license + per-sales-rep
+* **Project management**: Team plan + per-contributor
+* **Developer tools**: Organization fee + per-developer
+
+### Implementation
+
+<Steps>
+  <Step title="Create Seat Add-on">
+    Create an add-on for additional seats.
+
+    ```bash theme={null}
+    Dashboard: Products → Add-ons → Create Add-on
+    Name: "Additional Seat"
+    Price: $15/month
+    Description: "Add another team member"
+    ```
+  </Step>
+
+  <Step title="Create Base Subscription">
+    Create the subscription product with platform fee and attach the add-on.
+
+    ```bash theme={null}
+    Dashboard: Create Product → Subscription
+    Name: "Team Plan"
+    Price: $99/month
+    Description: "Includes 3 team members"
+
+    Then in Add-ons section:
+    - Attach: "Additional Seat" add-on
+    ```
+  </Step>
+
+  <Step title="Create Checkout with Seats">
+    Specify seat quantity during checkout.
+
+    ```typescript theme={null}
+    const session = await client.checkoutSessions.create({
+      product_cart: [{
+        product_id: 'prod_team_plan',
+        quantity: 1,
+        addons: [{
+          addon_id: 'addon_seat',
+          quantity: 9  // 9 extra seats (12 total with 3 included)
+        }]
+      }],
+      customer: { email: 'admin@company.com' },
+      return_url: 'https://yourapp.com/success'
+    });
+    ```
+  </Step>
+
+  <Step title="Adjust Seats as Needed">
+    Add or remove seats on existing subscriptions.
+
+    ```typescript theme={null}
+    // Add 5 more seats
+    await client.subscriptions.changePlan('sub_123', {
+      product_id: 'prod_team_plan',
+      quantity: 1,
+      proration_billing_mode: 'prorated_immediately',
+      addons: [{
+        addon_id: 'addon_seat',
+        quantity: 14  // New total: 14 extra seats
+      }]
+    });
+    ```
+  </Step>
+</Steps>
+
+### Pricing Variations
+
+<Tabs>
+  <Tab title="Included Seats">
+    Base plan includes some seats, charge for extras.
+
+    **Team Plan: \$99/month**
+
+    * Includes: 5 seats
+    * Extra seats: \$15/seat/month
+    * 20 users = \$99 + (15 × \$15) = \$324/month
+  </Tab>
+
+  <Tab title="Pure Per-Seat">
+    No platform fee, only per-user charges.
+
+    **Per User: \$25/user/month**
+
+    * No platform fee
+    * 5 users = \$125/month
+    * 50 users = \$1,250/month
+
+    Implementation: Set base subscription price to \$0, use seat add-on only.
+  </Tab>
+
+  <Tab title="Tiered Per-Seat">
+    Per-seat price decreases at higher tiers.
+
+    * **Starter**: \$20/seat (1-10 seats)
+    * **Growth**: \$15/seat (11-50 seats)
+    * **Enterprise**: \$10/seat (51+ seats)
+
+    Implementation: Create separate subscription products for each tier with different add-on prices.
+  </Tab>
+</Tabs>
+
+***
+
+## Hybrid Model 3: Subscription + Feature Add-ons
+
+Core subscription with optional feature upgrades customers can add.
+
+### How It Works
+
+**Core Plan: \$29/month**
+
+**Optional Add-ons:**
+
+* Advanced Analytics: +\$19/month
+* API Access: +\$9/month
+* Priority Support: +\$29/month
+* White-label: +\$49/month
+
+**Example calculation** (customer chooses Core + Analytics + API Access):
+
+* Core plan: \$29.00
+* Analytics: \$19.00
+* API Access: \$9.00
+* **Total: \$57.00/month**
+
+### Use Cases
+
+* **SaaS platforms**: Core features + premium modules
+* **Marketing tools**: Base tool + integrations
+* **Analytics products**: Dashboard + advanced reports
+* **Security software**: Basic protection + advanced features
+
+### Implementation
+
+<Steps>
+  <Step title="Create Feature Add-ons">
+    Create an add-on for each optional feature.
+
+    ```bash theme={null}
+    # Add-on 1: Advanced Analytics
+    Dashboard: Products → Add-ons → Create Add-on
+    Name: "Advanced Analytics"
+    Price: $19/month
+
+    # Add-on 2: API Access
+    Name: "API Access"
+    Price: $9/month
+
+    # Add-on 3: Priority Support
+    Name: "Priority Support"
+    Price: $29/month
+
+    # Add-on 4: White-label
+    Name: "White-label"
+    Price: $49/month
+    ```
+  </Step>
+
+  <Step title="Create Core Subscription">
+    Define your base subscription and attach all feature add-ons.
+
+    ```bash theme={null}
+    Dashboard: Create Product → Subscription
+    Name: "Core Plan"
+    Price: $29/month
+
+    Then in Add-ons section:
+    - Attach all feature add-ons
+    ```
+  </Step>
+
+  <Step title="Let Customers Choose">
+    Checkout with selected features.
+
+    ```typescript theme={null}
+    const session = await client.checkoutSessions.create({
+      product_cart: [{
+        product_id: 'prod_core_plan',
+        quantity: 1,
+        addons: [
+          { addon_id: 'addon_analytics', quantity: 1 },
+          { addon_id: 'addon_api_access', quantity: 1 }
+          // Customer didn't select support or white-label
+        ]
+      }],
+      return_url: 'https://yourapp.com/success'
+    });
+    ```
+  </Step>
+
+  <Step title="Add Features Later">
+    Customers can add features to existing subscriptions.
+
+    ```typescript theme={null}
+    // Customer wants to add Priority Support
+    await client.subscriptions.changePlan('sub_123', {
+      product_id: 'prod_core_plan',
+      quantity: 1,
+      proration_billing_mode: 'prorated_immediately',
+      addons: [
+        { addon_id: 'addon_analytics', quantity: 1 },
+        { addon_id: 'addon_api_access', quantity: 1 },
+        { addon_id: 'addon_priority_support', quantity: 1 }  // New!
+      ]
+    });
+    ```
+  </Step>
+</Steps>
+
+***
+
+## Hybrid Model 4: Seats + Usage
+
+Per-user fee combined with consumption-based charges. Each user gets an allowance.
+
+<Warning>
+  **Constraint**: Dodo Payments does not currently support attaching both usage meters and add-ons to the same subscription product. This model requires a workaround using application-level logic.
+</Warning>
+
+<Info>
+  **Coming Soon**: Native support for Seats + Usage hybrid billing is on our roadmap. This will allow you to attach both usage meters and seat add-ons to the same subscription product.
+</Info>
+
+### How It Works
+
+**Team Analytics: \$20/user/month**
+
+**Each user includes:**
+
+* 5 GB data processing/month
+* Overage: \$2/GB after allowance
+
+**Example calculation** (10-user team using 80 GB total):
+
+* Seat fees: 10 × $20 = $200.00
+* Included data: 10 × 5 GB = 50 GB
+* Overage: (80 - 50) × $2 = $60.00
+* **Total: \$260.00/month**
+
+### Use Cases
+
+* **Analytics platforms**: Per-analyst + data processing
+* **Design tools**: Per-designer + storage/exports
+* **Development environments**: Per-developer + compute hours
+* **Communication tools**: Per-user + message/call volume
+
+### Implementation Options
+
+Since you cannot attach both usage meters and add-ons to the same subscription, choose one of these approaches:
+
+<Tabs>
+  <Tab title="Option A: Usage Product + App-Managed Seats">
+    Use a usage-based subscription and manage seat billing in your application.
+
+    <Steps>
+      <Step title="Create Usage Meter">
+        ```bash theme={null}
+        Dashboard: Meters → Create Meter
+        Event Name: "data.processed"
+        Aggregation: Sum
+        Property: "bytes"
+        ```
+      </Step>
+
+      <Step title="Create Usage-Based Subscription">
+        ```bash theme={null}
+        Dashboard: Create Product → Subscription
+        Name: "Team Analytics"
+        Base Price: $0/month
+
+        Attach usage pricing:
+        - Meter: data.processed
+        - Price per unit: $2/GB
+        - Free threshold: 0 (managed by your app)
+        ```
+      </Step>
+
+      <Step title="Manage Seats in Your Application">
+        Track seat count and calculate seat fees separately.
+
+        ```typescript theme={null}
+        // Your application tracks seats and calculates total cost
+        async function calculateMonthlyBill(customerId: string) {
+          const seatCount = await getSeatCount(customerId);
+          const seatFee = seatCount * 20; // $20/seat
+
+          // Usage is billed by Dodo automatically
+          // You invoice/charge seat fees separately or include in base price
+
+          // Alternatively, adjust base subscription price when seats change
+          const totalBasePrice = seatCount * 2000; // $20/seat in cents
+          await client.subscriptions.update('sub_123', {
+            // Update subscription to reflect seat-based pricing
+          });
+        }
+        ```
+      </Step>
+
+      <Step title="Calculate Dynamic Free Threshold">
+        Adjust included usage based on seat count.
+
+        ```typescript theme={null}
+        // When checking usage, apply per-seat allowance
+        async function checkUsageOverage(customerId: string) {
+          const seatCount = await getSeatCount(customerId);
+          const includedGB = seatCount * 5; // 5 GB per user
+
+          const currentUsage = await getUsageFromDodo(customerId);
+          const overage = Math.max(0, currentUsage - includedGB);
+
+          // Overage is billed by Dodo at $2/GB
+          return { included: includedGB, used: currentUsage, overage };
+        }
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Option B: Seat Add-on + On-Demand Usage Charges">
+    Use add-ons for seats and charge usage manually via on-demand charges.
+
+    <Steps>
+      <Step title="Create Seat Add-on">
+        ```bash theme={null}
+        Dashboard: Products → Add-ons → Create Add-on
+        Name: "Team Member"
+        Price: $20/month
+        ```
+      </Step>
+
+      <Step title="Create Subscription with Add-on">
+        ```bash theme={null}
+        Dashboard: Create Product → Subscription
+        Name: "Team Analytics"
+        Base Price: $0/month
+
+        Attach add-on:
+        - "Team Member" add-on
+
+        Enable on-demand charging
+        ```
+      </Step>
+
+      <Step title="Track Usage in Your Application">
+        ```typescript theme={null}
+        // Track usage events in your system
+        async function trackDataProcessed(customerId: string, bytes: number) {
+          await saveUsageEvent({
+            customer_id: customerId,
+            event_type: 'data.processed',
+            bytes: bytes,
+            timestamp: new Date()
+          });
+        }
+        ```
+      </Step>
+
+      <Step title="Charge Usage at End of Cycle">
+        Calculate and charge usage overages manually.
+
+        ```typescript theme={null}
+        async function billUsageOverage(subscriptionId: string) {
+          const subscription = await getSubscription(subscriptionId);
+          const seatCount = subscription.addons.find(a => a.id === 'addon_seat')?.quantity || 0;
+
+          const includedGB = seatCount * 5;
+          const usedGB = await calculatePeriodUsage(subscription.customer_id);
+          const overageGB = Math.max(0, usedGB - includedGB);
+
+          if (overageGB > 0) {
+            const overageCharge = overageGB * 200; // $2/GB in cents
+            await client.subscriptions.charge(subscriptionId, {
+              product_price: overageCharge,
+              product_description: `Data overage: ${overageGB} GB × $2/GB`
+            });
+          }
+        }
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+<Info>
+  **Recommendation**: Option B (Seat Add-on + On-Demand Usage) is often easier to implement because Dodo handles seat billing automatically. You only need to track and charge usage overages.
+</Info>
+
+***
+
+## Hybrid Model 5: Subscription + Seats + Usage (Triple Hybrid)
+
+The most comprehensive model: platform fee + per-user + consumption.
+
+<Warning>
+  **Constraint**: Dodo Payments does not currently support attaching both usage meters and add-ons to the same subscription product. This model requires a workaround approach.
+</Warning>
+
+<Info>
+  **Coming Soon**: Native support for Triple Hybrid billing (Base + Seats + Usage) is on our roadmap. This will allow you to attach both usage meters and seat add-ons to the same subscription product.
+</Info>
+
+### How It Works
+
+**Enterprise Platform**
+
+* **Platform Fee**: \$199/month
+* **Per Seat**: \$25/user/month
+* **Usage**: \$0.10/1000 API calls (50K included)
+
+**Example calculation** (company with 20 users, 150,000 API calls):
+
+* Platform: \$199.00
+* Seats: 20 × $25 = $500.00
+* Usage: (150K - 50K) × \$0.10/1K = \$10.00
+* **Total: \$709.00/month**
+
+### Use Cases
+
+* **Enterprise SaaS**: Platform + team + consumption
+* **Data platforms**: Workspace + analysts + queries
+* **Integration platforms**: Hub + connectors + transactions
+* **AI platforms**: Workspace + developers + inference
+
+### Implementation Options
+
+Choose one of these approaches to implement triple hybrid billing:
+
+<Tabs>
+  <Tab title="Option A: Base + Seats (Add-on) + On-Demand Usage">
+    Use subscription with seat add-ons, charge usage manually via on-demand charges.
+
+    **This is the recommended approach** because Dodo handles the platform fee and seat billing automatically.
+
+    <Steps>
+      <Step title="Create Seat Add-on">
+        ```bash theme={null}
+        Dashboard: Products → Add-ons → Create Add-on
+        Name: "User Seat"
+        Price: $25/month
+        ```
+      </Step>
+
+      <Step title="Create Subscription Product">
+        ```bash theme={null}
+        Dashboard: Create Product → Subscription
+        Name: "Enterprise Platform"
+        Base Price: $199/month
+
+        Attach add-on:
+        - "User Seat" add-on
+
+        Enable on-demand charging
+        ```
+      </Step>
+
+      <Step title="Create Checkout with Seats">
+        ```typescript theme={null}
+        const session = await client.checkoutSessions.create({
+          product_cart: [{
+            product_id: 'prod_enterprise_platform',
+            quantity: 1,
+            addons: [{
+              addon_id: 'addon_user_seat',
+              quantity: 20  // 20 users
+            }]
+          }],
+          customer: { email: 'enterprise@company.com' },
+          return_url: 'https://yourapp.com/success'
+        });
+        ```
+      </Step>
+
+      <Step title="Track Usage in Your Application">
+        Store usage events in your system.
+
+        ```typescript theme={null}
+        // Track API calls in your system
+        async function trackApiCall(customerId: string, endpoint: string) {
+          await saveUsageEvent({
+            customer_id: customerId,
+            event_type: 'api.call',
+            endpoint: endpoint,
+            timestamp: new Date()
+          });
+        }
+        ```
+      </Step>
+
+      <Step title="Charge Usage at End of Cycle">
+        Calculate and charge usage overages via on-demand charge.
+
+        ```typescript theme={null}
+        async function billUsageOverage(subscriptionId: string) {
+          const usage = await calculatePeriodUsage(subscriptionId);
+          const includedCalls = 50000;
+          const overageCalls = Math.max(0, usage.totalCalls - includedCalls);
+
+          if (overageCalls > 0) {
+            // $0.10 per 1000 calls = $0.0001 per call
+            const overageCharge = Math.ceil(overageCalls / 1000) * 10; // cents
+            await client.subscriptions.charge(subscriptionId, {
+              product_price: overageCharge,
+              product_description: `API usage: ${overageCalls.toLocaleString()} calls over 50K included`
+            });
+          }
+        }
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Option B: Base + Usage (Meter) + App-Managed Seats">
+    Use subscription with usage meter, manage seat billing in your application.
+
+    <Steps>
+      <Step title="Create Usage Meter">
+        ```bash theme={null}
+        Dashboard: Meters → Create Meter
+        Event Name: "api.call"
+        Aggregation: Count
+        ```
+      </Step>
+
+      <Step title="Create Subscription Product with Usage">
+        ```bash theme={null}
+        Dashboard: Create Product → Subscription
+        Name: "Enterprise Platform"
+        Base Price: $199/month
+
+        Attach usage pricing:
+        - Meter: api.call
+        - Price: $0.10 per 1000 calls
+        - Free threshold: 50,000
+        ```
+      </Step>
+
+      <Step title="Manage Seats in Your Application">
+        Track seat count and adjust base subscription price accordingly.
+
+        ```typescript theme={null}
+        // When seats change, update subscription price
+        async function updateSeatCount(subscriptionId: string, newSeatCount: number) {
+          const basePlatformFee = 19900; // $199 in cents
+          const perSeatFee = 2500; // $25 in cents
+          const totalPrice = basePlatformFee + (newSeatCount * perSeatFee);
+
+          // Store seat count in your system
+          await updateSeatsInDatabase(subscriptionId, newSeatCount);
+
+          // Note: You may need to handle this via plan changes or
+          // create multiple tier products for common seat counts
+        }
+        ```
+      </Step>
+
+      <Step title="Send Usage Events to Dodo">
+        ```typescript theme={null}
+        await fetch('https://api.dodopayments.com/events/ingest', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            events: [{
+              event_id: `api_${Date.now()}`,
+              customer_id: 'cus_enterprise',
+              event_name: 'api.call',
+              timestamp: new Date().toISOString()
+            }]
+          })
+        });
+        ```
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+<Info>
+  **Recommendation**: Option A (Base + Seats + On-Demand Usage) is generally easier because Dodo handles platform and seat billing automatically. You only need to track usage and submit charges at the end of each billing cycle.
+</Info>
+
+***
+
+## Hybrid Model 6: Tiered Base + Usage Overage
+
+Different subscription tiers with different included allowances and overage rates.
+
+### How It Works
+
+| Tier           | Price       | Included Calls | Overage Rate |
+| -------------- | ----------- | -------------- | ------------ |
+| **Starter**    | \$19/month  | 1,000          | \$0.02/call  |
+| **Pro**        | \$79/month  | 25,000         | \$0.01/call  |
+| **Business**   | \$199/month | 100,000        | \$0.005/call |
+| **Enterprise** | \$499/month | 500,000        | \$0.002/call |
+
+### Implementation
+
+Create separate subscription products for each tier, each with its own usage configuration:
+
+```bash theme={null}
+# For each tier, create a subscription product:
+
+# Starter Tier
+Dashboard: Create Product → Subscription
+Name: "Starter"
+Base Price: $19/month
+Usage Pricing:
+- Meter: api.call
+- Price: $0.02/call
+- Free threshold: 1,000
+
+# Pro Tier
+Name: "Pro"
+Base Price: $79/month
+Usage Pricing:
+- Meter: api.call
+- Price: $0.01/call
+- Free threshold: 25,000
+
+# ... and so on for Business and Enterprise
+```
+
+### Upgrade Path
+
+When customers upgrade tiers, they get:
+
+* Higher included allowance
+* Lower overage rates
+* More value per dollar
+
+```typescript theme={null}
+// Customer upgrades from Starter to Pro
+await client.subscriptions.changePlan('sub_123', {
+  product_id: 'prod_pro',
+  quantity: 1,
+  proration_billing_mode: 'prorated_immediately'
+});
+```
+
+***
+
+## Hybrid Model 7: Subscription + On-Demand Charges
+
+Recurring subscription plus variable manual charges for services or overages.
+
+### How It Works
+
+**Retainer Plan: \$199/month**
+
+**Includes:**
+
+* Platform access
+* 5 hours consulting/month
+* Email support
+
+**On-Demand Charges (as needed):**
+
+* Extra consulting: \$150/hour
+* Custom development: \$200/hour
+* Emergency support: \$100/incident
+
+**Example calculation** (this month):
+
+* Retainer: \$199.00
+* 3 extra consulting hours: \$450.00
+* 1 emergency support: \$100.00
+* **Total: \$749.00**
+
+### Use Cases
+
+* **Consulting services**: Retainer + hourly billing
+* **Managed services**: Base fee + incident charges
+* **Agency services**: Monthly fee + project charges
+* **Support plans**: SLA fee + per-ticket or per-hour
+
+### Implementation
+
+<Steps>
+  <Step title="Create On-Demand Subscription">
+    Set up subscription with on-demand charging enabled.
+
+    ```typescript theme={null}
+    const subscription = await client.subscriptions.create({
+      billing: {
+        city: 'San Francisco',
+        country: 'US',
+        state: 'CA',
+        street: '123 Main St',
+        zipcode: '94105'
+      },
+      customer: { customer_id: 'cus_123' },
+      product_id: 'prod_retainer',
+      quantity: 1,
+      payment_link: true,
+      return_url: 'https://yourapp.com/success',
+      on_demand: {
+        mandate_only: false,
+        product_price: 19900  // $199 initial charge
+      }
+    });
+    ```
+  </Step>
+
+  <Step title="Charge for Services">
+    Create charges when services are delivered.
+
+    ```typescript theme={null}
+    // Charge for 3 hours of consulting
+    await client.subscriptions.charge('sub_123', {
+      product_price: 45000,  // $450.00 (3 × $150)
+      product_description: 'Consulting - 3 hours (March 15)'
+    });
+
+    // Charge for emergency support incident
+    await client.subscriptions.charge('sub_123', {
+      product_price: 10000,  // $100.00
+      product_description: 'Emergency support - Server outage (March 18)'
+    });
+    ```
+  </Step>
+
+  <Step title="Track and Invoice">
+    All charges appear on the customer's invoice.
+
+    ```typescript theme={null}
+    // Retrieve subscription charges
+    const payments = await client.payments.list({
+      subscription_id: 'sub_123'
+    });
+
+    // Show itemized breakdown to customer
+    payments.items.forEach(payment => {
+      console.log(`${payment.description}: $${payment.amount / 100}`);
+    });
+    ```
+  </Step>
+</Steps>
+
+***
+
+## Real-World Examples
+
+<Info>
+  These examples show ideal pricing structures. Due to the constraint that usage meters and add-ons cannot be attached to the same product, some combinations require workarounds (using on-demand charges for usage or app-managed seats).
+</Info>
+
+### Example 1: AI SaaS Platform
+
+**Pricing Structure:**
+
+* **Base Subscription**: \$99/month (platform access, 5 seats included)
+* **Seat Add-on**: \$20/seat/month
+* **Feature Add-ons**: Custom Models (\$49/mo), API Access (\$29/mo), Priority Queue (\$19/mo)
+* **Usage Overage**: \$0.02 per 1,000 tokens after 100K (charged via on-demand)
+
+**Implementation**: Use subscription with seat and feature add-ons. Track token usage in your application and charge overages via on-demand charges at end of billing cycle.
+
+**Example Customer** (12 users, 500K tokens, Custom Models + API Access):
+
+| Component     | Calculation                  | Amount          |
+| ------------- | ---------------------------- | --------------- |
+| Base          | Platform fee                 | \$99            |
+| Extra seats   | 7 × \$20                     | \$140           |
+| Custom Models | Add-on                       | \$49            |
+| API Access    | Add-on                       | \$29            |
+| Token overage | 400K × \$0.02/1K (on-demand) | \$8             |
+| **Total**     |                              | **\$325/month** |
+
+### Example 2: Developer Tools Platform
+
+**Tier Options:**
+
+|             | Free      | Pro        | Enterprise  |
+| ----------- | --------- | ---------- | ----------- |
+| **Price**   | \$0/month | \$29/month | \$199/month |
+| **Users**   | 1         | 5 included | Unlimited   |
+| **Builds**  | 100       | 1,000      | 10,000      |
+| **Storage** | 1 GB      | 10 GB      | 100 GB      |
+
+**Implementation Options**:
+
+**Option A** (Usage-focused): Create products with usage meters for builds/storage. Manage users in your application.
+
+**Option B** (Seat-focused): Create products with seat add-ons. Track builds/storage usage and charge overages via on-demand.
+
+**Add-ons (if using Option B):**
+
+* Extra users: \$10/user/month
+* Priority builds: \$19/month
+* Custom domains: \$9/domain/month
+
+### Example 3: Marketing Automation
+
+**Pricing Structure:**
+
+* **Base**: \$79/month (core automation features, 3 seats included)
+* **Contact Tiers** (add-ons): 1K included, 5K (+\$30), 25K (+\$80), 100K (+\$200)
+* **Feature Add-ons**: SMS Marketing (\$29/mo), Landing Pages (\$19/mo), A/B Testing (\$29/mo)
+* **Team Seats**: \$15/user/month add-on
+* **Email Volume**: Track in application, charge overage via on-demand (\$1/1,000 emails over limit)
+
+**Implementation**: Use subscription with contact tier add-ons, feature add-ons, and seat add-ons. Track email sends in your application and charge overages via on-demand charges.
+
+***
+
+## Implementation Best Practices
+
+### Pricing Page Clarity
 
 <Tip>
-  Bookmark our [Featurebase portal](https://dodopayments.featurebase.app/) to stay updated on new features and vote on ideas that matter to you.
+  Make hybrid pricing easy to understand. Show base costs, what's included, and how overages work prominently on your pricing page.
 </Tip>
+
+**Good**: "\$49/month includes 10,000 API calls. Additional calls: \$0.005 each"
+
+**Bad**: "\$49/month + usage fees"
+
+### Cost Predictability
+
+Help customers estimate their costs:
+
+```typescript theme={null}
+// Provide a cost calculator
+function estimateMonthlyCost({
+  plan,
+  seats,
+  expectedUsage,
+  addons
+}: EstimateParams): number {
+  let total = plan.basePrice;
+
+  // Add seat costs
+  const extraSeats = Math.max(0, seats - plan.includedSeats);
+  total += extraSeats * plan.seatPrice;
+
+  // Add usage overage
+  const overage = Math.max(0, expectedUsage - plan.includedUsage);
+  total += overage * plan.overageRate;
+
+  // Add feature add-ons
+  total += addons.reduce((sum, addon) => sum + addon.price, 0);
+
+  return total;
+}
+```
+
+### Usage Visibility
+
+Show customers their usage in real-time:
+
+```typescript theme={null}
+// Display usage dashboard
+async function getUsageSummary(subscriptionId: string) {
+  const usage = await client.subscriptions.getUsageHistory(subscriptionId);
+
+  return {
+    current: usage.current_period_usage,
+    included: usage.free_threshold,
+    remaining: Math.max(0, usage.free_threshold - usage.current_period_usage),
+    overage: Math.max(0, usage.current_period_usage - usage.free_threshold),
+    projectedCost: calculateProjectedOverage(usage)
+  };
+}
+```
+
+### Billing Transparency
+
+Provide detailed invoices showing all components:
+
+| Line Item                                    | Amount       |
+| -------------------------------------------- | ------------ |
+| Pro Plan (Monthly)                           | \$49.00      |
+| Additional Seats (7 × \$15.00)               | \$105.00     |
+| API Usage - Included (10,000 calls)          | \$0.00       |
+| API Usage - Overage (15,420 calls × \$0.005) | \$77.10      |
+| Advanced Analytics Add-on                    | \$19.00      |
+| **Subtotal**                                 | **\$250.10** |
+| Tax (8.5%)                                   | \$21.26      |
+| **Total Due**                                | **\$271.36** |
+
+***
+
+## Troubleshooting Hybrid Billing
+
+<AccordionGroup>
+  <Accordion title="Usage not being tracked correctly">
+    **Symptoms**: Usage shows 0 or incorrect values.
+
+    **Solutions**:
+
+    1. Verify event ingestion is working (check API responses)
+    2. Confirm `customer_id` matches the subscription customer
+    3. Check `event_name` matches the meter configuration
+    4. Verify events have correct timestamps (not future-dated)
+  </Accordion>
+
+  <Accordion title="Proration confusion with multiple components">
+    **Symptoms**: Customer charged unexpected amounts when changing plans.
+
+    **Solutions**:
+
+    1. Use `previewChangePlan` API to show exact charges before confirming
+    2. Communicate that proration applies to subscription AND add-ons
+    3. Consider using `difference_immediately` for simpler upgrade billing
+  </Accordion>
+
+  <Accordion title="Free threshold not applying correctly">
+    **Symptoms**: Customer charged for usage that should be free.
+
+    **Solutions**:
+
+    1. Verify free threshold is configured on the usage-based product
+    2. Check threshold unit matches event aggregation (calls vs. requests)
+    3. Confirm usage meter is correctly attached to the subscription product
+  </Accordion>
+
+  <Accordion title="Add-ons not appearing in checkout">
+    **Symptoms**: Can't add seats or features during checkout.
+
+    **Solutions**:
+
+    1. Verify add-ons are attached to the subscription product in dashboard
+    2. Check add-on IDs are correct in API calls
+    3. Ensure add-on currency matches subscription product currency
+  </Accordion>
+</AccordionGroup>
+
+***
+
+## Related Documentation
+
+<CardGroup>
+  <Card title="Products" icon="box" href="/features/products">
+    Overview of all product types and guides.
+  </Card>
+
+  <Card title="Usage-Based Billing Guide" icon="chart-line" href="/developer-resources/usage-based-billing-guide">
+    Complete usage billing implementation.
+  </Card>
+
+  <Card title="Subscription Management" icon="repeat" href="/features/subscription">
+    Managing recurring subscriptions.
+  </Card>
+
+  <Card title="Add-ons" icon="puzzle" href="/features/addons">
+    Extending subscriptions with add-ons.
+  </Card>
+</CardGroup>
 
 
 # Invoice Management
@@ -22922,7 +25066,7 @@ Source: https://docs.dodopayments.com/features/invoice-generation
 Automatically generate and deliver professional invoices for every successful payment, with customizable branding and seamless email delivery.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Invoice%20Generation.webp?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=d51414d96f53014f6374ddcce586559d" alt="Invoice Generation Cover Image" data-og-width="1200" width="1200" data-og-height="630" height="630" data-path="images/cover-images/Invoice Generation.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Invoice%20Generation.webp?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=a9f185b85911a66959f19c7181360dbf 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Invoice%20Generation.webp?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=76e66e5569febcab592dc496830dab36 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Invoice%20Generation.webp?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=4436692a7e8dea43d3950073daa2f1f6 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Invoice%20Generation.webp?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=34812296acd2ff51a270c88c29f8e0ed 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Invoice%20Generation.webp?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=08c383b282b78482f324277662dac511 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Invoice%20Generation.webp?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=4702e5320faea9b7383a17dde355e464 2500w" />
+  <img alt="Invoice Generation Cover Image" />
 </Frame>
 
 ## Overview
@@ -22935,7 +25079,7 @@ Dodo Payments automatically generates professional invoices for every successful
 
 ## Key Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Automatic Generation" icon="wand-magic-sparkles">
     Invoices are created instantly after successful payment processing without manual intervention.
   </Card>
@@ -23039,13 +25183,13 @@ Navigate to the **Invoices** section in your Dodo Payments dashboard to view all
 
 Here's what your branded invoices will look like:
 
-<Frame caption="Example of a generated invoice with custom branding">
-  <img src="https://mintcdn.com/dodopayments/OWlOkbdK5mDdUO5r/images/invoice-generation/image.png?fit=max&auto=format&n=OWlOkbdK5mDdUO5r&q=85&s=8fc207d1dd2f0cce16c315c5bf0d2a18" alt="Invoice template showing business branding, transaction details, and professional layout" data-og-width="575" width="575" data-og-height="813" height="813" data-path="images/invoice-generation/image.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/OWlOkbdK5mDdUO5r/images/invoice-generation/image.png?w=280&fit=max&auto=format&n=OWlOkbdK5mDdUO5r&q=85&s=8e12780850e8c2df5b1d9b5de608037b 280w, https://mintcdn.com/dodopayments/OWlOkbdK5mDdUO5r/images/invoice-generation/image.png?w=560&fit=max&auto=format&n=OWlOkbdK5mDdUO5r&q=85&s=623fff08e47c2552aadd014c8a44146e 560w, https://mintcdn.com/dodopayments/OWlOkbdK5mDdUO5r/images/invoice-generation/image.png?w=840&fit=max&auto=format&n=OWlOkbdK5mDdUO5r&q=85&s=ac6b34c57838b735761230769d4780ba 840w, https://mintcdn.com/dodopayments/OWlOkbdK5mDdUO5r/images/invoice-generation/image.png?w=1100&fit=max&auto=format&n=OWlOkbdK5mDdUO5r&q=85&s=a4ad800b726ee6f74eea5edc26237594 1100w, https://mintcdn.com/dodopayments/OWlOkbdK5mDdUO5r/images/invoice-generation/image.png?w=1650&fit=max&auto=format&n=OWlOkbdK5mDdUO5r&q=85&s=a666476a9ca28ea1b3136d93e93a5ce5 1650w, https://mintcdn.com/dodopayments/OWlOkbdK5mDdUO5r/images/invoice-generation/image.png?w=2500&fit=max&auto=format&n=OWlOkbdK5mDdUO5r&q=85&s=5b9819eaf075fb12d14f3b95f4f616bd 2500w" />
+<Frame>
+  <img alt="Invoice template showing business branding, transaction details, and professional layout" />
 </Frame>
 
 ## Related Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Subscription Management" icon="calendar-days" href="/features/subscription">
     Learn how subscriptions work with automatic recurring invoices.
   </Card>
@@ -23070,7 +25214,7 @@ Source: https://docs.dodopayments.com/features/license-keys
 Securely generate, manage, and track license keys for your digital products with advanced access control and revocation.
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/BNuLTXok8dQ" title="License Keys | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="License Keys | Dodo Payments" />
 </Frame>
 
 <Info>
@@ -23116,7 +25260,7 @@ License keys are unique tokens that authorize access to your product. They're id
 </Steps>
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/1.webp?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=9a61b2750ee7fe68f39374ecdd4ccd58" alt="Creating a license key in Dodo Payments dashboard" data-og-width="1000" width="1000" data-og-height="609" height="609" data-path="images/license-keys/1.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/1.webp?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=fba7c96c742c6f49ff2a3a9b5f51354a 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/1.webp?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=0eb759f4716fdc44147b48084464991f 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/1.webp?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=dd367919b7e43914540922b0370acd56 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/1.webp?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c7787039bcb3604d287bd828f99fa009 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/1.webp?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=d7b87cdd5c5749bdd3b50493ee14dc1a 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/1.webp?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=d3f0e2262d03d01310ada87027511ef3 2500w" />
+  <img alt="Creating a license key in Dodo Payments dashboard" />
 </Frame>
 
 ## Manage & Monitor
@@ -23132,7 +25276,7 @@ View detailed information for each license key:
 * **Expiry and Limits**: Key expiry date, remaining activation count, and current activation instances
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/3.webp?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=77e03df7942d8ff0ff538b6f1d894b29" alt="License key details" data-og-width="1000" width="1000" data-og-height="609" height="609" data-path="images/license-keys/3.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/3.webp?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=47496e80c77913cf6b0bfe1a9c1e7a68 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/3.webp?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=2ddc3ed295f15aad9694915cb4799933 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/3.webp?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=8fcdb7327cf0072bdee95d267a5a1e3c 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/3.webp?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=f498311bb2ee8ba50ef8de9325635765 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/3.webp?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=4ed6164603142cc37cc2f4c4f7f0834d 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/3.webp?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=d2aa37a13777be4899411c4d4119b7c0 2500w" />
+  <img alt="License key details" />
 </Frame>
 
 ### Available Actions
@@ -23144,7 +25288,7 @@ You can perform the following actions on license keys:
 * **View Activation Instances**: See all associated activation instances for a particular license key
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/2.webp?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=0f5a435d4160ffb96e93ff83861905d1" alt="License key actions" data-og-width="1000" width="1000" data-og-height="609" height="609" data-path="images/license-keys/2.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/2.webp?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=4bed8007f144eba7d0a3b686b7e1a8c8 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/2.webp?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=dc48b738b6c81233c65c1b0eb30f1618 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/2.webp?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=19a47ef684f73dbd254fa3fb6206bef3 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/2.webp?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=07c92f2b4644c2bb0979fbbd538bb846 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/2.webp?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c5a569dfdd145cbdf7e3938ddc20f26e 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/license-keys/2.webp?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=a6b19431c0dd91f7f82662dd42dd2587 2500w" />
+  <img alt="License key actions" />
 </Frame>
 
 ### Benefits
@@ -23165,7 +25309,7 @@ Use these APIs to activate, validate, list, and update license keys and their ac
   <Accordion title="Lifecycle Operations">
     Trigger activation, deactivation, and validation actions on license keys.
 
-    <CardGroup cols={3}>
+    <CardGroup>
       <Card title="Activate License" icon="code" href="/api-reference/licenses/activate-license">
         Create or record an activation instance for a license key.
       </Card>
@@ -23183,7 +25327,7 @@ Use these APIs to activate, validate, list, and update license keys and their ac
   <Accordion title="License Key Management">
     List, retrieve, and update license keys with their settings and status.
 
-    <CardGroup cols={3}>
+    <CardGroup>
       <Card title="List License Keys" icon="code" href="/api-reference/licenses/list-license-keys">
         Browse all keys with status and usage details.
       </Card>
@@ -23201,7 +25345,7 @@ Use these APIs to activate, validate, list, and update license keys and their ac
   <Accordion title="Activation Instances">
     Work with individual device activations for each key.
 
-    <CardGroup cols={3}>
+    <CardGroup>
       <Card title="List Instances" icon="code" href="/api-reference/licenses/get-license-key-instances">
         Return all activation instances for a specific key.
       </Card>
@@ -23283,6 +25427,257 @@ Use these APIs to activate, validate, list, and update license keys and their ac
 * **Monitor events**: Use webhooks to detect abuse and automate revocations
 
 
+# Introduction
+Source: https://docs.dodopayments.com/features/mor-introduction
+
+Dodo Payments acts as your Merchant of Record, handling global payments, tax compliance, fraud protection, and regulatory liability so you can focus on building your product.
+
+Dodo Payments operates as a **Merchant of Record (MoR)** — we become the legal seller of your digital products, taking on the responsibility for payments, taxes, fraud, and compliance so you can focus entirely on building your product.
+
+<CardGroup>
+  <Card title="220+ Regions" icon="globe">
+    Tax compliance handled automatically
+  </Card>
+
+  <Card title="30+ Payment Methods" icon="credit-card">
+    Cards, wallets, and local methods
+  </Card>
+
+  <Card title="Zero Tax Filing" icon="file-invoice">
+    We handle all remittance
+  </Card>
+</CardGroup>
+
+## What Is a Merchant of Record?
+
+A **Merchant of Record** is the legal entity that appears on your customer's credit card statement and assumes responsibility for the transaction. When you use Dodo Payments as your MoR:
+
+* **We are the legal seller** — Dodo appears on bank statements and receipts
+* **You are the product creator** — You build, price, and deliver your product
+* **We handle the back office** — Taxes, disputes, compliance, and billing support
+* **You receive net payouts** — Revenue deposited directly to your account
+
+```mermaid theme={null}
+flowchart LR
+    A[👤 Customer] -->|💳 Pays| B[🏦 Dodo]
+    B -->|📋 Tax| C[🏛️ Tax Authority]
+    B -->|💰 Payout| D[💼 You]
+```
+
+<Note>
+  Think of a Merchant of Record as hiring a global finance team that handles invoicing, taxes, and billing in every country — without you lifting a finger.
+</Note>
+
+## Why Use a Merchant of Record?
+
+Selling digital products globally means navigating VAT in Europe, GST in Australia, Sales Tax in the US, and countless other requirements. Each jurisdiction has different rules, rates, thresholds, and filing deadlines.
+
+| Your Responsibility     |    Without MoR   | With Dodo as MoR |
+| ----------------------- | :--------------: | :--------------: |
+| VAT/GST Registration    |       ❌ You      |      ✅ Dodo      |
+| Tax Calculation         |       ❌ You      |      ✅ Dodo      |
+| Tax Filing & Remittance |       ❌ You      |      ✅ Dodo      |
+| Chargeback Liability    |       ❌ You      |      ✅ Dodo      |
+| PCI Compliance          |       ❌ You      |      ✅ Dodo      |
+| Multi-Currency Support  |     ❌ Complex    |    ✅ Built-in    |
+| Local Payment Methods   | ❌ Integrate Each |  ✅ 30+ Included  |
+
+<Tip>
+  **Example**: Selling a €50/month subscription to a French customer?
+
+  **Without MoR**: Register for French VAT, charge €60 (20% VAT), file quarterly French returns, handle audits—in French.
+
+  **With Dodo**: We collect €60, remit €10 VAT to France, and pay you €50 minus fees. You write code.
+</Tip>
+
+## PSP vs. MoR: Key Differences
+
+Understanding the difference between a **Payment Service Provider** (like Stripe) and a **Merchant of Record** is essential.
+
+### Payment Service Provider (PSP)
+
+A PSP processes transactions but leaves you as the legal seller:
+
+```mermaid theme={null}
+flowchart LR
+    A[👤 Customer] --> B[🌐 Your Site]
+    B --> C[💳 PSP]
+    C --> D[🏦 Your Bank]
+    
+    D -.->|⚠️ You Handle| E[📋 Taxes]
+    D -.->|⚠️ You Handle| F[⚖️ Disputes]
+    D -.->|⚠️ You Handle| G[📜 Compliance]
+```
+
+<Warning>
+  With a PSP, **you** are responsible for tax registration, collection, filing, and remittance in every jurisdiction where you have customers.
+</Warning>
+
+### Merchant of Record (Dodo)
+
+An MoR becomes the legal seller, handling compliance end-to-end:
+
+```mermaid theme={null}
+flowchart LR
+    A[👤 Customer] --> B[🛒 Dodo Checkout]
+    B --> C[🏦 Dodo Payments]
+    C --> D[💰 Your Wallet]
+    
+    C -.->|✅ Handled| E[📋 Taxes]
+    C -.->|✅ Handled| F[⚖️ Disputes]
+    C -.->|✅ Handled| G[📜 Compliance]
+```
+
+<Check>
+  With Dodo as MoR, we handle taxes, disputes, and compliance. You receive net payouts with zero paperwork.
+</Check>
+
+### Side-by-Side Comparison
+
+| Aspect                | PSP (Stripe, etc.) | MoR (Dodo) |
+| --------------------- | :----------------: | :--------: |
+| Legal Seller          |    Your Company    |    Dodo    |
+| On Customer Statement |      Your Name     |    Dodo    |
+| Tax Registration      |        ❌ You       |   ✅ Dodo   |
+| Tax Calculation       |        ❌ You       |   ✅ Dodo   |
+| Tax Remittance        |        ❌ You       |   ✅ Dodo   |
+| Chargeback Risk       |        ❌ You       |   ✅ Dodo   |
+| PCI Compliance        |        ❌ You       |   ✅ Dodo   |
+| Setup for Global      |       Complex      |   Simple   |
+
+<Info>
+  **Important**: Both PSPs and MoRs handle payment processing. The key difference is **who is legally responsible** for tax compliance and transaction liability.
+</Info>
+
+## How Tax Compliance Works
+
+Dodo handles the entire tax lifecycle automatically:
+
+<Steps>
+  <Step title="Customer Location">
+    We detect the customer's country and determine which tax rules apply — VAT, GST, Sales Tax, or other local requirements.
+  </Step>
+
+  <Step title="Rate Calculation">
+    The correct tax rate is calculated based on product type, customer location, and B2B/B2C status. EU business customers with valid VAT numbers get reverse charge applied.
+  </Step>
+
+  <Step title="Collection at Checkout">
+    Tax is clearly displayed and collected at checkout. Customers see exactly what they're paying.
+  </Step>
+
+  <Step title="Filing & Remittance">
+    We file returns and pay collected taxes to the relevant authorities on schedule. You never see a tax form.
+  </Step>
+</Steps>
+
+## Revenue Flow
+
+Here's how money moves from customer to your account:
+
+```mermaid theme={null}
+flowchart LR
+    A[👤 Customer<br/>Pays $200] -->|incl. $30 tax| B[🏦 Dodo Payments]
+    B -->|$30| C[🏛️ Tax Authority]
+    B -->|$162.40| D[💼 You]
+```
+
+### Example Payout Breakdown
+
+| Line Item              |       Amount |
+| ---------------------- | -----------: |
+| Customer Payment       |     \$200.00 |
+| Sales Tax (15% VAT)    |     −\$30.00 |
+| Dodo Platform Fee (4%) |      −\$8.00 |
+| Payment Processing     |      −\$0.60 |
+| **Your Payout**        | **\$162.40** |
+
+## When to Choose MoR vs. PSP
+
+<Tabs>
+  <Tab title="Choose Dodo (MoR)">
+    **Dodo Payments is ideal if you:**
+
+    * Sell digital products, SaaS, or subscriptions
+    * Have customers across multiple countries
+    * Want to avoid tax registration headaches
+    * Prefer predictable, outsourced compliance
+    * Value speed to market over maximum control
+    * Don't want to manage disputes and fraud
+  </Tab>
+
+  <Tab title="Consider a PSP">
+    **A PSP might suit you if you:**
+
+    * Operate primarily in one country
+    * Have in-house finance and compliance teams
+    * Need absolute control over checkout UX
+    * Work with extremely thin margins
+    * Sell physical goods (MoRs focus on digital)
+  </Tab>
+</Tabs>
+
+<Note>
+  Many businesses start with a PSP and switch to an MoR as they scale internationally. Dodo offers migration support to make this transition seamless.
+</Note>
+
+## Frequently Asked Questions
+
+<AccordionGroup>
+  <Accordion title="What appears on my customer's credit card statement?">
+    Dodo Payments appears as the merchant. We include your product/brand reference where character limits allow, and customers receive detailed receipts showing your product information.
+  </Accordion>
+
+  <Accordion title="Do I still own the customer relationship?">
+    Yes. You control pricing, branding, product delivery, and direct communication. Dodo handles billing mechanics, but customers know they're buying from you. Your brand appears prominently in checkout, emails, and invoices.
+  </Accordion>
+
+  <Accordion title="How does B2B VAT reverse charge work?">
+    For B2B sales in the EU, customers can enter their VAT number at checkout. We validate it and apply reverse charge automatically — the tax shifts to the buyer's VAT return instead of being collected.
+  </Accordion>
+
+  <Accordion title="Can I use my own payment processor?">
+    Dodo operates as a complete solution using our payment infrastructure. This integration is what allows us to assume tax and fraud liability. We are working on providing an integration with other payment processors in the future.
+  </Accordion>
+
+  <Accordion title="How do refunds work?">
+    Initiate refunds from your dashboard. We process the refund in the customer's original payment method and currency. Tax amounts are automatically adjusted and reconciled.
+  </Accordion>
+
+  <Accordion title="What about my income tax?">
+    Dodo handles **sales taxes** (VAT, GST, Sales Tax) on customer transactions. You remain responsible for your business's income tax, corporate tax, and tax obligations on the payouts you receive.
+  </Accordion>
+
+  <Accordion title="Which countries can I sell to?">
+    We accept payments from 220+ countries and regions with continuous expansion. See the full list:
+
+    <Card title="Supported Regions" icon="globe" href="/miscellaneous/list-of-countries-we-accept-payments-from">
+      View all 220+ countries and regions where we accept payments.
+    </Card>
+  </Accordion>
+</AccordionGroup>
+
+## Get Started
+
+<CardGroup>
+  <Card title="Create Account" icon="rocket" href="https://app.dodopayments.com/signup">
+    Sign up free and accept global payments in minutes.
+  </Card>
+
+  <Card title="MoR vs PG Deep Dive" icon="scale-balanced" href="/features/mor-vs-pg">
+    Detailed comparison with examples and use cases.
+  </Card>
+
+  <Card title="Acceptance Policy" icon="building-shield" href="/miscellaneous/merchant-acceptance">
+    Learn what businesses we support.
+  </Card>
+
+  <Card title="Talk to Us" icon="envelope" href="mailto:founders@dodopayments.com">
+    Get personalized guidance from our team.
+  </Card>
+</CardGroup>
+
+
 # MoR vs PG
 Source: https://docs.dodopayments.com/features/mor-vs-pg
 
@@ -23323,7 +25718,7 @@ Additionally, the MoR model simplifies your entire back office. As your MoR, Dod
 
 **Revenue Flow: Payment Gateway**
 
-```mermaid  theme={null}
+```mermaid theme={null}
 flowchart LR
     A[Customer] --> B[Your Website]
     B --> C["Payment Gateway (e.g. Stripe)"]
@@ -23333,7 +25728,7 @@ flowchart LR
 
 **Revenue Flow: Merchant of Record (Dodo)**
 
-```mermaid  theme={null}
+```mermaid theme={null}
 flowchart LR
     A[Customer] --> B[Dodo Checkout]
     B --> C[Dodo Payments]
@@ -23399,7 +25794,7 @@ Whether you're a solo founder or a scaling SaaS team, Dodo simplifies the comple
 
 ## Learn More
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Adaptive Currency Support" icon="money-bill-wave" href="/features/adaptive-currency">
     Learn how Dodo automatically presents prices in your customers' local currencies
   </Card>
@@ -23413,7 +25808,7 @@ Whether you're a solo founder or a scaling SaaS team, Dodo simplifies the comple
 
 Join 3,000+ digital businesses using Dodo Payments to sell globally, without borders or bottlenecks.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Sign Up Free" icon="user-plus" href="https://app.dodopayments.com/signup">
     Create your Dodo Payments account and start selling globally today
   </Card>
@@ -23485,7 +25880,7 @@ Sell fixed‑price digital goods or services with a single upfront charge, no re
   One‑time payments let you sell lifetime access, downloads, or single‑use services with a single charge. There are no renewals, proration rules, or billing cycles. Just a clean, instant purchase experience.
 </Info>
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="License Keys" icon="code" href="/features/license-keys">
     Issue unique license keys after purchase.
   </Card>
@@ -23524,7 +25919,7 @@ One‑time payments are fixed, up‑front purchases - ideal for:
 Create products in your Dodo Payments dashboard, then sell them via hosted checkout, payment links, or your API.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=fb41221c4f2af4de0155e71de1ac6904" alt="One-Time Payment Products" data-og-width="1911" width="1911" data-og-height="927" height="927" data-path="images/products.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=280&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=6fc4d1bf0c31dc0ccebfca09150577a5 280w, https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=560&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=4eb3456ebb3b4cdcbe38a1fbafb42acc 560w, https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=840&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=61bf43aa862c47e57a0793692c72a807 840w, https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=1100&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=f16c04010332033411f9dc0d0d0b513c 1100w, https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=1650&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=4826558f298f6ed39854d430626aa5a3 1650w, https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=2500&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=2ef2a63a54968daa60c4426dd8fae206 2500w" />
+  <img alt="One-Time Payment Products" />
 </Frame>
 
 ### Product configuration
@@ -23621,7 +26016,7 @@ Configure the fields in the dashboard to define how your product appears and sel
 
 Create a checkout session with a one‑time product in the cart:
 
-```typescript  theme={null}
+```typescript theme={null}
 const session = await client.checkoutSessions.create({
   product_cart: [
     { product_id: 'prod_one_time', quantity: 1 }
@@ -23648,7 +26043,7 @@ Let customers choose their price above a minimum. Optionally show a suggested pr
 **Pay What You Want (PWYW)** lets customers decide how much they pay—at or above a merchant‑defined minimum. It increases engagement, encourages community support, and provides flexible pricing for digital products.
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/Lh0Q01b33NY" title="Pay What You Want Pricing | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Pay What You Want Pricing | Dodo Payments" />
 </Frame>
 
 ## What Is Pay What You Want?
@@ -23757,7 +26152,7 @@ Create a one‑time product and enable PWYW in your Dodo Payments dashboard. The
 
 Add a PWYW product to the cart. Checkout collects the buyer’s amount (respecting your minimum) — no extra fields are required.
 
-```typescript  theme={null}
+```typescript theme={null}
 const session = await client.checkoutSessions.create({
   product_cart: [
     { product_id: 'prod_pwyw_demo', quantity: 1 }
@@ -23862,7 +26257,7 @@ The following table provides a quick reference for all available payment methods
     * **Afterpay** – Allow customers to split purchases into four interest-free payments. Afterpay is available in the US and UK, supporting payments in USD and GBP.
   </Accordion>
 
-  <Accordion title="UPI and Rupay (India)" id="upi-and-rupay-india">
+  <Accordion title="UPI and Rupay (India)">
     Accept leading Indian payment options:
 
     * **UPI** – Customers scan a QR code or use apps (Google Pay, PhonePe, Paytm, CRED) for instant, contactless bank transfers
@@ -23898,7 +26293,7 @@ You may want to configure allowed payment methods to:
   <Step title="Add parameter to API request">
     Include the `allowed_payment_method_types` field in your payment or subscription creation request:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "allowed_payment_method_types": [
         "credit",
@@ -23922,7 +26317,7 @@ You may want to configure allowed payment methods to:
 
 This configuration is supported by the following endpoints:
 
-<CardGroup cols={3}>
+<CardGroup>
   <Card title="Create Checkout Session" icon="cart-shopping" href="/api-reference/checkout-sessions/create">
     Create checkout sessions with allowed payment methods.
   </Card>
@@ -23940,7 +26335,7 @@ This configuration is supported by the following endpoints:
 
 <Tabs>
   <Tab title="One-Time Payment">
-    ```json  theme={null}
+    ```json theme={null}
     {
       "amount": 1000,
       "currency": "usd",
@@ -23955,7 +26350,7 @@ This configuration is supported by the following endpoints:
   </Tab>
 
   <Tab title="Subscription">
-    ```json  theme={null}
+    ```json theme={null}
     {
       "product_id": "prod_123",
       "customer_id": "cust_456",
@@ -23968,7 +26363,7 @@ This configuration is supported by the following endpoints:
   </Tab>
 
   <Tab title="Regional Focus">
-    ```json  theme={null}
+    ```json theme={null}
     {
       "amount": 5000,
       "currency": "eur",
@@ -24050,7 +26445,7 @@ Payment method availability depends on multiple factors:
   <Accordion title="Indian payment method subscription issues">
     **Subscription charge failed after upgrade/downgrade:**
 
-    * The new charge amount may exceed the existing mandate limit (₹15,000 threshold)
+    * The new charge amount may exceed the existing mandate limit (Rs 15,000 threshold)
     * Customer may need to update their payment method to establish a new mandate
 
     **Solution:** Prompt the customer to update their payment method or adjust the subscription amount to stay within mandate limits.
@@ -24058,7 +26453,7 @@ Payment method availability depends on multiple factors:
     **Subscription on hold after charge initiation:**
 
     * Customer may have cancelled the mandate during the 48-hour processing window
-    * Customer may have failed to authorize a high-value charge (≥₹15,000)
+    * Customer may have failed to authorize a high-value charge (≥Rs 15,000)
 
     **Solution:** Monitor webhook events for mandate cancellations and payment failures. Implement retry logic or prompt customers to re-establish their payment method.
 
@@ -24175,7 +26570,7 @@ Consolidate your eligible earnings and manage your payout threshold directly fro
 The **Payouts Section** consolidates all eligible earnings that can be disbursed in the next payout cycle. It provides transparency on the net available balance after accounting for all fees, refunds, and taxes.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-section.png?fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=c400fc4f24f406e3a032d33d1eb2a506" alt="Payouts section showing balance eligible for payout" data-og-width="1883" width="1883" data-og-height="1058" height="1058" data-path="images/payouts/payout-section.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-section.png?w=280&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=3270bbff8cd25ddeee0e45e632a34257 280w, https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-section.png?w=560&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=605dddd01b11ee3d4295ff06322e27a9 560w, https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-section.png?w=840&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=24ef2cdbb2efdb2942a7c50ef0e9bd72 840w, https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-section.png?w=1100&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=eebabfa03e6f9e6c239badbc88f79fbf 1100w, https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-section.png?w=1650&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=432cda4cd6d4b8c898bd94cdb7bd8043 1650w, https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-section.png?w=2500&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=386f21f19f63e85f28f4bbb449a6856f 2500w" />
+  <img alt="Payouts section showing balance eligible for payout" />
 </Frame>
 
 ## Key Features
@@ -24239,7 +26634,7 @@ We support the following payout cycles:
 | Currency | Minimum Threshold |
 | -------- | ----------------- |
 | USD      | \$50              |
-| INR      | ₹1,000            |
+| INR      | Rs 1,000          |
 
 <Info>
   If your balance does not meet the threshold, it will carry forward to the next payout cycle.
@@ -24258,7 +26653,7 @@ You can customize the balance that must build up in your USD wallet before Dodo 
 ### How to Edit Your Threshold
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-threshold-edit.png?fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=15bd6e9bf986041b486f5872b3fcfdc7" alt="Edit payout threshold in dashboard" data-og-width="1878" width="1878" data-og-height="1058" height="1058" data-path="images/payouts/payout-threshold-edit.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-threshold-edit.png?w=280&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=c2e5339df1549ef0559d53512bc56384 280w, https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-threshold-edit.png?w=560&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=2cc29c468e5cfdcfe2dc7b7fcea322ed 560w, https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-threshold-edit.png?w=840&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=31820d696f7e0a5093e8f633ff7e1e42 840w, https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-threshold-edit.png?w=1100&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=16eac17cd95b90fd440bd3b9f356de38 1100w, https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-threshold-edit.png?w=1650&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=71e676093c580d9d8aef8a25cf697666 1650w, https://mintcdn.com/dodopayments/gpNQlDmLuPOhJg3M/images/payouts/payout-threshold-edit.png?w=2500&fit=max&auto=format&n=gpNQlDmLuPOhJg3M&q=85&s=f8766c4577658a6d33a2564cffcf999e 2500w" />
+  <img alt="Edit payout threshold in dashboard" />
 </Frame>
 
 <Steps>
@@ -24316,7 +26711,7 @@ A reverse invoice is generated to indicate the amount paid by Dodo Payments to t
 ### Invoice Structure
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/payouts/payout-process/Invoice%20-%20Payout.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=03746005d9b9e88a63c83d1c392ebe78" alt="Payout invoice structure example" width="60%" data-og-width="595" data-og-height="742" data-path="images/payouts/payout-process/Invoice - Payout.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/payouts/payout-process/Invoice%20-%20Payout.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=0aca29dca1c772812e734382074d4fe6 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/payouts/payout-process/Invoice%20-%20Payout.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=b48fdcbc9d52c5f0fc2cca6ca6dd45bd 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/payouts/payout-process/Invoice%20-%20Payout.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=5106646229a072c3125e38d28e175352 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/payouts/payout-process/Invoice%20-%20Payout.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=2d23097ee81c81a69039682f13d39096 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/payouts/payout-process/Invoice%20-%20Payout.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=144cbf91196d159ebde85485cb66e0ed 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/payouts/payout-process/Invoice%20-%20Payout.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=61f9907a6e2b0bdce6f215e274729675 2500w" />
+  <img alt="Payout invoice structure example" />
 </Frame>
 
 ## Important Disclaimer for Indian Businesses
@@ -24341,7 +26736,7 @@ Create one-time, subscription, or usage-based products in minutes. Manage pricin
   Products are the foundation of Dodo Payments. Whether you sell a one‑time download, a recurring subscription, or usage‑based access, you start by creating a product. Each product defines how it’s priced, presented at checkout, and fulfilled after purchase.
 </Info>
 
-<CardGroup cols={3}>
+<CardGroup>
   <Card title="One‑Time" icon="credit-card" href="/features/one-time-payment-products">
     Charge once for lifetime access or a single deliverable.
   </Card>
@@ -24368,7 +26763,7 @@ You can create products from the dashboard or via API. Choose the pricing model 
     </Tip>
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=fb41221c4f2af4de0155e71de1ac6904" alt="Products" data-og-width="1911" width="1911" data-og-height="927" height="927" data-path="images/products.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=280&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=6fc4d1bf0c31dc0ccebfca09150577a5 280w, https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=560&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=4eb3456ebb3b4cdcbe38a1fbafb42acc 560w, https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=840&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=61bf43aa862c47e57a0793692c72a807 840w, https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=1100&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=f16c04010332033411f9dc0d0d0b513c 1100w, https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=1650&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=4826558f298f6ed39854d430626aa5a3 1650w, https://mintcdn.com/dodopayments/r-ndtvzx3WhKqwER/images/products.png?w=2500&fit=max&auto=format&n=r-ndtvzx3WhKqwER&q=85&s=2ef2a63a54968daa60c4426dd8fae206 2500w" />
+      <img alt="Products" />
     </Frame>
   </Step>
 
@@ -24498,7 +26893,7 @@ The following instructions allow you to create, update, manage, and retrieve pro
   <Accordion title="Checkout & fulfillment">
     Create payment or subscription flows from products, and fulfill automatically via benefits and webhooks.
 
-    <CardGroup cols={3}>
+    <CardGroup>
       <Card title="Checkout Sessions" icon="code" href="/developer-resources/checkout-session">
         Create checkout sessions for one‑time or subscription purchases.
       </Card>
@@ -24546,7 +26941,7 @@ With ParityDeals, you can also offer [automatic time-based discounts](https://ww
 When ParityDeals is integrated into your website, eligible visitors will see a banner that includes a location-based discount code they can use at checkout.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/1.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=17713c509bbe73af91ab322b26bce518" alt="ParityDeals discount banner example" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/ppp/1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/1.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=1740c6f45376abeb77a1333d7078e358 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/1.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=7b60cabdffe1c22f89f15e4dd7c58561 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/1.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=6ec994e59641cd0d4eb0f5d1172ff16c 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/1.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=cb65efe6725cd4b58edfad7cffd6712d 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/1.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=a9fd86bd94d58dfba67ecb3fc51e9672 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/1.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=ceff2ad940456dab71886515c261a8fb 2500w" />
+  <img alt="ParityDeals discount banner example" />
 </Frame>
 
 These discount codes are automatically created and managed by ParityDeals and will appear in your **Dodo Payments Dashboard** under **Sales → Discounts**.
@@ -24564,7 +26959,7 @@ After signing in, locate the option to create deals. From the dropdown menu, sel
 **→ "Create Deals via Dodo Payments"**
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/2.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=b3c30692322ab6ccf44210dd906800c4" alt="Creating deals via Dodo Payments" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/ppp/2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/2.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=858b269c3089ef78b85fe81975f24acb 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/2.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=5692c4630fec06e14e5d7b111196df51 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/2.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=e436f98f9ece9e9b08fefa0187d93088 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/2.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=9ff56afff2d57678ef612a20f0e20baa 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/2.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=2306be2c364dcb558fe7444e0718bd84 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/2.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=adb9acfe192278047e8732d2c819aecf 2500w" />
+  <img alt="Creating deals via Dodo Payments" />
 </Frame>
 
 ### 3. Generate a Dodo Payments API Key
@@ -24576,7 +26971,7 @@ Log in to your **Dodo Payments dashboard** and navigate to:
 Click **"Create New API"** and name it something descriptive like "ParityDeals".
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/3.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=33d72db98f026942edfc9938d6862029" alt="Creating a new API key in Dodo Payments" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/ppp/3.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/3.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=b57a410af00eac88d087469a9ec49026 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/3.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=b485d7f61144baecf76f7a6b504c7f5c 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/3.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=c2d076cca6aef4b3de7ba73e7bfddfd8 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/3.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=6d8f0ce3a41c0d408f11529e02f44c13 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/3.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=0289fb5754e60c7f6a754b2906c7d6f2 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/3.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=ed650dc56151b3c3d90a06a449b8b4f4 2500w" />
+  <img alt="Creating a new API key in Dodo Payments" />
 </Frame>
 
 ### 4. Connect Your API Key to ParityDeals
@@ -24584,7 +26979,7 @@ Click **"Create New API"** and name it something descriptive like "ParityDeals".
 Copy the API key you created and paste it into the ParityDeals interface to establish the connection with your Dodo Payments account.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/4.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=54bb27e15a66252a47a29a057bf2d31d" alt="Connecting API key to ParityDeals" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/ppp/4.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/4.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=f871eac5f0d2c785f026c1d801169381 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/4.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=a34f28ed90cafeb3028da08d250919de 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/4.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=8b41369756f5decfdc5c930db6ddd2cd 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/4.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=4ca35605f258770b88eeb5f645fbcad7 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/4.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=9fc3c21beb4100ab20dfc291a1584635 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/4.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=8f95c9639a58eecd2ed608013b242669 2500w" />
+  <img alt="Connecting API key to ParityDeals" />
 </Frame>
 
 ### 5. Select Products
@@ -24592,7 +26987,7 @@ Copy the API key you created and paste it into the ParityDeals interface to esta
 Once connected, ParityDeals will fetch your Dodo Payments product catalog. Select the products you want to associate with your deals.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/5.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=5c0c5d0813260df6532f202ca015fe18" alt="Selecting products for ParityDeals" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/ppp/5.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/5.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=ef258d828564e5c447b414773529344b 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/5.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=d416dc25f6a52a9a3015f233316b7b56 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/5.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=d931e816fdb0b78a0130610f1084d82a 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/5.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=9a79babdb8831ddc5d7117bd97c2df91 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/5.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=007ccba7f75bc222db43c99be730e10c 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/5.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=7764dbc497f0d5436c547eecb0c474e9 2500w" />
+  <img alt="Selecting products for ParityDeals" />
 </Frame>
 
 ### 6. Configure Deal Settings
@@ -24606,7 +27001,7 @@ Then choose your preferred deal type:
 * Time-based flash deals
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/6.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=294dea1d0e003ee017337180b6d6361b" alt="Configuring deal settings" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/ppp/6.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/6.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=33a66ae178124325640af41e2e86441e 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/6.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=c60529e574cc609c1ad522cc6e476461 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/6.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=7b07d20b67b5a76ba546b607215ed711 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/6.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=f148b1976b89f4630acc64be300bef1b 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/6.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=6c3834e9a32317fa4b12737b9f4da097 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/6.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=8ec60731dc69c4609ad31db24fec5a03 2500w" />
+  <img alt="Configuring deal settings" />
 </Frame>
 
 ### 7. Set Country-Based Rules
@@ -24614,7 +27009,7 @@ Then choose your preferred deal type:
 Select the countries you want to offer localized discounts to and define the discount percentage for each. ParityDeals provides recommended defaults that you can adjust as needed.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/7.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=9ec4d84c4efd3abbe02461ef741f93ff" alt="Setting country-based discount rules" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/ppp/7.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/7.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=1c20c792b8d83f73386c8c404f8d4fae 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/7.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=76573d38ca78a97ad0e21b31a002a411 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/7.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=97ecbd25f3d7be4df032e4fcba32677d 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/7.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=eb308e7770fae3bb40d91e0ed8c68314 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/7.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=3041d3e50e30aeacc74bb44be77e55aa 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/7.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=77566ed3efb818e6563199a19e42be25 2500w" />
+  <img alt="Setting country-based discount rules" />
 </Frame>
 
 ### 8. Customize the Banner
@@ -24628,7 +27023,7 @@ Design your discount banner by:
 This banner will be displayed to eligible visitors based on your configured rules.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/8.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=fa082e5ece00f51c782350cec008a4eb" alt="Customizing the discount banner" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/ppp/8.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/8.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=5e476806f59f7f2296a236f5b0b14a2e 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/8.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=d0ec31c4fac44125eb17994d59871138 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/8.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=d80be84f637902f4a8266a61f2361179 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/8.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=6c05c6614636574fbe6fc1b3e39fe1ac 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/8.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=1e218abe84877a299778bbaeafb62fd6 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/8.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=a43c32ad8eea65306165bc4c97fef23e 2500w" />
+  <img alt="Customizing the discount banner" />
 </Frame>
 
 ### 9. Add the ParityDeals Script to Your Website
@@ -24638,7 +27033,7 @@ After saving your deal, ParityDeals will generate a script. Add this script to y
 This script automatically detects visitor locations and displays the appropriate discount banner.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/9.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=e4341697ecfbbbb112abd44b04d908f5" alt="ParityDeals integration script" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/ppp/9.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/9.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=8079f3af69cd91d75e073612c395cd26 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/9.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=13ea7442142d5ec5c6c6eadaf9bcbe8f 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/9.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=e7445c733d9f96196bc5f0b07c85fb68 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/9.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=3805d73e9253c0ad7c2ceff54e962109 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/9.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=48c359011a34ca65cb9cae8312997712 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/ppp/9.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=454af78159322d672f314ba08caf109c 2500w" />
+  <img alt="ParityDeals integration script" />
 </Frame>
 
 ## All Set!
@@ -24654,13 +27049,677 @@ All of these are automated through ParityDeals and work seamlessly with Dodo Pay
 For more detailed information, refer to the [ParityDeals Documentation](https://www.paritydeals.com/docs/) or contact their support team.
 
 
+# Seat-Based Billing
+Source: https://docs.dodopayments.com/features/seat-based-billing
+
+Implement per-user pricing for team software, SaaS products, and enterprise licenses with flexible seat management and proration.
+
+<Info>
+  Seat-based billing lets you charge customers based on the number of users, team members, or licenses they need. It's the standard pricing model for team collaboration tools, enterprise software, and B2B SaaS products.
+</Info>
+
+<CardGroup>
+  <Card title="Implementation Tutorial" icon="code" href="/developer-resources/seat-based-pricing">
+    Step-by-step guide with code examples.
+  </Card>
+
+  <Card title="Add-ons Documentation" icon="puzzle" href="/features/addons">
+    Learn about the add-on system that powers seat-based billing.
+  </Card>
+
+  <Card title="Subscription Management" icon="repeat" href="/features/subscription">
+    Manage seat-based subscriptions and plan changes.
+  </Card>
+
+  <Card title="Webhooks" icon="bell" href="/developer-resources/webhooks/intents/subscription">
+    Track seat changes with subscription webhooks.
+  </Card>
+</CardGroup>
+
+***
+
+## What is Seat-Based Billing?
+
+Seat-based billing (also called per-user or per-seat pricing) charges customers based on the number of users who access your product. Instead of a flat fee, the price scales with team size.
+
+### Common Use Cases
+
+| Industry           | Example              | Pricing Model         |
+| ------------------ | -------------------- | --------------------- |
+| Team Collaboration | Slack, Notion, Asana | Per active user/month |
+| Developer Tools    | GitHub, GitLab, Jira | Per seat/month        |
+| CRM Software       | Salesforce, HubSpot  | Per user license      |
+| Design Tools       | Figma, Canva         | Per editor seat       |
+| Security Software  | 1Password, Okta      | Per user/month        |
+| Video Conferencing | Zoom, Teams          | Per host license      |
+
+### Benefits of Seat-Based Pricing
+
+**For Your Business:**
+
+* Revenue scales naturally as customers grow
+* Predictable pricing customers can budget for
+* Clear upgrade path from individual to team to enterprise
+* Higher lifetime value as teams expand
+
+**For Your Customers:**
+
+* Pay only for what they use
+* Easy to understand and forecast costs
+* Flexibility to add/remove users as needed
+* Fair pricing that matches team size
+
+***
+
+## How Seat-Based Billing Works in Dodo Payments
+
+Dodo Payments implements seat-based billing using the **Add-ons** system. Here's how it works:
+
+### Architecture Overview
+
+A Team Pro subscription costs \$99/month and includes 5 seats. If you have more than 5 users, you pay an additional \$15/month for each extra seat.
+
+For example, if your team needs 15 seats:
+
+* Base Plan: \$99/month (includes 5 seats)
+* Add-ons: 10 extra seats × \$15/month = \$150/month
+* Total monthly cost: \$99 + \$150 = \$249 for 15 seats
+
+### Key Components
+
+| Component    | Purpose                               | Example                                     |
+| ------------ | ------------------------------------- | ------------------------------------------- |
+| Base Product | Core subscription with included seats | "Team Plan - \$99/month (5 seats included)" |
+| Seat Add-on  | Per-seat charge for additional users  | "Extra Seat - \$15/month each"              |
+| Quantity     | Number of additional seats purchased  | 10 extra seats                              |
+
+***
+
+## Pricing Strategies
+
+Choose the seat-based pricing strategy that fits your business:
+
+### Strategy 1: Base + Per-Seat Add-on
+
+Include a set number of seats in the base plan, charge for additional seats.
+
+**Example:**
+
+```
+Starter Plan: $49/month
+├── Includes: 3 seats
+├── Extra seats: $10/month each
+└── 8 total seats = $49 + (5 × $10) = $99/month
+```
+
+**Best for:** Products where small teams can function with the base offering.
+
+### Strategy 2: Pure Per-Seat Pricing
+
+Charge a flat rate per seat with no base fee.
+
+**Example:**
+
+```
+Per User: $12/month
+├── 5 users = $60/month
+├── 20 users = $240/month
+└── 100 users = $1,200/month
+```
+
+**Implementation:** Set base plan price to \$0, use only the seat add-on.
+
+**Best for:** Simple, transparent pricing; usage-based models.
+
+### Strategy 3: Tiered Seat Pricing
+
+Different base plans with different per-seat rates.
+
+**Example:**
+
+```
+Starter: $0/month base + $15/seat
+├── Lower features, higher per-seat cost
+
+Professional: $99/month base + $10/seat
+├── More features, lower per-seat cost
+
+Enterprise: $499/month base + $7/seat
+└── All features, volume discount on seats
+```
+
+**Implementation:** Create separate products for each tier with different add-on prices.
+
+**Best for:** Encouraging upgrades to higher tiers; enterprise sales.
+
+### Strategy 4: Seat Bundles
+
+Sell seats in packs rather than individually.
+
+**Example:**
+
+```
+5-Seat Pack: $50/month ($10/seat)
+10-Seat Pack: $80/month ($8/seat)
+25-Seat Pack: $175/month ($7/seat)
+```
+
+**Implementation:** Create multiple add-ons for different pack sizes.
+
+**Best for:** Simplifying purchasing decisions; encouraging larger commitments.
+
+***
+
+## Setting Up Seat-Based Billing
+
+### Step 1: Plan Your Pricing
+
+Before implementation, define your pricing structure:
+
+<Steps>
+  <Step title="Define Base Plan">
+    Decide what's included in the base subscription:
+
+    * Base price (can be \$0 for pure per-seat)
+    * Number of included seats
+    * Features available at this tier
+  </Step>
+
+  <Step title="Set Seat Pricing">
+    Determine the per-seat add-on cost:
+
+    * Price per additional seat
+    * Any volume discounts (via multiple add-ons)
+    * Maximum seats allowed (if applicable)
+  </Step>
+
+  <Step title="Consider Billing Frequency">
+    Align seat pricing with your billing cycle:
+
+    * Monthly subscriptions → monthly seat charges
+    * Annual subscriptions → annual seat charges (often discounted)
+  </Step>
+</Steps>
+
+### Step 2: Create the Seat Add-on
+
+In your Dodo Payments dashboard:
+
+1. Navigate to **Products** → **Add-Ons**
+2. Click **Create Add-On**
+3. Configure the add-on:
+
+| Field        | Value                                       | Notes                           |
+| ------------ | ------------------------------------------- | ------------------------------- |
+| Name         | "Additional Seat" or "Team Member"          | Clear, user-friendly name       |
+| Description  | "Add another team member to your workspace" | Explain what customers get      |
+| Price        | Your per-seat price                         | e.g., \$10.00                   |
+| Currency     | Match your base product                     | Must be the same currency       |
+| Tax Category | Same as base product                        | Ensures consistent tax handling |
+
+<Tip>
+  Create descriptive add-on names that make sense on invoices. "Additional Team Seat" is clearer than "Seat Add-on" for customers reviewing their bills.
+</Tip>
+
+### Step 3: Create the Base Subscription
+
+Create your subscription product:
+
+1. Navigate to **Products** → **Create Product**
+2. Select **Subscription**
+3. Configure pricing and details
+4. In the **Add-Ons** section, attach your seat add-on
+
+### Step 4: Attach Add-on to Product
+
+Link the seat add-on to your subscription:
+
+1. Edit your subscription product
+2. Scroll to **Add-Ons** section
+3. Click **Add Add-Ons**
+4. Select your seat add-on
+5. Save changes
+
+<Check>
+  Your subscription product now supports seat-based pricing. Customers can purchase any quantity of additional seats during checkout.
+</Check>
+
+***
+
+## Managing Seats
+
+### Adding Seats to New Subscriptions
+
+When creating a checkout session, specify the seat quantity:
+
+```typescript theme={null}
+const session = await client.checkoutSessions.create({
+  product_cart: [{
+    product_id: 'prod_team_plan',
+    quantity: 1,
+    addons: [{
+      addon_id: 'addon_seat',
+      quantity: 10  // 10 additional seats
+    }]
+  }],
+  customer: { email: 'admin@company.com' },
+  return_url: 'https://yourapp.com/success'
+});
+```
+
+### Changing Seat Count on Existing Subscriptions
+
+Use the Change Plan API to adjust seats:
+
+```typescript theme={null}
+// Add 5 more seats to existing subscription
+await client.subscriptions.changePlan('sub_123', {
+  product_id: 'prod_team_plan',
+  quantity: 1,
+  proration_billing_mode: 'prorated_immediately',
+  addons: [{
+    addon_id: 'addon_seat',
+    quantity: 15  // New total: 15 additional seats
+  }]
+});
+```
+
+### Removing Seats
+
+To reduce seat count, specify the lower quantity:
+
+```typescript theme={null}
+// Reduce from 15 to 8 additional seats
+await client.subscriptions.changePlan('sub_123', {
+  product_id: 'prod_team_plan',
+  quantity: 1,
+  proration_billing_mode: 'difference_immediately',
+  addons: [{
+    addon_id: 'addon_seat',
+    quantity: 8  // Reduced to 8 additional seats
+  }]
+});
+```
+
+### Removing All Additional Seats
+
+Pass an empty addons array to remove all add-ons:
+
+```typescript theme={null}
+// Remove all additional seats, keep only base plan seats
+await client.subscriptions.changePlan('sub_123', {
+  product_id: 'prod_team_plan',
+  quantity: 1,
+  proration_billing_mode: 'difference_immediately',
+  addons: []  // Removes all add-ons
+});
+```
+
+***
+
+## Proration for Seat Changes
+
+When customers add or remove seats mid-cycle, proration determines how they're billed.
+
+### Proration Modes
+
+| Mode                     | Adding Seats                                | Removing Seats                    |
+| ------------------------ | ------------------------------------------- | --------------------------------- |
+| `prorated_immediately`   | Charge for remaining days in cycle          | Credit for unused days            |
+| `difference_immediately` | Charge full seat price                      | Credit applied to future renewals |
+| `full_immediately`       | Charge full seat price, reset billing cycle | No credit                         |
+
+### Proration Examples
+
+**Scenario: 15-day billing cycle remaining, adding 5 seats at \$10/seat**
+
+<Tabs>
+  <Tab title="prorated_immediately">
+    ```
+    Prorated charge = ($10 × 5 seats) × (15 days / 30 days)
+                    = $50 × 0.5
+                    = $25 immediate charge
+    ```
+
+    Customer pays \$25 now, then \$50/month on renewal.
+  </Tab>
+
+  <Tab title="difference_immediately">
+    ```
+    Immediate charge = $10 × 5 seats = $50
+    ```
+
+    Customer pays full \$50 now, regardless of cycle position.
+  </Tab>
+
+  <Tab title="full_immediately">
+    ```
+    Immediate charge = Full subscription + add-ons
+    Billing cycle resets to today
+    ```
+
+    Customer pays full amount, new billing cycle starts.
+  </Tab>
+</Tabs>
+
+### Preview Before Changing
+
+Always preview proration before making changes:
+
+```typescript theme={null}
+const preview = await client.subscriptions.previewChangePlan('sub_123', {
+  product_id: 'prod_team_plan',
+  quantity: 1,
+  proration_billing_mode: 'prorated_immediately',
+  addons: [{ addon_id: 'addon_seat', quantity: 20 }]
+});
+
+console.log('Immediate charge:', preview.immediate_charge.summary);
+// Show customer: "Adding 5 seats will cost $25 today"
+```
+
+***
+
+## Tracking Seats with Webhooks
+
+Monitor seat changes by listening to subscription webhooks:
+
+### Relevant Events
+
+| Event                       | When Triggered             | Use Case                      |
+| --------------------------- | -------------------------- | ----------------------------- |
+| `subscription.active`       | New subscription activated | Provision initial seats       |
+| `subscription.plan_changed` | Seats added/removed        | Update seat count in your app |
+| `subscription.renewed`      | Subscription renewed       | Confirm seat count unchanged  |
+| `subscription.cancelled`    | Subscription cancelled     | Deprovision all seats         |
+
+### Webhook Handler Example
+
+```typescript theme={null}
+app.post('/webhooks/dodo', async (req, res) => {
+  const event = req.body;
+
+  switch (event.type) {
+    case 'subscription.active':
+      // New subscription - provision seats
+      const seats = calculateTotalSeats(event.data);
+      await provisionSeats(event.data.customer_id, seats);
+      break;
+
+    case 'subscription.plan_changed':
+      // Seats changed - update access
+      const newSeats = calculateTotalSeats(event.data);
+      await updateSeatCount(event.data.subscription_id, newSeats);
+      break;
+
+    case 'subscription.cancelled':
+      // Subscription cancelled - deprovision
+      await deprovisionAllSeats(event.data.subscription_id);
+      break;
+  }
+
+  res.json({ received: true });
+});
+
+function calculateTotalSeats(subscriptionData) {
+  const baseSeats = 5;  // Included in plan
+  const addonSeats = subscriptionData.addons?.reduce(
+    (total, addon) => total + addon.quantity, 0
+  ) || 0;
+  return baseSeats + addonSeats;
+}
+```
+
+***
+
+## Enforcing Seat Limits
+
+Your application must enforce seat limits. Dodo Payments tracks billing, but you control access.
+
+### Enforcement Strategies
+
+<Tabs>
+  <Tab title="Hard Limit">
+    Strictly prevent adding users beyond the seat count.
+
+    ```typescript theme={null}
+    async function inviteUser(teamId: string, email: string) {
+      const team = await getTeam(teamId);
+      const subscription = await getSubscription(team.subscriptionId);
+      const totalSeats = calculateTotalSeats(subscription);
+      const usedSeats = await countTeamMembers(teamId);
+
+      if (usedSeats >= totalSeats) {
+        throw new Error('No seats available. Please upgrade your plan.');
+      }
+
+      await sendInvitation(teamId, email);
+    }
+    ```
+  </Tab>
+
+  <Tab title="Soft Limit with Warning">
+    Allow exceeding with a warning and grace period.
+
+    ```typescript theme={null}
+    async function inviteUser(teamId: string, email: string) {
+      const team = await getTeam(teamId);
+      const { totalSeats, usedSeats } = await getSeatInfo(team);
+
+      if (usedSeats >= totalSeats) {
+        // Allow but flag for billing
+        await flagOverage(teamId, usedSeats - totalSeats + 1);
+        await notifyAdmin(team.adminEmail, 'You have exceeded your seat limit');
+      }
+
+      await sendInvitation(teamId, email);
+    }
+    ```
+  </Tab>
+
+  <Tab title="Auto-Upgrade">
+    Automatically add seats when limit is reached.
+
+    ```typescript theme={null}
+    async function inviteUser(teamId: string, email: string) {
+      const team = await getTeam(teamId);
+      const { totalSeats, usedSeats, subscriptionId } = await getSeatInfo(team);
+
+      if (usedSeats >= totalSeats) {
+        // Automatically add a seat
+        await client.subscriptions.changePlan(subscriptionId, {
+          product_id: team.productId,
+          quantity: 1,
+          proration_billing_mode: 'prorated_immediately',
+          addons: [{ addon_id: 'addon_seat', quantity: totalSeats - baseSeats + 1 }]
+        });
+
+        await notifyAdmin(team.adminEmail, 'A new seat was added to your plan');
+      }
+
+      await sendInvitation(teamId, email);
+    }
+    ```
+  </Tab>
+</Tabs>
+
+***
+
+## Advanced Patterns
+
+### Different Seat Types
+
+Offer different seat types with different pricing:
+
+```
+Full Seats: $20/month - Full access to all features
+View-Only Seats: $5/month - Read-only access
+Guest Seats: $0/month - Limited external collaborator access
+```
+
+**Implementation:** Create separate add-ons for each seat type.
+
+```typescript theme={null}
+const session = await client.checkoutSessions.create({
+  product_cart: [{
+    product_id: 'prod_team_plan',
+    quantity: 1,
+    addons: [
+      { addon_id: 'addon_full_seat', quantity: 10 },
+      { addon_id: 'addon_viewer_seat', quantity: 25 },
+      { addon_id: 'addon_guest_seat', quantity: 50 }
+    ]
+  }]
+});
+```
+
+### Annual Seat Discounts
+
+Offer discounted annual seat pricing:
+
+```
+Monthly: $15/seat/month
+Annual: $12/seat/month (20% savings)
+```
+
+**Implementation:** Create separate products for monthly and annual plans with different add-on prices.
+
+### Minimum Seat Requirements
+
+Require a minimum number of seats for certain plans:
+
+```typescript theme={null}
+async function validateSeatCount(planId: string, seatCount: number) {
+  const minimums = {
+    'prod_starter': 1,
+    'prod_team': 5,
+    'prod_enterprise': 25
+  };
+
+  if (seatCount < minimums[planId]) {
+    throw new Error(`${planId} requires at least ${minimums[planId]} seats`);
+  }
+}
+```
+
+***
+
+## Best Practices
+
+### Pricing Best Practices
+
+* **Clear Communication**: Show per-seat pricing prominently on your pricing page
+* **Included Seats**: Consider including a few seats in the base price to reduce friction
+* **Volume Discounts**: Offer lower per-seat rates for larger teams to win enterprise deals
+* **Annual Incentives**: Discount annual plans to improve cash flow and retention
+
+### Technical Best Practices
+
+* **Cache Seat Counts**: Cache subscription seat counts locally to avoid API calls on every request
+* **Sync Regularly**: Periodically sync your local seat count with Dodo Payments via API
+* **Handle Failures**: If a seat change fails, show clear error messages and retry options
+* **Audit Trail**: Log all seat changes for billing disputes and compliance
+
+### User Experience Best Practices
+
+* **Real-Time Feedback**: Show immediate cost impact when adjusting seats
+* **Confirmation Steps**: Require confirmation before billing changes
+* **Proration Transparency**: Clearly explain prorated charges before applying
+* **Easy Downgrades**: Don't make it difficult to reduce seats (it builds trust)
+
+***
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Seat count mismatch between app and billing">
+    **Symptom**: Your app shows a different seat count than the subscription.
+
+    **Causes**:
+
+    * Webhook not received or processed
+    * Race condition during seat change
+    * Cached data not updated
+
+    **Solutions**:
+
+    1. Implement webhook handlers for `subscription.plan_changed`
+    2. Add a "Sync with billing" button that fetches current subscription
+    3. Set cache TTL to ensure regular refresh
+  </Accordion>
+
+  <Accordion title="Proration charges unexpected">
+    **Symptom**: Customer confused by mid-cycle charge amount.
+
+    **Causes**:
+
+    * Proration mode not communicated clearly
+    * Customer didn't see preview before confirming
+
+    **Solutions**:
+
+    1. Always use `previewChangePlan` before making changes
+    2. Show clear breakdown: "Adding X seats = \$Y today (prorated for Z days)"
+    3. Document your proration policy in help center
+  </Accordion>
+
+  <Accordion title="Add-on not appearing in checkout">
+    **Symptom**: Seat add-on not available during checkout.
+
+    **Causes**:
+
+    * Add-on not attached to product
+    * Add-on archived or deleted
+    * Currency mismatch between product and add-on
+
+    **Solutions**:
+
+    1. Verify add-on is attached in product settings
+    2. Check add-on status in Add-Ons dashboard
+    3. Ensure currencies match exactly
+  </Accordion>
+
+  <Accordion title="Cannot reduce seats below current usage">
+    **Symptom**: Customer wants to reduce seats but has users assigned.
+
+    **Solutions**:
+
+    1. Show which users must be removed before reducing seats
+    2. Implement a workflow: Remove users → Reduce seats
+    3. Consider a grace period before enforcing seat reduction
+  </Accordion>
+</AccordionGroup>
+
+***
+
+## Related Documentation
+
+<CardGroup>
+  <Card title="Seat-Based Pricing Tutorial" icon="code" href="/developer-resources/seat-based-pricing">
+    Complete implementation guide with code.
+  </Card>
+
+  <Card title="Add-ons" icon="puzzle" href="/features/addons">
+    Understand the add-on system in depth.
+  </Card>
+
+  <Card title="Plan Changes & Proration" icon="arrows-rotate" href="/developer-resources/subscription-upgrade-downgrade">
+    Handle subscription modifications.
+  </Card>
+
+  <Card title="Subscription Webhooks" icon="bell" href="/developer-resources/webhooks/intents/subscription">
+    Track subscription events.
+  </Card>
+</CardGroup>
+
+
 # Storefront
 Source: https://docs.dodopayments.com/features/storefront
 
 The Storefront Feature allows you to create a simple, branded, and mobile-friendly online store where you can showcase both One-Time Payment products and Subscription products. This feature eliminates the complexity of building an entire website, enabling you to quickly offer your products or services online without additional web development efforts.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Storefront.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=01a8c507034e9c40fd4bd7c2afd51226" alt="Storefront Cover Image" data-og-width="1200" width="1200" data-og-height="630" height="630" data-path="images/cover-images/Storefront.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Storefront.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=d4e6d6da0b6d642f0fb40469264f9dd9 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Storefront.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=9e3f9481f805782a4a20c2913ea170ee 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Storefront.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=d4cf0c493c5438dd2d3d4a362cfb35b2 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Storefront.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=bc82075c8d3ea65cf5c06834e6c13031 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Storefront.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=bc18bcfb1ff1bf9ba8d1de1548b5b58d 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Storefront.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=6f602bfb6fee5c99d3221e68d207db67 2500w" />
+  <img alt="Storefront Cover Image" />
 </Frame>
 
 ## Key Highlights of the Feature
@@ -24683,7 +27742,7 @@ The Storefront Feature allows you to create a simple, branded, and mobile-friend
 
 Below is the step-by-step process for merchants to set up and manage their storefront:
 
-<img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=085dab26f05d5f0ea48cb31fd6e8e0f9" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/store-front/sf-1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=d11f6cfa8610c22bcc97e8ec400a637f 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=6ed970489b81e2bbff794bc911ce2271 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=98ff19e1d971ccd426c5e65ca3aba007 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=958339f3a23d725df0911db75c84d630 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=9e178086e696e0363ea07829cd042d86 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=e33702a6f59ab155f083fd4902d58403 2500w" />
+<img />
 
 ### Accessing Your Storefront Settings
 
@@ -24701,7 +27760,7 @@ Below is the step-by-step process for merchants to set up and manage their store
 
 ### Saving & Viewing Your Store
 
-<img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-2.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=b0b3e18d91f835b0812ee708ee7a8d8b" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/store-front/sf-2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-2.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=b8d293a56a45fe9bec96e23568cbc32d 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-2.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=aa273e644385d67bda2b6e6fde11deeb 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-2.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=759631cbd1dbd079ca9c12ef6f6cb575 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-2.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=a847aeb484f6c8006a575f6949b04cd5 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-2.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=e5fd9a6b085df49aa1c43518a04c6b6a 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-2.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=037552e1ebb5256b7705bad9c7c0bc86 2500w" />
+<img />
 
 1. **Click Publish**: Click Publish to confirm your storefront setup and product publishing decisions.
 2. **Preview Store**: You can preview your storefront at the generated URL.
@@ -24709,7 +27768,7 @@ Below is the step-by-step process for merchants to set up and manage their store
 
 ### Test Mode
 
-<img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-3.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=01545a337bee2e0d3914af1712d0710c" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/store-front/sf-3.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-3.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=636f4b5ed9fbb148f40ef65b3a1508b2 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-3.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=ec4d11ac0817790b49aefa60298f7629 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-3.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=6b53763bfb46c9cd3f86545f2000b439 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-3.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=2f6b2655715612a7724a9109504bff21 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-3.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=8dad892779e4e6fa70b5a4f0db4df559 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-3.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=baf737e31d8d273344c3d8e0dfe7ee73 2500w" />
+<img />
 
 Test Mode and Live Mode have separate storefronts. You can see the test mode indicator on the top of your website and store front generated through test mode as well.
 
@@ -24717,7 +27776,7 @@ Test Mode is for you try out the user flow and purchase experience on the store.
 
 ## Customer Experience
 
-<img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-4.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=4acd4e306ff344645e8cb218fd6876e8" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/store-front/sf-4.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-4.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=7b30e78b26b3e7d84ef59d18e9abff86 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-4.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=b6bc5c0a940a0002e7df0fed99bee012 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-4.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=e3a220d515caee97f1d1a23c7c0ac86e 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-4.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=c0aedccb40ec039e798741527b65c04f 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-4.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=59b776824572b2351e81e40e7e6f7c7f 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-4.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=347fe0432025fcb42b11f0c7737fb795 2500w" />
+<img />
 
 ### Landing on the Storefront
 
@@ -24730,7 +27789,7 @@ Test Mode is for you try out the user flow and purchase experience on the store.
 * **Quantity Selection**: Customers can pick how many items they want to buy.
 * **Subscription Frequency & Trial**: Subscription products explicitly state billing frequency (e.g., monthly) and if a trial is available (e.g., 7-day free trial).
 
-<img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-5.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=38357ae5c9893b01d684a01eb1c106d4" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/store-front/sf-5.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-5.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=1d2b90ff1892001cf261d29ed29e20a6 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-5.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=a97a650e04821a34198bfea1cf144e91 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-5.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=83c72771012c7f50e75cc48f948c6e05 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-5.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=dedad52bdf202c7b1a111aba0f4e9a8f 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-5.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=c8fb396475d0038f0c3ccdf3b9d22fca 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-5.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=e0bd57b1e7bfa8622613eb0d7a544b77 2500w" />
+<img />
 
 ### Buying Process
 
@@ -24752,7 +27811,7 @@ Offer recurring billing for memberships, SaaS, or services with flexible cycles,
   Subscriptions let you sell ongoing access with automated renewals. Use flexible billing cycles, free trials, plan changes, and add‑ons to tailor pricing for each customer.
 </Info>
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Upgrade & Downgrade" icon="repeat" href="/developer-resources/subscription-upgrade-downgrade">
     Control plan changes with proration and quantity updates.
   </Card>
@@ -24845,7 +27904,7 @@ Trials let customers access subscriptions without immediate payment. The first c
 
 Set **Trial Period Days** in the product pricing section (use `0` to disable). You can override this when creating subscriptions:
 
-```typescript  theme={null}
+```typescript theme={null}
 // Via subscription creation
 const subscription = await client.subscriptions.create({
   customer_id: 'cus_123',
@@ -24872,7 +27931,7 @@ const session = await client.checkoutSessions.create({
 
 To determine if a subscription is in trial, retrieve the list of payments for the subscription. If there is exactly one payment with amount 0, the subscription is in trial period:
 
-```typescript  theme={null}
+```typescript theme={null}
 const subscription = await client.subscriptions.retrieve('sub_123');
 const payments = await client.payments.list({
   subscription_id: subscription.subscription_id
@@ -24887,7 +27946,7 @@ const isInTrial = payments.items.length === 1 &&
 
 Extend the trial by updating `next_billing_date`:
 
-```typescript  theme={null}
+```typescript theme={null}
 await client.subscriptions.update('sub_123', {
   next_billing_date: '2025-02-15T00:00:00Z'  // New trial end date
 });
@@ -24901,6 +27960,10 @@ await client.subscriptions.update('sub_123', {
 
 Plan changes let you upgrade or downgrade subscriptions, adjust quantities, or migrate to different products. Each change triggers an immediate charge based on the proration mode you select.
 
+<Tip>
+  You can change subscription plans and update the next billing date directly from the Dodo Payments dashboard. This provides a quick way to adjust subscriptions for customer support requests, promotional upgrades, or plan migrations without making API calls.
+</Tip>
+
 ### Proration Modes
 
 Choose how customers are billed when changing plans:
@@ -24909,7 +27972,7 @@ Choose how customers are billed when changing plans:
 
 Charges prorated amount based on remaining time in the current billing cycle. Best for fair billing that accounts for unused time.
 
-```typescript  theme={null}
+```typescript theme={null}
 await client.subscriptions.changePlan('sub_123', {
   product_id: 'prod_pro',
   quantity: 1,
@@ -24921,7 +27984,7 @@ await client.subscriptions.changePlan('sub_123', {
 
 Charges the price difference immediately (upgrade) or adds credit for future renewals (downgrade). Best for simple upgrade/downgrade scenarios.
 
-```typescript  theme={null}
+```typescript theme={null}
 // Upgrade: charges $50 (difference between $30 and $80)
 // Downgrade: credits remaining value, auto-applied to renewals
 await client.subscriptions.changePlan('sub_123', {
@@ -24939,7 +28002,7 @@ await client.subscriptions.changePlan('sub_123', {
 
 Charges full new plan amount immediately, ignoring remaining time. Best for resetting billing cycles.
 
-```typescript  theme={null}
+```typescript theme={null}
 await client.subscriptions.changePlan('sub_123', {
   product_id: 'prod_monthly',
   quantity: 1,
@@ -24951,7 +28014,7 @@ await client.subscriptions.changePlan('sub_123', {
 
 Modify add-ons when changing plans. Add-ons are included in proration calculations:
 
-```typescript  theme={null}
+```typescript theme={null}
 await client.subscriptions.changePlan('sub_123', {
   product_id: 'prod_pro',
   quantity: 1,
@@ -24969,7 +28032,7 @@ await client.subscriptions.changePlan('sub_123', {
 
 Before committing to a plan change, preview the exact charge and resulting subscription:
 
-```typescript  theme={null}
+```typescript theme={null}
 const preview = await client.subscriptions.previewChangePlan('sub_123', {
   product_id: 'prod_pro',
   quantity: 1,
@@ -25015,7 +28078,7 @@ To reactivate a subscription from `on_hold` state, update the payment method. Th
 3. Processes the payment using the new payment method
 4. Reactivates the subscription to `active` state upon successful payment
 
-```typescript  theme={null}
+```typescript theme={null}
 // Reactivate subscription from on_hold
 const response = await client.subscriptions.updatePaymentMethod('sub_123', {
   type: 'new',
@@ -25107,7 +28170,7 @@ if (response.payment_id) {
 
 When creating checkout sessions, include your subscription product and optional add‑ons:
 
-```typescript  theme={null}
+```typescript theme={null}
 const session = await client.checkoutSessions.create({
   product_cart: [
     {
@@ -25122,7 +28185,7 @@ const session = await client.checkoutSessions.create({
 
 Upgrade or downgrade a subscription and control proration behavior:
 
-```typescript  theme={null}
+```typescript theme={null}
 await client.subscriptions.changePlan('sub_123', {
   product_id: 'prod_new',
   quantity: 1,
@@ -25134,7 +28197,7 @@ await client.subscriptions.changePlan('sub_123', {
 
 Schedule a cancellation without immediate termination of access:
 
-```typescript  theme={null}
+```typescript theme={null}
 await client.subscriptions.update('sub_123', {
   cancel_at_period_end: true
 });
@@ -25144,7 +28207,7 @@ await client.subscriptions.update('sub_123', {
 
 Create an on‑demand subscription and charge later as needed:
 
-```typescript  theme={null}
+```typescript theme={null}
 const onDemand = await client.subscriptions.create({
   customer_id: 'cus_123',
   product_id: 'prod_on_demand',
@@ -25162,7 +28225,7 @@ await client.subscriptions.createCharge(onDemand.id, {
 
 Update the payment method for an active subscription:
 
-```typescript  theme={null}
+```typescript theme={null}
 // Update with new payment method
 const response = await client.subscriptions.updatePaymentMethod('sub_123', {
   type: 'new',
@@ -25180,7 +28243,7 @@ await client.subscriptions.updatePaymentMethod('sub_123', {
 
 Reactivate a subscription that went on hold due to failed payment:
 
-```typescript  theme={null}
+```typescript theme={null}
 // Update payment method - automatically creates charge for remaining dues
 const response = await client.subscriptions.updatePaymentMethod('sub_123', {
   type: 'new',
@@ -25202,19 +28265,19 @@ UPI and Indian card subscriptions operate under RBI (Reserve Bank of India) regu
 
 The mandate type and amount depend on your subscription's recurring charge:
 
-* **Charges below ₹15,000:** We create an on-demand mandate for ₹15,000 INR. The subscription amount is charged periodically according to your subscription frequency, up to the mandate limit.
-* **Charges ₹15,000 or above:** We create a subscription mandate (or on-demand mandate) for the exact subscription amount.
+* **Charges below Rs 15,000:** We create an on-demand mandate for Rs 15,000 INR. The subscription amount is charged periodically according to your subscription frequency, up to the mandate limit.
+* **Charges Rs 15,000 or above:** We create a subscription mandate (or on-demand mandate) for the exact subscription amount.
 
 ### Upgrade and Downgrade Considerations
 
 **Important:** When upgrading or downgrading subscriptions, carefully consider the mandate limits:
 
-* If an upgrade/downgrade results in a charge amount that exceeds ₹15,000 and goes beyond the existing on-demand payment limit, the transaction charge may fail.
+* If an upgrade/downgrade results in a charge amount that exceeds Rs 15,000 and goes beyond the existing on-demand payment limit, the transaction charge may fail.
 * In such cases, the customer may need to update their payment method or change the subscription again to establish a new mandate with the correct limit.
 
 ### Authorization for High-Value Charges
 
-For subscription charges of ₹15,000 or more:
+For subscription charges of Rs 15,000 or more:
 
 * The customer will be prompted by their bank to authorize the transaction.
 * If the customer fails to authorize the transaction, the transaction will fail and the subscription will be put on hold.
@@ -25336,7 +28399,7 @@ Create or edit a product in your dashboard, then enable tax‑inclusive pricing 
 
 ### Create a product with tax‑inclusive pricing
 
-```typescript  theme={null}
+```typescript theme={null}
 const product = await client.products.create({
   name: 'Pro Plan',
   description: 'All features included',
@@ -25350,7 +28413,7 @@ const product = await client.products.create({
 
 ### Update an existing product to toggle tax inclusive
 
-```typescript  theme={null}
+```typescript theme={null}
 await client.products.update(product.id, {
   price: {
     tax_inclusive: true
@@ -25366,7 +28429,7 @@ await client.products.update(product.id, {
 
 ## Related
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Product Pricing" icon="dollar-sign" href="/features/pricing">
     Manage pricing options across products.
   </Card>
@@ -25387,24 +28450,24 @@ Source: https://docs.dodopayments.com/features/team
 The Team feature enables you to add teammates to your Dodo Payments dashboard, granting them access based on customizable permissions. You can allow full modification rights or restrict access to view-only mode, ensuring secure and flexible collaboration.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Team.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=092966bd8d046d553e08cb1fa82f6b7f" alt="Team Cover Image" data-og-width="1200" width="1200" data-og-height="630" height="630" data-path="images/cover-images/Team.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Team.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=41371b0d75d91aebd2e79fca98be2bad 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Team.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=7a089e7836647de2155fb5c172215da7 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Team.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=00c5f937a4097db831798ecc12aac29b 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Team.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=96f02e0c7b8ab865afdce1a4e65f2603 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Team.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=8ff121076d45bb4a07e5124f30a8c8d6 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/Team.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=2799a450f5f4d24f479ccb2b7ff60b91 2500w" />
+  <img alt="Team Cover Image" />
 </Frame>
 
 ## How to add a teammate?
 
-<img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-1.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=2c2bd94706a053f6986ff0de060b9dde" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/team/team-1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-1.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ef1dde187af9076edb51856a8a9be89a 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-1.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=8fb40f4b8d025f06199482433f7a9dd3 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-1.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=33f4b5b33916cbe87f3f5ff5ff4cfc63 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-1.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=e09d118b2da75a56a1f9b9cc74cf9f31 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-1.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=15e4c2da9ff17eed31b90dcdc73a7036 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-1.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=a85cdb73fac2ae3fa70087dedac94630 2500w" />
+<img />
 
 1. Go to Business → Team.
 2. Click on +**invite** button on the top right corner.
 
-<img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-2.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=2fb4cde414dac4f80772786bfb4c0029" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/team/team-2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-2.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=1d40542b7f3c4eeb8f7d59a7760fad54 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-2.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=eb834c758cb9bbbc8943040e14f0a10f 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-2.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=b557946f0202e2d471fa82e0666dddd9 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-2.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=8020b16e37e65cc22c672cbc922c919f 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-2.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ad55570f8f4b2a212234642e70681f67 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-2.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=e13cdbe309af57860eb2b3b39513cb99 2500w" />
+<img />
 
 3. Provide the teammates email and assign a role to them.
 4. Click on **Send Invite**.
 
 ## How can a teammate access the dashboard?
 
-<img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-3.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d7dd76129fb019db0afbf97bdfd8abfc" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/team/team-3.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-3.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6f952a93ccebfdf2b597f30a2bb0f082 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-3.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=e5ea657de93bcdead4506a763400018d 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-3.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c6bc1dc2facec8ec0113d77afb95a2fd 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-3.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=bc2a21458fdd1f682818083971edad94 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-3.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=38c5ee1f5acc3c58e2836712d21ef359 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-3.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=201b175c1049db51984dd2194fb56cc6 2500w" />
+<img />
 
 1. The teammate receives an invitation link via email and clicks on it.
 2. If they do not have a Dodo Payments account, they are directed to the signup page where they need to provide the required details. If they already have a Dodo Payments account they can access the business through the business toggle on the bottom left.
@@ -25412,7 +28475,7 @@ The Team feature enables you to add teammates to your Dodo Payments dashboard, g
 
 ## Roles and Permissions
 
-<img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-4.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3786c6f59e32ba4fb9caab942bbca5ae" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/team/team-4.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-4.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c526062f2a0ef851e3b86fb1ee9e512c 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-4.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=bc683fdcd4bde622b802e814a2d16fed 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-4.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=a46db13cdd11e3c4b5f6a3939cc698b6 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-4.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=5010c62be46037319895eee6ec58f576 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-4.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=7c5986bebcaffe1a351ffa1eb2efde85 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/team/team-4.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=de0ccc4d9e96c85c29accc06f2cf7ee8 2500w" />
+<img />
 
 The Dodo Dashboard has three types of user roles, each with different levels of access. The role icon of the user can be seen in the bottom left of the dashboard.
 
@@ -25468,7 +28531,7 @@ When a dispute is raised against your transaction, follow these steps to respond
 3. **Choose Your Response**
    * You can either accept or counter the dispute
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/1.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=27063993592af91e6ac1464956aaa3a7" alt="Dispute Creation" data-og-width="1920" width="1920" data-og-height="1080" height="1080" data-path="images/disputes/1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/1.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=ff7efd7efb76aa31481bbdfaa0ec53c3 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/1.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=f8642fe136270a778e25d64fa88b971e 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/1.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=2fd69ebf7791107b056e28e81d03b451 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/1.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=139e643f5e6b88db61921161547cc5f3 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/1.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=7fded5e628035257d4e5c64da9a02d9f 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/1.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=22b2ef20124d97639e3e1aa21a453050 2500w" />
+     <img alt="Dispute Creation" />
    </Frame>
 
 4. **If Accepting**
@@ -25481,11 +28544,11 @@ When a dispute is raised against your transaction, follow these steps to respond
    * Follow the best practices below
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/2.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=7712b07bf6246c34bc59a7f27d0d03c3" alt="Dispute Creation" data-og-width="1920" width="1920" data-og-height="1080" height="1080" data-path="images/disputes/2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/2.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=9c9ae0ec83378cac96c2a1b42d8256f1 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/2.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=efe3eb1a8c3ce1dd47779060e130dac0 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/2.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=f51e50b86ad0c45d82948b2e766a7a88 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/2.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=0d69aa0d924b06279c05618ac0ed56d0 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/2.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=c1eb90c5f693d8eb090d11a235ff23a8 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/2.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=129a4115b631cfe528af2eaa3f34b39a 2500w" />
+     <img alt="Dispute Creation" />
    </Frame>
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/3.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=a2415d76c609768b7550ab08b80614dc" alt="Dispute Creation" data-og-width="1920" width="1920" data-og-height="1080" height="1080" data-path="images/disputes/3.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/3.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=7ba94ca9463fe5a189f5a1f2ec408222 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/3.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=69671e8a748f92a82be07536639d3624 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/3.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=625bebcfcea34f4c9e4ae0bcfe603141 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/3.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=08ee4b664920d5984e1ae177a8459129 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/3.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=dee83f3f475a2d39103bdf7b11481d4f 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/disputes/3.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=6849ec81cc2cabd31eae9eec3d15fa50 2500w" />
+     <img alt="Dispute Creation" />
    </Frame>
 
 <Info>
@@ -25498,7 +28561,7 @@ When a dispute is raised against your transaction, follow these steps to respond
   <Step title="Understand the Dispute Reason">
     Review the dispute reason carefully. Common reasons include:
 
-    <CardGroup cols={3}>
+    <CardGroup>
       <Card title="Fraudulent Transaction">
         The customer claims they did not authorize the transaction
       </Card>
@@ -25610,7 +28673,7 @@ Source: https://docs.dodopayments.com/features/transactions/payments
 The Payments section provides merchants with a detailed overview of all payment transactions. Merchants can track payment statuses, initiate refunds, and access payment details for each transaction.
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/9sJSIzbU0Z0 " title="Checkout Experience | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Checkout Experience | Dodo Payments" />
 </Frame>
 
 ## **Payments Listing Page**
@@ -25635,8 +28698,8 @@ Upon clicking a payment in the listing, merchants are directed to the **Payment 
 
 ### Successful payment
 
-<Frame caption="Example of a successfully captured card payment">
-  <img src="https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/successful-payment.png?fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=1747ba9d3c524e896e9eb810af10437c" alt="Payment details page showing a successful payment with green status and transaction breakdown" data-og-width="1858" width="1858" data-og-height="1098" height="1098" data-path="images/transactions/payments/successful-payment.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/successful-payment.png?w=280&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=ce9e8c1c1a3bf3f16caf5c4150d1b5a7 280w, https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/successful-payment.png?w=560&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=2e0d8d1e0473d5d7f0da642b7017b389 560w, https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/successful-payment.png?w=840&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=1951640fe0bc1f3ba089c80ece0b6fd6 840w, https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/successful-payment.png?w=1100&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=4e9e5788555a743864ec1af079a6b977 1100w, https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/successful-payment.png?w=1650&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=b8c86346f16933aad45d53560b3e8119 1650w, https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/successful-payment.png?w=2500&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=85e39b52835a5d4334c0c9d743f83344 2500w" />
+<Frame>
+  <img alt="Payment details page showing a successful payment with green status and transaction breakdown" />
 </Frame>
 
 * **Status**: Shows as **Successful** at the top with the final captured amount.
@@ -25648,8 +28711,8 @@ Upon clicking a payment in the listing, merchants are directed to the **Payment 
 
 ### Failed payment
 
-<Frame caption="Example of a failed card payment with decline information">
-  <img src="https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/failed-payment.png?fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=ac5cea5fc28fe87b3318df6547f94bf6" alt="Payment details page showing a failed payment with red error banner, decline error code and message" data-og-width="1862" width="1862" data-og-height="1252" height="1252" data-path="images/transactions/payments/failed-payment.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/failed-payment.png?w=280&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=2be90801083b207598af714d3156e178 280w, https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/failed-payment.png?w=560&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=1e54fdef96b0ee47b0610beabd6afb96 560w, https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/failed-payment.png?w=840&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=e6c8210d486c1ea94736ccd11e7c990f 840w, https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/failed-payment.png?w=1100&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=8bfe763299434cf948a7fcde3c5a4dd5 1100w, https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/failed-payment.png?w=1650&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=04d2d1c41aa80c717b5f0e95f139983d 1650w, https://mintcdn.com/dodopayments/o0NHkVXqfi7_fJzV/images/transactions/payments/failed-payment.png?w=2500&fit=max&auto=format&n=o0NHkVXqfi7_fJzV&q=85&s=f6f2b8ce98124db0b71f28b075f0d5ce 2500w" />
+<Frame>
+  <img alt="Payment details page showing a failed payment with red error banner, decline error code and message" />
 </Frame>
 
 * **Status**: Shows as **Failed** with a red banner.
@@ -25715,7 +28778,7 @@ You can initiate two types of refunds from the Payment Details Page:
 To begin, click the **Initiate Refund** button. The refund will only proceed if all refund rules are met.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/initiate-refund.png?fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=1b2cc9f687451eaeef24e8d0310225c7" alt="Initiate refund button on the payment details page" data-og-width="2880" width="2880" data-og-height="1554" height="1554" data-path="images/transactions/refunds/initiate-refund.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/initiate-refund.png?w=280&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=e8c5d36710011fcdbac4985414f86201 280w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/initiate-refund.png?w=560&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=63325d40c0ecd2b9e375dfe96d98d562 560w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/initiate-refund.png?w=840&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=1cd97da3f916a15a3df366020679788e 840w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/initiate-refund.png?w=1100&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=7d8d12d10cb84a966e1b2a65ef148b94 1100w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/initiate-refund.png?w=1650&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=ba9b57ae01b481b69be996769968f6c4 1650w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/initiate-refund.png?w=2500&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=f37001a391bb72ac9738d5e8edb753ba 2500w" />
+  <img alt="Initiate refund button on the payment details page" />
 </Frame>
 
 <Tip>
@@ -25738,6 +28801,16 @@ To begin, click the **Initiate Refund** button. The refund will only proceed if 
 
 If any rule is violated, the refund request will be denied. Please reach out to support for assistance if needed.
 
+## Refund Status
+
+Track the progress of your refund through the following status indicators:
+
+| Status    | Description                                               |
+| --------- | --------------------------------------------------------- |
+| succeeded | The refund has been successfully processed.               |
+| pending   | The refund is being processed and is awaiting completion. |
+| failed    | The refund could not be processed due to an error.        |
+
 ## Refunds Page
 
 The **Refunds Page** provides a detailed view of all refund transactions:&#x20;
@@ -25749,7 +28822,7 @@ The **Refunds Page** provides a detailed view of all refund transactions:&#x20;
 Here’s how the **Refunds Page** looks:
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refunds-page.png?fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=22c72ca071883cc91fea7e8b4d7854de" alt="Refunds page showing a list of refund transactions" data-og-width="2880" width="2880" data-og-height="1554" height="1554" data-path="images/transactions/refunds/refunds-page.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refunds-page.png?w=280&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=b8c2aa54a959f01d9f6b2a8b2e48e9bc 280w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refunds-page.png?w=560&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=217a07e06415ec50385102066b1df13c 560w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refunds-page.png?w=840&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=2563e1dc04b728ea809a295df6e441ef 840w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refunds-page.png?w=1100&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=270be85013176f42ac8e546697cb2de3 1100w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refunds-page.png?w=1650&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=8a44e7ac4419fb77dd366486587311ff 1650w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refunds-page.png?w=2500&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=e12a443947629609f9f83932da3e7663 2500w" />
+  <img alt="Refunds page showing a list of refund transactions" />
 </Frame>
 
 ## Refund Receipt
@@ -25759,7 +28832,7 @@ Once a refund is successfully processed, a **Refund Receipt** is automatically s
 **Refund Receipt Template:**
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refund-receipt-template.png?fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=7070148120060d73114fafb1d21b5396" width="50%" alt="Refund receipt template showing the refund details" data-og-width="1230" data-og-height="1682" data-path="images/transactions/refunds/refund-receipt-template.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refund-receipt-template.png?w=280&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=319cf44068cc2ce2e00a4d3bdd34bf6c 280w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refund-receipt-template.png?w=560&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=b4cd449993edef439c75c1efeb3257b0 560w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refund-receipt-template.png?w=840&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=764aa7292095fcd65f3e8b50d48c299a 840w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refund-receipt-template.png?w=1100&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=dad1e9f98f2716531e41d0ad1137db2c 1100w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refund-receipt-template.png?w=1650&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=6eaacf0fe89749e380784396b1b043ea 1650w, https://mintcdn.com/dodopayments/G4bT0KSWSqgyqhfn/images/transactions/refunds/refund-receipt-template.png?w=2500&fit=max&auto=format&n=G4bT0KSWSqgyqhfn&q=85&s=6d2fb342dba235617bab047a9d511c03 2500w" />
+  <img alt="Refund receipt template showing the refund details" />
 </Frame>
 
 The refund receipt includes:
@@ -25786,31 +28859,31 @@ Events are the foundation of usage-based billing. Send events when billable acti
 ## Event Structure
 
 <Accordion title="Required Fields">
-  <ParamField body="event_id" type="string" required>
+  <ParamField type="string">
     Unique identifier. Use UUIDs or combine customer ID + timestamp + action.
   </ParamField>
 
-  <ParamField body="customer_id" type="string" required>
+  <ParamField type="string">
     Dodo Payments customer ID. Must be a valid existing customer.
   </ParamField>
 
-  <ParamField body="event_name" type="string" required>
+  <ParamField type="string">
     Event type that matches your meter's event name (case-sensitive). Examples: `api.call`, `image.generated`
   </ParamField>
 </Accordion>
 
 <Accordion title="Optional Fields">
-  <ParamField body="timestamp" type="string">
+  <ParamField type="string">
     ISO 8601 timestamp. Defaults to server time if omitted. Include for accurate billing with delayed/batch events.
   </ParamField>
 
-  <ParamField body="metadata" type="object">
+  <ParamField type="object">
     Additional properties for aggregation and filtering:
 
     * Numeric values: `bytes`, `tokens`, `duration_ms`
     * Filters: `endpoint`, `method`, `quality`
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     metadata: {
       endpoint: "/v1/orders",
       method: "POST",
@@ -25884,7 +28957,7 @@ Events are the foundation of usage-based billing. Send events when billable acti
 
 Ready-made event patterns for common use cases. Start with a proven blueprint instead of building from scratch.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="LLM Blueprint" icon="brain-circuit" href="/developer-resources/ingestion-blueprints/llm">
     Track AI token usage across OpenAI, Anthropic, Groq, Gemini, and more.
   </Card>
@@ -25956,7 +29029,7 @@ Ready-made event patterns for common use cases. Start with a proven blueprint in
 
 ## Next Steps
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Create Meters" icon="sliders" href="/features/usage-based-billing/meters">
     Define how your events are aggregated into billable quantities with filters and aggregation functions.
   </Card>
@@ -25997,7 +29070,7 @@ Each blueprint includes:
 
 ## Why Use Blueprints?
 
-<CardGroup cols={3}>
+<CardGroup>
   <Card title="Faster Setup" icon="rocket">
     Get usage tracking working in minutes instead of hours. Copy proven patterns instead of designing from scratch.
   </Card>
@@ -26015,7 +29088,7 @@ Each blueprint includes:
 
 Choose the blueprint that matches your use case:
 
-<CardGroup cols={1}>
+<CardGroup>
   <Card title="LLM Blueprint" icon="brain-circuit" href="/developer-resources/ingestion-blueprints/llm">
     Track AI token usage across OpenAI, Anthropic, Groq, Gemini, Vercel AI SDK, and more.
 
@@ -26114,7 +29187,7 @@ Don't see a blueprint for your exact use case? No problem:
 
 If you're unsure which blueprint to use or need help customizing:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Complete Tutorial" icon="code" href="/developer-resources/usage-based-billing-build-ai-image-generator">
     Follow our end-to-end tutorial building an AI image generator with usage billing.
   </Card>
@@ -26142,7 +29215,7 @@ Usage-based billing lets you charge customers for what they actually use—API c
   <Step title="Send Usage Events">
     Your application sends events when billable actions occur.
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     {
       "event_id": "evt_123",
       "customer_id": "cus_abc",
@@ -26181,7 +29254,7 @@ Meters aggregate events into billable quantities:
 * **Last**: Most recent value
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=f9d85a463fba231437151db3d4a2052a" alt="Create meter interface" data-og-width="2324" width="2324" data-og-height="1600" height="1600" data-path="images/usage-based/UBB-2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=18fdbbf75ab4df7ede6c45f6e248b783 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=e404194a942a1276de7148f9b8eff36d 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=1bec71463cb2e00acd0841b9968f2b7e 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=746ef8eb5f8bb76a355122d8253e9cba 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=8f10a20590e5c9056b9c7f285b827217 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=a503c04b328416b03f7e20dc6c4c0a28 2500w" />
+  <img alt="Create meter interface" />
 </Frame>
 
 ### Products with Usage Pricing
@@ -26189,7 +29262,7 @@ Meters aggregate events into billable quantities:
 Set pricing per unit and optional free thresholds:
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=b2d07bb408fd79e1b788c1b7092b8bca" alt="Pricing configuration" data-og-width="732" width="732" data-og-height="712" height="712" data-path="images/usage-based/UBB-4.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=6e7232a5f0aa56db64527de0835fa7c8 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=943121c2ccc1ea9fea93cc7ed4a98696 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=d5916bede0ca8665a93ace24fc2dff4a 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=351bff3e883b3c5b45885234aa341af8 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=7228b5b070c8c29c2db885e80f83e86e 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=e303322fb1fa22bd9fa44960077d3d5d 2500w" />
+  <img alt="Pricing configuration" />
 </Frame>
 
 **Example**: 2,500 calls - 1,000 free = 1,500 × $0.02 = $30.00
@@ -26213,7 +29286,7 @@ Give customers included usage credits that refresh each billing cycle. Credits a
     Link meter to a product with pricing:
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=fd3851a1a070714baf0aec01cff717b8" alt="Adding meter to product" data-og-width="2272" width="2272" data-og-height="1422" height="1422" data-path="images/usage-based/UBB-5.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=b70c4d68d07dee708d03505582aa3977 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=5ef40e99e35c0cf09f8082d4ab83cbd1 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=3d4eaab132b20d49db9770c1db4084cc 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=4f9a3ac2cc1d5c8a1db7ff1985fae45c 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=caba70b37cc0205430be9a88e6f77a57 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=8c875cc6e5d080f96d3efdba724cdf0c 2500w" />
+      <img alt="Adding meter to product" />
     </Frame>
 
     1. Select **Usage-Based Billing**
@@ -26222,7 +29295,7 @@ Give customers included usage credits that refresh each billing cycle. Credits a
   </Step>
 
   <Step title="Send Events">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     await fetch('https://test.dodopayments.com/events/ingest', {
       method: 'POST',
       headers: {
@@ -26243,7 +29316,7 @@ Give customers included usage credits that refresh each billing cycle. Credits a
 
   <Step title="Monitor Usage">
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=1a8a39547bd0259a53d4591d7928c8ea" alt="Meter dashboard" data-og-width="1602" width="1602" data-og-height="888" height="888" data-path="images/guides/usage-based-billing/meter-quantities-chart.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=280&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=b0e55e646843d7ae4168b4f28f47ebc8 280w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=560&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=ff70ffc8739eebbb1169605524ae8b26 560w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=840&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=4259db84b487d654d4891d65747da271 840w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=1100&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=9e7e0a7c207ef6bc7300740b8ed5368f 1100w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=1650&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=eda3fade188934b182b0b539115473e2 1650w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=2500&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=2345f13682183ecf726bc8f0eb6d7178 2500w" />
+      <img alt="Meter dashboard" />
     </Frame>
 
     Check your meter's dashboard to see events and usage aggregation. Customers are billed automatically each cycle.
@@ -26252,7 +29325,7 @@ Give customers included usage credits that refresh each billing cycle. Credits a
 
 ## Use Cases
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="APIs & Infrastructure" icon="cloud">
     Track API calls, compute hours, bandwidth, storage. Example: \$0.001 per call after 10,000 free.
   </Card>
@@ -26272,7 +29345,7 @@ Give customers included usage credits that refresh each billing cycle. Credits a
 
 ## Next Steps
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Event Ingestion" icon="bolt" href="/features/usage-based-billing/event-ingestion">
     Learn how to structure and send usage events from your application.
   </Card>
@@ -26301,14 +29374,14 @@ Transform raw usage events into billable quantities with aggregation and filteri
 </Info>
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=f9d85a463fba231437151db3d4a2052a" alt="Meter creation interface showing event name, aggregation type, and filtering options" data-og-width="2324" width="2324" data-og-height="1600" height="1600" data-path="images/usage-based/UBB-2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=18fdbbf75ab4df7ede6c45f6e248b783 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=e404194a942a1276de7148f9b8eff36d 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=1bec71463cb2e00acd0841b9968f2b7e 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=746ef8eb5f8bb76a355122d8253e9cba 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=8f10a20590e5c9056b9c7f285b827217 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=a503c04b328416b03f7e20dc6c4c0a28 2500w" />
+  <img alt="Meter creation interface showing event name, aggregation type, and filtering options" />
 </Frame>
 
 ## API Resources
 
 <AccordionGroup>
   <Accordion title="View Meter API References">
-    <CardGroup cols={2}>
+    <CardGroup>
       <Card title="Create Meter" icon="plus" href="/api-reference/meters/create-meter">
         Create meters programmatically via API.
       </Card>
@@ -26336,17 +29409,17 @@ Transform raw usage events into billable quantities with aggregation and filteri
 
 <Steps>
   <Step title="Basic Information">
-    <ParamField path="Meter Name" type="string" required>
+    <ParamField type="string">
       Descriptive name (e.g., "API Requests", "Token Usage")
     </ParamField>
 
-    <ParamField path="Event Name" type="string" required>
+    <ParamField type="string">
       Exact event name to match (case-sensitive). Examples: `api.call`, `image.generated`
     </ParamField>
   </Step>
 
   <Step title="Aggregation">
-    <ParamField path="Aggregation Type" type="string" required>
+    <ParamField type="string">
       Choose how events are aggregated:
 
       * **Count**: Total number of events (API calls, uploads)
@@ -26355,18 +29428,18 @@ Transform raw usage events into billable quantities with aggregation and filteri
       * **Last**: Most recent value
     </ParamField>
 
-    <ParamField path="Over Property" type="string">
+    <ParamField type="string">
       Metadata key to aggregate (required for all types except Count). Examples: `tokens`, `bytes`, `duration_ms`
     </ParamField>
 
-    <ParamField path="Measurement Unit" type="string" required>
+    <ParamField type="string">
       Unit label for invoices. Examples: `calls`, `tokens`, `GB`, `hours`
     </ParamField>
   </Step>
 
   <Step title="Filtering (Optional)">
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=ce231b0559d31723bc12c22cd9ff9d64" alt="Event filtering" data-og-width="1558" width="1558" data-og-height="942" height="942" data-path="images/usage-based/UBB-3.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=2cd814d88c0043f59bd0809f62a70932 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=6346cf2daf9635f53f9280701b1fefc2 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=d5b459ab63581aa80b9ddcd6a2d9be25 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=95c547968201d65d65981b0dc6271c0a 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=52e270bd88d839ea0c148fcfadbbf7dd 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=f737d26f50ab2a4cc45cc03927936d4e 2500w" />
+      <img alt="Event filtering" />
     </Frame>
 
     Add conditions to filter which events are counted:
@@ -26387,7 +29460,7 @@ Transform raw usage events into billable quantities with aggregation and filteri
 ## Viewing Analytics
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=7fb86a266b5aa84f281b680601bd998e" alt="Meter analytics" data-og-width="1536" width="1536" data-og-height="1252" height="1252" data-path="images/usage-based/UBB-1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=23a2bbb81a88052bec92772f03254690 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=b9ebba13d62c1e5e0470097382319a8c 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=2cb2348f913ebdc8175d07c533553d74 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=84b14f137b8f737d8e269cb9c2213915 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=9059aafa1890c7a834a0acbd2a115567 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=7a1008d882d31dc4699b07353c4121f6 2500w" />
+  <img alt="Meter analytics" />
 </Frame>
 
 Your meter dashboard shows:
@@ -26427,7 +29500,7 @@ Your meter dashboard shows:
 
 ## Next Steps
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Send Events" icon="bolt" href="/features/usage-based-billing/event-ingestion">
     Start sending usage events from your application to your meters.
   </Card>
@@ -26467,7 +29540,7 @@ This is an example implementation and boilerplate designed as a starting point f
   <Step title="Clone the Example Implementation">
     Clone the [dodopayments-figma repository](https://github.com/dodopayments/dodopayments-figma) and update its `manifest.json` with the name and ID from your generated plugin folder.
 
-    ```bash  theme={null}
+    ```bash theme={null}
     git clone https://github.com/dodopayments/dodopayments-figma.git
     cd dodopayments-figma
     ```
@@ -26482,7 +29555,7 @@ This is an example implementation and boilerplate designed as a starting point f
   <Step title="Install Dependencies">
     Run the following command in your project root:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install
     ```
   </Step>
@@ -26490,7 +29563,7 @@ This is an example implementation and boilerplate designed as a starting point f
   <Step title="Configure Environment">
     Set the `API_MODE` in `src/ui/api.ts`:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     const API_MODE = "test_mode"; // for development
     // const API_MODE = "live_mode"; // for production
     ```
@@ -26518,7 +29591,7 @@ This is an example implementation and boilerplate designed as a starting point f
   <Step title="Configure Network Access">
     The plugin needs network access to communicate with the CORS proxy. Add the following to your `manifest.json`:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "networkAccess": {
         "allowedDomains": ["https://dodo-payments-proxy.aagarwal9782.workers.dev"]
@@ -26536,7 +29609,7 @@ This is an example implementation and boilerplate designed as a starting point f
   <Step title="Configure API Mode">
     In `src/ui/api.ts`, configure the API mode:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     const API_MODE = "test_mode"; // or "live_mode"
     ```
 
@@ -26558,7 +29631,7 @@ This is an example implementation and boilerplate designed as a starting point f
   </Step>
 
   <Step title="Start Development Server">
-    ```bash  theme={null}
+    ```bash theme={null}
     npm run dev
     ```
 
@@ -26610,7 +29683,7 @@ Source: https://docs.dodopayments.com/introduction
 The complete payments & billing platform for SaaS, AI, and digital products. Accept payments globally, set up flexible billing models, and monetize your product in minutes - all without building your own infrastructure.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/uPUxf15iPIZdcBn4/images/intro_cover.png?fit=max&auto=format&n=uPUxf15iPIZdcBn4&q=85&s=33cbb77568c45c08d919ae9018bb20b3" alt="Dodo Payments - Complete payments and billing platform for modern digital products" data-og-width="1723" width="1723" data-og-height="900" height="900" data-path="images/intro_cover.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/uPUxf15iPIZdcBn4/images/intro_cover.png?w=280&fit=max&auto=format&n=uPUxf15iPIZdcBn4&q=85&s=5ea7b3d304597fa7cba5e6bddab60243 280w, https://mintcdn.com/dodopayments/uPUxf15iPIZdcBn4/images/intro_cover.png?w=560&fit=max&auto=format&n=uPUxf15iPIZdcBn4&q=85&s=e45bc2a96b51a6274bace112e6933574 560w, https://mintcdn.com/dodopayments/uPUxf15iPIZdcBn4/images/intro_cover.png?w=840&fit=max&auto=format&n=uPUxf15iPIZdcBn4&q=85&s=ebcb8bb3cb2dca2b7a5831f0a425185c 840w, https://mintcdn.com/dodopayments/uPUxf15iPIZdcBn4/images/intro_cover.png?w=1100&fit=max&auto=format&n=uPUxf15iPIZdcBn4&q=85&s=4a610a732fb7af29913d01c821e56b37 1100w, https://mintcdn.com/dodopayments/uPUxf15iPIZdcBn4/images/intro_cover.png?w=1650&fit=max&auto=format&n=uPUxf15iPIZdcBn4&q=85&s=5324741dc71c03cc4ef6c8287b51a71a 1650w, https://mintcdn.com/dodopayments/uPUxf15iPIZdcBn4/images/intro_cover.png?w=2500&fit=max&auto=format&n=uPUxf15iPIZdcBn4&q=85&s=e0deb9c4427cbe5b1b54fd0e53c77e2c 2500w" />
+  <img alt="Dodo Payments - Complete payments and billing platform for modern digital products" />
 </Frame>
 
 ## What is Dodo Payments?
@@ -26632,7 +29705,7 @@ Dodo Payments is the **all-in-one engine** to launch, scale, and monetize worldw
 
 ### Why Choose Dodo Payments?
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="All-in-One Platform" icon="box">
     One solution for payments, billing, and distribution—no more piecing tools together
   </Card>
@@ -26674,7 +29747,7 @@ Get up and running with Dodo Payments in just a few steps:
   <Step title="Add Your First Product">
     Choose your billing model and add your product to start accepting payments.
 
-    <CardGroup cols={3}>
+    <CardGroup>
       <Card title="One-Time Payment" icon="box" href="/features/one-time-payment-products">
         Perfect for digital downloads, courses, or single purchases
       </Card>
@@ -26684,7 +29757,7 @@ Get up and running with Dodo Payments in just a few steps:
       </Card>
 
       <Card title="Usage-Based Billing" icon="chart-bar" href="/features/usage-based-billing">
-        Bill customers for API calls, credits, tokens, or any usage metric—ideal for AI and SaaS
+        Bill customers for API calls, credits, tokens, or any usage metric - ideal for AI and SaaS
       </Card>
     </CardGroup>
   </Step>
@@ -26699,10 +29772,6 @@ Get up and running with Dodo Payments in just a few steps:
         * Create **Payment Links** from your dashboard
         * Share via email, social media, or embed in websites
         * Start accepting payments immediately
-
-        <Frame>
-          <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/OwMjszInCLc" title="Setup Your Account | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
-        </Frame>
       </Tab>
 
       <Tab title="Overlay Checkout">
@@ -26714,6 +29783,18 @@ Get up and running with Dodo Payments in just a few steps:
 
         <Card title="Overlay Integration" icon="layer-group" href="/developer-resources/overlay-checkout">
           Add our overlay checkout with a single line of code
+        </Card>
+      </Tab>
+
+      <Tab title="Inline Checkout">
+        **Best for fully integrated, embedded checkout experiences:**
+
+        * Embed checkout directly into your page layout
+        * Build custom order summaries that sync with checkout
+        * Maximum control over checkout design and flow
+
+        <Card title="Inline Integration" icon="credit-card" href="/developer-resources/inline-checkout">
+          Embed checkout directly into your website
         </Card>
       </Tab>
 
@@ -26758,7 +29839,7 @@ Integrate in under 10 lines of code with our framework adapters. Choose from our
 
 #### Recommended Frameworks
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Next.js" icon="atom" href="/developer-resources/nextjs-adaptor">
     React-based full-stack framework with App Router support
   </Card>
@@ -26778,7 +29859,7 @@ Integrate in under 10 lines of code with our framework adapters. Choose from our
 
 <AccordionGroup>
   <Accordion title="Show other 8+ supported frameworks">
-    <CardGroup cols={4}>
+    <CardGroup>
       <Card title="SvelteKit" icon="js" href="/developer-resources/sveltekit-adaptor" />
 
       <Card title="Nuxt" icon="vuejs" href="/developer-resources/nuxt-adaptor" />
@@ -26802,7 +29883,7 @@ Integrate in under 10 lines of code with our framework adapters. Choose from our
 
 Speed up development with our official SDKs. Choose from our recommended languages or explore all supported options.
 
-<CardGroup cols={4}>
+<CardGroup>
   <Card title="TypeScript" icon="code-simple" href="/developer-resources/dodo-payments-sdks#typescript" />
 
   <Card title="Python" icon="python" href="/developer-resources/dodo-payments-sdks#python" />
@@ -26824,7 +29905,7 @@ Speed up development with our official SDKs. Choose from our recommended languag
 
 Stop reinventing the wheel. Use production-ready, accessible billing components, from pricing cards to subscription dashboards, built for React and ShadCN.
 
-<Card title="Billing Components" icon="credit-card" href="https://billingsdk.com" target="_blank">
+<Card title="Billing Components" icon="credit-card" href="https://billingsdk.com">
   Beautiful, customizable billing components, pricing tables, subscription management, and usage meters - save development time with production-ready UI for billing and payments.
 </Card>
 
@@ -26836,7 +29917,7 @@ Stop reinventing the wheel. Use production-ready, accessible billing components,
 
 Build rich in-app payment experiences with our lightweight payment links and secure React Native SDKs optimized for iOS and Android.
 
-<CardGroup cols={3}>
+<CardGroup>
   <Card title="Mobile Integration Guide" icon="book" href="/developer-resources/mobile-integration">
     Complete guide for integrating payments in mobile applications
   </Card>
@@ -26862,7 +29943,7 @@ Connect Dodo Payments with your favorite tools and platforms to automate workflo
 
 Quickly connect Dodo Payments to the most used design and productivity tools to streamline your workflow and automate payment operations.
 
-<CardGroup cols={4}>
+<CardGroup>
   <Card title="Framer Plugin" icon="frame" href="/integrations/framer-plugin">
     Add payments to Framer websites
   </Card>
@@ -26884,7 +29965,7 @@ Quickly connect Dodo Payments to the most used design and productivity tools to 
   <Accordion title="Communication & Notifications">
     Stay informed about payment events with real-time notifications in your team communication tools.
 
-    <CardGroup cols={3}>
+    <CardGroup>
       <Card title="Slack" icon="slack" href="/integrations/slack">
         Send payment notifications and alerts to Slack channels
       </Card>
@@ -26902,7 +29983,7 @@ Quickly connect Dodo Payments to the most used design and productivity tools to 
   <Accordion title="Email Marketing & Customer Communication">
     Sync customer data and trigger email campaigns based on payment events.
 
-    <CardGroup cols={4}>
+    <CardGroup>
       <Card title="Resend" icon="envelope" href="/integrations/resend">
         Send transactional emails with Resend
       </Card>
@@ -26928,7 +30009,7 @@ Quickly connect Dodo Payments to the most used design and productivity tools to 
   <Accordion title="CRM & Sales">
     Connect your payment data with CRM platforms to streamline sales and customer management.
 
-    <CardGroup cols={2}>
+    <CardGroup>
       <Card title="HubSpot" icon="hubspot" href="/integrations/hubspot">
         Sync customers and deals with HubSpot CRM
       </Card>
@@ -26942,7 +30023,7 @@ Quickly connect Dodo Payments to the most used design and productivity tools to 
   <Accordion title="Automation & Workflows">
     Build powerful automations and data pipelines with workflow automation platforms.
 
-    <CardGroup cols={4}>
+    <CardGroup>
       <Card title="Zapier" icon="bolt" href="/integrations/zapier">
         Connect to 5,000+ apps with Zapier
       </Card>
@@ -26976,7 +30057,7 @@ Quickly connect Dodo Payments to the most used design and productivity tools to 
 
 ## Need Help?
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Developer Documentation" icon="book" href="/developer-resources/integration-guide">
     Explore comprehensive guides and API references
   </Card>
@@ -27006,7 +30087,7 @@ We currently support migrations from **Lemon Squeezy, Stripe, Polar.sh, and Padd
 
 ### Supported Migrations
 
-<CardGroup cols={3}>
+<CardGroup>
   <Card title="Products & Pricing" icon="box">
     Migrate all your products and pricing details.
   </Card>
@@ -27024,7 +30105,7 @@ We currently support migrations from **Lemon Squeezy, Stripe, Polar.sh, and Padd
 
 First, install the migration tool:
 
-```bash  theme={null}
+```bash theme={null}
 npm install -g dodo-migrate
 ```
 
@@ -27036,25 +30117,25 @@ npm install -g dodo-migrate
 
 ### If you're coming from Lemon Squeezy:
 
-```bash  theme={null}
+```bash theme={null}
 dodo-migrate lemonsqueezy
 ```
 
 ### If you're coming from Stripe:
 
-```bash  theme={null}
+```bash theme={null}
 dodo-migrate stripe
 ```
 
 ### If you're coming from Polar.sh:
 
-```bash  theme={null}
+```bash theme={null}
 dodo-migrate polar
 ```
 
 ### If you're coming from Paddle:
 
-```bash  theme={null}
+```bash theme={null}
 dodo-migrate paddle
 ```
 
@@ -27078,7 +30159,7 @@ If you prefer to run the migration without prompts, you can provide all the deta
 
 ### Lemon Squeezy migration:
 
-```bash  theme={null}
+```bash theme={null}
 dodo-migrate lemonsqueezy \
   --provider-api-key=lsq_XXXXXXXXXXXXXXXX \
   --dodo-api-key=dp_XXXXXXXXXXXXXXXX \
@@ -27088,7 +30169,7 @@ dodo-migrate lemonsqueezy \
 
 ### Stripe migration:
 
-```bash  theme={null}
+```bash theme={null}
 dodo-migrate stripe \
   --provider-api-key=sk_test_XXXXXXXXXXXXXXXX \
   --dodo-api-key=dp_XXXXXXXXXXXXXXXX \
@@ -27099,7 +30180,7 @@ dodo-migrate stripe \
 
 ### Polar.sh migration:
 
-```bash  theme={null}
+```bash theme={null}
 dodo-migrate polar \
   --provider-api-key=polar_org_XXXXXXXXXXXXXXXX \
   --dodo-api-key=dp_XXXXXXXXXXXXXXXX \
@@ -27110,7 +30191,7 @@ dodo-migrate polar \
 
 ### Paddle migration:
 
-```bash  theme={null}
+```bash theme={null}
 dodo-migrate paddle \
   --provider-api-key=paddle_XXXXXXXXXXXXXXXX \
   --dodo-api-key=dp_XXXXXXXXXXXXXXXX \
@@ -27130,7 +30211,7 @@ dodo-migrate paddle \
 
 ## Update the Tool
 
-```bash  theme={null}
+```bash theme={null}
 # Update to latest version
 npm update -g dodo-migrate
 
@@ -27181,268 +30262,6 @@ Merchants with more than one business can easily add and verify additional busin
   3. Submit the business registration documents for manual review.
 
   4. After approval, merchants can switch between verified businesses to manage their products, payments, and reports.
-
-
-# SaaS Pricing calculator
-Source: https://docs.dodopayments.com/miscellaneous/gtm-tools/saas-pricing-calculator
-
-The SaaS Pricing Calculator is designed to help SaaS businesses determine the ideal pricing strategy for their software products. Setting the right price is critical for remaining competitive, covering operational costs, and maximizing profitability. This tool enables businesses to explore different pricing models, including competitor-based, cost-based, and value-based pricing, to develop a pricing structure that aligns with market trends and customer expectations.
-
-## **Optimize Your SaaS Pricing Strategy Today**
-
-Use the **SaaS Pricing Calculator** to develop a pricing model that maximises profitability, competitiveness, and customer acquisition.
-
-Link: [https://dodopayments.com/tools/saas-pricing-calculator](https://dodopayments.com/tools/saas-pricing-calculator)
-
-**Find the perfect balance between cost, value, and market positioning!**
-
-## **Why Pricing Strategy is Crucial for SaaS Businesses**
-
-Pricing directly impacts customer acquisition, revenue growth, and profitability. A well-defined pricing strategy ensures:
-
-1. **Competitive positioning** – Aligns your product pricing with market expectations
-2. **Sustainable profitability** – Covers costs while maintaining profit margins
-3. **Value-based pricing** – Ensures customers pay according to the benefits they receive
-
-Choosing the right pricing strategy allows SaaS businesses to balance affordability, perceived value, and business growth.
-
-## **Key Input Metrics**
-
-### **1. Competitor Pricing**
-
-Understanding the price points of similar SaaS solutions in the market helps in positioning your product effectively. Competitor pricing acts as a reference, enabling businesses to decide whether to price above, below, or at market rates.
-
-### **2. Product Value Addition (%)**
-
-Represents the relative value your product provides compared to competitors. If your software offers 30% more features or efficiency, pricing can be adjusted accordingly.
-
-### **3. Cost per User**
-
-Includes operational costs such as cloud hosting, development, maintenance, and support services. This metric helps in setting a profitable baseline price to ensure sustainability.
-
-### **4. Estimated User Base**
-
-Defines the projected number of users subscribing to the SaaS product over a set period. This estimation helps determine revenue potential and optimal pricing.
-
-### **5. Target Revenue**
-
-Businesses must set annual or monthly revenue goals to ensure pricing strategies align with profitability objectives. This metric helps determine minimum pricing thresholds.
-
-### **6. Estimated Value for the Customer**
-
-Assesses the financial impact or time savings the product delivers to users. For example, if the software saves businesses \$10,000 annually, pricing should reflect this value-based approach.
-
-## **How the SaaS Pricing Calculator Works**
-
-This tool enables businesses to compare multiple pricing models and identify the most suitable one based on financial goals, competitive landscape, and customer expectations. It supports:
-
-1. **Competitor-Based Pricing** – Align pricing with industry benchmarks
-2. **Cost-Based Pricing** – Ensure pricing covers operational costs and profit margins
-3. **Value-Based Pricing** – Charge based on customer-perceived value
-
-By leveraging data-driven pricing strategies, SaaS companies can optimize revenue, enhance customer acquisition, and drive business growth.
-
-## **Key Output Metrics**
-
-### **1. Recommended Price Range**
-
-The tool provides a flexible pricing range, allowing businesses to adjust prices based on market trends and customer feedback. Pricing recommendations typically range between 0.8x and 1.2x the suggested price, ensuring adaptability.
-
-### **2. Tiered Pricing Structure**
-
-A well-defined tiered pricing model maximizes revenue potential by catering to different customer segments. The tool recommends three tiers:
-
-**Basic Tier** – Lower-priced plan for budget-conscious users with essential features.
-
-**Pro Tier** – Standard pricing plan offering a balanced set of features.
-
-**Enterprise Tier** – Premium pricing model with advanced functionalities and personalized support.
-
-## **Frequently Asked Questions (FAQs)**
-
-1. **What is the best pricing strategy for SaaS companies?**
-   * There is no one-size-fits-all pricing strategy for SaaS companies. The best approach depends on your product, market, and business goals. Competitor-based pricing helps you align with market rates, cost-based pricing ensures you cover your expenses, and value-based pricing lets you charge based on the perceived value your product delivers to customers.
-2. **How do I decide whether to use competitor-based, cost-based, or value-based pricing?**
-   * If your market is saturated with similar products, competitor-based pricing can keep you competitive. If you want to ensure profitability, cost-based pricing guarantees your costs are covered. If your product offers significant value to users, value-based pricing allows you to charge based on the results your product delivers, which can lead to higher pricing.
-3. **How can I make my SaaS pricing more competitive?**
-   * To stay competitive, evaluate your competitors regularly, ensure your pricing reflects the value you provide, and consider offering tiered pricing or freemium models. Adjust your pricing based on user feedback and market trends to ensure you remain competitive.
-4. **Why should I offer tiered pricing for my SaaS product?**
-   * Tiered pricing allows you to cater to different customer segments, offering basic features at lower prices and premium features at higher prices. This flexibility maximizes your revenue by appealing to both budget-conscious users and those willing to pay for advanced features.
-5. **How often should I reevaluate my SaaS pricing?**
-   * It’s a good practice to review your pricing strategy at least once a year, or when significant changes occur in your product offerings, market conditions, or customer needs. This ensures your pricing remains competitive and aligned with your business goals.
-
-
-# SaaS Revenue & Profit Growth
-Source: https://docs.dodopayments.com/miscellaneous/gtm-tools/saas-revenue-and-profit-growth
-
-The **SaaS Revenue & Profit Growth Tool** is designed to help SaaS businesses accurately forecast their **financial performance** by analyzing revenue, costs, and growth rates. This tool enables businesses to make data-driven decisions about scaling, hiring, and long-term sustainability. By predicting future revenue and profit trends, SaaS companies can optimize growth strategies and maximize profitability.
-
-Start Forecasting Your Business Growth with **SaaS Revenue and Profit Growth Tool**
-
-**Link:** [https://dodopayments.com/tools/saas-revenue-profit-growth-tool](https://dodopayments.com/tools/saas-revenue-profit-growth-tool)
-
-**Optimize revenue, increase profitability, and scale smarter!**
-
-## **Why Revenue & Profit Growth Projections Matter for SaaS Businesses**
-
-Accurate revenue and profit projections are crucial for SaaS companies to:
-
-1. Plan long-term growth strategies
-
-2. Set realistic revenue and expansion goals
-
-3. Make informed decisions about scaling, hiring, and product development
-
-4. Identify potential financial risks and opportunities
-
-5. Ensure sustainable profitability in an evolving market
-
-By leveraging financial forecasting, SaaS businesses can gain a competitive advantage and minimize unexpected financial hurdles.
-
-## **Key Input Metrics**
-
-To generate precise revenue and profit projections, the tool requires the following key metrics:
-
-### **1. Estimated Annual Revenue**
-
-This is the total revenue generated annually from customer subscriptions. Entering an accurate figure allows the tool to forecast revenue growth trends over multiple years.
-
-### **2. Estimated Annual Costs**
-
-All operational expenses, including software development, hosting, salaries, marketing, and customer support, should be included. Tracking these costs ensures an accurate profitability forecast.
-
-### **3. Revenue Growth Rate**
-
-This is the annual percentage increase in revenue based on customer acquisition, expansion, and pricing adjustments. For example, if you expect a 10% revenue increase yearly, enter this value to project long-term growth.
-
-### **4. Cost Growth Rate**
-
-Expenses grow as the business scales. The cost growth rate estimates how annual costs increase over time, accounting for infrastructure, hiring, and marketing investments.
-
-### **5. Forecast Duration (Number of Years)**
-
-Select the time frame for your financial projections (e.g., 3, 5, or 10 years). Longer projections provide a bigger picture of financial health but should be regularly reviewed for accuracy.
-
-## **How the SaaS Revenue & Profit Growth Calculator Works**
-
-This tool uses real-time calculations based on your revenue, costs, and growth rates to generate financial projections. It provides:
-
-1. **Revenue Growth Forecasts** – Year-over-year revenue increase based on your expected growth rate.
-2. **Profitability Analysis** – Calculates net profit by subtracting projected costs from revenue.
-3. **Break-even Insights** – Identifies when your business becomes sustainably profitable.
-4. **Data-driven Decision Support** – Helps refine pricing, reduce churn, and optimize cost management.
-
-## **Key Output Metrics**
-
-After entering your data, the tool provides detailed insights into your SaaS business’s financial future:
-
-### **1. Revenue Projection**
-
-A year-over-year revenue forecast, estimating how your business will grow based on your revenue growth rate. This projection helps track expansion progress and scalability.
-
-### **2. Profit Projection**
-
-A detailed profit analysis displaying how much revenue remains after accounting for growing operational costs. Monitoring profit growth ensures long-term business sustainability.
-
-## **Frequently Asked Questions (FAQs)**
-
-### **1. Why are revenue and profit projections important for SaaS businesses?**
-
-Revenue and profit forecasts allow SaaS businesses to make informed financial decisions, set realistic goals, and plan growth strategies. Predicting financial trends helps **optimize operations, scale efficiently, and mitigate risks**.
-
-### **2. How accurate are long-term SaaS revenue projections?**
-
-Projections are based on current data and estimated growth rates, but factors like customer churn, market shifts, and operational costs can impact actual outcomes. Regularly updating forecasts ensures greater accuracy.
-
-### **3. What is the difference between revenue growth and profit growth?**
-
-* **Revenue Growth**: Measures total income increase from SaaS subscriptions and customer expansion.
-* **Profit Growth**: Accounts for both revenue and costs, reflecting the actual net earnings after expenses. A company may experience revenue growth but lower profits if costs rise significantly.
-
-### **4. How can I increase my SaaS revenue growth rate?**
-
-Boost revenue by:
-
-1. Enhancing customer acquisition strategies
-2. Reducing churn with better retention efforts
-3. Optimizing pricing models and offering upsells
-4. Expanding into new markets or launching new features
-
-### **5. How does cost growth affect SaaS profitability?**
-
-As businesses scale, operational costs (e.g., support, hosting, infrastructure, and marketing) also increase. If costs outpace revenue growth, profitability declines. Monitoring expenses ensures financial stability.
-
-
-# Help and Support
-Source: https://docs.dodopayments.com/miscellaneous/help-support
-
-We understand that navigating a new platform or resolving issues can sometimes require additional support. To ensure a seamless experience, we offer multiple support channels to address all your concerns.
-
-## **Dodo Payments Centralized Support System**
-
-The Dodo Payments Centralized Support System provides a unified support experience, offering multiple channels to assist merchants.
-
-Merchants can access the support system through the "Get Support" icon on the Dodo Payments Dashboard, leading to a dedicated support landing page with four key options:
-
-## 1. AI-Powered Chat Assistance
-
-The Chat with AI feature provides instant, automated support using an AI-powered chatbot. It is designed to assist users by:
-
-* Answering technical and business queries
-* Providing guidance on API integration and setup
-* Offering navigation support for product documentation
-
-This feature ensures quick resolution of common queries, reducing the need for direct human support.
-
-📌 Best for: Instant self-serve assistance and general troubleshooting.
-
-## 2. Community Support via Discord
-
-The Dodo Payments Discord Community enables merchants to engage with other users and the Dodo Payments team. Through this platform, users can:
-
-* Discuss best practices and share experiences
-* Seek peer-to-peer assistance from other merchants
-* Engage with the Dodo Payments support team in an interactive environment
-
-This feature fosters a collaborative community-driven support experience.
-
-📌 Best for: Peer support, longer queries and networking with other merchants.
-
-## 3. Dedicated Chat Support
-
-The Chat Support feature provides a direct line to the Dodo Payments support team for more complex or account-specific inquiries. Key aspects include:
-
-* Support is managed via Intercom, where merchants can submit detailed queries.
-* Response time is within 24-48 business hours.
-* Unresolved tickets will automatically close if there is no user response for 72 hours.
-
-This feature ensures that merchants receive personalized assistance for critical issues requiring human intervention.
-
-📌 Best for: Account-related concerns, technical escalations, and personalized troubleshooting.
-
-## **4. Self-Service Documentation**
-
-The Dodo Payments Documentation Portal serves as a comprehensive resource for merchants looking for detailed product and integration information. The portal includes:
-
-* Detailed feature explanations
-* Step-by-step implementation guides
-* API documentation and integration manuals
-* Frequently Asked Questions (FAQs)
-
-This feature provides structured, self-paced learning for merchants to independently navigate the platform.
-
-📌 Best for: In-depth learning, implementation guidance, and technical documentation.
-
-## **Support Options Overview**
-
-| **Support Channel**   | **Purpose**                                 | **Response Time** |
-| --------------------- | ------------------------------------------- | ----------------- |
-| **AI-Powered Chat**   | Automated responses, documentation guidance | Instant           |
-| **Discord Community** | Peer support, community discussions         | Community-driven  |
-| **Chat Support**      | Personalized assistance for complex issues  | 24-48 hours       |
-| **Self-Service Docs** | Product guides, API reference, tutorials    | Self-paced        |
-
-Merchants can choose the most suitable support channel based on the complexity of their query and the required response time. For further assistance, visit the Dodo Payments Support Center via the dashboard.
 
 
 # Countries Eligible for Payment Acceptance
@@ -28192,7 +31011,7 @@ Before initiating a migration, ensure you meet the following requirements:
 
     ### Sample data format
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "customers": [
         {
@@ -28363,7 +31182,7 @@ Share this key with your current payment processor for encrypting the card data 
 
 Ready to migrate your subscriptions to Dodo Payments? Contact our team to begin the process:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Contact Support" icon="envelope" href="mailto:support@dodopayments.com">
     Reach out to start your migration and get connected with a Solutions Engineer.
   </Card>
@@ -28449,7 +31268,7 @@ This guide includes:
 Please watch this video on how you can perform a transation in Test Mode.
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/5CcUSE4L_cg" title="Test Transaction | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Test Transaction | Dodo Payments" />
 </Frame>
 
 
@@ -28459,7 +31278,7 @@ Source: https://docs.dodopayments.com/miscellaneous/testing-process
 Learn how to test your Dodo Payments integration
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/5CcUSE4L_cg" title="Test Transaction | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Test Transaction | Dodo Payments" />
 </Frame>
 
 ## Test Card Details
@@ -28546,7 +31365,7 @@ This is available in the `Payouts → Payouts` section on the dashboard
 Payout Activation becomes available **only after your account crosses the payout threshold which is usually \$50 (or an equivalent amount)**
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation.png?fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=848600df9136ef517c801f6b281143a9" alt="Payout Activation" data-og-width="2880" width="2880" data-og-height="1800" height="1800" data-path="images/payouts/payout-activation.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation.png?w=280&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=dcb15591594d26af3b4fb18fe96bae44 280w, https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation.png?w=560&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=9ccd133141253603113ca3007a632c70 560w, https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation.png?w=840&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=db843a15ef6c076864eb19f4dfc5eabf 840w, https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation.png?w=1100&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=5cd0bc6182a2038ac603e0205b432e54 1100w, https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation.png?w=1650&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=fa7ba103c5063961f24d749a7d66da57 1650w, https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation.png?w=2500&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=766b6dc2b255a7f1f18dd6b557496a69 2500w" />
+  <img alt="Payout Activation" />
 </Frame>
 
 Once this amount is reached:
@@ -28650,7 +31469,7 @@ For registered businesses, verification ensures the legitimacy of the company an
 
 Registered businesses from the United Kingdom need to fill a **W-8BEN-E** form to comply with international tax reporting regulations. This ensures smooth payout processing and tax documentation accuracy.
 
-<CardGroup cols={1}>
+<CardGroup>
   <Card title="Download W-8BEN-E Form" icon="download" href="https://www.irs.gov/pub/irs-pdf/fw8bene.pdf">
     Download the official IRS W-8BEN-E form (PDF) required for UK registered businesses.<br />
 
@@ -28735,19 +31554,19 @@ W-8 BEN-E forms are Internal Revenue Service (IRS) forms that foreign businesses
     **Page 1**
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%201.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3b8f15697fccb105a904679359743e65" alt="W-8 BEN-E Private Limited Sample Page 1" data-og-width="1824" width="1824" data-og-height="1440" height="1440" data-path="images/tax-forms/W8 - BEN - PLC - SAMPLE - 1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%201.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=2cc85ea951434b1cd8626a8599eff30a 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%201.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=7b20325ed2fad8e9d63c866dfdd6f1aa 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%201.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=02bfcebaeb7774fee072aa31cdb3aa29 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%201.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=950b91584f827d827d02f8209c1fd408 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%201.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=f30a44d990c416a5f399072819691b58 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%201.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=29e71ba0a54ab54e51ea5e5faaa02f05 2500w" />
+      <img alt="W-8 BEN-E Private Limited Sample Page 1" />
     </Frame>
 
     **Page 2**
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%202.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=40e3cbf009f507a405d3aac78e825c82" alt="W-8 BEN-E Private Limited Sample Page 2" data-og-width="1824" width="1824" data-og-height="1440" height="1440" data-path="images/tax-forms/W8 - BEN - PLC - SAMPLE - 2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%202.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=653141e93fdfce2d77c458452e18d5d1 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%202.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=e2153a3fef355512890660db2c82e3ea 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%202.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=2a7f836b10ed20f870c9ab5f9eac6122 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%202.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c731b19d721d2e1da1e67bb4b48745b1 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%202.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ef71654e980967bb03cc1c4d434c1d07 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%202.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3358b3ac6867b0b2a6e3f4568799d417 2500w" />
+      <img alt="W-8 BEN-E Private Limited Sample Page 2" />
     </Frame>
 
     **Page 8**
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d896f1b5e2558ba0c794665efe917e0d" alt="W-8 BEN-E Private Limited Sample Page 8" data-og-width="1824" width="1824" data-og-height="1440" height="1440" data-path="images/tax-forms/W8 - BEN - PLC - SAMPLE - 8.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6194284d2b6b955880c661475b39cb93 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=bc178d5a68a8f3ff8f8beb93e6700df5 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ec7e20558d20b7665053b10096701ab1 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d4990e55a865bc3064c6efd44b706eae 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=383e5581376171334489aab52389cd4b 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c3749eed5cdc5e42369d627c312312cc 2500w" />
+      <img alt="W-8 BEN-E Private Limited Sample Page 8" />
     </Frame>
   </Accordion>
 
@@ -28764,19 +31583,19 @@ W-8 BEN-E forms are Internal Revenue Service (IRS) forms that foreign businesses
     **Page 1**
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%201.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=968848a298d455d070102e7600b774d6" alt="W-8 BEN-E LLP Sample Page 1" data-og-width="1824" width="1824" data-og-height="1440" height="1440" data-path="images/tax-forms/W8 - BEN - LLP SAMPLE - 1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%201.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ba772250b8cd38709397a4e717d188c6 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%201.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=2ee869897548db82fffaaa6dfe91b1a3 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%201.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=168e4e9dc88d49e1eb901afa47a2425e 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%201.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=77b09ee621a3377f9353bd9195b32319 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%201.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3f36e523c989c78564381d47528fbf17 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%201.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=1e85676e8cd4c260efe0bb1c340eff0a 2500w" />
+      <img alt="W-8 BEN-E LLP Sample Page 1" />
     </Frame>
 
     **Page 2**
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%202.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=366eca5999f016cfad7a9b65f9eda637" alt="W-8 BEN-E LLP Sample Page 2" data-og-width="1824" width="1824" data-og-height="1440" height="1440" data-path="images/tax-forms/W8 - BEN - LLP SAMPLE - 2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%202.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ae7e9526b617773b3f103ee3fbc2e207 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%202.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=19b1fcca8fbd9142ab6fe819059be0f3 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%202.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=b7b6cdb87a6651e6dfe8f0119bcb5f19 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%202.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=5f4ec2c707578f035758b24c2603b342 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%202.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d9516fd043483dd15a2528703f60f24c 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20LLP%20SAMPLE%20-%202.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=b2bbd7d7bb51c6637df0c0b03ce36963 2500w" />
+      <img alt="W-8 BEN-E LLP Sample Page 2" />
     </Frame>
 
     **Page 8**
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d896f1b5e2558ba0c794665efe917e0d" alt="W-8 BEN-E LLP Sample Page 8" data-og-width="1824" width="1824" data-og-height="1440" height="1440" data-path="images/tax-forms/W8 - BEN - PLC - SAMPLE - 8.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6194284d2b6b955880c661475b39cb93 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=bc178d5a68a8f3ff8f8beb93e6700df5 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ec7e20558d20b7665053b10096701ab1 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d4990e55a865bc3064c6efd44b706eae 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=383e5581376171334489aab52389cd4b 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/tax-forms/W8%20-%20BEN%20-%20PLC%20-%20SAMPLE%20-%208.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c3749eed5cdc5e42369d627c312312cc 2500w" />
+      <img alt="W-8 BEN-E LLP Sample Page 8" />
     </Frame>
   </Accordion>
 </AccordionGroup>
@@ -28806,7 +31625,7 @@ Once the review is complete and everything looks good, payouts will be enabled f
 * You will be able to view your payout schedule, next payout date, payout threshold and eligible balance directly in the dashboard
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation2.png?fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=53acbf915d4d269c83827876aad9668a" alt="Account Activated" data-og-width="2880" width="2880" data-og-height="1800" height="1800" data-path="images/payouts/payout-activation2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation2.png?w=280&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=20c3f4f29e1b683d488a648bc6e1c8f7 280w, https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation2.png?w=560&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=32c4cb3ba03e356d4cc9addd59b1401d 560w, https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation2.png?w=840&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=940f0e258d564a85a8b865745a409d05 840w, https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation2.png?w=1100&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=664e8f5cc00754a46270cf0cd8022a24 1100w, https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation2.png?w=1650&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=f30d82e9ef6331738f0f9c8f75f354f5 1650w, https://mintcdn.com/dodopayments/oFHsOds6CLjlUzXY/images/payouts/payout-activation2.png?w=2500&fit=max&auto=format&n=oFHsOds6CLjlUzXY&q=85&s=a445d0e85a09be3434aa89677a86ee0a 2500w" />
+  <img alt="Account Activated" />
 </Frame>
 
 ### Ongoing Monitoring
@@ -28864,7 +31683,7 @@ You can resubmit documents using the **resubmit** option in your dashboard.
   </Step>
 </Steps>
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Merchant Acceptance Policy" icon="shield-check" href="/miscellaneous/merchant-acceptance">
     Review our comprehensive acceptance standards, including supported and prohibited products, and ensure your business is eligible for onboarding.
   </Card>
@@ -29145,7 +31964,7 @@ The following sections provide detailed information about standard HTTP status c
 
 When an error occurs, the API returns a JSON response with the following structure:
 
-```json  theme={null}
+```json theme={null}
 {
   "code": "UNSUPPORTED_COUNTRY",
   "message": "Country AI currently not supported"
@@ -29284,23 +32103,23 @@ When an error occurs, the API returns a JSON response with the following structu
 
 * `LINE_ITEM_FULLY_REFUNDED`
   * **Trigger:** Attempt to refund already fully refunded line item
-  * **Message:** Line item {id} has been fully refunded cannot be refunded further.
+  * **Message:** Line item  has been fully refunded cannot be refunded further.
 
 * `LINE_ITEM_NOT_FOUND`
   * **Trigger:** Item ID not part of the referenced payment
-  * **Message:** Line item {id} not found in payment
+  * **Message:** Line item  not found in payment
 
 * `LINE_ITEM_PRORATED`
   * **Trigger:** Refund or update attempted on a prorated line
-  * **Message:** Line item {id} cannot be refunded because its prorated
+  * **Message:** Line item  cannot be refunded because its prorated
 
 * `LINE_ITEM_REFUND_AMOUNT_TOO_HIGH`
   * **Trigger:** Refund amount > paid amount (tax incl.)
-  * **Message:** Line item {id} requested refund amount including tax is {amount} which is above the paid amount {amount}
+  * **Message:** Line item  requested refund amount including tax is  which is above the paid amount&#x20;
 
 * `LINE_ITEM_REFUND_AMOUNT_TOO_LOW`
   * **Trigger:** Refund amount below minimum threshold
-  * **Message:** Line item {id} requested refund amount is {amount} which is too low
+  * **Message:** Line item  requested refund amount is  which is too low
 
 * `MAXIMUM_KEYS_REACHED`
   * **Trigger:** Metadata / custom-fields exceeded 50 pairs
@@ -29316,15 +32135,15 @@ When an error occurs, the API returns a JSON response with the following structu
 
 * `MISSING_ADDON_IDS`
   * **Trigger:** `addon_id` list empty or unknown IDs
-  * **Message:** One or more product IDs do not exist: {id}
+  * **Message:** One or more product IDs do not exist:&#x20;
 
 * `MISSING_METER_IDS`
   * **Trigger:** Meter ID list empty or contains invalid IDs
-  * **Message:** One or more meter IDs do not exist: {id}
+  * **Message:** One or more meter IDs do not exist:&#x20;
 
 * `MISSING_PRODUCT_INFORMATION`
   * **Trigger:** Product exists but mandatory info missing
-  * **Message:** Product {id} exists but other mandatory information is missing or invalid
+  * **Message:** Product  exists but other mandatory information is missing or invalid
 
 * `NEGATIVE_BALANCE_ADJUSTMENT`
   * **Trigger:** Attempt to make wallet balance negative
@@ -29392,7 +32211,7 @@ When an error occurs, the API returns a JSON response with the following structu
 
 * `REFUND_WINDOW_EXPIRED`
   * **Trigger:** Outside allowable refund window
-  * **Message:** Refunds cannot be initiated {days} days after payment creation. Contact [support@dodopayments.com](mailto:support@dodopayments.com).
+  * **Message:** Refunds cannot be initiated  days after payment creation. Contact [support@dodopayments.com](mailto:support@dodopayments.com).
 
 * `REQUEST_AMOUNT_BELOW_MINIMUM`
   * **Trigger:** Amount \< product minimum
@@ -29420,7 +32239,7 @@ When an error occurs, the API returns a JSON response with the following structu
 
 * `TOTAL_PAYMENT_AMOUNT_BELOW_MINIMUM_AMOUNT`
   * **Trigger:** Combined cart total \< gateway minimum
-  * **Message:** Minimum amount of {display_str} is required to process payment
+  * **Message:** Minimum amount of  is required to process payment
 
 * `UNABLE_TO_EDIT_PRIMARY_BRAND`
   * **Trigger:** Attempt to update primary brand via regular API
@@ -29440,7 +32259,7 @@ When an error occurs, the API returns a JSON response with the following structu
 
 * `UNSUPPORTED_COUNTRY`
   * **Trigger:** Geo not yet supported
-  * **Message:** Country {country_name} currently not supported
+  * **Message:** Country  currently not supported
 
 * `UNSUPPORTED_CURRENCY`
   * **Trigger:** Product or addon currency invalid
@@ -29456,7 +32275,7 @@ When an error occurs, the API returns a JSON response with the following structu
 
 * `UNSUPPORTED_TAX_CATEGORY`
   * **Trigger:** Tax category string not in enum
-  * **Message:** Category {category} currently not supported
+  * **Message:** Category  currently not supported
 
 * `UNSUCCESSFUL_PAYMENT_ID`
   * **Trigger:** Payment ID references unsuccessful payment
@@ -29522,7 +32341,7 @@ The Dodo Payments API provides comprehensive endpoints for payment processing, s
   <Step title="Authenticate Your API Requests">
     Use your API keys to authenticate all requests. Apply the following authorization format:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     Authorization: Bearer YOUR_API_KEY
     ```
 
@@ -29566,7 +32385,7 @@ The Dodo Payments API provides comprehensive endpoints for payment processing, s
 
 To effectively manage errors, consult the *Error Codes* and *Transaction Failures* sections for detailed guidance.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Error Codes" icon="triangle-exclamation" href="/api-reference/error-codes">
     Delve into comprehensive error details and their resolutions.
   </Card>
@@ -29699,7 +32518,7 @@ You can add metadata when creating or updating objects through the API. For prod
 
 ### Via API
 
-```javascript  theme={null}
+```javascript theme={null}
 // Adding metadata when creating a checkout session
 const checkoutSession = await client.checkoutSessions.create({
     product_cart: [{ product_id: 'product_id', quantity: 1 }],
@@ -29748,7 +32567,7 @@ const customer = await client.customers.create({
 For products, you can also add metadata directly from the Dodo Payments dashboard when creating or editing a product. The metadata section allows you to easily add custom key-value pairs without writing code.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/product-catalog/product-metadata-ui.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=9e4fee91d8922325d8c1c72b27ccb0a2" alt="Product metadata interface in Dodo Payments dashboard" data-og-width="2156" width="2156" data-og-height="420" height="420" data-path="images/product-catalog/product-metadata-ui.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/product-catalog/product-metadata-ui.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=ed1822dc9af2f67472536b290bffab55 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/product-catalog/product-metadata-ui.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=f5b681d6db7794636879c623aaead812 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/product-catalog/product-metadata-ui.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=e101ac3b792f02d59af5671c0a8ea1ef 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/product-catalog/product-metadata-ui.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=77b2fb567eb4595af0742b626d8468ba 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/product-catalog/product-metadata-ui.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=ff6fa51d4f6b3fed73d86ea5dcbe9173 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/product-catalog/product-metadata-ui.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=e921586b2f537024362462910953cbce 2500w" />
+  <img alt="Product metadata interface in Dodo Payments dashboard" />
 </Frame>
 
 <Tip>
@@ -29759,7 +32578,7 @@ For products, you can also add metadata directly from the Dodo Payments dashboar
 
 Metadata is included in API responses when retrieving objects:
 
-```javascript  theme={null}
+```javascript theme={null}
 // Retrieving checkout session metadata
 const checkoutSession = await client.checkoutSessions.retrieve('cs_123');
 console.log(checkoutSession.metadata.order_id); // 'ORD-123'
@@ -29785,7 +32604,7 @@ While metadata is not directly searchable via our API, you can:
 2. Retrieve objects using their primary IDs
 3. Filter the results in your application code
 
-```javascript  theme={null}
+```javascript theme={null}
 // Example: Find a checkout session using metadata
 const checkoutSessions = await client.checkoutSessions.list({
   limit: 100
@@ -29840,7 +32659,7 @@ Metadata is supported on the following objects:
 
 Metadata is included in webhook events, making it easy to handle notifications with your custom data:
 
-```javascript  theme={null}
+```javascript theme={null}
 // Example webhook handler
 app.post('/webhook', (req, res) => {
   const event = req.body;
@@ -29974,6 +32793,14 @@ Get detailed information about a specific product.
 
 
 
+# List Short Links
+Source: https://docs.dodopayments.com/api-reference/products/get-products-short-links
+
+get /products/short_links
+Lists all short links created by the business. Short links provide shortened checkout URLs with custom slugs for your products.
+
+
+
 # Update Product
 Source: https://docs.dodopayments.com/api-reference/products/patch-products
 
@@ -29987,6 +32814,14 @@ Source: https://docs.dodopayments.com/api-reference/products/post-products
 
 post /products
 Create a new product.
+
+
+
+# Create Short Link
+Source: https://docs.dodopayments.com/api-reference/products/post-products-id-short-links
+
+post /products/{id}/short_links
+Creates a short checkout URL with a custom slug for a product. Uses a Static Checkout URL under the hood.
 
 
 
@@ -30295,62 +33130,6 @@ Get a list of all events.
 
 
 
-# Create Webhook
-Source: https://docs.dodopayments.com/api-reference/webhooks/create-webhook
-
-post /webhooks
-Create a new webhook for a business.
-
-
-
-# Delete Webhook
-Source: https://docs.dodopayments.com/api-reference/webhooks/delete-webhook
-
-delete /webhooks/{webhook_id}
-Delete a specific webhook.
-
-
-
-# Get Webhook Details
-Source: https://docs.dodopayments.com/api-reference/webhooks/get-details
-
-get /webhooks/{webhook_id}
-Get detailed information about a specific webhook.
-
-
-
-# Get Webhook Headers
-Source: https://docs.dodopayments.com/api-reference/webhooks/get-webhook-headers
-
-get /webhooks/{webhook_id}/headers
-Get the headers for a specific webhook.
-
-
-
-# List Webhooks
-Source: https://docs.dodopayments.com/api-reference/webhooks/list-webhooks
-
-get /webhooks
-List all webhooks for a business.
-
-
-
-# Update Webhook
-Source: https://docs.dodopayments.com/api-reference/webhooks/update-webhook
-
-patch /webhooks/{webhook_id}
-Update a specific webhook.
-
-
-
-# Update Webhook Headers
-Source: https://docs.dodopayments.com/api-reference/webhooks/update-webhook-headers
-
-patch /webhooks/{webhook_id}/headers
-Update the headers for a specific webhook.
-
-
-
 # Build an AI Chat App with AI SDK & LLM Blueprint
 Source: https://docs.dodopayments.com/developer-resources/build-an-ai-chat-app-with-usage-based-billing
 
@@ -30360,7 +33139,7 @@ Follow along as we build an AI chat app with automatic token tracking and usage-
   <strong>Let Sentra write your integration code for you.</strong><br />
   Use our AI assistant in VS Code, Cursor, or Windsurf to generate SDK/API code, LLM Blueprint integration code, webhooks, and more - just by describing what you want.
 
-  <a href="https://dodopayments.com/sentra" target="_blank" rel="noopener noreferrer">
+  <a href="https://dodopayments.com/sentra">
     Try Sentra: AI-Powered Integration →
   </a>
 </Tip>
@@ -30379,7 +33158,7 @@ By the end of this tutorial, you'll have a working chat application that:
 * Includes a beautiful chat interface
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/ai-chat-demo.png?fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=9d9932fb528b64632cfbedaad98c09f3" alt="AI Chat Demo" data-og-width="1488" width="1488" data-og-height="853" height="853" data-path="images/cookbooks/ai-chat-app/ai-chat-demo.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/ai-chat-demo.png?w=280&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=cdd663dc0371946affeb119069bdf624 280w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/ai-chat-demo.png?w=560&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=a3495c058f3e5ab1b9acf8fb49f4d913 560w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/ai-chat-demo.png?w=840&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=76e0a2dfa7beb6c2a48850c8e1e74a97 840w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/ai-chat-demo.png?w=1100&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=ecbb1b673e18ac3726c8f6cf7e3b267c 1100w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/ai-chat-demo.png?w=1650&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=0cded37ec3fdeceda387a62de58f0c3d 1650w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/ai-chat-demo.png?w=2500&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=8399724469b4d5655b9b9a020705a302 2500w" />
+  <img alt="AI Chat Demo" />
 </Frame>
 
 ## What We're Building
@@ -30417,7 +33196,7 @@ We'll start by creating a meter in your Dodo Payments dashboard that will track 
     4. Click the **Create Meter** button
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/create-meter.png?fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=e5aa342d55a4a9c7323cf68015f737e4" alt="Create Meter" data-og-width="1668" width="1668" data-og-height="950" height="950" data-path="images/cookbooks/ai-chat-app/create-meter.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/create-meter.png?w=280&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=56a930a2c5501e242a0e5dc80d39de67 280w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/create-meter.png?w=560&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=2351426e43da3c8559403140337bbf8c 560w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/create-meter.png?w=840&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=3e87f9d5eef77572a30f03c155806909 840w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/create-meter.png?w=1100&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=5ab314b7a45baa4d9deac83320eb6e75 1100w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/create-meter.png?w=1650&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=c316a57a74a656c36eea8acd72b27ab0 1650w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/create-meter.png?w=2500&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=da58b36f892e3f0a1540247aae036c03 2500w" />
+      <img alt="Create Meter" />
     </Frame>
 
     You should see a form where we'll configure our token tracking.
@@ -30456,7 +33235,7 @@ We'll start by creating a meter in your Dodo Payments dashboard that will track 
     2. Click **Create Meter**
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-configuration.png?fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=c5b4f56326b6825847c9fc7666056102" alt="Meter Configuration" data-og-width="1661" width="1661" data-og-height="951" height="951" data-path="images/cookbooks/ai-chat-app/meter-configuration.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-configuration.png?w=280&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=91a254647389bb1e446b49a3996d6e47 280w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-configuration.png?w=560&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=72a01a82e3f07058894dcdd9e95f28a7 560w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-configuration.png?w=840&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=4cbd61b7c72810ec18dce789afa43f07 840w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-configuration.png?w=1100&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=8b9e3e3ae88b3ab7733a1aef0b04e293 1100w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-configuration.png?w=1650&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=e837ce0a738e8d896581fc20f3720aa7 1650w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-configuration.png?w=2500&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=fa35700642a36cc062075e0942f43ede 2500w" />
+      <img alt="Meter Configuration" />
     </Frame>
 
     <Check>
@@ -30550,7 +33329,7 @@ Now we need to create a product that defines our pricing (\$0.01 per 1,000 token
     **Free Threshold**: Enter → `10000` (customers get 10,000 free tokens per month)
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/product-pricing.png?fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=e92dcb98316e970c1b921e0572f10b43" alt="Product Pricing" data-og-width="1607" width="1607" data-og-height="773" height="773" data-path="images/cookbooks/ai-chat-app/product-pricing.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/product-pricing.png?w=280&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=1901c7e7282431244214df5d612d6a3f 280w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/product-pricing.png?w=560&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=ac217b6ea77149158a4c504e14152a56 560w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/product-pricing.png?w=840&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=09909b520fbac68c7da1bf896d687288 840w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/product-pricing.png?w=1100&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=24d9e8518738221b48612b7b530f2e41 1100w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/product-pricing.png?w=1650&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=1fa051874931b28b711adc5152345743 1650w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/product-pricing.png?w=2500&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=4cb63609adad57e16b4aa7ff10ec1737 2500w" />
+      <img alt="Product Pricing" />
     </Frame>
 
     <Tip>
@@ -30613,7 +33392,7 @@ Now we have our billing setup complete and a test customer created. Let's build 
   <Step title="Set up your project">
     Create a new directory and initialize the project:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     mkdir ai-chat-app
     cd ai-chat-app
     npm init -y
@@ -30623,7 +33402,7 @@ Now we have our billing setup complete and a test customer created. Let's build 
   <Step title="Install dependencies">
     Install the packages we need:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install express ai @ai-sdk/google @dodopayments/ingestion-blueprints dotenv
     npm install --save-dev typescript @types/express @types/node tsx
     ```
@@ -30666,7 +33445,7 @@ Now we have our billing setup complete and a test customer created. Let's build 
   <Step title="Create project structure">
     Create the folders and files:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     mkdir src public
     ```
   </Step>
@@ -31404,7 +34183,7 @@ Time to test our AI chat app and see the billing in action! Let's make sure ever
     1. Verify your `.env` file has all the API keys from Step 2
     2. Start the development server:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm run dev
     ```
 
@@ -31460,7 +34239,7 @@ Time to test our AI chat app and see the billing in action! Let's make sure ever
     * Customer ID: Your test customer id
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-event.png?fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=041f2bd60ce174a0e67f051e206d25b0" alt="Meter Events" data-og-width="1250" width="1250" data-og-height="321" height="321" data-path="images/cookbooks/ai-chat-app/meter-event.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-event.png?w=280&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=a825f4c03f05a1fa96f2fa5867c5231c 280w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-event.png?w=560&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=025892e96e4d4e89cad823a0d6a1cfcf 560w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-event.png?w=840&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=80fe144d5817bfbd19d6f5b1edaef2a6 840w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-event.png?w=1100&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=0944a7d287c2771a3e848e97c0c24bc6 1100w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-event.png?w=1650&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=43c6f375ac5a83a36104757c9cf67b1e 1650w, https://mintcdn.com/dodopayments/4L3_sb2jJa5trJWD/images/cookbooks/ai-chat-app/meter-event.png?w=2500&fit=max&auto=format&n=4L3_sb2jJa5trJWD&q=85&s=2fda9bccb7e9e3164868e0a891f9e088 2500w" />
+      <img alt="Meter Events" />
     </Frame>
 
     <Check>
@@ -31476,7 +34255,7 @@ Time to test our AI chat app and see the billing in action! Let's make sure ever
     3. Check the "Consumed Units" column - it should show the total tokens used
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/aggregation.png?fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=58fa883c91fae2d4e7d59e266ca8913b" alt="Meter Customer Tokens" data-og-width="871" width="871" data-og-height="352" height="352" data-path="images/cookbooks/ai-chat-app/aggregation.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/aggregation.png?w=280&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=e33655b35467bf9f7618271302c3119c 280w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/aggregation.png?w=560&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=68e689fcfcb75a53bec5100628a133d7 560w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/aggregation.png?w=840&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=67c5bd2f17e0102d25488644ce615550 840w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/aggregation.png?w=1100&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=1b0999a8424eb14ab5a6e65a0c366548 1100w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/aggregation.png?w=1650&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=2660b278d311b8738d60f148f496304f 1650w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/aggregation.png?w=2500&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=85ebb229e27e7740e7d6714c5088da6d 2500w" />
+      <img alt="Meter Customer Tokens" />
     </Frame>
 
     <Info>
@@ -31495,7 +34274,7 @@ Time to test our AI chat app and see the billing in action! Let's make sure ever
        * Total Price: \~\$0.05
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/free-tier-test.png?fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=5ffc1f234acfbaaa2ab0c34805812785" alt="Free Tier Test" data-og-width="846" width="846" data-og-height="352" height="352" data-path="images/cookbooks/ai-chat-app/free-tier-test.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/free-tier-test.png?w=280&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=7271b28ef1a0e85da40bda6d4f55bdf9 280w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/free-tier-test.png?w=560&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=aec8261e6234ddb4bd92f6ca14a1c757 560w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/free-tier-test.png?w=840&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=1ae06fb6e96de1335f4305288e10ec28 840w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/free-tier-test.png?w=1100&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=45cdf0f1cf084f8febc25124346d9b74 1100w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/free-tier-test.png?w=1650&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=c0709871e76ba329f21e7a458acac705 1650w, https://mintcdn.com/dodopayments/oig3NPG69DDpua_S/images/cookbooks/ai-chat-app/free-tier-test.png?w=2500&fit=max&auto=format&n=oig3NPG69DDpua_S&q=85&s=d68d18f08beeb82b1dd073324e5dec88 2500w" />
+      <img alt="Free Tier Test" />
     </Frame>
 
     <Check>
@@ -31537,7 +34316,7 @@ Common issues and their solutions:
 
     1. Test if model returns usage:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     const response = await generateText({...});
     console.log('Usage:', response.usage);
     ```
@@ -31572,7 +34351,7 @@ You now have a fully functional AI chat application with automatic token usage t
 
 ### Learn More
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="LLM Blueprint" icon="robot" href="/developer-resources/ingestion-blueprints/llm">
     Learn more about LLM Ingestion Blueprint
   </Card>
@@ -31592,7 +34371,7 @@ Source: https://docs.dodopayments.com/developer-resources/checkout-session
 
 Create secure, hosted checkout experiences that handle the complete payment flow for both one-time purchases and subscriptions with full customization control.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Quick Start Guide" icon="rocket" href="#creating-your-first-checkout-session">
     Get your first checkout session running in under 5 minutes
   </Card>
@@ -31850,7 +34629,7 @@ Create secure, hosted checkout experiences that handle the complete payment flow
 
 All methods above return the same response structure:
 
-```json  theme={null}
+```json theme={null}
 {
   "session_id": "cks_Gi6KGJ2zFJo9rq9Ukifwa",
   "checkout_url": "https://test.checkout.dodopayments.com/session/cks_Gi6KGJ2zFJo9rq9Ukifwa"
@@ -31865,13 +34644,17 @@ All methods above return the same response structure:
   <Step title="Redirect your customer">
     Direct your customer to the checkout URL to complete their purchase.
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     // Redirect immediately
     window.location.href = session.checkout_url;
 
     // Or open in new window
     window.open(session.checkout_url, '_blank');
     ```
+
+    <Tip>
+      **Alternative Integration Options**: Instead of redirecting, you can embed the checkout directly in your page using [Overlay Checkout](/developer-resources/overlay-checkout) (modal overlay) or [Inline Checkout](/developer-resources/inline-checkout) (fully embedded). Both options use the same checkout session URL.
+    </Tip>
   </Step>
 
   <Step title="Handle the return">
@@ -31881,7 +34664,7 @@ All methods above return the same response structure:
 
 ## Request Body
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Required Fields" icon="asterisk">
     Essential fields needed for every checkout session
   </Card>
@@ -31893,37 +34676,37 @@ All methods above return the same response structure:
 
 ### Required Fields
 
-<ParamField body="product_cart" type="array" required>
+<ParamField type="array">
   Array of products to include in the checkout session. Each product must have a valid `product_id` from your Dodo Payments dashboard.
 
-  <Warning>
-    **Important**: Multiple product carts can only contain one-time payment products. You cannot mix subscription products with one-time products in the same checkout session.
-  </Warning>
+  <Tip>
+    **Mixed Checkout**: You can combine one-time payment products and subscription products in the same checkout session. This enables powerful use cases like setup fees with subscriptions, hardware bundles with SaaS, and more.
+  </Tip>
 
   <Expandable title="Product Cart Item Properties">
-    <ParamField body="product_id" type="string" required>
+    <ParamField type="string">
       The unique identifier of the product from your Dodo Payments dashboard.
 
       **Example:** `"prod_123abc456def"`
     </ParamField>
 
-    <ParamField body="quantity" type="integer" required>
+    <ParamField type="integer">
       Quantity of the product.
 
       **Example:** `1` for single item, `3` for multiple quantities
     </ParamField>
 
-    <ParamField body="addons" type="array">
+    <ParamField type="array">
       Array of addons to attach to the product. Only valid if the product is a subscription.
 
       <Expandable title="Addon item properties">
-        <ParamField body="addon_id" type="string" required />
+        <ParamField type="string" />
 
-        <ParamField body="quantity" type="integer" required />
+        <ParamField type="integer" />
       </Expandable>
     </ParamField>
 
-    <ParamField body="amount" type="integer">
+    <ParamField type="integer">
       Amount the customer pays if pay\_what\_you\_want is enabled. If disabled, this field will be ignored.
 
       **Format**: Represented in the lowest denomination of the currency (e.g., cents for USD). For example, to charge \$1.00, pass `100`.
@@ -31941,7 +34724,7 @@ Configure these fields to customize the checkout experience and add business log
 
 <AccordionGroup>
   <Accordion title="Customer Information">
-    <ParamField body="customer" type="object">
+    <ParamField type="object">
       Customer information. You can either attach an existing customer using their ID or create a new customer record during checkout.
 
       <Tabs>
@@ -31949,7 +34732,7 @@ Configure these fields to customize the checkout experience and add business log
           Attach an existing customer to the checkout session using their ID.
 
           <Expandable title="Existing Customer Properties">
-            <ParamField body="customer_id" type="string" required>
+            <ParamField type="string">
               The unique identifier of an existing customer. Use this to attach the checkout session to an existing customer instead of creating a new one.
             </ParamField>
           </Expandable>
@@ -31959,17 +34742,17 @@ Configure these fields to customize the checkout experience and add business log
           Create a new customer record during checkout.
 
           <Expandable title="New Customer Properties">
-            <ParamField body="email" type="string" required>
+            <ParamField type="string">
               Customer's email address. Required when creating a new customer.
             </ParamField>
 
-            <ParamField body="name" type="string">
+            <ParamField type="string">
               Customer's full name as it should appear on receipts and invoices.
 
               **Example**: `"John Doe"` or `"Jane Smith"`
             </ParamField>
 
-            <ParamField body="phone_number" type="string">
+            <ParamField type="string">
               Customer's phone number in international format. Required for some payment methods and fraud prevention.
 
               **Format**: Include country code, e.g., `"+1234567890"` for US numbers
@@ -31979,7 +34762,7 @@ Configure these fields to customize the checkout experience and add business log
       </Tabs>
     </ParamField>
 
-    <ParamField body="billing_address" type="object">
+    <ParamField type="object">
       Billing address information for accurate tax calculation, fraud prevention, and regulatory compliance.
 
       <Info>
@@ -31987,25 +34770,25 @@ Configure these fields to customize the checkout experience and add business log
       </Info>
 
       <Expandable title="Billing address object properties">
-        <ParamField body="street" type="string">
+        <ParamField type="string">
           Complete street address including house number, street name, and apartment/unit number if applicable.
 
           **Example**: `"123 Main St, Apt 4B"` or `"456 Oak Avenue"`
         </ParamField>
 
-        <ParamField body="city" type="string">
+        <ParamField type="string">
           City or municipality name.
 
           **Example**: `"San Francisco"`, `"New York"`, `"London"`
         </ParamField>
 
-        <ParamField body="state" type="string">
+        <ParamField type="string">
           State, province, or region name. Use full names or standard abbreviations.
 
           **Example**: `"California"` or `"CA"`, `"Ontario"` or `"ON"`
         </ParamField>
 
-        <ParamField body="country" type="string" required>
+        <ParamField type="string">
           Two-letter ISO country code (ISO 3166-1 alpha-2). This field is always required when billing\_address is provided.
 
           **Examples**: `"US"` (United States), `"CA"` (Canada), `"GB"` (United Kingdom), `"DE"` (Germany)
@@ -32015,7 +34798,7 @@ Configure these fields to customize the checkout experience and add business log
           </Card>
         </ParamField>
 
-        <ParamField body="zipcode" type="string">
+        <ParamField type="string">
           Postal code, ZIP code, or equivalent based on country requirements.
 
           **Examples**: `"94102"` (US), `"M5V 3A8"` (Canada), `"SW1A 1AA"` (UK)
@@ -32025,7 +34808,7 @@ Configure these fields to customize the checkout experience and add business log
   </Accordion>
 
   <Accordion title="Payment Configuration">
-    <ParamField body="allowed_payment_method_types" type="array">
+    <ParamField type="array">
       Control which payment methods are available to customers during checkout. This helps optimize for specific markets or business requirements.
 
       **Available Options**: `credit`, `debit`, `upi_collect`, `upi_intent`, `apple_pay`, `google_pay`, `amazon_pay`, `klarna`, `affirm`, `afterpay_clearpay`, `sepa`, `ach`, `cashapp`, `multibanco`, `bancontact_card`, `eps`, `ideal`, `przelewy24`, `paypal`
@@ -32041,7 +34824,7 @@ Configure these fields to customize the checkout experience and add business log
       ```
     </ParamField>
 
-    <ParamField body="billing_currency" type="string">
+    <ParamField type="string">
       Override the default currency selection with a fixed billing currency. Uses ISO 4217 currency codes.
 
       **Supported Currencies**: `USD`, `EUR`, `GBP`, `CAD`, `AUD`, `INR`, and more
@@ -32053,33 +34836,33 @@ Configure these fields to customize the checkout experience and add business log
       </Note>
     </ParamField>
 
-    <ParamField body="show_saved_payment_methods" type="boolean" default="false">
+    <ParamField type="boolean">
       Display previously saved payment methods for returning customers, improving checkout speed and user experience.
     </ParamField>
   </Accordion>
 
   <Accordion title="Session Management">
-    <ParamField body="return_url" type="string">
+    <ParamField type="string">
       URL to redirect customers after successful payment or cancellation.
     </ParamField>
 
-    <ParamField body="confirm" type="boolean" default="false">
+    <ParamField type="boolean">
       If true, finalizes all session details immediately. API will throw an error if required data is missing.
     </ParamField>
 
-    <ParamField body="discount_code" type="string">
+    <ParamField type="string">
       Apply a discount code to the checkout session.
     </ParamField>
 
-    <ParamField body="metadata" type="object">
+    <ParamField type="object">
       Custom key-value pairs to store additional information about the session.
     </ParamField>
 
-    <ParamField body="force_3ds" type="boolean">
+    <ParamField type="boolean">
       Override merchant default 3DS behaviour for this session.
     </ParamField>
 
-    <ParamField body="minimal_address" type="boolean" default="false">
+    <ParamField type="boolean">
       Enable minimal address collection mode. When enabled, the checkout only collects:
 
       * **Country**: Always required for tax determination
@@ -32094,23 +34877,23 @@ Configure these fields to customize the checkout experience and add business log
   </Accordion>
 
   <Accordion title="UI Customization & Features">
-    <ParamField body="customization" type="object">
+    <ParamField type="object">
       Customize the appearance and behavior of the checkout interface.
 
       <Expandable title="Customization object properties">
-        <ParamField body="theme" type="string" default="system">
+        <ParamField type="string">
           Theme for the checkout interface. Options: `light`, `dark`, or `system`.
         </ParamField>
 
-        <ParamField body="show_order_details" type="boolean" default="true">
+        <ParamField type="boolean">
           Display order details section in the checkout interface.
         </ParamField>
 
-        <ParamField body="show_on_demand_tag" type="boolean" default="true">
+        <ParamField type="boolean">
           Show the "on-demand" tag for applicable products.
         </ParamField>
 
-        <ParamField body="force_language" type="string">
+        <ParamField type="string">
           Force the checkout interface to render in a specific language.
 
           **Example**: `"en"` for English, `"es"` for Spanish
@@ -32118,59 +34901,59 @@ Configure these fields to customize the checkout experience and add business log
       </Expandable>
     </ParamField>
 
-    <ParamField body="feature_flags" type="object">
+    <ParamField type="object">
       Configure specific features and behaviors for the checkout session.
 
       <Expandable title="Feature flags object properties">
-        <ParamField body="allow_currency_selection" type="boolean" default="true">
+        <ParamField type="boolean">
           Allow customers to select their preferred currency during checkout.
         </ParamField>
 
-        <ParamField body="allow_discount_code" type="boolean" default="true">
+        <ParamField type="boolean">
           Show discount code input field in the checkout interface.
         </ParamField>
 
-        <ParamField body="allow_phone_number_collection" type="boolean" default="true">
+        <ParamField type="boolean">
           Collect customer phone numbers during checkout.
         </ParamField>
 
-        <ParamField body="allow_tax_id" type="boolean" default="true">
+        <ParamField type="boolean">
           Allow customers to enter tax identification numbers.
         </ParamField>
 
-        <ParamField body="always_create_new_customer" type="boolean" default="false">
+        <ParamField type="boolean">
           Force creation of a new customer record instead of updating existing ones.
         </ParamField>
 
-        <ParamField body="allow_customer_editing_email" type="boolean">
+        <ParamField type="boolean">
           Allow customers to edit their email address during checkout.
         </ParamField>
 
-        <ParamField body="allow_customer_editing_name" type="boolean">
+        <ParamField type="boolean">
           Allow customers to edit their name during checkout.
         </ParamField>
 
-        <ParamField body="allow_customer_editing_street" type="boolean">
+        <ParamField type="boolean">
           Allow customers to edit the street address during checkout.
         </ParamField>
 
-        <ParamField body="allow_customer_editing_city" type="boolean">
+        <ParamField type="boolean">
           Allow customers to edit the city during checkout.
         </ParamField>
 
-        <ParamField body="allow_customer_editing_state" type="boolean">
+        <ParamField type="boolean">
           Allow customers to edit the state during checkout.
         </ParamField>
 
-        <ParamField body="allow_customer_editing_country" type="boolean">
+        <ParamField type="boolean">
           Allow customers to edit the country during checkout.
         </ParamField>
 
-        <ParamField body="allow_customer_editing_zipcode" type="boolean">
+        <ParamField type="boolean">
           Allow customers to edit the zipcode during checkout.
         </ParamField>
 
-        <ParamField body="minimal_address" type="boolean" default="false">
+        <ParamField type="boolean">
           Enable minimal address collection mode. When enabled, the checkout only collects:
 
           * **Country**: Always required for tax determination
@@ -32187,37 +34970,37 @@ Configure these fields to customize the checkout experience and add business log
   </Accordion>
 
   <Accordion title="Subscription Configuration">
-    <ParamField body="subscription_data" type="object">
+    <ParamField type="object">
       Additional configuration for checkout sessions containing subscription products.
 
       <Expandable title="Subscription data object properties">
-        <ParamField body="trial_period_days" type="integer">
+        <ParamField type="integer">
           Number of days for the trial period before the first charge. Must be between 0 and 10000 days.
         </ParamField>
 
-        <ParamField body="on_demand" type="object">
+        <ParamField type="object">
           On-demand subscription configuration for usage-based or metered billing.
 
           <Expandable title="On-demand object properties">
-            <ParamField body="mandate_only" type="boolean" required>
+            <ParamField type="boolean">
               If set to true, does not perform any charge and only authorizes payment method details for future use.
             </ParamField>
 
-            <ParamField body="product_price" type="integer">
+            <ParamField type="integer">
               Product price for the initial charge to customer. If not specified, the stored price of the product will be used.
 
               **Format**: Represented in the lowest denomination of the currency (e.g., cents for USD). For example, to charge \$1.00, pass `100`.
             </ParamField>
 
-            <ParamField body="product_currency" type="string">
+            <ParamField type="string">
               Optional currency of the product price. If not specified, defaults to the currency of the product.
             </ParamField>
 
-            <ParamField body="product_description" type="string">
+            <ParamField type="string">
               Optional product description override for billing and line items. If not specified, the stored description of the product will be used.
             </ParamField>
 
-            <ParamField body="adaptive_currency_fees_inclusive" type="boolean">
+            <ParamField type="boolean">
               Whether adaptive currency fees should be included in the product price (true) or added on top (false). Ignored if adaptive pricing is not enabled.
             </ParamField>
           </Expandable>
@@ -32544,6 +35327,94 @@ const session = await client.checkoutSessions.create({
   }
 });
 ```
+
+### 11. Using Existing Payment Methods for Instant Checkout
+
+Use a customer's saved payment method to create a checkout session that processes immediately, skipping payment method collection:
+
+```javascript expandable theme={null}
+const session = await client.checkoutSessions.create({
+  product_cart: [
+    {
+      product_id: 'prod_premium_plan',
+      quantity: 1
+    }
+  ],
+  customer: {
+    customer_id: 'cus_123'  // Required when using payment_method_id
+  },
+  payment_method_id: 'pm_abc123',  // Use customer's saved payment method
+  confirm: true,  // Required when using payment_method_id
+  return_url: 'https://yourapp.com/success'
+});
+```
+
+<Warning>
+  When using `payment_method_id`, `confirm` must be set to `true` and an existing `customer_id` must be provided. The payment method will be validated for eligibility with the payment's currency.
+</Warning>
+
+<Info>
+  The payment method must belong to the customer and be compatible with the payment currency. This enables one-click purchases for returning customers.
+</Info>
+
+### 12. Short Links for Cleaner Payment URLs
+
+Generate shortened, shareable payment links with custom slugs:
+
+```javascript expandable theme={null}
+const session = await client.checkoutSessions.create({
+  product_cart: [
+    {
+      product_id: 'prod_monthly_subscription',
+      quantity: 1
+    }
+  ],
+  short_link: true,  // Generate a shortened payment link
+  return_url: 'https://yourapp.com/success',
+  customer: {
+    email: 'customer@example.com',
+    name: 'John Doe'
+  }
+});
+
+// The checkout_url will be a shortened, cleaner link
+console.log(session.checkout_url);  // e.g., https://checkout.dodopayments.com/buy/abc123
+```
+
+<Tip>
+  Short links are perfect for SMS, email, or social media sharing. They're easier to remember and build more customer trust than long URLs.
+</Tip>
+
+### 13. Skip Payment Success Page with Immediate Redirect
+
+Redirect customers immediately after payment completion, bypassing the default success page:
+
+```javascript expandable theme={null}
+const session = await client.checkoutSessions.create({
+  product_cart: [
+    {
+      product_id: 'prod_digital_product',
+      quantity: 1
+    }
+  ],
+  feature_flags: {
+    redirect_immediately: true  // Skip success page, redirect immediately
+  },
+  return_url: 'https://yourapp.com/success',
+  customer: {
+    email: 'customer@example.com',
+    name: 'Jane Smith'
+  }
+});
+```
+
+<Tip>
+  Use `redirect_immediately: true` when you have a custom success page that provides better user experience than the default payment success page. This is especially useful for mobile apps and embedded checkout flows.
+</Tip>
+
+<Note>
+  When `redirect_immediately` is enabled, customers are redirected to your `return_url` immediately after payment completion, skipping the default success page entirely.
+</Note>
 
 ## Moving from Dynamic Links to Checkout Sessions
 
@@ -32881,7 +35752,7 @@ If you want customers to select their own price during checkout, simply omit the
 
 Offer different prices to different customer segments using the same product:
 
-```typescript  theme={null}
+```typescript theme={null}
 // Student discount: $10.00
 const studentSession = await createDynamicPricingCheckout(
   'prod_123abc456def',
@@ -32908,7 +35779,7 @@ const premiumSession = await createDynamicPricingCheckout(
 
 Adjust price based on quantity purchased:
 
-```typescript  theme={null}
+```typescript theme={null}
 async function createQuantityBasedCheckout(
   productId: string,
   quantity: number
@@ -32945,7 +35816,7 @@ async function createQuantityBasedCheckout(
 
 Apply promotional pricing during specific periods:
 
-```typescript  theme={null}
+```typescript theme={null}
 async function createPromotionalCheckout(productId: string) {
   const isPromoActive = checkIfPromotionActive(); // Your logic
   const regularPrice = 3000; // $30.00
@@ -32973,7 +35844,7 @@ async function createPromotionalCheckout(productId: string) {
 
 ## Best Practices
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Set Reasonable Bounds" icon="sliders">
     Choose a minimum price that covers your costs while remaining accessible. Use a suggested price to guide customer expectations.
   </Card>
@@ -33069,7 +35940,7 @@ Always validate amounts against your product's minimum and maximum settings:
 
 ## API Reference
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Pay What You Want Feature" icon="dollar-sign" href="/features/pay-what-you-want">
     Learn more about the Pay What You Want pricing model and its capabilities.
   </Card>
@@ -33135,7 +36006,8 @@ To integrate the Dodo Payments API, you'll need:
 Choose the integration path that fits your use case:
 
 * **Checkout Sessions (recommended)**: Best for most integrations. Create a session on your server and redirect customers to a secure, hosted checkout.
-* **Overlay Checkout (embedded)**: Use when you need an in-page experience that embeds the hosted checkout on your site.
+* **Overlay Checkout**: Use when you need an in-page experience that opens checkout as a modal overlay on your site.
+* **Inline Checkout**: Embed checkout directly into your page layout for fully integrated, branded checkout experiences.
 * **Static Payment Links**: No-code, instantly shareable URLs for quick payment collection.
 * **Dynamic Payment Links**: Programmatically created links. However, Checkout Sessions are recommended and provide more flexibility.
 
@@ -33153,7 +36025,7 @@ Use Checkout Sessions to create a secure, hosted checkout experience for one-tim
 
     <Tabs>
       <Tab title="Node.js SDK">
-        ```javascript  theme={null}
+        ```javascript theme={null}
         import DodoPayments from 'dodopayments';
 
         const client = new DodoPayments({
@@ -33170,7 +36042,7 @@ Use Checkout Sessions to create a secure, hosted checkout experience for one-tim
       </Tab>
 
       <Tab title="Python SDK">
-        ```python  theme={null}
+        ```python theme={null}
         import os
         from dodopayments import DodoPayments
 
@@ -33188,7 +36060,7 @@ Use Checkout Sessions to create a secure, hosted checkout experience for one-tim
       </Tab>
 
       <Tab title="REST API">
-        ```javascript  theme={null}
+        ```javascript theme={null}
         const response = await fetch('https://test.dodopayments.com/checkouts', {
           method: 'POST',
           headers: {
@@ -33210,7 +36082,7 @@ Use Checkout Sessions to create a secure, hosted checkout experience for one-tim
   <Step title="Redirect customer to checkout">
     After session creation, redirect to the `checkout_url` to start the hosted flow.
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     // Example in a browser context
     window.location.href = session.checkout_url;
     ```
@@ -33225,7 +36097,11 @@ Use Checkout Sessions to create a secure, hosted checkout experience for one-tim
 
 For a seamless in-page checkout experience, explore our [Overlay Checkout](/developer-resources/overlay-checkout) integration that allows customers to complete payments without leaving your website.
 
-#### 3. Static Payment Links
+#### 3. Inline Checkout
+
+For fully integrated checkout experiences embedded directly in your page, use our [Inline Checkout](/developer-resources/inline-checkout) integration. This allows you to build custom order summaries and have complete control over the checkout layout while Dodo Payments securely handles payment collection.
+
+#### 4. Static Payment Links
 
 Static payment links let you quickly accept payments by sharing a simple URL. You can customize the checkout experience by passing query parameters to pre-fill customer details, control form fields, and add custom metadata.
 
@@ -33233,7 +36109,7 @@ Static payment links let you quickly accept payments by sharing a simple URL. Yo
   <Step title="Construct your payment link">
     Start with the base URL and append your product ID:
 
-    ```text  theme={null}
+    ```text theme={null}
     https://checkout.dodopayments.com/buy/{productid}
     ```
   </Step>
@@ -33241,8 +36117,8 @@ Static payment links let you quickly accept payments by sharing a simple URL. Yo
   <Step title="Add core parameters">
     Include essential query parameters:
 
-    * <ParamField query="quantity" type="integer" default="1">Number of items to purchase.</ParamField>
-    * <ParamField query="redirect_url" type="string" required>URL to redirect after payment completion.</ParamField>
+    * <ParamField type="integer">Number of items to purchase.</ParamField>
+    * <ParamField type="string">URL to redirect after payment completion.</ParamField>
 
     <Note>
       The redirect URL will include payment details as query parameters, for example:<br />
@@ -33255,16 +36131,16 @@ Static payment links let you quickly accept payments by sharing a simple URL. Yo
 
     <AccordionGroup>
       <Accordion title="Supported Customer Fields">
-        * <ParamField query="fullName" type="string">Customer's full name (ignored if firstName or lastName is provided).</ParamField>
-        * <ParamField query="firstName" type="string">Customer's first name.</ParamField>
-        * <ParamField query="lastName" type="string">Customer's last name.</ParamField>
-        * <ParamField query="email" type="string">Customer's email address.</ParamField>
-        * <ParamField query="country" type="string">Customer's country.</ParamField>
-        * <ParamField query="addressLine" type="string">Street address.</ParamField>
-        * <ParamField query="city" type="string">City.</ParamField>
-        * <ParamField query="state" type="string">State or province.</ParamField>
-        * <ParamField query="zipCode" type="string">Postal/ZIP code.</ParamField>
-        * <ParamField query="showDiscounts" type="boolean">true or false</ParamField>
+        * <ParamField type="string">Customer's full name (ignored if firstName or lastName is provided).</ParamField>
+        * <ParamField type="string">Customer's first name.</ParamField>
+        * <ParamField type="string">Customer's last name.</ParamField>
+        * <ParamField type="string">Customer's email address.</ParamField>
+        * <ParamField type="string">Customer's country.</ParamField>
+        * <ParamField type="string">Street address.</ParamField>
+        * <ParamField type="string">City.</ParamField>
+        * <ParamField type="string">State or province.</ParamField>
+        * <ParamField type="string">Postal/ZIP code.</ParamField>
+        * <ParamField type="boolean">true or false</ParamField>
       </Accordion>
     </AccordionGroup>
   </Step>
@@ -33308,10 +36184,10 @@ Static payment links let you quickly accept payments by sharing a simple URL. Yo
   </Step>
 
   <Step title="Add advanced controls (optional)">
-    * <ParamField query="paymentCurrency" type="string">Specifies the payment currency. Defaults to the billing country's currency.</ParamField>
-    * <ParamField query="showCurrencySelector" type="boolean" default="true">Show or hide the currency selector.</ParamField>
-    * <ParamField query="paymentAmount" type="integer">Amount in cents (for Pay What You Want pricing only).</ParamField>
-    * <ParamField query="metadata_*" type="string">Custom metadata fields (e.g., <code>metadata\_orderId=123</code>).</ParamField>
+    * <ParamField type="string">Specifies the payment currency. Defaults to the billing country's currency.</ParamField>
+    * <ParamField type="boolean">Show or hide the currency selector.</ParamField>
+    * <ParamField type="integer">Amount in cents (for Pay What You Want pricing only).</ParamField>
+    * <ParamField type="string">Custom metadata fields (e.g., <code>metadata\_orderId=123</code>).</ParamField>
   </Step>
 
   <Step title="Share the link">
@@ -33344,7 +36220,7 @@ For detailed instructions on integrating subscriptions, refer to this [Subscript
 
 <Tabs>
   <Tab title="Node.js SDK">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     import DodoPayments from 'dodopayments';
 
     const client = new DodoPayments({
@@ -33368,7 +36244,7 @@ For detailed instructions on integrating subscriptions, refer to this [Subscript
   </Tab>
 
   <Tab title="Python SDK">
-    ```python  theme={null}
+    ```python theme={null}
     import os
     from dodopayments import DodoPayments
 
@@ -33399,7 +36275,7 @@ For detailed instructions on integrating subscriptions, refer to this [Subscript
   </Tab>
 
   <Tab title="Go SDK">
-    ```go  theme={null}
+    ```go theme={null}
     package main
 
     import (
@@ -33442,7 +36318,7 @@ For detailed instructions on integrating subscriptions, refer to this [Subscript
   </Tab>
 
   <Tab title="Api Reference">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     import { NextRequest, NextResponse } from "next/server";      
 
     export async function POST(request: NextRequest) {
@@ -33508,7 +36384,7 @@ For detailed instructions on integrating subscriptions, refer to this [Subscript
 
 Set up an API endpoint to receive payment notifications. Here's an example using Next.js:
 
-```javascript  theme={null}
+```javascript theme={null}
 import { Webhook } from "standardwebhooks";
 import { headers } from "next/headers";
 import { WebhookPayload } from "@/types/api-types";
@@ -33544,7 +36420,7 @@ Source: https://docs.dodopayments.com/developer-resources/mobile-integration
 
 Unified guide for integrating Dodo Payments into Android, iOS, React Native and Flutter mobile applications.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Quick Start" icon="rocket" href="#integration-workflow">
     Get your mobile payment integration running in 4 simple steps
   </Card>
@@ -33583,7 +36459,7 @@ The mobile integration follows a secure 4-step process where your backend handle
 
     <Tabs>
       <Tab title="iOS (Swift)">
-        ```swift  theme={null}
+        ```swift theme={null}
         func getCheckoutURL(productId: String, customerEmail: String, customerName: String) async throws -> String {
             let url = URL(string: "https://your-backend.com/api/create-checkout-session")!
             var request = URLRequest(url: url)
@@ -33605,7 +36481,7 @@ The mobile integration follows a secure 4-step process where your backend handle
       </Tab>
 
       <Tab title="Android (Kotlin)">
-        ```kotlin  theme={null}
+        ```kotlin theme={null}
         suspend fun getCheckoutURL(productId: String, customerEmail: String, customerName: String): String {
             val client = OkHttpClient()
             val requestBody = JSONObject().apply {
@@ -33628,7 +36504,7 @@ The mobile integration follows a secure 4-step process where your backend handle
       </Tab>
 
       <Tab title="React Native (JavaScript)">
-        ```javascript  theme={null}
+        ```javascript theme={null}
         const getCheckoutURL = async (productId, customerEmail, customerName) => {
           try {
             const response = await fetch('https://your-backend.com/api/create-checkout-session', {
@@ -33682,7 +36558,7 @@ Choose your mobile platform below for complete implementation examples:
 
     #### Chrome Custom Tabs Implementation
 
-    ```kotlin  theme={null}
+    ```kotlin theme={null}
     // Add Chrome Custom Tabs dependency to build.gradle
     implementation 'androidx.browser:browser:1.5.0'
 
@@ -33736,7 +36612,7 @@ Choose your mobile platform below for complete implementation examples:
 
     #### SFSafariViewController Implementation
 
-    ```swift  theme={null}
+    ```swift theme={null}
     import SafariServices
     class PaymentViewController: UIViewController {
         override func viewDidLoad() {
@@ -33767,7 +36643,7 @@ Choose your mobile platform below for complete implementation examples:
 
     **1. Set up URL schemes in Info.plist:**
 
-    ```xml  theme={null}
+    ```xml theme={null}
     <key>CFBundleURLTypes</key>
     <array>
       <dict>
@@ -33783,7 +36659,7 @@ Choose your mobile platform below for complete implementation examples:
 
     **2. Handle redirects in AppDelegate:**
 
-    ```swift  theme={null}
+    ```swift theme={null}
     func application(_ app: UIApplication, open url: URL, options: [UIApplication.OpenURLOptionsKey : Any] = [:]) -> Bool {
         if url.scheme == "myapp" && url.host == "payment-status" {
             NotificationCenter.default.post(name: .paymentCompleted, object: url)
@@ -33795,7 +36671,7 @@ Choose your mobile platform below for complete implementation examples:
 
     **3. Listen for payment completion:**
 
-    ```swift  theme={null}
+    ```swift theme={null}
     NotificationCenter.default.addObserver(self, selector: #selector(handlePaymentCompletion(_:)), name: .paymentCompleted, object: nil)
 
     @objc func handlePaymentCompletion(_ notification: Notification) {
@@ -33820,7 +36696,7 @@ Choose your mobile platform below for complete implementation examples:
 
     ##### InAppBrowser Implementation
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     import React from 'react';
     import { View, TouchableOpacity, Text, Alert } from 'react-native';
     import { InAppBrowser } from 'react-native-inappbrowser-reborn';
@@ -33901,7 +36777,7 @@ Choose your mobile platform below for complete implementation examples:
 
     #### Deep Link Handling for Payment Callbacks
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     // App.js or your main component
     import React, { useEffect } from 'react';
     import { Linking } from 'react-native';
@@ -33955,7 +36831,7 @@ Choose your mobile platform below for complete implementation examples:
 
     Add this dependency to your `package.json`:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "dependencies": {
         "react-native-inappbrowser-reborn": "^6.4.0"
@@ -33965,7 +36841,7 @@ Choose your mobile platform below for complete implementation examples:
 
     #### Installation Commands
 
-    ```bash  theme={null}
+    ```bash theme={null}
     # Install InAppBrowser
     npm install react-native-inappbrowser-reborn
     cd ios && pod install
@@ -33975,7 +36851,7 @@ Choose your mobile platform below for complete implementation examples:
 
     Add to `android/app/src/main/AndroidManifest.xml`:
 
-    ```xml  theme={null}
+    ```xml theme={null}
     <activity
       android:name="com.reactnativeinappbrowserreborn.InAppBrowserActivity"
       android:theme="@style/Theme.AppCompat.Dialog"
@@ -33986,7 +36862,7 @@ Choose your mobile platform below for complete implementation examples:
 
     Add to `ios/YourApp/Info.plist`:
 
-    ```xml  theme={null}
+    ```xml theme={null}
     <key>CFBundleURLTypes</key>
     <array>
       <dict>
@@ -34026,7 +36902,7 @@ Choose your mobile platform below for complete implementation examples:
   <Tab title="Flutter">
     ### Flutter Integration
 
-    ```dart  theme={null}
+    ```dart theme={null}
     import 'package:flutter/material.dart';
     import 'package:webview_flutter/webview_flutter.dart';
     import 'package:http/http.dart' as http;
@@ -34154,7 +37030,7 @@ A modern TypeScript library for embedding Dodo Payments overlay checkout and lis
 The Dodo Payments Checkout SDK provides a seamless way to integrate our payment overlay into your web application. Built with TypeScript and modern web standards, it offers a robust solution for handling payments with real-time event handling and customizable themes.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=15d90c695e92914a9d54b10509d6fe47" alt="Overlay Checkout Cover Image" data-og-width="3826" width="3826" data-og-height="2160" height="2160" data-path="images/cover-images/overlay-checkout.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=67930ac9b97b42692611ffaa063b0338 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=5bc275c0c82994faf7507699f3443cda 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=d85ff73e834510f856f521d74e8d9ecd 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=2fadc48d6b3d40665366b1922e458ca3 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=0f552d1695faa8239eec542a0b1eeefe 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=3e25457d894290ee38da2f9319edb999 2500w" />
+  <img alt="Overlay Checkout Cover Image" />
 </Frame>
 
 ## Demo
@@ -34167,7 +37043,7 @@ The Dodo Payments Checkout SDK provides a seamless way to integrate our payment 
 
 Get started with the Dodo Payments Checkout SDK in just a few lines of code:
 
-```typescript  theme={null}
+```typescript theme={null}
 import { DodoPayments } from "dodopayments-checkout";
 
 // Initialize the SDK
@@ -34212,7 +37088,7 @@ DodoPayments.Checkout.open({
   <Step title="Initialize the SDK">
     Initialize the SDK in your application, typically in your main component or app entry point:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     import { DodoPayments } from "dodopayments-checkout";
 
     DodoPayments.Initialize({
@@ -34245,7 +37121,7 @@ DodoPayments.Checkout.open({
   <Step title="Create a Checkout Button Component">
     Create a component that opens the checkout overlay:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     // components/CheckoutButton.tsx
     "use client";
 
@@ -34301,7 +37177,7 @@ DodoPayments.Checkout.open({
   <Step title="Add Checkout to Your Page">
     Use the checkout button component in your application:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     // app/page.tsx
     import { CheckoutButton } from "@/components/CheckoutButton";
 
@@ -34319,7 +37195,7 @@ DodoPayments.Checkout.open({
   <Step title="Handle Success and Failure Pages">
     Create pages to handle checkout redirects:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     // app/success/page.tsx
     export default function SuccessPage() {
       return (
@@ -34345,7 +37221,7 @@ DodoPayments.Checkout.open({
   <Step title="Test Your Integration">
     1. Start your development server:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm run dev
     ```
 
@@ -34365,7 +37241,7 @@ DodoPayments.Checkout.open({
 
     1. Change the mode to `'live'`:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     DodoPayments.Initialize({
       mode: "live",
       onEvent: (event) => {
@@ -34386,7 +37262,7 @@ DodoPayments.Checkout.open({
 
 #### Initialize Options
 
-```typescript  theme={null}
+```typescript theme={null}
 interface InitializeOptions {
   mode: "test" | "live";
   onEvent: (event: CheckoutEvent) => void;
@@ -34400,7 +37276,7 @@ interface InitializeOptions {
 
 #### Checkout Options
 
-```typescript  theme={null}
+```typescript theme={null}
 interface CheckoutOptions {
   checkoutUrl: string;
 }
@@ -34416,7 +37292,7 @@ interface CheckoutOptions {
 
 Opens the checkout overlay with the specified checkout session URL.
 
-```typescript  theme={null}
+```typescript theme={null}
 DodoPayments.Checkout.open({
   checkoutUrl: "https://checkout.dodopayments.com/session/cks_123"
 });
@@ -34426,7 +37302,7 @@ DodoPayments.Checkout.open({
 
 Programmatically closes the checkout overlay.
 
-```typescript  theme={null}
+```typescript theme={null}
 DodoPayments.Checkout.close();
 ```
 
@@ -34434,7 +37310,7 @@ DodoPayments.Checkout.close();
 
 Returns whether the checkout overlay is currently open.
 
-```typescript  theme={null}
+```typescript theme={null}
 const isOpen = DodoPayments.Checkout.isOpen();
 // Returns: boolean
 ```
@@ -34443,7 +37319,7 @@ const isOpen = DodoPayments.Checkout.isOpen();
 
 The SDK provides real-time events that you can listen to through the `onEvent` callback:
 
-```typescript  theme={null}
+```typescript theme={null}
 DodoPayments.Initialize({
   onEvent: (event: CheckoutEvent) => {
     switch (event.event_type) {
@@ -34490,7 +37366,7 @@ Install via npm, yarn, or pnpm as shown in the [Step-by-Step Integration Guide](
 
 For quick integration without a build step, you can use our CDN:
 
-```html  theme={null}
+```html theme={null}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34528,7 +37404,7 @@ For quick integration without a build step, you can use our CDN:
 
 The SDK is written in TypeScript and includes comprehensive type definitions. All public APIs are fully typed for better developer experience and IntelliSense support.
 
-```typescript  theme={null}
+```typescript theme={null}
 import { DodoPayments, CheckoutEvent } from "dodopayments-checkout";
 
 DodoPayments.Initialize({
@@ -34544,7 +37420,7 @@ DodoPayments.Initialize({
 
 The SDK provides detailed error information through the event system. Always implement proper error handling in your `onEvent` callback:
 
-```typescript  theme={null}
+```typescript theme={null}
 DodoPayments.Initialize({
   onEvent: (event: CheckoutEvent) => {
     if (event.event_type === "checkout.error") {
@@ -34635,6 +37511,42 @@ The Dodo Payments Checkout SDK supports the following browsers:
   Apple Pay is not currently supported in the overlay checkout experience. We plan to add support for Apple Pay in a future release.
 </Note>
 
+## Overlay vs Inline Checkout
+
+Choose the right checkout type for your use case:
+
+| Feature               | Overlay Checkout                  | Inline Checkout                              |
+| --------------------- | --------------------------------- | -------------------------------------------- |
+| Integration depth     | Modal on top of page              | Fully embedded in page                       |
+| Layout control        | Limited                           | Full control                                 |
+| Branding              | Separate from page                | Seamless                                     |
+| Implementation effort | Lower                             | Higher                                       |
+| Best for              | Quick integration, existing pages | Custom checkout pages, high-conversion flows |
+
+<Tip>
+  Use **overlay checkout** for faster integration with minimal changes to your existing pages. Use **inline checkout** when you want maximum control over the checkout experience and seamless branding.
+</Tip>
+
+## Related Resources
+
+<CardGroup>
+  <Card title="Inline Checkout" icon="credit-card" href="/developer-resources/inline-checkout">
+    Embed checkout directly into your page for fully integrated experiences.
+  </Card>
+
+  <Card title="Checkout Sessions API" icon="code" href="/api-reference/checkout-sessions/create">
+    Create checkout sessions to power your checkout experiences.
+  </Card>
+
+  <Card title="Webhooks" icon="webhook" href="/developer-resources/webhooks">
+    Handle payment events server-side with webhooks.
+  </Card>
+
+  <Card title="Integration Guide" icon="book" href="/developer-resources/integration-guide">
+    Complete guide to integrating Dodo Payments.
+  </Card>
+</CardGroup>
+
 For more help, visit our [Discord community](https://discord.gg/bYqAp4ayYh) or contact our developer support team.
 
 
@@ -34676,7 +37588,7 @@ Let's create a seat-based pricing model:
 Now we need to create an add-on that represents additional seats. This add-on will be attached to our base subscription and allow customers to purchase additional seats.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=d2c17b4a9f2f9a1b19f537f0507656a4" alt="Creating base subscription product" data-og-width="2348" width="2348" data-og-height="1606" height="1606" data-path="images/cookbooks/seat-based/seat-based-addons-creation.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=280&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=5751534a0a21b9ed88453f8d811032b7 280w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=560&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=4144c9cd57f21f1d48f9b4c9fd0fc705 560w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=840&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=df7ce792d4437726a2087a569e7d62e9 840w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=1100&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=fef77260f735f8bb16e11e9b88082771 1100w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=1650&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=f9cf9247cbc5f58771a380637faef0af 1650w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons-creation.png?w=2500&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=ad6bea7122b008e67325e729704d663c 2500w" />
+  <img alt="Creating base subscription product" />
 </Frame>
 
 <Tip>
@@ -34723,7 +37635,7 @@ Now we need to create an add-on that represents additional seats. This add-on wi
 We'll start by creating a base subscription product that includes 5 team members. This will be the foundation of our seat-based pricing model.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-subscription.png?fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=f17e96f3d106b88b6dc32a00be535620" alt="Creating base subscription product" data-og-width="2118" width="2118" data-og-height="1580" height="1580" data-path="images/cookbooks/seat-based/seat-based-subscription.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-subscription.png?w=280&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=3372664bd6262a530c58faeaf0b841a9 280w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-subscription.png?w=560&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=3156cf202ae724c3fe67427c0942b17a 560w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-subscription.png?w=840&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=506f07d190cffca33a5b262c266a868e 840w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-subscription.png?w=1100&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=f862acb3574458eed0349ca507304df9 1100w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-subscription.png?w=1650&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=49f1ce0a93a13fd7a8815c47acb16301 1650w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-subscription.png?w=2500&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=5267c2f71195497d007adfc1efe3801b 2500w" />
+  <img alt="Creating base subscription product" />
 </Frame>
 
 <Steps>
@@ -34758,7 +37670,7 @@ Now we need to associate our seat add-on with the base subscription so customers
 <Steps>
   <Step title="Attach the seat add-on">
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=ea4ce0d437201c92590eea6c31a14e80" alt="Attaching add-on to subscription" data-og-width="2338" width="2338" data-og-height="1196" height="1196" data-path="images/cookbooks/seat-based/seat-based-addons.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=280&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=8c93d311c3442791f2481c3a2dff9e6c 280w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=560&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=55639ef750b29eb146b763a275d39d7f 560w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=840&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=5222c17eb09251c3783e58aff7d3ed31 840w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=1100&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=d26f009d831e6ebfcb8b51f10223b1f9 1100w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=1650&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=2069508f22f5c842014ffba54a963c10 1650w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-addons.png?w=2500&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=5a7995df4602d26e77e150ee537b9a9f 2500w" />
+      <img alt="Attaching add-on to subscription" />
     </Frame>
 
     1. Scroll down to the **Add-Ons** section
@@ -34788,7 +37700,7 @@ Now let's create an Express.js application that generates payment links with cus
   <Step title="Set up your project">
     Create a new Node.js project and install the required dependencies:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     mkdir seat-based-pricing
     cd seat-based-pricing
     npm init -y
@@ -34798,7 +37710,7 @@ Now let's create an Express.js application that generates payment links with cus
 
     Create a `tsconfig.json` file:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "compilerOptions": {
         "target": "ES2020",
@@ -34817,7 +37729,7 @@ Now let's create an Express.js application that generates payment links with cus
   <Step title="Create your environment file">
     Create a `.env` file with your Dodo Payments API key:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     DODO_PAYMENTS_API_KEY=your_actual_dodo_api_key_here
     ```
 
@@ -34983,7 +37895,7 @@ Now let's create an Express.js application that generates payment links with cus
   <Step title="Serve static files">
     Add this to your `src/server.ts` to serve the HTML file:
 
-    ```typescript  theme={null}
+    ```typescript theme={null}
     // Add this line after your other middleware
     app.use(express.static('public'));
 
@@ -35009,7 +37921,7 @@ Let's test our seat-based pricing implementation to make sure everything works c
     2. Update the product and add-on IDs in your code with the actual values from your Dodo Payments dashboard
     3. Start your server:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm run dev
     ```
 
@@ -35020,7 +37932,7 @@ Let's test our seat-based pricing implementation to make sure everything works c
 
   <Step title="Test the web interface">
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-billing-ui.png?fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=37d166d8e76b0bfbb4959bc9a3eff1f8" alt="Creating base subscription product" data-og-width="1806" width="1806" data-og-height="1416" height="1416" data-path="images/cookbooks/seat-based/seat-based-billing-ui.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-billing-ui.png?w=280&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=964110ddfb3dc2715eb1262fb835e59e 280w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-billing-ui.png?w=560&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=e244d45cd73c19b3857c60a130af3b57 560w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-billing-ui.png?w=840&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=0e75048a626727ad33dd7deb79390844 840w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-billing-ui.png?w=1100&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=49ed91ffbf876f10d6437466d5d0d3bb 1100w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-billing-ui.png?w=1650&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=9988b60803eaceaff534cf7f869d7b3c 1650w, https://mintcdn.com/dodopayments/ajOhO6Du1yNsg0hy/images/cookbooks/seat-based/seat-based-billing-ui.png?w=2500&fit=max&auto=format&n=ajOhO6Du1yNsg0hy&q=85&s=8f688153d4880e29d022f715f1b82757 2500w" />
+      <img alt="Creating base subscription product" />
     </Frame>
 
     1. Open your browser and go to `http://localhost:3000`
@@ -35080,7 +37992,7 @@ Common issues and their solutions:
 
 You've successfully created a seat-based pricing system with Dodo Payments! Here's what you accomplished:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Base Subscription">
     Created a subscription product with 5 included seats at \$49/month
   </Card>
@@ -35123,13 +38035,13 @@ For a more detailed guide on the prerequisites, check this [section](/developer-
 
 Use Checkout Sessions to sell subscription products with a secure, hosted checkout. Pass your subscription product in `product_cart` and redirect customers to the returned `checkout_url`.
 
-<Warning>
-  You cannot mix subscription products with one-time products in the same checkout session.
-</Warning>
+<Tip>
+  **Mixed Checkout**: You can combine subscription products with one-time products in the same checkout session. This enables use cases like setup fees with subscriptions, hardware bundles with SaaS, and more. See the [Checkout Sessions guide](/developer-resources/checkout-session) for examples.
+</Tip>
 
 <Tabs>
   <Tab title="Node.js SDK">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     import DodoPayments from 'dodopayments';
 
     const client = new DodoPayments({
@@ -35159,7 +38071,7 @@ Use Checkout Sessions to sell subscription products with a secure, hosted checko
   </Tab>
 
   <Tab title="Python SDK">
-    ```python  theme={null}
+    ```python theme={null}
     import os
     from dodopayments import DodoPayments
 
@@ -35185,7 +38097,7 @@ Use Checkout Sessions to sell subscription products with a secure, hosted checko
   </Tab>
 
   <Tab title="REST API">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     const response = await fetch('https://test.dodopayments.com/checkouts', {
       method: 'POST',
       headers: {
@@ -35219,7 +38131,7 @@ Use Checkout Sessions to sell subscription products with a secure, hosted checko
 
 The following is an example of the response:
 
-```json  theme={null}
+```json theme={null}
 {
   "session_id": "cks_Gi6KGJ2zFJo9rq9Ukifwa",
   "checkout_url": "https://test.checkout.dodopayments.com/session/cks_Gi6KGJ2zFJo9rq9Ukifwa"
@@ -35305,7 +38217,7 @@ To reactivate a subscription from `on_hold` state, use the Update Payment Method
   <Step title="Handle subscription.on_hold webhook">
     When you receive a `subscription.on_hold` webhook, update your application state and notify the customer:
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     // Webhook handler
     app.post('/webhooks/dodo', async (req, res) => {
       const event = req.body;
@@ -35364,7 +38276,7 @@ To reactivate a subscription from `on_hold` state, use the Update Payment Method
     <Info>
       You can also use an existing payment method ID if the customer has saved payment methods:
 
-      ```javascript  theme={null}
+      ```javascript theme={null}
       await client.subscriptions.updatePaymentMethod(subscriptionId, {
         type: 'existing',
         payment_method_id: 'pm_abc123'
@@ -35379,7 +38291,7 @@ To reactivate a subscription from `on_hold` state, use the Update Payment Method
     1. **`payment.succeeded`** - The charge for remaining dues was successful
     2. **`subscription.active`** - The subscription has been reactivated
 
-    ```javascript  theme={null}
+    ```javascript theme={null}
     if (event.type === 'payment.succeeded') {
       const payment = event.data;
       
@@ -35489,7 +38401,7 @@ Source: https://docs.dodopayments.com/developer-resources/subscription-upgrade-d
 
 Learn how to change a customer's subscription plan, handle proration, and process webhooks reliably.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Change Plan API Reference" icon="code" href="/api-reference/subscriptions/change-plan">
     Access the complete API documentation for changing subscription plans and test plan change requests interactively.
   </Card>
@@ -35585,23 +38497,23 @@ Follow this comprehensive guide to implement subscription plan changes in your a
   <Step title="Implement the Change Plan API">
     Use the Change Plan API to modify subscription details:
 
-    <ParamField path="subscription_id" type="string" required>
+    <ParamField type="string">
       The ID of the active subscription to modify.
     </ParamField>
 
-    <ParamField path="product_id" type="string" required>
+    <ParamField type="string">
       The new product ID to change the subscription to.
     </ParamField>
 
-    <ParamField path="quantity" type="integer" default="1">
+    <ParamField type="integer">
       Number of units for the new plan (for seat-based products).
     </ParamField>
 
-    <ParamField path="proration_billing_mode" type="string" required>
+    <ParamField type="string">
       How to handle immediate billing: `prorated_immediately`, `full_immediately`, or `difference_immediately`.
     </ParamField>
 
-    <ParamField path="addons" type="array">
+    <ParamField type="array">
       Optional addons for the new plan. Leaving this empty removes any existing addons.
     </ParamField>
   </Step>
@@ -35649,7 +38561,7 @@ Before committing to a plan change, use the Preview API to show customers exactl
 
 <Tabs>
   <Tab title="Node.js SDK">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     const preview = await client.subscriptions.previewChangePlan('sub_123', {
       product_id: 'prod_pro',
       quantity: 1,
@@ -35663,7 +38575,7 @@ Before committing to a plan change, use the Preview API to show customers exactl
   </Tab>
 
   <Tab title="Python SDK">
-    ```python  theme={null}
+    ```python theme={null}
     preview = client.subscriptions.preview_change_plan(
         subscription_id="sub_123",
         product_id="prod_pro",
@@ -35690,7 +38602,7 @@ Use the Change Plan API to modify product, quantity, and proration behavior for 
 
 <Tabs>
   <Tab title="Node.js SDK">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     import DodoPayments from 'dodopayments';
 
     const client = new DodoPayments({
@@ -35712,7 +38624,7 @@ Use the Change Plan API to modify product, quantity, and proration behavior for 
   </Tab>
 
   <Tab title="Python SDK">
-    ```python  theme={null}
+    ```python theme={null}
     import os
     from dodopayments import DodoPayments
 
@@ -35732,7 +38644,7 @@ Use the Change Plan API to modify product, quantity, and proration behavior for 
   </Tab>
 
   <Tab title="Go SDK">
-    ```go  theme={null}
+    ```go theme={null}
     package main
 
     import (
@@ -35757,7 +38669,7 @@ Use the Change Plan API to modify product, quantity, and proration behavior for 
   </Tab>
 
   <Tab title="HTTP">
-    ```bash  theme={null}
+    ```bash theme={null}
     curl -X POST "$DODO_API_BASE/subscriptions/sub_123/change-plan" \
       -H "Authorization: Bearer $DODO_PAYMENTS_API_KEY" \
       -H "Content-Type: application/json" \
@@ -35792,7 +38704,7 @@ Use the Change Plan API to modify product, quantity, and proration behavior for 
 
 When changing subscription plans, you can also modify addons:
 
-```javascript  theme={null}
+```javascript theme={null}
 // Add addons to the new plan
 await client.subscriptions.changePlan('sub_123', {
   product_id: 'prod_new',
@@ -35844,7 +38756,7 @@ Choose how to bill the customer when changing plans:
 
 <AccordionGroup>
   <Accordion title="Upgrade: Basic ($30) → Pro ($80) with difference_immediately">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     await client.subscriptions.changePlan('sub_123', {
       product_id: 'prod_pro',
       quantity: 1,
@@ -35855,7 +38767,7 @@ Choose how to bill the customer when changing plans:
   </Accordion>
 
   <Accordion title="Downgrade: Plus ($50) → Starter ($20) with difference_immediately">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     await client.subscriptions.changePlan('sub_123', {
       product_id: 'prod_starter',
       quantity: 1,
@@ -35866,7 +38778,7 @@ Choose how to bill the customer when changing plans:
   </Accordion>
 
   <Accordion title="Upgrade mid-cycle with prorated_immediately">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     await client.subscriptions.changePlan('sub_123', {
       product_id: 'prod_new',
       quantity: 1,
@@ -35877,7 +38789,7 @@ Choose how to bill the customer when changing plans:
   </Accordion>
 
   <Accordion title="Reset billing with full_immediately">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     await client.subscriptions.changePlan('sub_123', {
       product_id: 'prod_new',
       quantity: 1,
@@ -35913,7 +38825,7 @@ Track subscription state through webhooks to confirm plan changes and payments.
 
 <Tabs>
   <Tab title="Next.js Route Handler">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     import { NextRequest, NextResponse } from 'next/server';
 
     export async function POST(req) {
@@ -35961,7 +38873,7 @@ Track subscription state through webhooks to confirm plan changes and payments.
   </Tab>
 
   <Tab title="Express.js">
-    ```javascript  theme={null}
+    ```javascript theme={null}
     import express from 'express';
 
     const app = express();
@@ -36288,7 +39200,7 @@ Handle common API errors gracefully in your implementation:
 
 ### Error Response Format
 
-```json  theme={null}
+```json theme={null}
 {
   "error": {
     "code": "subscription_not_found",
@@ -36348,7 +39260,7 @@ Let's start by understanding our PixelGen AI service:
 We'll start by creating a meter in your Dodo Payments dashboard that will track every image our service generates. Think of this as the "counter" that tracks billable events.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=f9d85a463fba231437151db3d4a2052a" alt="" data-og-width="2324" width="2324" data-og-height="1600" height="1600" data-path="images/usage-based/UBB-2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=18fdbbf75ab4df7ede6c45f6e248b783 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=e404194a942a1276de7148f9b8eff36d 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=1bec71463cb2e00acd0841b9968f2b7e 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=746ef8eb5f8bb76a355122d8253e9cba 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=8f10a20590e5c9056b9c7f285b827217 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-2.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=a503c04b328416b03f7e20dc6c4c0a28 2500w" />
+  <img alt="" />
 </Frame>
 
 <Tip>
@@ -36392,7 +39304,7 @@ We'll start by creating a meter in your Dodo Payments dashboard that will track 
 
   <Step title="Add quality filtering">
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=ce231b0559d31723bc12c22cd9ff9d64" alt="" data-og-width="1558" width="1558" data-og-height="942" height="942" data-path="images/usage-based/UBB-3.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=2cd814d88c0043f59bd0809f62a70932 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=6346cf2daf9635f53f9280701b1fefc2 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=d5b459ab63581aa80b9ddcd6a2d9be25 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=95c547968201d65d65981b0dc6271c0a 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=52e270bd88d839ea0c148fcfadbbf7dd 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-3.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=f737d26f50ab2a4cc45cc03927936d4e 2500w" />
+      <img alt="" />
     </Frame>
 
     We want to make sure we only count legitimate images (not test runs or failures):
@@ -36456,7 +39368,7 @@ Now we need to create a product that defines our pricing (\$0.05 per image with 
 
   <Step title="Connect your meter">
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=fd3851a1a070714baf0aec01cff717b8" alt="" data-og-width="2272" width="2272" data-og-height="1422" height="1422" data-path="images/usage-based/UBB-5.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=b70c4d68d07dee708d03505582aa3977 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=5ef40e99e35c0cf09f8082d4ab83cbd1 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=3d4eaab132b20d49db9770c1db4084cc 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=4f9a3ac2cc1d5c8a1db7ff1985fae45c 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=caba70b37cc0205430be9a88e6f77a57 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-5.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=8c875cc6e5d080f96d3efdba724cdf0c 2500w" />
+      <img alt="" />
     </Frame>
 
     Before connecting your meter, make sure you have selected **Usage Based Billing** as the price type for your product.
@@ -36479,7 +39391,7 @@ Now we need to create a product that defines our pricing (\$0.05 per image with 
     Here's where we define our business model:
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=b2d07bb408fd79e1b788c1b7092b8bca" alt="" data-og-width="732" width="732" data-og-height="712" height="712" data-path="images/usage-based/UBB-4.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=6e7232a5f0aa56db64527de0835fa7c8 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=943121c2ccc1ea9fea93cc7ed4a98696 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=d5916bede0ca8665a93ace24fc2dff4a 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=351bff3e883b3c5b45885234aa341af8 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=7228b5b070c8c29c2db885e80f83e86e 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-4.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=e303322fb1fa22bd9fa44960077d3d5d 2500w" />
+      <img alt="" />
     </Frame>
 
     **Price Per Unit**: Enter → `0.05` (this is \$0.05 per image)
@@ -36548,7 +39460,7 @@ Now we have our billing setup complete and a test customer created. Let's build 
   <Step title="Set up your project">
     Create a new directory and initialize the project:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     mkdir pixelgen-ai
     cd pixelgen-ai
     npm init -y
@@ -36558,7 +39470,7 @@ Now we have our billing setup complete and a test customer created. Let's build 
   <Step title="Install dependencies">
     Install the packages we need:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install openai dotenv
     npm install -D typescript @types/node ts-node
     ```
@@ -36857,7 +39769,7 @@ Time to test our sample PixelGen AI service and see the billing in action! Let's
     1. Create a `.env` file in your `pixelgen-ai` directory
     2. Add your actual API keys:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     OPENAI_API_KEY=sk-your-actual-openai-key
     DODO_PAYMENTS_API_KEY=your-actual-dodo-api-key
     # Customer ID is hardcoded in the application
@@ -36865,7 +39777,7 @@ Time to test our sample PixelGen AI service and see the billing in action! Let's
 
     3. Install dependencies and run the app:
 
-    ```bash  theme={null}
+    ```bash theme={null}
     npm install
     npm start
     ```
@@ -36945,7 +39857,7 @@ Time to test our sample PixelGen AI service and see the billing in action! Let's
     Let's check if the usage counting is working:
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=7fb86a266b5aa84f281b680601bd998e" alt="" data-og-width="1536" width="1536" data-og-height="1252" height="1252" data-path="images/usage-based/UBB-1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=280&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=23a2bbb81a88052bec92772f03254690 280w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=560&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=b9ebba13d62c1e5e0470097382319a8c 560w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=840&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=2cb2348f913ebdc8175d07c533553d74 840w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=1100&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=84b14f137b8f737d8e269cb9c2213915 1100w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=1650&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=9059aafa1890c7a834a0acbd2a115567 1650w, https://mintcdn.com/dodopayments/w9oVTi6CzZMAOQA3/images/usage-based/UBB-1.png?w=2500&fit=max&auto=format&n=w9oVTi6CzZMAOQA3&q=85&s=7a1008d882d31dc4699b07353c4121f6 2500w" />
+      <img alt="" />
     </Frame>
 
     1. In your meter, go to the **Customers** tab
@@ -36995,7 +39907,7 @@ Common issues and their solutions:
 
 You've successfully created a snippet for AI image generation with usage-based billing! Here's what you accomplished:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Usage Meter" icon="sliders">
     Created "Image Generation Meter" that tracks every image generation event
   </Card>
@@ -37019,7 +39931,7 @@ Source: https://docs.dodopayments.com/developer-resources/usage-based-billing-gu
 
 Learn how to set up meters and send usage events to enable accurate usage-based billing with Dodo Payments.
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="API Reference - Events Ingestion" icon="code" href="/api-reference/usage-events/ingest-events">
     Access the complete API documentation for ingesting usage events and test event ingestion requests and responses interactively.
   </Card>
@@ -37047,19 +39959,19 @@ Follow this comprehensive guide to set up your usage meter:
   <Step title="Configure Basic Information">
     Set up the fundamental details for your meter.
 
-    <ParamField path="Meter Name" type="string" required>
+    <ParamField type="string">
       Choose a clear, descriptive name that identifies what this meter tracks.
 
       Examples: "Tokens", "API Calls", "Storage Usage", "Compute Hours"
     </ParamField>
 
-    <ParamField path="Description" type="string">
+    <ParamField type="string">
       Provide a detailed explanation of what this meter measures.
 
       Example: "Counts each POST /v1/orders request made by the customer"
     </ParamField>
 
-    <ParamField path="Event Name" type="string" required>
+    <ParamField type="string">
       Specify the event identifier that will trigger this meter.
 
       Examples: "token", "api.call", "storage.usage", "compute.session"
@@ -37073,7 +39985,7 @@ Follow this comprehensive guide to set up your usage meter:
   <Step title="Configure Aggregation Settings">
     Define how the meter calculates usage from your events.
 
-    <ParamField path="Aggregation Type" type="string" required>
+    <ParamField type="string">
       Select how events should be aggregated:
 
       <Tabs>
@@ -37111,7 +40023,7 @@ Follow this comprehensive guide to set up your usage meter:
       </Tabs>
     </ParamField>
 
-    <ParamField path="Over Property" type="string">
+    <ParamField type="string">
       The property name from event metadata to aggregate over.
 
       <Warning>
@@ -37119,7 +40031,7 @@ Follow this comprehensive guide to set up your usage meter:
       </Warning>
     </ParamField>
 
-    <ParamField path="Measurement Unit" type="string" required>
+    <ParamField type="string">
       Define the unit label for display purposes in reports and billing.
 
       Examples: "calls", "GB", "hours", "tokens"
@@ -37238,7 +40150,7 @@ Transform your usage data into billable charges by properly configuring your pro
   <Step title="Configure Price Per Unit">
     Set the pricing for each unit of usage tracked by your meter.
 
-    <ParamField path="Price Per Unit" type="number" required>
+    <ParamField type="number">
       Define how much to charge for each unit measured by your meter.
 
       **Example**: Setting `$0.50` per unit means:
@@ -37252,7 +40164,7 @@ Transform your usage data into billable charges by properly configuring your pro
   <Step title="Set Free Threshold (Optional)">
     Configure a free usage allowance before billing begins.
 
-    <ParamField path="Free Threshold" type="number">
+    <ParamField type="number">
       Number of units customers can consume at no charge before paid usage calculation starts.
 
       **How it works**:
@@ -37299,23 +40211,23 @@ Once your meter is configured, you can start sending usage events from your appl
 
 Each usage event must include these required fields:
 
-<ParamField body="event_id" type="string" required>
+<ParamField type="string">
   Unique identifier for this specific event. Must be unique across all events.
 </ParamField>
 
-<ParamField body="customer_id" type="string" required>
+<ParamField type="string">
   The Dodo Payments customer ID this usage should be attributed to.
 </ParamField>
 
-<ParamField body="event_name" type="string" required>
+<ParamField type="string">
   The event name that matches your meter configuration. Event names trigger the appropriate meter.
 </ParamField>
 
-<ParamField body="timestamp" type="string">
+<ParamField type="string">
   ISO 8601 timestamp when the event occurred. Defaults to current time if not provided.
 </ParamField>
 
-<ParamField body="metadata" type="object">
+<ParamField type="object">
   Additional properties for filtering and aggregation. Include any values referenced in your meter's "Over Property" or filtering conditions.
 </ParamField>
 
@@ -37411,11 +40323,11 @@ The Overview tab provides a comprehensive view of your usage-based billing perfo
 
 Track key usage statistics across different time periods:
 
-<ParamField path="Current Month" type="metric">
+<ParamField type="metric">
   Shows usage activity for the current billing period, helping you understand monthly consumption patterns.
 </ParamField>
 
-<ParamField path="All Time" type="metric">
+<ParamField type="metric">
   Displays cumulative usage statistics since you started tracking, providing long-term growth insights.
 </ParamField>
 
@@ -37426,7 +40338,7 @@ Track key usage statistics across different time periods:
 #### Meter Quantities Chart
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=1a8a39547bd0259a53d4591d7928c8ea" alt="Meter quantities chart showing usage trends over time with purple gradient visualization" data-og-width="1602" width="1602" data-og-height="888" height="888" data-path="images/guides/usage-based-billing/meter-quantities-chart.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=280&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=b0e55e646843d7ae4168b4f28f47ebc8 280w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=560&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=ff70ffc8739eebbb1169605524ae8b26 560w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=840&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=4259db84b487d654d4891d65747da271 840w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=1100&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=9e7e0a7c207ef6bc7300740b8ed5368f 1100w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=1650&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=eda3fade188934b182b0b539115473e2 1650w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/meter-quantities-chart.png?w=2500&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=2345f13682183ecf726bc8f0eb6d7178 2500w" />
+  <img alt="Meter quantities chart showing usage trends over time with purple gradient visualization" />
 </Frame>
 
 The meter quantities chart visualizes usage trends over time with the following features:
@@ -37442,7 +40354,7 @@ The meter quantities chart visualizes usage trends over time with the following 
 ### Events Analytics
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/events-table.png?fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=0af7aad1d5e9a379eee18edc40aac157" alt="Events table showing event names, IDs, and pagination controls for detailed event analysis" data-og-width="1601" width="1601" data-og-height="896" height="896" data-path="images/guides/usage-based-billing/events-table.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/events-table.png?w=280&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=31c851a043908499e6b082451b2a02b4 280w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/events-table.png?w=560&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=0e4b34c5f80464fc1825e12f793cb853 560w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/events-table.png?w=840&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=82db960494d3acc178d764c6477389c8 840w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/events-table.png?w=1100&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=0a66ad74345778fa1b5a2ef3d47f4b18 1100w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/events-table.png?w=1650&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=02f88455511e7adae96921afead1bee5 1650w, https://mintcdn.com/dodopayments/16r81mgDWvSgYER7/images/guides/usage-based-billing/events-table.png?w=2500&fit=max&auto=format&n=16r81mgDWvSgYER7&q=85&s=5a5d569fbfb76bbe6372bf51ce33a9e4 2500w" />
+  <img alt="Events table showing event names, IDs, and pagination controls for detailed event analysis" />
 </Frame>
 
 The Events tab provides granular visibility into individual usage events:
@@ -37466,35 +40378,35 @@ The Customers tab provides a detailed table view of customer usage data with the
 
 #### Available Data Columns
 
-<ParamField path="Customer Email" type="string">
+<ParamField type="string">
   Email address of the customer for identification.
 </ParamField>
 
-<ParamField path="Subscription ID" type="string">
+<ParamField type="string">
   Unique identifier for the customer's subscription.
 </ParamField>
 
-<ParamField path="Free Threshold" type="number">
+<ParamField type="number">
   Number of free units included in the customer's plan before charges apply.
 </ParamField>
 
-<ParamField path="Price Per Unit" type="currency">
+<ParamField type="currency">
   The cost per unit for usage beyond the free threshold.
 </ParamField>
 
-<ParamField path="Last Event" type="timestamp">
+<ParamField type="timestamp">
   Timestamp of the customer's most recent usage event.
 </ParamField>
 
-<ParamField path="Total Price" type="currency">
+<ParamField type="currency">
   Total amount charged to the customer for usage-based billing.
 </ParamField>
 
-<ParamField path="Consumed Units" type="number">
+<ParamField type="number">
   Total number of units the customer has consumed.
 </ParamField>
 
-<ParamField path="Chargeable Units" type="number">
+<ParamField type="number">
   Number of units that exceed the free threshold and are being charged.
 </ParamField>
 
@@ -37527,7 +40439,7 @@ These examples demonstrate real-world applications of each aggregation type with
 
     **Sample Events**:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "events": [
         {"event_id": "call_1", "customer_id": "cus_123", "event_name": "api.call"},
@@ -37552,7 +40464,7 @@ These examples demonstrate real-world applications of each aggregation type with
 
     **Sample Events**:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "events": [
         {
@@ -37586,7 +40498,7 @@ These examples demonstrate real-world applications of each aggregation type with
 
     **Sample Events**:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "events": [
         {
@@ -37629,7 +40541,7 @@ These examples demonstrate real-world applications of each aggregation type with
 
     Sample Event:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "event_id": "call_1",
       "customer_id": "cus_123",
@@ -37655,7 +40567,7 @@ These examples demonstrate real-world applications of each aggregation type with
 
     Sample Event:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "event_id": "upload_1",
       "customer_id": "cus_123", 
@@ -37681,7 +40593,7 @@ These examples demonstrate real-world applications of each aggregation type with
 
     Sample Event:
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "event_id": "call_1",
       "customer_id": "cus_123",
@@ -37769,6 +40681,270 @@ When troubleshooting usage-based billing:
 </AccordionGroup>
 
 
+# Bypassing App Store & Play Store Fees using Dodo Payments
+Source: https://docs.dodopayments.com/features/bypassing-app-store-fees
+
+Learn how to legally bypass Apple and Google's 30% app store fees using Merchant of Record solutions and compliant payment strategies
+
+## The Platform Tollbooth Problem
+
+For over a decade, Apple and Google have operated their app stores not just as marketplaces, but as powerful toll booths. Any developer or startup offering digital goods within an app was forced to route payments through their respective billing systems: Apple's In-App Purchase (IAP) and Google's Play Billing-while forfeiting up to 30% of revenue.
+
+If that sounds like a steep cut, it's because it absolutely is.
+
+This "store tax" drew widespread criticism, particularly from developers from large apps like Spotify, Epic Games, and Netflix, who found the commissions not only excessive but anti-competitive. Apps couldn't even inform users about cheaper options outside the app. These policies-especially Apple's "anti-steering" rules-made app stores de facto monopolies for digital distribution.
+
+<Warning>
+  The 30% app store commission represents a significant revenue drain for digital businesses, especially for subscription-based services and SaaS applications.
+</Warning>
+
+## The Epic Games Catalyst
+
+Epic Games' CEO, Tim Sweeney, initiated Project Liberty as a strategic legal campaign to challenge the monopolistic practices of Apple and Google's app stores, particularly their 30% commission fees on in-app purchases. The project aimed to disrupt these platforms' control over app distribution and payments, advocating for a more open environment for developers.
+
+Tim Sweeney knew Apple would contest this and laid a bait. Epic updated Fortnite with a hidden direct-pay option, bypassing Apple's IAP. Apple fell for the bait, swiftly banned Fortnite, and Epic sued.
+
+The Epic Games v. Apple legal battle cracked open the conversation globally.
+
+## The Epic v. Apple Verdict
+
+In 2021, the U.S. District Judge ruled in a landmark decision:
+
+* **Apple did not violate antitrust laws outright**, meaning it could continue to control app distribution on iOS
+* **However, Apple's anti-steering policies were deemed anti-competitive**. The court issued a permanent injunction-Apple must allow developers to direct users to external payment methods
+
+After delays and appeals, Apple finally updated its App Store guidelines in May 2025 to allow external purchase links in U.S. apps.
+
+<Check>
+  This U.S. ruling spurred similar regulatory pressure and legal action across South Korea, Japan, the EU, and other regions. Combined with the EU's Digital Markets Act (DMA)-the tide turned decisively in favor of developers.
+</Check>
+
+## Global Overview: Where Developers Can Legally Bypass Fees
+
+| Region          | Apple Policy (2025)                   | Google Policy (2025)            |
+| --------------- | ------------------------------------- | ------------------------------- |
+| **USA**         | External links allowed (no Apple fee) | UCB allowed (reduced fee)       |
+| **EU (EEA)**    | Alt payments/links allowed (10–17%)   | UCB allowed for non-games       |
+| **South Korea** | Apple-approved PSPs (26% fee)         | UCB mandated (26% fee)          |
+| **Netherlands** | Dating apps only                      | UCB allowed                     |
+| **Japan**       | Reader apps can link out              | UCB allowed                     |
+| **India**       | No change                             | UCB allowed (4% fee reduction)  |
+| **Other**       | No change                             | UCB allowed in select countries |
+| **China**       | No external billing allowed           | Google Play not relevant        |
+
+<Info>
+  UCB stands for User Choice Billing, Google's alternative billing system that allows developers to use third-party payment processors.
+</Info>
+
+## Pre-2025 Loopholes: How Apps Circumvented App Store Rules
+
+Before regulations loosened their grip, some apps found "creative" ways to get around the 30% cut. These hacks were rarely compliant but undeniably clever.
+
+### Reader App Loophole
+
+One common tactic was the "reader app loophole," where apps like Kindle or Netflix claimed they were merely displaying previously purchased content. Apple couldn't fault apps for letting users access pre-purchased content. So as long as the app didn't explicitly link to external payment or prompt an in-app purchase, it was allowed to operate.
+
+### Hidden Payment Redirections
+
+Others experimented with code obfuscation, embedding hidden payment redirections. A few even used email notifications post-download to nudge users to pay outside the app.
+
+<Note>
+  Spotify was one such company that implemented this strategy. If you're in India and use Spotify, you've probably noticed that you can't buy the Premium plan inside the app. You have to pay on the web. This is why.
+</Note>
+
+All of this was risky, brittle, and usually led to takedowns once discovered. But it underscored one thing: developers were desperate to reclaim control over their margins and user data.
+
+## The Payment Gateway Trap: What Developers Often Miss
+
+At first glance, payment gateways (PGs) like Stripe or Razorpay seem like the obvious solution. But for in-app purchases, it's not that simple.
+
+<Warning>
+  If you're on iOS outside of allowed regions (like India or China), plugging in a PG directly into the app violates Apple's policies, risking an app takedown.
+</Warning>
+
+Even where it is legal, PGs come with limitations: they don't solve for tax compliance across geographies, invoicing, refund management, or regulatory filings.
+
+That's where Merchant-of-Record (MoR) platforms like Dodo Payments come in. We handle the full stack: payments, taxes, documentation, customer support, and legal accountability.
+
+It's not just about collecting money. It's about doing it cleanly, globally, and without risking your App Store listing.
+
+## Two Legal Workarounds for Developers
+
+### 1. App-to-Web Redirect (Link Out Flow)
+
+**What it is:** The app links users to a web-based checkout (hosted by Dodo Payments or the developer). Payment is completed outside the app, then access is granted in-app.
+
+**Legal Status:**
+
+* **iOS:** Legal in US, EU, South Korea, Netherlands (only dating apps), Japan (only reader apps)
+* **Android:** Legal in all UCB-supported markets
+
+**Advantages:**
+
+* Simple to implement
+* Fully compliant
+* No app-side PCI burden
+
+**Drawbacks:**
+
+* Slight friction - user leaves app to pay
+
+### 2. In-App SDK Integration (Third-Party SDK)
+
+**What it is:** Embed a payment UI - such as <a href="/developer-resources/react-native-integration">Dodo's React Native SDK</a> - directly in your app to enable seamless checkout without requiring users to leave the app.
+
+**Legal Status:**
+
+* **iOS:** Legal only in EU (under DMA terms); elsewhere it's still a violation
+* **Android:** Legal in UCB markets, if proper UX and reporting are followed
+
+**Advantages:**
+
+* Smooth UX
+* User stays in app
+* Can match IAP experience
+
+**Drawbacks:**
+
+* Integration complexity
+* Compliance risk outside allowed regions
+
+## Developer Strategy: Combine Legal Compliance with Revenue Efficiency
+
+An effective global rollout strategy could look like this:
+
+<Steps>
+  <Step title="U.S. Users">
+    Use App-to-Web (no Apple cut)
+  </Step>
+
+  <Step title="EU Users">
+    Use In-App SDK or App-to-Web (10–17% Apple cut)
+  </Step>
+
+  <Step title="Android Users in UCB Markets">
+    Use In-App SDK with Google-compliant UX
+  </Step>
+
+  <Step title="Other iOS Markets">
+    Use Apple IAP (or omit in-app purchases)
+  </Step>
+
+  <Step title="Other Android Markets">
+    Use Google Play billing or distribute via alt app stores
+  </Step>
+</Steps>
+
+## The Biggest Opportunity
+
+Among all the regulatory changes, the U.S. App Store presents the single largest opportunity for developers. With the 2025 guideline update following the Epic v. Apple ruling, developers can now legally include external links in their iOS apps that direct users to a web-based checkout.
+
+This means: **no mandatory Apple IAP, no 30% fee, and full control over customer relationships and revenue.**
+
+Given that the U.S. is the largest app revenue market globally, this change alone can significantly improve margins for any digital product business from subscriptions and SaaS tools to media and learning apps. For many, it's a 30% revenue unlock in their most lucrative geography.
+
+<Tip>
+  The U.S. market represents the largest opportunity for revenue recovery, with developers able to bypass the full 30% Apple commission through compliant external payment links.
+</Tip>
+
+## How Dodo Payments Enables This
+
+Dodo Payments acts as a Merchant of Record, handling:
+
+* **Global tax compliance** (VAT/GST)
+* **Payment processing** (cards, UPI, wallets)
+* **Invoicing, refunds, fraud prevention**
+* **SDK & hosted checkout integration**
+
+This simplifies compliance and operational load while offering fee-saving alternatives that are 100% legal in supported regions.
+
+<CardGroup>
+  <Card title="Get Started" icon="rocket" href="/quickstart">
+    Begin your integration with Dodo Payments
+  </Card>
+
+  <Card title="Mobile Integration" icon="mobile" href="/developer-resources/mobile-integration">
+    Learn how to integrate payments in your mobile app
+  </Card>
+</CardGroup>
+
+## Conclusion: A Developer-Friendly Future Is Here
+
+For years, the 30% store tax was a take-it-or-leave-it ultimatum. Thanks to landmark cases like Epic v. Apple, regulatory pushback, and public pressure, that model is no longer universally enforceable.
+
+In 2025, developers finally have choices.
+
+By combining compliant workarounds like App-to-Web flows or SDK integrations with services like Merchant-of-Record platforms like Dodo Payments, it's now practically and legally feasible to retain more revenue and control.
+
+The app stores haven't opened the gates willingly but the gates are opening. And for developers, it's time to walk through.
+
+<Check>
+  The future of app monetization is here-one where developers can legally bypass excessive platform fees while maintaining compliance and user experience.
+</Check>
+
+
+# Feature Request and Roadmap
+Source: https://docs.dodopayments.com/features/feature-request
+
+We value feedback from our merchants and aim to continuously improve Dodo Payments to meet your business needs. Submit feature requests, vote on existing ideas, and track our public roadmap through Featurebase.
+
+We use [Featurebase](https://dodopayments.featurebase.app/) to manage feature requests and maintain our public roadmap. This platform allows you to submit ideas, vote on features you'd like to see, and track the development status of upcoming improvements.
+
+<Card title="Visit Our Public Roadmap" icon="external-link" href="https://dodopayments.featurebase.app/">
+  View all feature requests, vote on ideas, and track our product roadmap on Featurebase.
+</Card>
+
+## **Request a New Feature**
+
+If you have an idea for a feature that would enhance your experience with Dodo Payments, you can submit a feature request directly on Featurebase.
+
+<img alt="Feature Request" />
+
+* **How to Request a Feature**:
+  1. Visit our [Featurebase portal](https://dodopayments.featurebase.app/).
+  2. Click on **"Post an idea"** or **"Submit a feature request"**.
+  3. Provide the following details:
+     * **Feature Name**: A concise title for your feature idea.
+     * **Feature Description**: A brief explanation of the feature, including why it's important and how it will help your business.
+  4. Submit the request.
+* **Tips for Effective Requests**:
+  * Be clear and concise.
+  * Highlight the business impact of the feature.
+  * Provide examples, if applicable.
+  * Include use cases that demonstrate the value.
+
+## **Vote for Existing Feature Requests**
+
+We prioritize features that benefit the most merchants. You can browse existing feature requests on Featurebase and vote for those you find valuable.
+
+* **How to Vote**:
+  1. Visit our [Featurebase portal](https://dodopayments.featurebase.app/).
+  2. Browse through the list of submitted requests.
+  3. Click the **upvote** button (👍) next to the feature(s) you support.
+* **Benefits of Voting**:
+  * Influence the development priority for features you care about.
+  * Help our team identify features that have widespread demand.
+  * Get notified when features you've voted for are released.
+
+## **View the Product Roadmap**
+
+Stay informed about the status of feature development through our public roadmap on Featurebase.
+
+* **Roadmap Features**:
+  * **Planned**: Features that have been approved and are scheduled for development.
+  * **In Progress**: Features currently being worked on by our team.
+  * **Completed**: Features that have been successfully implemented and are live.
+* **How to Access**:
+  * Visit our [Featurebase portal](https://dodopayments.featurebase.app/).
+  * Navigate to the **Roadmap** section to view features by status.
+  * Browse the feature categories and their current statuses.
+  * Filter by status, category, or search for specific features.
+
+<Tip>
+  Bookmark our [Featurebase portal](https://dodopayments.featurebase.app/) to stay updated on new features and vote on ideas that matter to you.
+</Tip>
+
+
 # Android & iOS Mobile App
 Source: https://docs.dodopayments.com/features/mobile-app
 
@@ -37777,7 +40953,7 @@ Manage your Dodo Payments business on the go with our mobile app, available on G
 ## Introduction
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/EWhkIUf36_Y" title="Mobile App | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Mobile App | Dodo Payments" />
 </Frame>
 
 Manage your payments, subscriptions, and business activity — anytime, anywhere. The **Dodo Payments Mobile App** brings the power of the Dodo Dashboard to your fingertips, allowing you to stay connected to your revenue, customers, and activity in real time.
@@ -37786,7 +40962,7 @@ Whether you're commuting, traveling, or just away from your desk, you'll never m
 
 ## Key Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Real-time Notifications" icon="bell">
     Get instant alerts for new transactions, payouts, subscription renewals, and verification status updates
   </Card>
@@ -37815,7 +40991,7 @@ All the features of the desktop version are fully available in the mobile app, i
 
 ## Download Now
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Android" icon="google-play" href="https://play.google.com/store/apps/details?id=com.dodopayments.app">
     Download from Google Play Store
   </Card>
@@ -38280,8 +41456,8 @@ Comprehensive answers to common questions about Dodo Payments, covering onboardi
   A: Yes, UPI subscriptions are supported with RBI-compliant mandates. UPI subscriptions operate under RBI (Reserve Bank of India) regulations with specific requirements:
 
   * **Mandate Limits**:
-    * Charges below ₹15,000: An on-demand mandate for ₹15,000 INR is created
-    * Charges ₹15,000 or above: A subscription mandate for the exact subscription amount is created
+    * Charges below Rs 15,000: An on-demand mandate for Rs 15,000 INR is created
+    * Charges Rs 15,000 or above: A subscription mandate for the exact subscription amount is created
   * **48-Hour Processing Delay**: Charges are initiated on the scheduled date, but the actual deduction occurs 48 hours after initiation (may extend up to 2-3 additional hours)
   * **Mandate Cancellation**: Customers can cancel mandates via their banking apps during the 48-hour window
 
@@ -38357,7 +41533,7 @@ Comprehensive answers to common questions about Dodo Payments, covering onboardi
   A: When changing plans, Dodo Payments automatically charges the saved card. If the charge fails, the subscription is moved to "on hold." So no manual payment flow is triggered.
 </Accordion>
 
-<Accordion title="Q70: Why does my product price (₹100) show a higher amount (₹104) during checkout?">
+<Accordion title="Q70: Why does my product price (Rs 100) show a higher amount (Rs 104) during checkout?">
   A: This happens when Adaptive Currency is enabled. The feature adds an additional 4% charge automatically.
 </Accordion>
 
@@ -38408,12 +41584,12 @@ Comprehensive answers to common questions about Dodo Payments, covering onboardi
 </Accordion>
 
 <Accordion title="Q77: What is the minimum threshold amount after fees & taxes to process payouts?">
-  A: The minimum payout threshold is **$50 USD** (or ₹1,000 INR) after platform fees and taxes deduction. You can customize your USD wallet threshold to any amount **≥ $50** directly from your dashboard. If your balance doesn't meet the threshold, it will carry forward to the next payout cycle.
+  A: The minimum payout threshold is **$50 USD** (or Rs 1,000 INR) after platform fees and taxes deduction. You can customize your USD wallet threshold to any amount **≥ $50** directly from your dashboard. If your balance doesn't meet the threshold, it will carry forward to the next payout cycle.
 
   You can see the exact wallet amount and manage your payout threshold in the [payouts section](https://app.dodopayments.com/business/payouts) of your dashboard.
 
   <Note>
-    The flexible threshold feature is currently available for USD/EUR/GBP wallets. INR wallet threshold remains fixed at ₹1,000.
+    The flexible threshold feature is currently available for USD/EUR/GBP wallets. INR wallet threshold remains fixed at Rs 1,000.
   </Note>
 </Accordion>
 
@@ -38522,7 +41698,7 @@ Comprehensive answers to common questions about Dodo Payments, covering onboardi
 
 <Accordion title="Q91: Can I set a payout threshold lower than $50?">
   A: No, the minimum payout threshold cannot be set below $50. 
-    You can increase the payout threshold above $50, but setting it to less than \$50 is not supported.
+      You can increase the payout threshold above $50, but setting it to less than \$50 is not supported.
 </Accordion>
 
 ## Invoicing & Reports
@@ -38597,7 +41773,7 @@ Comprehensive answers to common questions about Dodo Payments, covering onboardi
 <Accordion title="Q102: Can I manually verify Dodo Payments webhooks in Python?">
   A: Yes. Manual verification is possible, but it must strictly follow the correct signing steps. For an easier and more reliable approach, Dodo Payments recommends using the standardwebhooks package:
 
-  ```python  theme={null}
+  ```python theme={null}
   from standardwebhooks.webhooks import Webhook
 
   wh = Webhook(webhook_secret_key)
@@ -38634,7 +41810,7 @@ Comprehensive answers to common questions about Dodo Payments, covering onboardi
   <Check>
     **Fix:**
 
-    ```python  theme={null}
+    ```python theme={null}
     client = DodoPayments(
     bearer_token="your_api_key",
           environment="live_mode"  # or "test_mode"
@@ -39024,6 +42200,268 @@ By consolidating these KPIs, the tool provides a comprehensive performance overv
    * Churn rate directly affects your bottom line. High churn means that you’re losing customers faster than you’re acquiring new ones, which can lead to negative revenue growth. Monitoring churn helps you identify areas for improvement, like product enhancements or better customer support.
 
 
+# SaaS Pricing calculator
+Source: https://docs.dodopayments.com/miscellaneous/gtm-tools/saas-pricing-calculator
+
+The SaaS Pricing Calculator is designed to help SaaS businesses determine the ideal pricing strategy for their software products. Setting the right price is critical for remaining competitive, covering operational costs, and maximizing profitability. This tool enables businesses to explore different pricing models, including competitor-based, cost-based, and value-based pricing, to develop a pricing structure that aligns with market trends and customer expectations.
+
+## **Optimize Your SaaS Pricing Strategy Today**
+
+Use the **SaaS Pricing Calculator** to develop a pricing model that maximises profitability, competitiveness, and customer acquisition.
+
+Link: [https://dodopayments.com/tools/saas-pricing-calculator](https://dodopayments.com/tools/saas-pricing-calculator)
+
+**Find the perfect balance between cost, value, and market positioning!**
+
+## **Why Pricing Strategy is Crucial for SaaS Businesses**
+
+Pricing directly impacts customer acquisition, revenue growth, and profitability. A well-defined pricing strategy ensures:
+
+1. **Competitive positioning** – Aligns your product pricing with market expectations
+2. **Sustainable profitability** – Covers costs while maintaining profit margins
+3. **Value-based pricing** – Ensures customers pay according to the benefits they receive
+
+Choosing the right pricing strategy allows SaaS businesses to balance affordability, perceived value, and business growth.
+
+## **Key Input Metrics**
+
+### **1. Competitor Pricing**
+
+Understanding the price points of similar SaaS solutions in the market helps in positioning your product effectively. Competitor pricing acts as a reference, enabling businesses to decide whether to price above, below, or at market rates.
+
+### **2. Product Value Addition (%)**
+
+Represents the relative value your product provides compared to competitors. If your software offers 30% more features or efficiency, pricing can be adjusted accordingly.
+
+### **3. Cost per User**
+
+Includes operational costs such as cloud hosting, development, maintenance, and support services. This metric helps in setting a profitable baseline price to ensure sustainability.
+
+### **4. Estimated User Base**
+
+Defines the projected number of users subscribing to the SaaS product over a set period. This estimation helps determine revenue potential and optimal pricing.
+
+### **5. Target Revenue**
+
+Businesses must set annual or monthly revenue goals to ensure pricing strategies align with profitability objectives. This metric helps determine minimum pricing thresholds.
+
+### **6. Estimated Value for the Customer**
+
+Assesses the financial impact or time savings the product delivers to users. For example, if the software saves businesses \$10,000 annually, pricing should reflect this value-based approach.
+
+## **How the SaaS Pricing Calculator Works**
+
+This tool enables businesses to compare multiple pricing models and identify the most suitable one based on financial goals, competitive landscape, and customer expectations. It supports:
+
+1. **Competitor-Based Pricing** – Align pricing with industry benchmarks
+2. **Cost-Based Pricing** – Ensure pricing covers operational costs and profit margins
+3. **Value-Based Pricing** – Charge based on customer-perceived value
+
+By leveraging data-driven pricing strategies, SaaS companies can optimize revenue, enhance customer acquisition, and drive business growth.
+
+## **Key Output Metrics**
+
+### **1. Recommended Price Range**
+
+The tool provides a flexible pricing range, allowing businesses to adjust prices based on market trends and customer feedback. Pricing recommendations typically range between 0.8x and 1.2x the suggested price, ensuring adaptability.
+
+### **2. Tiered Pricing Structure**
+
+A well-defined tiered pricing model maximizes revenue potential by catering to different customer segments. The tool recommends three tiers:
+
+**Basic Tier** – Lower-priced plan for budget-conscious users with essential features.
+
+**Pro Tier** – Standard pricing plan offering a balanced set of features.
+
+**Enterprise Tier** – Premium pricing model with advanced functionalities and personalized support.
+
+## **Frequently Asked Questions (FAQs)**
+
+1. **What is the best pricing strategy for SaaS companies?**
+   * There is no one-size-fits-all pricing strategy for SaaS companies. The best approach depends on your product, market, and business goals. Competitor-based pricing helps you align with market rates, cost-based pricing ensures you cover your expenses, and value-based pricing lets you charge based on the perceived value your product delivers to customers.
+2. **How do I decide whether to use competitor-based, cost-based, or value-based pricing?**
+   * If your market is saturated with similar products, competitor-based pricing can keep you competitive. If you want to ensure profitability, cost-based pricing guarantees your costs are covered. If your product offers significant value to users, value-based pricing allows you to charge based on the results your product delivers, which can lead to higher pricing.
+3. **How can I make my SaaS pricing more competitive?**
+   * To stay competitive, evaluate your competitors regularly, ensure your pricing reflects the value you provide, and consider offering tiered pricing or freemium models. Adjust your pricing based on user feedback and market trends to ensure you remain competitive.
+4. **Why should I offer tiered pricing for my SaaS product?**
+   * Tiered pricing allows you to cater to different customer segments, offering basic features at lower prices and premium features at higher prices. This flexibility maximizes your revenue by appealing to both budget-conscious users and those willing to pay for advanced features.
+5. **How often should I reevaluate my SaaS pricing?**
+   * It’s a good practice to review your pricing strategy at least once a year, or when significant changes occur in your product offerings, market conditions, or customer needs. This ensures your pricing remains competitive and aligned with your business goals.
+
+
+# SaaS Revenue & Profit Growth
+Source: https://docs.dodopayments.com/miscellaneous/gtm-tools/saas-revenue-and-profit-growth
+
+The **SaaS Revenue & Profit Growth Tool** is designed to help SaaS businesses accurately forecast their **financial performance** by analyzing revenue, costs, and growth rates. This tool enables businesses to make data-driven decisions about scaling, hiring, and long-term sustainability. By predicting future revenue and profit trends, SaaS companies can optimize growth strategies and maximize profitability.
+
+Start Forecasting Your Business Growth with **SaaS Revenue and Profit Growth Tool**
+
+**Link:** [https://dodopayments.com/tools/saas-revenue-profit-growth-tool](https://dodopayments.com/tools/saas-revenue-profit-growth-tool)
+
+**Optimize revenue, increase profitability, and scale smarter!**
+
+## **Why Revenue & Profit Growth Projections Matter for SaaS Businesses**
+
+Accurate revenue and profit projections are crucial for SaaS companies to:
+
+1. Plan long-term growth strategies
+
+2. Set realistic revenue and expansion goals
+
+3. Make informed decisions about scaling, hiring, and product development
+
+4. Identify potential financial risks and opportunities
+
+5. Ensure sustainable profitability in an evolving market
+
+By leveraging financial forecasting, SaaS businesses can gain a competitive advantage and minimize unexpected financial hurdles.
+
+## **Key Input Metrics**
+
+To generate precise revenue and profit projections, the tool requires the following key metrics:
+
+### **1. Estimated Annual Revenue**
+
+This is the total revenue generated annually from customer subscriptions. Entering an accurate figure allows the tool to forecast revenue growth trends over multiple years.
+
+### **2. Estimated Annual Costs**
+
+All operational expenses, including software development, hosting, salaries, marketing, and customer support, should be included. Tracking these costs ensures an accurate profitability forecast.
+
+### **3. Revenue Growth Rate**
+
+This is the annual percentage increase in revenue based on customer acquisition, expansion, and pricing adjustments. For example, if you expect a 10% revenue increase yearly, enter this value to project long-term growth.
+
+### **4. Cost Growth Rate**
+
+Expenses grow as the business scales. The cost growth rate estimates how annual costs increase over time, accounting for infrastructure, hiring, and marketing investments.
+
+### **5. Forecast Duration (Number of Years)**
+
+Select the time frame for your financial projections (e.g., 3, 5, or 10 years). Longer projections provide a bigger picture of financial health but should be regularly reviewed for accuracy.
+
+## **How the SaaS Revenue & Profit Growth Calculator Works**
+
+This tool uses real-time calculations based on your revenue, costs, and growth rates to generate financial projections. It provides:
+
+1. **Revenue Growth Forecasts** – Year-over-year revenue increase based on your expected growth rate.
+2. **Profitability Analysis** – Calculates net profit by subtracting projected costs from revenue.
+3. **Break-even Insights** – Identifies when your business becomes sustainably profitable.
+4. **Data-driven Decision Support** – Helps refine pricing, reduce churn, and optimize cost management.
+
+## **Key Output Metrics**
+
+After entering your data, the tool provides detailed insights into your SaaS business’s financial future:
+
+### **1. Revenue Projection**
+
+A year-over-year revenue forecast, estimating how your business will grow based on your revenue growth rate. This projection helps track expansion progress and scalability.
+
+### **2. Profit Projection**
+
+A detailed profit analysis displaying how much revenue remains after accounting for growing operational costs. Monitoring profit growth ensures long-term business sustainability.
+
+## **Frequently Asked Questions (FAQs)**
+
+### **1. Why are revenue and profit projections important for SaaS businesses?**
+
+Revenue and profit forecasts allow SaaS businesses to make informed financial decisions, set realistic goals, and plan growth strategies. Predicting financial trends helps **optimize operations, scale efficiently, and mitigate risks**.
+
+### **2. How accurate are long-term SaaS revenue projections?**
+
+Projections are based on current data and estimated growth rates, but factors like customer churn, market shifts, and operational costs can impact actual outcomes. Regularly updating forecasts ensures greater accuracy.
+
+### **3. What is the difference between revenue growth and profit growth?**
+
+* **Revenue Growth**: Measures total income increase from SaaS subscriptions and customer expansion.
+* **Profit Growth**: Accounts for both revenue and costs, reflecting the actual net earnings after expenses. A company may experience revenue growth but lower profits if costs rise significantly.
+
+### **4. How can I increase my SaaS revenue growth rate?**
+
+Boost revenue by:
+
+1. Enhancing customer acquisition strategies
+2. Reducing churn with better retention efforts
+3. Optimizing pricing models and offering upsells
+4. Expanding into new markets or launching new features
+
+### **5. How does cost growth affect SaaS profitability?**
+
+As businesses scale, operational costs (e.g., support, hosting, infrastructure, and marketing) also increase. If costs outpace revenue growth, profitability declines. Monitoring expenses ensures financial stability.
+
+
+# Help and Support
+Source: https://docs.dodopayments.com/miscellaneous/help-support
+
+We understand that navigating a new platform or resolving issues can sometimes require additional support. To ensure a seamless experience, we offer multiple support channels to address all your concerns.
+
+## **Dodo Payments Centralized Support System**
+
+The Dodo Payments Centralized Support System provides a unified support experience, offering multiple channels to assist merchants.
+
+Merchants can access the support system through the "Get Support" icon on the Dodo Payments Dashboard, leading to a dedicated support landing page with four key options:
+
+## 1. AI-Powered Chat Assistance
+
+The Chat with AI feature provides instant, automated support using an AI-powered chatbot. It is designed to assist users by:
+
+* Answering technical and business queries
+* Providing guidance on API integration and setup
+* Offering navigation support for product documentation
+
+This feature ensures quick resolution of common queries, reducing the need for direct human support.
+
+📌 Best for: Instant self-serve assistance and general troubleshooting.
+
+## 2. Community Support via Discord
+
+The Dodo Payments Discord Community enables merchants to engage with other users and the Dodo Payments team. Through this platform, users can:
+
+* Discuss best practices and share experiences
+* Seek peer-to-peer assistance from other merchants
+* Engage with the Dodo Payments support team in an interactive environment
+
+This feature fosters a collaborative community-driven support experience.
+
+📌 Best for: Peer support, longer queries and networking with other merchants.
+
+## 3. Dedicated Chat Support
+
+The Chat Support feature provides a direct line to the Dodo Payments support team for more complex or account-specific inquiries. Key aspects include:
+
+* Support is managed via Intercom, where merchants can submit detailed queries.
+* Response time is within 24-48 business hours.
+* Unresolved tickets will automatically close if there is no user response for 72 hours.
+
+This feature ensures that merchants receive personalized assistance for critical issues requiring human intervention.
+
+📌 Best for: Account-related concerns, technical escalations, and personalized troubleshooting.
+
+## **4. Self-Service Documentation**
+
+The Dodo Payments Documentation Portal serves as a comprehensive resource for merchants looking for detailed product and integration information. The portal includes:
+
+* Detailed feature explanations
+* Step-by-step implementation guides
+* API documentation and integration manuals
+* Frequently Asked Questions (FAQs)
+
+This feature provides structured, self-paced learning for merchants to independently navigate the platform.
+
+📌 Best for: In-depth learning, implementation guidance, and technical documentation.
+
+## **Support Options Overview**
+
+| **Support Channel**   | **Purpose**                                 | **Response Time** |
+| --------------------- | ------------------------------------------- | ----------------- |
+| **AI-Powered Chat**   | Automated responses, documentation guidance | Instant           |
+| **Discord Community** | Peer support, community discussions         | Community-driven  |
+| **Chat Support**      | Personalized assistance for complex issues  | 24-48 hours       |
+| **Self-Service Docs** | Product guides, API reference, tutorials    | Self-paced        |
+
+Merchants can choose the most suitable support channel based on the complexity of their query and the required response time. For further assistance, visit the Dodo Payments Support Center via the dashboard.
+
+
 # Security Reporting Policy
 Source: https://docs.dodopayments.com/miscellaneous/security-policy
 
@@ -39090,11 +42528,67 @@ Retrieve a list of countries that are supported by the Dodo Payments for your cu
 <Tip> Note: The available options include ISO Alpha-2 codes for **all countries**, not just the ones we currently support. Please refer to the supported countries list to confirm availability. </Tip>
 
 
+# Create Webhook
+Source: https://docs.dodopayments.com/api-reference/webhooks/create-webhook
+
+post /webhooks
+Create a new webhook for a business.
+
+
+
+# Delete Webhook
+Source: https://docs.dodopayments.com/api-reference/webhooks/delete-webhook
+
+delete /webhooks/{webhook_id}
+Delete a specific webhook.
+
+
+
+# Get Webhook Details
+Source: https://docs.dodopayments.com/api-reference/webhooks/get-details
+
+get /webhooks/{webhook_id}
+Get detailed information about a specific webhook.
+
+
+
+# Get Webhook Headers
+Source: https://docs.dodopayments.com/api-reference/webhooks/get-webhook-headers
+
+get /webhooks/{webhook_id}/headers
+Get the headers for a specific webhook.
+
+
+
 # Get Webhook Signing Key
 Source: https://docs.dodopayments.com/api-reference/webhooks/get-webhook-signing-key
 
 get /webhooks/{webhook_id}/secret
 Get the signing key for a specific webhook.
+
+
+
+# List Webhooks
+Source: https://docs.dodopayments.com/api-reference/webhooks/list-webhooks
+
+get /webhooks
+List all webhooks for a business.
+
+
+
+# Update Webhook
+Source: https://docs.dodopayments.com/api-reference/webhooks/update-webhook
+
+patch /webhooks/{webhook_id}
+Update a specific webhook.
+
+
+
+# Update Webhook Headers
+Source: https://docs.dodopayments.com/api-reference/webhooks/update-webhook-headers
+
+patch /webhooks/{webhook_id}/headers
+Update the headers for a specific webhook.
 
 
 
@@ -39105,50 +42599,53 @@ Track all Dodo Payments releases, new features, improvements, and platform updat
 
 ## Version Logs
 
-| Version                       | Release Date       | Highlights                                                                                                                                                                                           |
-| ----------------------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [v1.61.5](/changelog/v1.61.5) | November 17, 2025  | EUR & GBP pricing full rollout, payment method management, metadata in customers and refunds, checkout session feature flags, license key/file indicators, GitHub OAuth, and Featurebase integration |
-| [v1.56.0](/changelog/v1.56.0) | October 27, 2025   | Streamlined onboarding, C# SDK launch, webhook verification, Two-Factor Authentication, overlay checkout sessions, and usage-based subscription plan changes                                         |
-| [v1.53.2](/changelog/v1.53.2) | September 13, 2025 | Customer credits, enhanced refund details, higher meter limits, license activation context, and \$0 downgrades                                                                                       |
-| [v1.52.4](/changelog/v1.52.4) | September 3, 2025  | Usage-Based Billing, public Refund Receipt API, 100% subscription discounts, and checkout session ID in payments                                                                                     |
-| [v1.51.0](/changelog/v1.51.0) | August 23, 2025    | Powerful Checkout Sessions API, Metadata in Payments Export, and Subscription Next Billing Date Update                                                                                               |
-| [v1.47.0](/changelog/v1.47.0) | August 11, 2025    | Dashboard UI overhaul, discount codes for subscriptions, expanded Adaptive Currency, webhook management API, and product metadata support                                                            |
-| [v1.44.0](/changelog/v1.44.0) | August 3, 2025     | Adaptive Currency, Turkish Language Support, and New Proration Mode                                                                                                                                  |
-| [v1.43.0](/changelog/v1.43.0) | July 24, 2025      | Comprehensive Webhooks Upgrade: endpoint management, security, delivery logs, debugging, and monitoring—now fully self-serve in the dashboard                                                        |
-| [v1.38.0](/changelog/v1.38.0) | July 9, 2025       | Analytics Chart Sharing, Multiple Partial Refunds, Cumulative Revenue Analytics, Context7 Integration, Next.js Adapter                                                                               |
-| [v1.37.0](/changelog/v1.37.0) | July 2, 2025       | Enhanced Analytics Dashboard with comprehensive revenue and retention insights, Reports 2.0 with detailed business reporting capabilities                                                            |
-| [v1.34.4](/changelog/v1.34.4) | June 26, 2025      | Enhanced Dashboard Analytics with comprehensive new metrics across Revenue Analytics, Customer Analytics, and Payment Success Rate Analytics                                                         |
-| [v1.34.0](/changelog/v1.34.0) | June 18, 2025      | Digital Product Delivery, React Native SDK beta release, new proration modes, adaptive currency for subscriptions, and enhanced verification form management                                         |
-| [v1.32.0](/changelog/v1.32.0) | June 9, 2025       | Affiliates with Affonso, multiple webhook support, enhanced fraud prevention, subscription schedule cancellation, and static payment links                                                           |
-| [v1.30.0](/changelog/v1.30.0) | June 2, 2025       | Support for \$0 payments and 100% discount codes for one-time products, enabled payout threshold for USD wallet, and standardized API error codes                                                    |
-| [v1.27.0](/changelog/v1.27.0) | May 26, 2025       | Partial Refunds and Multi-Brand Support, enabling merchants to manage multiple brands and websites under a single verified business account                                                          |
-| [v1.25.0](/changelog/v1.25.0) | May 20, 2025       | Overlay Checkout Beta, a modern TypeScript library for embedded payments, and subscription.plan\_changed webhook event                                                                               |
-| [v1.22.0](/changelog/v1.22.0) | May 9, 2025        | Unified search to the dashboard, support for upgrading and downgrading subscriptions with addons, and comprehensive card information in payment responses                                            |
-| [v1.21.0](/changelog/v1.21.0) | May 3, 2025        | Support for addons to subscriptions, enhanced dispute handling, and customer billing details in payment responses                                                                                    |
-| [v1.18.3](/changelog/v1.18.3) | April 26, 2025     | Subscription Plan Change API, enhanced onboarding guidance, notification preferences center, and improved adaptive currency information                                                              |
-| [v1.16.1](/changelog/v1.16.1) | April 18, 2025     | Modern verification forms, new Java and Kotlin SDKs, Afterpay/Clearpay integration, and Google Sign-In                                                                                               |
-| [v1.14.0](/changelog/v1.14.0) | April 12, 2025     | New European payment methods, subscription billing address updates, and various improvements                                                                                                         |
-| [v1.13.0](/changelog/v1.13.0) | April 9, 2025      | Adaptive Currency Support, MCP Server for AI integration, mobile apps, Custom GPT, and Dodo Dash game                                                                                                |
-| [v1.11.0](/changelog/v1.11.0) | March 28, 2025     | Address autofill for checkout page, notifications center, payment link query builder, saved payment methods, and billing currency control                                                            |
-| [v1.10.1](/changelog/v1.10.1) | March 21, 2025     | Checkout 2.0, configurable payment methods, dynamic tax calculation, and on-demand subscriptions                                                                                                     |
-| [v1.7.0](/changelog/v1.7.0)   | March 14, 2025     | Dedicated subscriptions page, enhanced customer details, detailed payout information, official Ruby SDK, and enhanced API filters                                                                    |
-| [v1.5.0](/changelog/v1.5.0)   | March 7, 2025      | Custom date filter for analytics, new tax category, and various improvements                                                                                                                         |
-| [v1.4.0](/changelog/v1.4.0)   | March 6, 2025      | Storefront Feature and Amazon Pay Integration                                                                                                                                                        |
-| [v1.3.2](/changelog/v1.3.2)   | February 28, 2025  | Teams Feature, enhanced success/failure screens, and minor improvements                                                                                                                              |
-| [v1.0.0](/changelog/v1.0.0)   | February 23, 2025  | Public release of Dodo Payments with Customer Portal and Customer Portal Session API                                                                                                                 |
-| [v0.24.0](/changelog/v0.24.0) | February 15, 2025  | Discount coupons, support for over 25 local payment methods, customizable statement descriptors, and complete UI makeover of the login page                                                          |
-| [v0.22.0](/changelog/v0.22.0) | February 6, 2025   | Subscription's first payment, UPI QR payment method, tax ID on checkout, dashboard restructure, self-serve onboarding guides, multi-language support                                                 |
-| [v0.20.1](/changelog/v0.20.1) | January 31, 2025   | Pay What You Want (PWYW) pricing and expanded global payment coverage                                                                                                                                |
-| [v0.19.0](/changelog/v0.19.0) | January 24, 2025   | Support for UPI and Indian Rupay cards, PHP SDK release, and product archiving                                                                                                                       |
-| [v0.18.0](/changelog/v0.18.0) | January 20, 2025   | AI chat support, enhanced APIs, inclusive tax pricing, automated country selection, and more                                                                                                         |
-| [v0.16.1](/changelog/v0.16.1) | January 11, 2025   | Account Summary feature, enhanced API documentation, and improved postal code validation                                                                                                             |
-| [v0.15.1](/changelog/v0.15.1) | January 3, 2025    | Invoice API, subscription webhooks, comprehensive guides, Dodo Wall of Love, and social sharing features                                                                                             |
-| [v0.14.0](/changelog/v0.14.0) | December 26, 2024  | License Key Management feature, enhancing security and control for merchants distributing digital products and services                                                                              |
-| [v0.13.2](/changelog/v0.13.2) | December 21, 2024  | Updated Atlas codebase, SDK updates, and minor improvements                                                                                                                                          |
-| [v0.12.0](/changelog/v0.12.0) | December 17, 2024  | Official SDKs, metadata field, and expanded customer APIs with minor improvements and bug fixes                                                                                                      |
-| [v0.11.0](/changelog/v0.11.0) | December 13, 2024  | Automated emails, webhook event logs, license key generation guide, and various minor improvements and bug fixes                                                                                     |
-| [v0.10.0](/changelog/v0.10.0) | December 8, 2024   | Open-sourced Atlas demo, feature-request section, webhook request logs API, subscription list API, and various improvements                                                                          |
-| [v0.1.0](/changelog/v0.1.0)   | November 25, 2024  | Initial release of the Dodo Payments documentation, marking the Beta launch of our product                                                                                                           |
+| Version                       | Release Date       | Highlights                                                                                                                                                                                                                                                |
+| ----------------------------- | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [v1.70.0](/changelog/v1.70.0) | December 24, 2025  | Inline checkout support, use existing payment methods for instant checkouts, manage subscription plans from dashboard, generate short payment links, skip success pages with redirect\_immediately, and enable on-demand subscriptions for all businesses |
+| [v1.67.0](/changelog/v1.67.0) | December 17, 2025  | Mixed cart checkout for one-time and subscription products, Unified Customer Portal, invoice\_id in Payment Response                                                                                                                                      |
+| [v1.66.0](/changelog/v1.66.0) | December 8, 2025   | Subscription.updated webhook, minimal address checkout, read-only API keys, UPI AutoPay & RuPay subscriptions for all businesses                                                                                                                          |
+| [v1.61.5](/changelog/v1.61.5) | November 17, 2025  | EUR & GBP pricing full rollout, payment method management, metadata in customers and refunds, checkout session feature flags, license key/file indicators, GitHub OAuth, and Featurebase integration                                                      |
+| [v1.56.0](/changelog/v1.56.0) | October 27, 2025   | Streamlined onboarding, C# SDK launch, webhook verification, Two-Factor Authentication, overlay checkout sessions, and usage-based subscription plan changes                                                                                              |
+| [v1.53.2](/changelog/v1.53.2) | September 13, 2025 | Customer credits, enhanced refund details, higher meter limits, license activation context, and \$0 downgrades                                                                                                                                            |
+| [v1.52.4](/changelog/v1.52.4) | September 3, 2025  | Usage-Based Billing, public Refund Receipt API, 100% subscription discounts, and checkout session ID in payments                                                                                                                                          |
+| [v1.51.0](/changelog/v1.51.0) | August 23, 2025    | Powerful Checkout Sessions API, Metadata in Payments Export, and Subscription Next Billing Date Update                                                                                                                                                    |
+| [v1.47.0](/changelog/v1.47.0) | August 11, 2025    | Dashboard UI overhaul, discount codes for subscriptions, expanded Adaptive Currency, webhook management API, and product metadata support                                                                                                                 |
+| [v1.44.0](/changelog/v1.44.0) | August 3, 2025     | Adaptive Currency, Turkish Language Support, and New Proration Mode                                                                                                                                                                                       |
+| [v1.43.0](/changelog/v1.43.0) | July 24, 2025      | Comprehensive Webhooks Upgrade: endpoint management, security, delivery logs, debugging, and monitoring—now fully self-serve in the dashboard                                                                                                             |
+| [v1.38.0](/changelog/v1.38.0) | July 9, 2025       | Analytics Chart Sharing, Multiple Partial Refunds, Cumulative Revenue Analytics, Context7 Integration, Next.js Adapter                                                                                                                                    |
+| [v1.37.0](/changelog/v1.37.0) | July 2, 2025       | Enhanced Analytics Dashboard with comprehensive revenue and retention insights, Reports 2.0 with detailed business reporting capabilities                                                                                                                 |
+| [v1.34.4](/changelog/v1.34.4) | June 26, 2025      | Enhanced Dashboard Analytics with comprehensive new metrics across Revenue Analytics, Customer Analytics, and Payment Success Rate Analytics                                                                                                              |
+| [v1.34.0](/changelog/v1.34.0) | June 18, 2025      | Digital Product Delivery, React Native SDK beta release, new proration modes, adaptive currency for subscriptions, and enhanced verification form management                                                                                              |
+| [v1.32.0](/changelog/v1.32.0) | June 9, 2025       | Affiliates with Affonso, multiple webhook support, enhanced fraud prevention, subscription schedule cancellation, and static payment links                                                                                                                |
+| [v1.30.0](/changelog/v1.30.0) | June 2, 2025       | Support for \$0 payments and 100% discount codes for one-time products, enabled payout threshold for USD wallet, and standardized API error codes                                                                                                         |
+| [v1.27.0](/changelog/v1.27.0) | May 26, 2025       | Partial Refunds and Multi-Brand Support, enabling merchants to manage multiple brands and websites under a single verified business account                                                                                                               |
+| [v1.25.0](/changelog/v1.25.0) | May 20, 2025       | Overlay Checkout Beta, a modern TypeScript library for embedded payments, and subscription.plan\_changed webhook event                                                                                                                                    |
+| [v1.22.0](/changelog/v1.22.0) | May 9, 2025        | Unified search to the dashboard, support for upgrading and downgrading subscriptions with addons, and comprehensive card information in payment responses                                                                                                 |
+| [v1.21.0](/changelog/v1.21.0) | May 3, 2025        | Support for addons to subscriptions, enhanced dispute handling, and customer billing details in payment responses                                                                                                                                         |
+| [v1.18.3](/changelog/v1.18.3) | April 26, 2025     | Subscription Plan Change API, enhanced onboarding guidance, notification preferences center, and improved adaptive currency information                                                                                                                   |
+| [v1.16.1](/changelog/v1.16.1) | April 18, 2025     | Modern verification forms, new Java and Kotlin SDKs, Afterpay/Clearpay integration, and Google Sign-In                                                                                                                                                    |
+| [v1.14.0](/changelog/v1.14.0) | April 12, 2025     | New European payment methods, subscription billing address updates, and various improvements                                                                                                                                                              |
+| [v1.13.0](/changelog/v1.13.0) | April 9, 2025      | Adaptive Currency Support, MCP Server for AI integration, mobile apps, Custom GPT, and Dodo Dash game                                                                                                                                                     |
+| [v1.11.0](/changelog/v1.11.0) | March 28, 2025     | Address autofill for checkout page, notifications center, payment link query builder, saved payment methods, and billing currency control                                                                                                                 |
+| [v1.10.1](/changelog/v1.10.1) | March 21, 2025     | Checkout 2.0, configurable payment methods, dynamic tax calculation, and on-demand subscriptions                                                                                                                                                          |
+| [v1.7.0](/changelog/v1.7.0)   | March 14, 2025     | Dedicated subscriptions page, enhanced customer details, detailed payout information, official Ruby SDK, and enhanced API filters                                                                                                                         |
+| [v1.5.0](/changelog/v1.5.0)   | March 7, 2025      | Custom date filter for analytics, new tax category, and various improvements                                                                                                                                                                              |
+| [v1.4.0](/changelog/v1.4.0)   | March 6, 2025      | Storefront Feature and Amazon Pay Integration                                                                                                                                                                                                             |
+| [v1.3.2](/changelog/v1.3.2)   | February 28, 2025  | Teams Feature, enhanced success/failure screens, and minor improvements                                                                                                                                                                                   |
+| [v1.0.0](/changelog/v1.0.0)   | February 23, 2025  | Public release of Dodo Payments with Customer Portal and Customer Portal Session API                                                                                                                                                                      |
+| [v0.24.0](/changelog/v0.24.0) | February 15, 2025  | Discount coupons, support for over 25 local payment methods, customizable statement descriptors, and complete UI makeover of the login page                                                                                                               |
+| [v0.22.0](/changelog/v0.22.0) | February 6, 2025   | Subscription's first payment, UPI QR payment method, tax ID on checkout, dashboard restructure, self-serve onboarding guides, multi-language support                                                                                                      |
+| [v0.20.1](/changelog/v0.20.1) | January 31, 2025   | Pay What You Want (PWYW) pricing and expanded global payment coverage                                                                                                                                                                                     |
+| [v0.19.0](/changelog/v0.19.0) | January 24, 2025   | Support for UPI and Indian Rupay cards, PHP SDK release, and product archiving                                                                                                                                                                            |
+| [v0.18.0](/changelog/v0.18.0) | January 20, 2025   | AI chat support, enhanced APIs, inclusive tax pricing, automated country selection, and more                                                                                                                                                              |
+| [v0.16.1](/changelog/v0.16.1) | January 11, 2025   | Account Summary feature, enhanced API documentation, and improved postal code validation                                                                                                                                                                  |
+| [v0.15.1](/changelog/v0.15.1) | January 3, 2025    | Invoice API, subscription webhooks, comprehensive guides, Dodo Wall of Love, and social sharing features                                                                                                                                                  |
+| [v0.14.0](/changelog/v0.14.0) | December 26, 2024  | License Key Management feature, enhancing security and control for merchants distributing digital products and services                                                                                                                                   |
+| [v0.13.2](/changelog/v0.13.2) | December 21, 2024  | Updated Atlas codebase, SDK updates, and minor improvements                                                                                                                                                                                               |
+| [v0.12.0](/changelog/v0.12.0) | December 17, 2024  | Official SDKs, metadata field, and expanded customer APIs with minor improvements and bug fixes                                                                                                                                                           |
+| [v0.11.0](/changelog/v0.11.0) | December 13, 2024  | Automated emails, webhook event logs, license key generation guide, and various minor improvements and bug fixes                                                                                                                                          |
+| [v0.10.0](/changelog/v0.10.0) | December 8, 2024   | Open-sourced Atlas demo, feature-request section, webhook request logs API, subscription list API, and various improvements                                                                                                                               |
+| [v0.1.0](/changelog/v0.1.0)   | November 25, 2024  | Initial release of the Dodo Payments documentation, marking the Beta launch of our product                                                                                                                                                                |
 
 
 # v0.1.0 (25 Nov 2024)
@@ -39297,7 +42794,7 @@ Introducing Invoice API, subscription webhooks, comprehensive guides, Dodo Wall 
 
 * Introduced Dodo Payments [Wall of Love](https://dodopayments.com/wall-of-love), showcasing customer testimonials.
 * Added social sharing functionality for successful transactions.
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-transaction.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f72078fc9783afb6a306e50e14393579" alt="Share Transaction Feature" data-og-width="2284" width="2284" data-og-height="1322" height="1322" data-path="images/changelog/share-transaction.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-transaction.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=5fbdff9f746974d68da71fe6b49974fb 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-transaction.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ae158a1bfa25b72de17e8dc19687c7e2 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-transaction.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=da3c34e1a156dbc721790366744b2974 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-transaction.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=360fa7bfda9de4202957ef8eba31332f 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-transaction.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=23da2d9562ed6943ef6ec6941fe72b3c 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-transaction.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=2e7f7b6b24c9814db46ef536cf9d4436 2500w" />
+  <img alt="Share Transaction Feature" />
 * Released Policy Generator tool for automatic generation of privacy policy, terms of service, and refund policy documents. [Try Policy Generator](https://dodopayments.com/tools/policy-generator).
 
 ### Documentation Improvements
@@ -39323,7 +42820,7 @@ Added Account Summary feature, enhanced API documentation, and improved postal c
 ## New Features 🚀
 
 * **Account Summary Feature**: Provides detailed visibility into transaction and payout ledgers.
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/account_summary.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=17b730778959120a8656f8b2bbdd562d" alt="Account Summary" data-og-width="1920" width="1920" data-og-height="1280" height="1280" data-path="images/changelog/account_summary.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/account_summary.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=2ce870c2668e24064b14a2fb26862e0b 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/account_summary.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=34e92d0896646d76cf70efc0d602d4c4 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/account_summary.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=7b9813bb235922e8e44ebc3f427807f5 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/account_summary.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=de3e8dd234cb8a51a1c2b4f9cab457ed 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/account_summary.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=29f1d0d1d61bb5b19aa011b5ef557789 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/account_summary.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=1d34f0b47ba666639887417d20a4149e 2500w" />
+  <img alt="Account Summary" />
 * **Enhanced API Documentation**: Includes comprehensive parameter descriptions and usage examples.
 
 ## Improvements and Bug Fixes 🔧
@@ -39340,7 +42837,7 @@ Added AI chat support, enhanced APIs, inclusive tax pricing, automated country s
 ## New Features 🚀
 
 * **AI Chat Support**: Now you can chat with our AI assistant to get help with your technical queries or check the documentation more effectively.
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/ai_chat.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=69ecf8812ef30cbf84fe9c283096ca63" alt="Dodo Payments AI Chat Support" data-og-width="960" width="960" data-og-height="540" height="540" data-path="images/changelog/ai_chat.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/ai_chat.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=fd115e7c8c25ee65010d9d99de89681a 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/ai_chat.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ccd98921166b815cd3f856af325f1e42 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/ai_chat.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=068bab977b2e39f8b18269cc029634e3 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/ai_chat.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=760806298aaf2a55c28675616a71b52b 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/ai_chat.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=359596a4d072089131dc35aac984a517 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/ai_chat.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=2361a876803e35bc7e21f4673b631c8d 2500w" />
+  <img alt="Dodo Payments AI Chat Support" />
 
 * **Enhanced APIs**: Added APIs to filter payments, refunds, subscriptions, and disputes based on `customer_id`, time period, and status, providing more flexibility in data retrieval.
 
@@ -39365,11 +42862,11 @@ Added support for UPI and Indian Rupay cards, released PHP SDK, and introduced p
 * **UPI and Indian Rupay Card Support**: Added support for UPI and Indian Rupay cards for processing payments in India, currently limited to one-time purchases only. You can now accept payments from customers using UPI and Rupay cards. Additionally, enabled the creation of products with INR pricing on the Dodo Payments Dashboard.
 
   <Frame>
-    <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/PXQOv4k1Mk8" title="UPI Announcement | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+    <iframe title="UPI Announcement | Dodo Payments" />
   </Frame>
 
 * **PHP SDK Release**: Launched a new PHP SDK for Dodo Payments, simplifying the integration of Dodo Payments into PHP applications.
-  <Card title="View PHP SDK on GitHub →" icon="github" horizontal="true" href="https://github.com/dodopayments/dodopayments-php"> Explore the PHP SDK for Dodo Payments on GitHub. </Card>
+  <Card title="View PHP SDK on GitHub →" icon="github" href="https://github.com/dodopayments/dodopayments-php"> Explore the PHP SDK for Dodo Payments on GitHub. </Card>
 
 * **Product Archiving**: Introduced the ability to archive and unarchive products on the Dodo Payments Dashboard, helping manage clutter and maintain a clean interface.
 
@@ -39389,7 +42886,7 @@ Introduced Pay What You Want (PWYW) pricing and expands global payment coverage.
 
 * **Expanded Global Coverage**: Dodo Payments now supports seamless payments from over 150 countries, enhancing global accessibility and convenience for users.
   <Frame>
-    <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/JQJbSM_vz4g" title="Global Coverage Announcement | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+    <iframe title="Global Coverage Announcement | Dodo Payments" />
   </Frame>
 
 ## Improvements and Bug Fixes 🔧
@@ -39408,7 +42905,7 @@ Introduced subscription's first payment, UPI QR payment method, tax ID on checko
 
 * **UPI QR Payment Method**: Added UPI QR as a payment method for the Indian market, allowing customers to pay using UPI QR codes.
 
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/upi-qr.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=29958e92eb4a42e3d62cfa2f48b7d4af" alt="UPI QR Feature" data-og-width="2880" width="2880" data-og-height="1512" height="1512" data-path="images/changelog/upi-qr.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/upi-qr.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b36ffba995a84e9abea6a02022ff8bf2 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/upi-qr.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=96be7b9933f33858398531ed6018f322 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/upi-qr.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=11b2f0e00d432067711e469880d62c3e 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/upi-qr.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=37534a2a8b011b3e48d920b6a7a73ce1 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/upi-qr.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=28415f48f3806a495edd9fd6e5c871c6 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/upi-qr.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d2f31cb4b372b93ffd6afc26a7f37e7b 2500w" />
+  <img alt="UPI QR Feature" />
 
 * **Tax ID on Checkout**: Customers can now add their Tax ID on the checkout page for invoicing and tax purposes.
 
@@ -39432,14 +42929,14 @@ Introduced subscription's first payment, UPI QR payment method, tax ID on checko
   * Português (pt) // Portuguese
   * Svenska (sv) // Swedish
   <Frame>
-    <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/tR4yUwRKCxs" title="Language Announcement | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+    <iframe title="Language Announcement | Dodo Payments" />
   </Frame>
 
 * **Invoice PDF Makeover**: The invoice PDFs have been given a new, clearer, and more effective design.
 
 * **Centralized Help Widget**: Added a centralized Help widget to streamline and improve support.
 
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/help-widget.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d56a36343ee4a78c30138bd5f7eee140" alt="Help Widget" data-og-width="824" width="824" data-og-height="918" height="918" data-path="images/changelog/help-widget.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/help-widget.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f3c13257dc733b16e7d008783822c174 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/help-widget.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=42f0c6fc3aceec31256299e6b4e82243 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/help-widget.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=83fa22758f51ea3c6d2018d2ca669420 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/help-widget.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=bea4e6caaf4876f1bcb3f9145f5f2111 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/help-widget.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=16d1c93ed624431505125a34e9a78f7e 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/help-widget.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=7ec9bc9a042bf280112d607296300dfa 2500w" />
+  <img alt="Help Widget" />
 
 ## Improvements and Bug Fixes 🔧
 
@@ -39462,7 +42959,7 @@ Introduced discount coupons, support for over 25 local payment methods, customiz
 * Dodo Payments now supports over 25 local payment methods, including Apple Pay, Google Pay, Klarna, Affirm, Cash App, UPI, and all major credit/debit cards. This helps boost conversions and reduce checkout drop-offs.
 
   <Frame>
-    <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/bf9_2iXWZOA" title="Local Payment Methods Announcement | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+    <iframe title="Local Payment Methods Announcement | Dodo Payments" />
   </Frame>
 
 * Added functionality to customize the statement descriptor that appears on your customers' bank statements when they make a payment. You can find the option to customize the statement descriptor under `Dashboard > Business > Business Profile`.
@@ -39482,7 +42979,7 @@ Public release of Dodo Payments with Customer Portal and Customer Portal Session
 This marks the first changelog since Dodo Payments exited Beta and is now publicly available. 🎉
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/qa9mLcQqPIA" title="Public Announcement | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Public Announcement | Dodo Payments" />
 </Frame>
 
 ## New Features 🚀
@@ -39507,7 +43004,7 @@ Introduced Checkout 2.0, configurable payment methods, dynamic tax calculation, 
   * Persistent data availability throughout the entire checkout flow
   * More enhancements planned for future releases!
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/checkout_2.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4063a3a28fd5927bf8f0745a79e0041f" alt="Checkout 2.0" data-og-width="2880" width="2880" data-og-height="1526" height="1526" data-path="images/changelog/checkout_2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/checkout_2.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=30ce5613aee183143fcacc03c3c4a69a 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/checkout_2.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d9723b6b43b795ae5c16cfbbb430e4c0 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/checkout_2.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=975c7709458b878931346abe110f4469 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/checkout_2.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=322c01181c23e3ec073d57c5bf3065c0 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/checkout_2.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c44e347309019c566a2e06f1058a233d 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/checkout_2.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=582fdac1e7133b3ee657b610e88c860a 2500w" />
+    <img alt="Checkout 2.0" />
   </Frame>
 
 * **Configurable Payment Methods**: New `allowed_payment_methods` configuration enables merchants to customize available payment options during checkout. See the [Allowed Payment Methods](/features/payment-methods#configuring-payment-methods) documentation for implementation details.
@@ -39532,19 +43029,19 @@ Introduced address autofill for checkout page, notifications center, payment lin
 * **Address Autofill**: Streamlined checkout process with smart address field auto-completion based on user input.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/address_autofill.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=38c88e7b2cd0be2bf036185971aa89db" alt="Address Autofill" data-og-width="520" width="520" data-og-height="420" height="420" data-path="images/changelog/address_autofill.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/address_autofill.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c730879635ce51ca551fb24965c9f62c 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/address_autofill.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=03f23f5c7cfcec6019c6345f6077a69a 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/address_autofill.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=7c661f884f2873f11db1b4885680b73a 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/address_autofill.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=568635be6148e40d3ba565a9bbdc4478 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/address_autofill.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e2b1ee818ef8b05028baa3347b6c8477 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/address_autofill.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=3819dd22e176acccd4c4cd116486de5c 2500w" />
+    <img alt="Address Autofill" />
   </Frame>
 
 * **Notifications Center**: Stay informed with a new dedicated notifications tab for important system events and updates.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notifications.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=30899563de5b544ef033b9d11291eef7" alt="Notifications" data-og-width="499" width="499" data-og-height="377" height="377" data-path="images/changelog/notifications.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notifications.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=2a35e21be292c0b06c3c0df0675da0ec 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notifications.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=1474aab8c78e3c6fd8aa5494422becf7 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notifications.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=9fac167ee05060b5121b42935d2ab295 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notifications.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b0d947e93542785c50413cb34d11d3d3 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notifications.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=7971913c2f93600ce9594d36cfb69c76 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notifications.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=70fd8ac196f0cfbb4dc9642805d62c81 2500w" />
+    <img alt="Notifications" />
   </Frame>
 
 * **Payment Link Query Builder**: Create and customize payment links more efficiently with our new visual query builder.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/query_selector.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=30a264a5c968c6daccd219b8ce7889da" alt="Query Builder" data-og-width="559" width="559" data-og-height="715" height="715" data-path="images/changelog/query_selector.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/query_selector.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=83f986b67db035cbefd5048c1d5b5565 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/query_selector.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ac136b6779d9de4319785a0bf499b0e0 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/query_selector.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=df28a6d3a3141dcd2bc1d90a6db70482 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/query_selector.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4fb88d2f1e68022d78b6da60e3f5d5f1 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/query_selector.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=2e18d07055718c850653955bfca777f9 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/query_selector.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b4d40b2a0edfdfdf68a57c6c85346288 2500w" />
+    <img alt="Query Builder" />
   </Frame>
 
 * **Saved Payment Methods**: Enable display of previously used payment methods during checkout by setting `show_saved_payment_methods: true` in payment link configuration.
@@ -39571,7 +43068,7 @@ New features including Adaptive Currency Support, MCP Server for AI integration,
     * **Europe**: ALL (Albanian Lek), CHF (Swiss Franc), CZK (Czech Koruna), DKK (Danish Krone), EUR (Euro), GBP (British Pound), HUF (Hungarian Forint), NOK (Norwegian Krone), PLN (Polish Zloty), RON (Romanian Leu), RSD (Serbian Dinar), SEK (Swedish Krona), TRY (Turkish Lira)
     * **Americas**: BRL (Brazilian Real), CAD (Canadian Dollar), MXN (Mexican Peso)
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/adaptive_currency.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f4b508425a8b53676acb0f649128f67c" alt="Adaptive Currency" data-og-width="1299" width="1299" data-og-height="755" height="755" data-path="images/changelog/adaptive_currency.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/adaptive_currency.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e0d2c51618942499a4080cc9aed93a42 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/adaptive_currency.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=97d53bbe84c59b058658c5f4590f3121 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/adaptive_currency.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c826b542a84312db6a0eb184ee9e8836 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/adaptive_currency.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=67aad92fa4c774c857f37a25d61fdc3e 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/adaptive_currency.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d1eb9dd2cc34a2da24fee64a057fc89c 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/adaptive_currency.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=77204e67d03e4253de1e72f1b638c239 2500w" />
+      <img alt="Adaptive Currency" />
     </Frame>
 
 * **[Dodo Payments MCP Server](/developer-resources/mcp-server)** 🤖
@@ -39611,7 +43108,7 @@ Introduced new European payment methods, subscription billing address updates, a
   * **EPS** - Austria
 
   <Frame>
-    <img alt="Supported European Payment Methods" src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/transactions/payments/european.png?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=92fbac3f89e32e1d6f600c3693994853" data-og-width="812" width="812" data-og-height="637" height="637" data-path="images/transactions/payments/european.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/transactions/payments/european.png?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d20c57aed2953f030f56bfe2568427be 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/transactions/payments/european.png?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=99433a364e8f9eba8166151c94d218fd 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/transactions/payments/european.png?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=19e9b8d66d98f07391a64066f6400baa 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/transactions/payments/european.png?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6dc1e50824a043003efc9c0b8e7dcaa2 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/transactions/payments/european.png?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=90c20dd20d4f20f1e48ebc4727f88fb1 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/transactions/payments/european.png?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ee7bc82953c50e1c59471276dd3bd065 2500w" />
+    <img alt="Supported European Payment Methods" />
   </Frame>
 
   <Note>
@@ -39638,7 +43135,7 @@ Introduced modern verification forms, new Java and Kotlin SDKs, Afterpay/Clearpa
 * **Modern Verification Forms**: Redesigned the verification forms with a modern, user-friendly interface featuring clearer instructions, improved visual hierarchy, and intuitive form fields for a smoother verification process.
 
   <Frame>
-    <img alt="Verification Forms" src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/verification_forms.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c6f12cdaefe75871904f727720e281ed" data-og-width="2876" width="2876" data-og-height="1526" height="1526" data-path="images/changelog/verification_forms.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/verification_forms.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=55c145585aa86edf0c9602cb510d434b 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/verification_forms.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=a17140d8bb4ed0e2549a1ebd8f83ae4a 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/verification_forms.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4795e0bf8d08950ddd047a061c5c45a3 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/verification_forms.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4668e150fa656ce7db9500e6c498c09e 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/verification_forms.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e7772fb300c902e617953e7b4f69b902 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/verification_forms.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ba1584c0a305bd433083e61c4da8a8a4 2500w" />
+    <img alt="Verification Forms" />
   </Frame>
 
 * **New Java and Kotlin SDKs**: Released native SDKs for Java and Kotlin to support Android development and enterprise Java applications. The SDKs include comprehensive documentation, sample code, and full support for Dodo Payments features including payments, subscriptions, and refunds. Available on GitHub: [Java SDK](https://github.com/dodopayments/dodopayments-java) and [Kotlin SDK](https://github.com/dodopayments/dodopayments-kotlin).
@@ -39660,13 +43157,13 @@ Introduced Subscription Plan Change API, enhanced onboarding guidance, notificat
 * **Enhanced Onboarding Guidance**: Improved sidebar nudges to provide clearer direction on next steps in your Dodo Payments onboarding journey.
 
   <Frame>
-    <img alt="Sidebar Nudges" src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/sidebar-nudges.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=00139da5a94b552d9bc3a3a541f7e0ae" data-og-width="258" width="258" data-og-height="404" height="404" data-path="images/changelog/sidebar-nudges.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/sidebar-nudges.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=dddd1f231a48fb9ac05f415fed4169e9 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/sidebar-nudges.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d208fbafa594e6284ed446b58b814b22 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/sidebar-nudges.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c2b1b5cec120d1a0142f8edbcc4be743 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/sidebar-nudges.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=801dd38f9dbd840b4af1623af02fe826 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/sidebar-nudges.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=8771a28e627d36f23ad9dc61a29ee80d 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/sidebar-nudges.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=0fc72102b4f3599a16b4061c2c821494 2500w" />
+    <img alt="Sidebar Nudges" />
   </Frame>
 
 * **Notification Preferences Center**: Added a dedicated section for managing your notification settings. Access it by clicking the bell icon in the top right corner and then selecting the settings icon.
 
   <Frame>
-    <img alt="Notification Preferences" src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notif-pref.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4e2ee3e8191240b3d85c16f085da305a" data-og-width="429" width="429" data-og-height="630" height="630" data-path="images/changelog/notif-pref.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notif-pref.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c6f8da94b3f1685c5327e8342ddff317 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notif-pref.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d2e08437440ce082c9cfc6665656c01c 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notif-pref.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=485db222aaae01c56330334f13be6c50 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notif-pref.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=870651fbb89c08532e744fd73cb2b9da 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notif-pref.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e089baf40492a484694d20f4b9f853e9 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/notif-pref.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=cc864a4af9afbe72d283f6265b8e29ab 2500w" />
+    <img alt="Notification Preferences" />
   </Frame>
 
 * **Enhanced Adaptive Currency Information**: Added new fields to the payment response including `settlement_amount`, `settlement_currency`, and `settlement_tax` to provide greater transparency on settlement details.
@@ -39692,7 +43189,7 @@ Added support for addons to subscriptions, made dispute handling more robust, an
   With addons, you unlock new billing options such as seat-based billing or variable billing per customer. Get creative with addons to design flexible billing models for your business.
 
   <Frame>
-    <img alt="Addons" src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/addons.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=3fcedea1815e098defa21fb530880b29" data-og-width="2670" width="2670" data-og-height="1466" height="1466" data-path="images/changelog/addons.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/addons.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=3c7d1978c3fb83095f3a042e977160c7 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/addons.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=a63175db4b390a0a2d8d4d49bf07ba61 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/addons.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=3f7b0caf291d9eaceb87a8ec02456e31 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/addons.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=0218bc11251f4ec8ebaf512e8c3c0200 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/addons.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4d6a73a21e2074f6af9b43a5cefa760a 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/addons.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=2a07d7f5beda3090a4907882ec66734b 2500w" />
+    <img alt="Addons" />
   </Frame>
 
 * **Enhanced Dispute Management**: Improved dispute handling to be more robust and easier to manage through your Dodo Payments dashboard.
@@ -39718,7 +43215,7 @@ Added unified search to the dashboard, added support for upgrading and downgradi
   * **Navigation**: All pages within the Dodo Payments dashboard
 
   <Frame>
-    <img alt="Unified Dashboard Search" src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/search.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b15b7695b4bbb43ae03f88c10e2e4ec2" data-og-width="1820" width="1820" data-og-height="1024" height="1024" data-path="images/changelog/search.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/search.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ee914e8b67888f2a4f20cf4095f92119 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/search.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=aab3c83bb31a7147490e14d789707a19 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/search.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=0019c28a8cca55a04873fc0ec0460663 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/search.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d79f6f3232e7b2af0c9f7507eb24b01e 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/search.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f59fbf569588ed04c08c47e785a8e365 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/search.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=2de18f183b2b0be90da4717cb0e58935 2500w" />
+    <img alt="Unified Dashboard Search" />
   </Frame>
 
 * **Addons Plan Changes**: Added support for upgrading and downgrading subscriptions that include addons.
@@ -39748,7 +43245,7 @@ Introduced Overlay Checkout Beta, a modern TypeScript library for embedded payme
   * **PCI Compliance**: Maintains security standards while providing an embedded experience
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=15d90c695e92914a9d54b10509d6fe47" alt="Overlay Checkout Cover Image" data-og-width="3826" width="3826" data-og-height="2160" height="2160" data-path="images/cover-images/overlay-checkout.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=67930ac9b97b42692611ffaa063b0338 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=5bc275c0c82994faf7507699f3443cda 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=d85ff73e834510f856f521d74e8d9ecd 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=2fadc48d6b3d40665366b1922e458ca3 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=0f552d1695faa8239eec542a0b1eeefe 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/cover-images/overlay-checkout.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=3e25457d894290ee38da2f9319edb999 2500w" />
+    <img alt="Overlay Checkout Cover Image" />
   </Frame>
 
   Try it out:
@@ -39778,7 +43275,7 @@ Introduced Partial Refunds and Multi-Brand Support, enabling merchants to manage
 
 * **Partial Refunds**: We're excited to introduce our new Partial Refunds feature, now available through both our API and Dashboard. This powerful capability allows merchants to process precise refunds for specific components of a payment, whether it's a seat add-on or a portion of a subscription. The feature includes built-in validation to prevent errors and automatically generates refund receipts for your records.
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/partial_refunds.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=a531ee98c106bbaffd6887eef3be5043" alt="Partial Refunds Cover Image" data-og-width="2160" width="2160" data-og-height="2700" height="2700" data-path="images/changelog/partial_refunds.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/partial_refunds.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=acd1cf48cd7ecdda6b8c6a42d0998b16 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/partial_refunds.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=9ea5d867ae2e6ae0e79f90133b461de1 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/partial_refunds.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b1d56181c8b582e8e2636cc463d57a61 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/partial_refunds.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=eaa640d1bea7451689447a045225cba7 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/partial_refunds.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4e0824711e086d0100bb0badc74087ac 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/partial_refunds.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=5e63d8d8bf40a32a662e3d32e261a30d 2500w" />
+    <img alt="Partial Refunds Cover Image" />
   </Frame>
 
 * **Multi-Brand Support**: We're launching Multi-Brand Support, enabling you to manage multiple brands and websites under a single verified business account. This feature is ideal for launching new product lines, creating regional microsites, or separating different offerings while maintaining a streamlined operation.
@@ -39792,7 +43289,7 @@ Introduced Partial Refunds and Multi-Brand Support, enabling merchants to manage
   * **Simplified Payouts**: All revenue consolidates into your existing account without additional verification requirements
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/brands.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=952b5573270b13ce7741c06b402d917c" alt="Multi-Brand Cover Image" data-og-width="1658" width="1658" data-og-height="286" height="286" data-path="images/changelog/brands.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/brands.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=37f97656b313ded99936c7a99d375d94 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/brands.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c6ce066c1b1dbdbdc1c78c9a54e50a1d 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/brands.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4765ffcae05e34c3ac5aed568e83984d 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/brands.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=98360fd5174549a080e3b8561a829742 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/brands.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=fa245d74c4e3c0d8562e1aa2ec149e6b 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/brands.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=fb10778dca430def542188d56b44c9c2 2500w" />
+    <img alt="Multi-Brand Cover Image" />
   </Frame>
 
   To create additional brands, navigate to Business `Settings ▸ Brands ▸ Add Brand` and complete the required details.
@@ -39810,13 +43307,13 @@ Introduced the Teams Feature, enhanced success/failure screens, and minor improv
 * **Teams Feature**: We have introduced the highly requested Teams Feature. Now, you can invite `Editors` and `Viewers` to your Business and collaborate with them seamlessly. To try it out, navigate to the `Business > Teams` section in the Dashboard.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/teams.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=03367b197b04ed402c7f8c095a504d96" alt="Teams Feature" data-og-width="2880" width="2880" data-og-height="2160" height="2160" data-path="images/changelog/teams.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/teams.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=7f957d91da32277f0f845cd353596b71 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/teams.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e62ce562620ed1580826f55f03c4fddb 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/teams.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=9f203047e0d89b4f09ea35809fc9a27e 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/teams.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ccfd93b2c65feed143901bcadf41bf3d 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/teams.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=5236715a0a59ec6993df90389eeb77b5 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/teams.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=08adb54e4737d258ffd672fa63775e82 2500w" />
+    <img alt="Teams Feature" />
   </Frame>
 
 * **Enhanced Success/Failure Screens**: The default success and failure screens have been updated for cases where no `redirect_url` is provided. These screens now offer greater visibility to your customers and include an option to download the invoice.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/new_success.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=14204862819a41e8022889bc2979b6c3" alt="Success Screens" data-og-width="2880" width="2880" data-og-height="2160" height="2160" data-path="images/changelog/new_success.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/new_success.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=0490dcd926955cff7f8486fb870db900 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/new_success.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=12f531e5b71ef2e083da58e22ee91548 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/new_success.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=875381eebe516ff9005d1a033328bff5 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/new_success.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=7a2f793ce18c5c955fdcb9c3a5d5f140 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/new_success.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=890fb442aa9421db6405cd623ca50913 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/new_success.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=35784d0d64d7d9cc8f9682ec63c80cfd 2500w" />
+    <img alt="Success Screens" />
   </Frame>
 
 * **Others**: Minor improvements and bug fixes.
@@ -39834,7 +43331,7 @@ Added support for $0 payments and 100% discount codes for one-time products, ena
 * **Custom Payout Threshold**: Added the ability to set minimum payout amounts for USD wallets, helping merchants optimize payout processing and reduce fees for small transactions. Access this feature at `Payouts ▸ USD Wallet ▸ Edit Payout Threshold`.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payout-threshold.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ccb6067a9ea18460ef86fc07dfd6e025" alt="Payout Threshold Cover Image" data-og-width="576" width="576" data-og-height="392" height="392" data-path="images/changelog/payout-threshold.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payout-threshold.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4ca70468aa3dcb2d42d6ec3e6c06b9aa 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payout-threshold.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b67b5144b31cab80874f4e7d20c14ab4 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payout-threshold.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=937e590ec065d6d943bd0a87edcba602 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payout-threshold.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e73337d5a0621875b04290ea0639189d 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payout-threshold.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=00b3c4c9d3d1e6fdbde658d07e855d49 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payout-threshold.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=5ccef2965b7c8489c5d7ef1634144326 2500w" />
+    <img alt="Payout Threshold Cover Image" />
   </Frame>
 
 * **API Standardization**: Implemented standardized API error codes and messages as part of our ongoing API improvement initiative. This enhancement makes the API more consistent and developer-friendly. For detailed information, visit our [Error Codes Documentation](/api-reference/error-codes).
@@ -39851,7 +43348,7 @@ Added support for Affiliates with Affonso, multiple webhook support, enhanced fr
 
 * **Affiliate Program Integration**: Launched integration with Affonso, enabling you to create and manage affiliate programs directly through Dodo Payments. Track referrals, handle commissions, and grow your revenue with trusted affiliate partnerships. Learn more in our [Affiliates](/features/affiliates) documentation.
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/affiliates/cover.jpeg?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=2e4e00b705db69e247d30dbff15dcb3d" alt="Affiliates Cover Image" data-og-width="2160" width="2160" data-og-height="2160" height="2160" data-path="images/affiliates/cover.jpeg" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/affiliates/cover.jpeg?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d97a1dc534abf059751d7027cc6a314f 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/affiliates/cover.jpeg?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b6ed22417b457dede9700e0fea38ab43 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/affiliates/cover.jpeg?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=fb4de4297ad1a762107767cc8a360537 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/affiliates/cover.jpeg?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=3f70e5848e754fb1ff5a7b142ac74959 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/affiliates/cover.jpeg?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=779595cc8791889d2fede05721e8847a 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/affiliates/cover.jpeg?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c7266e21d65a556be3a2d8d68935f40d 2500w" />
+    <img alt="Affiliates Cover Image" />
   </Frame>
 
 * **Multiple Webhook Support**: Enhanced webhook capabilities to support multiple endpoints, allowing you to send event notifications to different systems simultaneously.
@@ -39875,13 +43372,13 @@ Added Digital Product Delivery, React Native SDK beta release, new proration mod
 * **Digital Product Delivery**: Streamlined digital product delivery system with automated fulfillment, ensuring customers receive their digital goods immediately after successful payment. Learn more in our [Digital Product Delivery](/features/digital-product-delivery) documentation.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=cef4c6587998b8b7ee00bfb314002571" alt="Digital product delivery configuration interface showing file upload and external link options" data-og-width="1920" width="1920" data-og-height="1080" height="1080" data-path="images/digital-product-delivery/1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=280&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=9d7e8424e5ac1a17955e949d87b57d12 280w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=560&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=f03ce39ea2bd6dac97eae3e52e6ac8e1 560w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=840&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=b4dc8e83004c799bf8020a14b883cc23 840w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=1100&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=d53bb0617e0f7ce4b860281d56bd6753 1100w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=1650&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=e4c5131d3b8504c5e7c4a547daf64db9 1650w, https://mintcdn.com/dodopayments/mOQO5ej_lx0yH9p-/images/digital-product-delivery/1.png?w=2500&fit=max&auto=format&n=mOQO5ej_lx0yH9p-&q=85&s=1847ee99a10d2936cfcbfbc772d5f3b8 2500w" />
+    <img alt="Digital product delivery configuration interface showing file upload and external link options" />
   </Frame>
 
 * **React Native SDK (Beta)**: Released our React Native SDK in beta, enabling secure payment processing in native Android and iOS apps with customizable UI components and screens. Learn more in our [React Native SDK](/developer-resources/react-native-integration) documentation.
 
   <Frame>
-    <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/uy4vikrKMPI" title="React Native SDK Demo | Dodo Payments" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+    <iframe title="React Native SDK Demo | Dodo Payments" />
   </Frame>
 
 * **New Proration Mode**: Introduced `full_immediately` proration mode, allowing immediate full charges when subscription changes occur, providing more flexible billing options for your business needs.
@@ -39917,7 +43414,7 @@ Enhanced Dashboard Analytics with comprehensive new metrics across three key das
     * Revenue growth rate analysis
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f1e965377d8809d7e834fe81ebe43cb2" alt="Revenue Analytics dashboard showing comprehensive revenue metrics and country breakdown" data-og-width="2864" width="2864" data-og-height="1524" height="1524" data-path="images/analytics/revenue.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=cf27459d910bc62a4693cebf0bb2564b 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=323fd92817805702c8ad92e9be715067 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=14dcc78df5931fb3bd507a9ef44d232e 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=9ace32e3162076e6d2a386a956f543c8 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=03f55a9c3098c26966b8df60ec53f6b5 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=5089ad40a89005510d0a4a3d1063b77a 2500w" />
+      <img alt="Revenue Analytics dashboard showing comprehensive revenue metrics and country breakdown" />
     </Frame>
 
   * **Customer Analytics**
@@ -39928,7 +43425,7 @@ Enhanced Dashboard Analytics with comprehensive new metrics across three key das
     * Top 6 customers for current month
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=311b8a18deb3967aeaf0eac17c5376c9" alt="Customer Analytics dashboard displaying ARPU, customer counts, and top customer rankings" data-og-width="2876" width="2876" data-og-height="1514" height="1514" data-path="images/analytics/customer.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=1e162441cf113bf93d8ca78a39433171 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ae4e587045ba252ef6ea519fa296bb09 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=5d8cb7aa46f1b8856e41e058ebb7d58c 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=40acce18418619d9c360ab4b3c2c815b 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=037ea83cb0bc623402c42d3a2bb073e5 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/customer.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=9c29003f21e6033c9aafb0da8a2d1953 2500w" />
+      <img alt="Customer Analytics dashboard displaying ARPU, customer counts, and top customer rankings" />
     </Frame>
 
   * **Payment Success Rate Analytics**
@@ -39940,7 +43437,7 @@ Enhanced Dashboard Analytics with comprehensive new metrics across three key das
     * Monthly Success Rate trends
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c266504fe6db71cd0641f4b26b527ec5" alt="Payment Success Rate Analytics showing success rates, failure reasons, and monthly trends" data-og-width="2878" width="2878" data-og-height="1514" height="1514" data-path="images/analytics/success-rate.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f3f834e7ef8a44c1ed319c1451dc11cf 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=073f1cbc78ff696da7225dcd00806303 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b4e79ad7f5013431c365782ea4825e1f 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e261e0b34601958b877365be9d19987a 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=fc2c6d93b1a7a87d7d028d55e17f1f8c 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/success-rate.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e7728c47881384aec4ae5ca83896bc92 2500w" />
+      <img alt="Payment Success Rate Analytics showing success rates, failure reasons, and monthly trends" />
     </Frame>
 
 
@@ -39967,7 +43464,7 @@ Track your recurring revenue metrics with detailed breakdowns:
 * **Net New MRR Chart**: Net revenue impact combining new, expansion, and churn MRR
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=66d1c0d64e6a69e6e7f22ac26c89bed7" alt="Revenue Breakdown dashboard showing projected ARR, MRR breakdown, and growth rates" data-og-width="1267" width="1267" data-og-height="867" height="867" data-path="images/analytics/revenue-breakdown.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=657e48bcc7a359b18d62254d285881db 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=398191fbd09fa41d6db2ae7eacf265e6 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=130b488adf15fc23a3a4aa7b8ea00a4a 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=4a933e5fb3358463cba962d493d1914b 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c4715fce0f87f42445a95bdb99fc43e3 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/revenue-breakdown.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=cffeec7feb2d1d72fc59a8c30b580560 2500w" />
+  <img alt="Revenue Breakdown dashboard showing projected ARR, MRR breakdown, and growth rates" />
 </Frame>
 
 #### Retention Analytics
@@ -39980,7 +43477,7 @@ Monitor customer retention and churn patterns:
 * **User Retention Matrix**: Cohort analysis showing customer retention rates across different time periods
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=daf77496683051cfd59db89c679fadea" alt="Retention Analytics dashboard showing customer churn rate, revenue churn rate, and churn rate trends" data-og-width="1299" width="1299" data-og-height="870" height="870" data-path="images/analytics/retention.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=342744274649b984cf7ab8a352654c1e 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=fcfd28314568d29759c87ac317252e6b 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=ec74eb579b916e30cc80cf8537d0f052 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=17fcb7d02c5d24cf2826f6e19b9e1169 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b4d0ec16eb37e244d0da006244ab43ca 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/retention.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=83251fbee51fb373d71c4c6d5d5a7fc7 2500w" />
+  <img alt="Retention Analytics dashboard showing customer churn rate, revenue churn rate, and churn rate trends" />
 </Frame>
 
 ### Reports 2.0
@@ -39999,7 +43496,7 @@ Available reports include:
 * **Account Summary Report**: Complete account overview and summary
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b2f16ff3401205461e70bb672c2e0dd1" alt="Reports 2.0 dashboard showing various report types" data-og-width="1481" width="1481" data-og-height="783" height="783" data-path="images/analytics/reports.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=65e53ee9f7e464ba4296594cafbbbc23 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=3f023812276906ef4b61e0ba2e52789f 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=35eec5370bd7a2bc080a814c63a56077 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d0663e86dbd90c064df91d4b8ea792de 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=1c7707cd6f5f9152bce3ef4e2a7b4941 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/reports.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=668935b4b6a7166c985987455c7f066f 2500w" />
+  <img alt="Reports 2.0 dashboard showing various report types" />
 </Frame>
 
 ### Enhanced Payout Reporting
@@ -40007,7 +43504,7 @@ Available reports include:
 We've added detailed payout reports that provide clear visibility into fees and transaction details for each payout you receive from Dodo Payments. Access these enhanced reports in **Business > Payouts**.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e387ce347733bec1d1b57acdfbd1a6f2" alt="Payout Report dashboard showing detailed payout information" data-og-width="1058" width="1058" data-og-height="887" height="887" data-path="images/analytics/payout.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=851c36ae8dea33bac1fd2a28a277023b 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=76147da0d45b73f0b1c4a95ce603111a 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c130960bfcb92db470250ba11aa30311 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=6ee89bcdd13626568dc336eff7030992 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b048480e9da98d644f1f6c691e74dda5 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/analytics/payout.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=59dc534307e199d8303dc07866d86cee 2500w" />
+  <img alt="Payout Report dashboard showing detailed payout information" />
 </Frame>
 
 ### Dodo Payments Remote MCP Server
@@ -40015,7 +43512,7 @@ We've added detailed payout reports that provide clear visibility into fees and 
 You can now use the hosted Remote MCP Server at [https://mcp.dodopayments.com](https://mcp.dodopayments.com) for instant MCP integration—no local setup required.
 
 <Frame>
-  <iframe className="w-full aspect-video rounded-md" src="https://www.youtube.com/embed/TxGgYxNmkT4" title="Using Dodo Payment's Remote MCP Server" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen />
+  <iframe title="Using Dodo Payment's Remote MCP Server" />
 </Frame>
 
 <Note>
@@ -40024,7 +43521,7 @@ You can now use the hosted Remote MCP Server at [https://mcp.dodopayments.com](h
 
 <Steps>
   <Step title="Open the Remote MCP Server">
-    Visit <a href="https://mcp.dodopayments.com" target="_blank">[https://mcp.dodopayments.com](https://mcp.dodopayments.com)</a> in your browser.
+    Visit <a href="https://mcp.dodopayments.com">[https://mcp.dodopayments.com](https://mcp.dodopayments.com)</a> in your browser.
   </Step>
 
   <Step title="Copy the MCP JSON configuration">
@@ -40038,7 +43535,7 @@ You can now use the hosted Remote MCP Server at [https://mcp.dodopayments.com](h
       For Cursor, your configuration should look like this:
     </Tip>
 
-    ```json  theme={null}
+    ```json theme={null}
     {
       "mcpServers": {
         "dodopayments_api": {
@@ -40088,7 +43585,7 @@ Analytics Chart Sharing, Multiple Partial Refunds, Cumulative Revenue Analytics,
 Share your analytics charts as images with customizable branding options. Click the share button on any chart to generate an image with multiple color variants that match your brand identity.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-chart.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f5784b40e204e5b97fc078409fda55e4" alt="Analytics chart sharing interface showing share button and color variant options" data-og-width="2014" width="2014" data-og-height="1502" height="1502" data-path="images/changelog/share-chart.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-chart.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=a8acf71eeb1f7adb2860b673f1a63555 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-chart.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=448f74c545f6204255ab550446522357 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-chart.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=a28476ddadfe09c6edca655499bbdce9 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-chart.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=5bf4415604fe81d2ed14b751171be51d 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-chart.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=edb81368989be6a8d5fc39f52b832e56 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/share-chart.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=2801a90c1ded48948e65587d67b5fc76 2500w" />
+  <img alt="Analytics chart sharing interface showing share button and color variant options" />
 </Frame>
 
 ### Multiple Partial Refunds
@@ -40100,7 +43597,7 @@ Process multiple partial refunds for a single payment through both the API and D
 Track your business growth with new cumulative revenue charts in the analytics dashboard, offering comprehensive insights into your revenue trends over time.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/revenue-chart.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=06e2bf426a2d8967ee975c02b75494b1" alt="Cumulative revenue charts displaying revenue growth trends" data-og-width="2358" width="2358" data-og-height="844" height="844" data-path="images/changelog/revenue-chart.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/revenue-chart.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=983ab203a7edcef2680d7f1aed8f767c 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/revenue-chart.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f8d3fd8ad097a791bb5c0535b4e44b88 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/revenue-chart.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=10c1c75de884810890b54be5f0886985 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/revenue-chart.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=362defcc790c493384acc209aa96879c 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/revenue-chart.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b75bb8a5c2fb2aeef5981a884c28b28c 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/revenue-chart.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c59e25e2141a3b1aa5dba1393c2c6bd0 2500w" />
+  <img alt="Cumulative revenue charts displaying revenue growth trends" />
 </Frame>
 
 ### Next.js Adapter
@@ -40124,7 +43621,7 @@ Introduced the Storefront Feature and Amazon Pay Integration.
 * **Storefront Feature**: Create a simple, branded, and mobile-friendly online store to showcase both One-Time Payment products and Subscription products. This feature eliminates the complexity of building an entire website, enabling you to quickly offer your products or services online without additional web development efforts.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=085dab26f05d5f0ea48cb31fd6e8e0f9" data-og-width="1920" width="1920" data-og-height="1440" height="1440" data-path="images/store-front/sf-1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=280&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=d11f6cfa8610c22bcc97e8ec400a637f 280w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=560&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=6ed970489b81e2bbff794bc911ce2271 560w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=840&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=98ff19e1d971ccd426c5e65ca3aba007 840w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=1100&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=958339f3a23d725df0911db75c84d630 1100w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=1650&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=9e178086e696e0363ea07829cd042d86 1650w, https://mintcdn.com/dodopayments/5D2vY2CKcFOZLLyz/images/store-front/sf-1.png?w=2500&fit=max&auto=format&n=5D2vY2CKcFOZLLyz&q=85&s=e33702a6f59ab155f083fd4902d58403 2500w" />
+    <img />
   </Frame>
 
 * **Amazon Pay Integration**: Added Amazon Pay as a payment method for One-Time Payments.
@@ -40219,14 +43716,14 @@ Dashboard UI overhaul, discount codes for subscriptions, expanded Adaptive Curre
   * **UI & Style Updates:** Refined colors, typography, and spacing deliver a cleaner, more consistent user experience.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/dashboard_enh.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f3fbd7ff94e5fa2b5a5b4490ca10f228" alt="Dashboard enhancements including new sidebar, search, and table controls" data-og-width="2876" width="2876" data-og-height="1570" height="1570" data-path="images/changelog/dashboard_enh.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/dashboard_enh.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=a594f975347588eb1f41521089ed51e4 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/dashboard_enh.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=3789a5e57c5438c328a0c9613fa8cccc 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/dashboard_enh.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=377937e7fc20fcb48a385628b698ec7b 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/dashboard_enh.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c1409b03c937ad2065f1aa40b43d6ea5 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/dashboard_enh.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=1dc948369d64f97409a31e795e7e283f 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/dashboard_enh.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=8d07bce81f68ba26ac759cf60574d736 2500w" />
+    <img alt="Dashboard enhancements including new sidebar, search, and table controls" />
   </Frame>
 
 * **Discount Codes for Subscriptions**\
   You can now apply discount codes to subscriptions, specifying the number of billing cycles the discount should apply. This gives you greater flexibility and control over your pricing strategies.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subs_discount.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=de087298f496ec45449b43aab9ff4f2d" alt="Applying discount codes to subscriptions in the dashboard" data-og-width="2632" width="2632" data-og-height="326" height="326" data-path="images/changelog/subs_discount.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subs_discount.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=6948b7c1653e8bca81b2f3c6a873ae92 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subs_discount.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=239c8a5f5f51ecc07f3a9c3c7bf75ebc 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subs_discount.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b8c47860cfc59a90b53322b360bae4e6 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subs_discount.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=21079781b4b649daa6dc632bcc3e7800 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subs_discount.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=0afdaa0da550c71156538ad73ac845ce 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subs_discount.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=332c46e64054f67af87a2068fc392b1e 2500w" />
+    <img alt="Applying discount codes to subscriptions in the dashboard" />
   </Frame>
 
 * **Adaptive Currency Expansion**\
@@ -40277,7 +43774,7 @@ Introducing our new **Checkout Sessions API** - a powerful, hosted checkout solu
 * **Now**: Pass whatever customer information you have available - we'll collect the rest during checkout
 * **Migration**: Simple API endpoint change with no additional handling required
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Get Started with Checkout Sessions" icon="rocket" href="/developer-resources/checkout-session">
     Complete guide with code examples in Node.js, Python, and REST API
   </Card>
@@ -40309,7 +43806,7 @@ Bill customers precisely based on actual consumption. Define meters, ingest even
 * **Product linkage**: attach meters to products with price-per-unit and optional free thresholds
 * **Analytics**: track trends, event streams, and per-customer consumption
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Feature Overview" icon="rocket" href="/features/usage-based-billing">
     Learn the concepts, components, and the end-to-end data flow.
   </Card>
@@ -40504,7 +44001,7 @@ EUR & GBP pricing full rollout, payment method management, metadata in customers
    * Attach metadata to customers for CRM integration and custom categorization
    * Store additional context on refunds for better tracking and reporting
    * Maintain consistency with other Dodo Payments objects that support metadata
-   Learn more: [Metadata Guide](/api-reference/metadata)
+     Learn more: [Metadata Guide](/api-reference/metadata)
 
 4. **Checkout Session Feature Flags for Customer Editing**\
    New feature flags in checkout sessions give you granular control over what customers can edit during checkout, improving flexibility and user experience.
@@ -40515,7 +44012,7 @@ EUR & GBP pricing full rollout, payment method management, metadata in customers
    * `allow_customer_editing_state`: Allow state/province editing
    * `allow_customer_editing_zipcode`: Enable postal code editing
    * `allow_customer_editing_country`: Permit country selection changes
-   These flags provide fine-grained control over the checkout experience, allowing you to customize which fields customers can modify based on your business requirements.
+     These flags provide fine-grained control over the checkout experience, allowing you to customize which fields customers can modify based on your business requirements.
 
 5. **Checkout License Key and File Indicators**\
    The checkout page now displays clear indicators when license keys or digital files are being purchased, improving transparency and customer confidence.
@@ -40570,7 +44067,7 @@ Subscription.updated webhook, minimal address checkout, read-only API keys, UPI 
 2. **Minimal Address Support in Checkout**
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/7dyPZdWH7JucnLrT/images/changelog/minimal-address.png?fit=max&auto=format&n=7dyPZdWH7JucnLrT&q=85&s=cd0e5d6f8c32e052c7ab93a88d841fb8" alt="Minimal Address Support in Checkout" data-og-width="1459" width="1459" data-og-height="817" height="817" data-path="images/changelog/minimal-address.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/7dyPZdWH7JucnLrT/images/changelog/minimal-address.png?w=280&fit=max&auto=format&n=7dyPZdWH7JucnLrT&q=85&s=a26b96965f203936e42a62ab3c34714d 280w, https://mintcdn.com/dodopayments/7dyPZdWH7JucnLrT/images/changelog/minimal-address.png?w=560&fit=max&auto=format&n=7dyPZdWH7JucnLrT&q=85&s=a561f34d0ccb6b7c358cd380b9ffd07e 560w, https://mintcdn.com/dodopayments/7dyPZdWH7JucnLrT/images/changelog/minimal-address.png?w=840&fit=max&auto=format&n=7dyPZdWH7JucnLrT&q=85&s=95076adf6b08f353bb99703c4e31f35e 840w, https://mintcdn.com/dodopayments/7dyPZdWH7JucnLrT/images/changelog/minimal-address.png?w=1100&fit=max&auto=format&n=7dyPZdWH7JucnLrT&q=85&s=026009f1c345c6aae2c34fef683ad9bf 1100w, https://mintcdn.com/dodopayments/7dyPZdWH7JucnLrT/images/changelog/minimal-address.png?w=1650&fit=max&auto=format&n=7dyPZdWH7JucnLrT&q=85&s=e7b7b342e6d8360f953d53e9e11b3138 1650w, https://mintcdn.com/dodopayments/7dyPZdWH7JucnLrT/images/changelog/minimal-address.png?w=2500&fit=max&auto=format&n=7dyPZdWH7JucnLrT&q=85&s=57a14d096d52662706b95fe6bb6a9e94 2500w" />
+     <img alt="Minimal Address Support in Checkout" />
    </Frame>
 
    Reduce checkout friction with the new minimal address collection mode. Instead of collecting full address details, minimal address mode only collects:
@@ -40586,7 +44083,7 @@ Subscription.updated webhook, minimal address checkout, read-only API keys, UPI 
 
    <Tabs>
      <Tab title="Checkout Sessions">
-       ```javascript  theme={null}
+       ```javascript theme={null}
        const session = await client.checkoutSessions.create({
          product_cart: [{ product_id: 'prod_123', quantity: 1 }],
          minimal_address: true
@@ -40641,7 +44138,7 @@ Subscription.updated webhook, minimal address checkout, read-only API keys, UPI 
 5. **Plan Change Preview API**\
    A new API endpoint to preview subscription plan changes before committing to them. Get the exact charge amount and see how the subscription will look after the change - without making any actual modifications.
 
-   ```javascript  theme={null}
+   ```javascript theme={null}
    const preview = await client.subscriptions.previewChangePlan('sub_123', {
      product_id: 'prod_pro_plan',
      proration_billing_mode: 'prorated_immediately',
@@ -40664,6 +44161,115 @@ Subscription.updated webhook, minimal address checkout, read-only API keys, UPI 
    This release includes UI polish, performance improvements, and resolves minor bugs for a more reliable, streamlined experience.
 
 
+# v1.67.0 (December 17, 2025)
+Source: https://docs.dodopayments.com/changelog/v1.67.0
+
+Mixed cart checkout for one-time and subscription products, Unified Customer Portal, invoice_id in Payment Response
+
+## New Features 🚀
+
+1. **Mixed Cart Checkout: One-Time and Subscription Products in a Single Cart**\
+   Checkout now supports combining both one-time payment products and subscription products in a single cart, unlocking powerful new billing use cases.
+
+   <Frame>
+     <img alt="Mixed checkout with one-time and subscription products" />
+   </Frame>
+
+   ### What This Enables
+
+   * **Setup fees + subscriptions**: Charge a one-time setup fee alongside a recurring subscription in a single checkout
+   * **Bundles with recurring components**: Sell a product (one-time) bundled with ongoing service access (subscription)
+   * **Course + membership combos**: Offer a course purchase with an optional community membership subscription
+   * **Lifetime + add-on subscriptions**: Combine lifetime product access with optional recurring premium features
+
+   ### How It Works
+
+   Simply add both one-time and subscription products to your checkout session:
+
+   ```javascript theme={null}
+   const session = await client.checkoutSessions.create({
+     product_cart: [
+       // One-time setup fee
+       { product_id: 'prod_setup_fee', quantity: 1 },
+       // Monthly subscription
+       { product_id: 'prod_monthly_plan', quantity: 1 }
+     ],
+     customer: {
+       email: 'customer@example.com',
+       name: 'Jane Doe'
+     },
+     return_url: 'https://yourapp.com/success'
+   });
+   ```
+
+   <Check>
+     Result: A single checkout flow that processes the one-time payment and initiates the subscription — reducing friction and increasing conversion rates.
+   </Check>
+
+   <Info>
+     When mixing product types, the one-time payment is charged immediately while the subscription follows its configured billing cycle (including any trial period you've set).
+   </Info>
+
+   Learn more: [Checkout Sessions](/developer-resources/checkout-session)
+
+2. **Unified Customer Portal**
+
+   A new centralized customer portal at [customer.dodopayments.com](https://customer.dodopayments.com) where customers can view and manage all their purchases and subscriptions across different businesses on Dodo Payments.
+
+   <Frame>
+     <img alt="Unified Customer Portal" />
+   </Frame>
+
+   ### Portal Features
+
+   * **Cross-business visibility**: View all purchases and subscriptions from any business using Dodo Payments in one place
+   * **Centralized subscription management**: Manage subscriptions across different merchants from a single dashboard
+   * **Unified billing history**: Access invoices and payment history from all your purchases
+   * **Single sign-on experience**: Log in once with your email to access purchases from all Dodo Payments merchants
+
+   ### How It Works
+
+   Customers simply visit [customer.dodopayments.com](https://customer.dodopayments.com) and enter their email address. They'll receive a secure login link that grants access to all their purchases across the Dodo Payments ecosystem.
+
+   <Tip>
+     The Unified Customer Portal complements business-specific customer portals. Customers can still access individual merchant portals for a branded experience, or use the unified portal for a consolidated view.
+   </Tip>
+
+   <Note>
+     The unified portal uses the same email-based authentication as business-specific portals, ensuring a consistent and secure experience.
+   </Note>
+
+3. **Invoice ID in Payment Response**\
+   The Payment response now includes an `invoice_id` field, making it easier to reconcile payments with invoices and integrate with accounting systems.
+
+   ```json theme={null}
+   {
+     "payment_id": "pay_2IjeQm4hqU6RA4Z4kwDee",
+     "status": "succeeded",
+     "invoice_id": "inv_2IsUnWGtRKFLxk7xAQeyt",
+     "amount": 9900,
+     "currency": "USD",
+     // ... other fields
+   }
+   ```
+
+   ### Use Cases
+
+   * **Accounting integration**: Directly link payments to invoices in your accounting software
+   * **Customer support**: Quickly find the invoice associated with a payment when handling support requests
+   * **Reconciliation**: Simplify financial reconciliation by matching payments to invoices programmatically
+   * **Compliance**: Maintain accurate records linking payments to their corresponding tax invoices
+
+   <Info>
+     The `invoice_id` field uses India-specific invoice IDs when available, ensuring compliance with local invoicing requirements.
+   </Info>
+
+   Learn more: [Get Payment Detail API](/api-reference/payments/get-payments-1)
+
+4. **General Bug Fixes and Enhancements**\
+   This release includes performance improvements, UI polish, and resolves minor bugs for a more reliable, streamlined experience.
+
+
 # v1.7.0 (14 March 2025)
 Source: https://docs.dodopayments.com/changelog/v1.7.0
 
@@ -40674,19 +44280,19 @@ Introduced a dedicated subscriptions page, enhanced customer details, detailed p
 * **Dedicated Subscriptions Page**: Manage customer subscriptions easily with the new dedicated page. Navigate to `Sales > Subscriptions` on the dashboard.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subscriptions.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=bb22b69d22c541760cc870ff31ae150b" alt="Subscriptions Page" data-og-width="1440" width="1440" data-og-height="1080" height="1080" data-path="images/changelog/subscriptions.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subscriptions.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=aa58a81a70a228b9090d2fe28912576a 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subscriptions.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=6a2e4e91be541822029ef6ed7bfb6eda 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subscriptions.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=fe5206bfa5ec409fba55ed6495bb0dd0 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subscriptions.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=155f8073fecf139d40f1f194fdac9ced 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subscriptions.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=8cc8004065935cf5ed32cbd0b3f89e98 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/subscriptions.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=b219b619d1b4e5cf60c4e262852ee895 2500w" />
+    <img alt="Subscriptions Page" />
   </Frame>
 
 * **Enhanced Customer Details**: View subscriptions, payments, and refunds for each customer in one place. Go to `Sales > Customers > arrow icon` on the dashboard.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/customer_info.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=437fa8a0af8f5ca09596c23bcf1e74ed" alt="Customer Details" data-og-width="1440" width="1440" data-og-height="1080" height="1080" data-path="images/changelog/customer_info.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/customer_info.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=f3af6680e09eb9d9bb15b7458a53b018 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/customer_info.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=e313a21aceaf7e8382ecfa5a8089bec9 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/customer_info.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=76f5b33844fdade160a9c1646c1fae14 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/customer_info.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=d31048c44cfa3ecbb3a3edd1bdbb52f4 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/customer_info.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=da3c608295cbe1e980531721e4dc68a1 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/customer_info.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=72b882c8df168ba0738372b7fac7a606 2500w" />
+    <img alt="Customer Details" />
   </Frame>
 
 * **Detailed Payout Information**: Get more insights on payout amounts, cycles, and dates. Visit `Business > Payouts` on the dashboard.
 
   <Frame>
-    <img src="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payouts_update.png?fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=893c057abe031445eb69f16c62b83624" alt="Payout Information" data-og-width="1440" width="1440" data-og-height="1080" height="1080" data-path="images/changelog/payouts_update.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payouts_update.png?w=280&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=834f0162eb1d0f0c2f6ec10c9238ae4d 280w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payouts_update.png?w=560&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=8d704f21fa0899c259fc48d15b95f971 560w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payouts_update.png?w=840&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=bbc325f148b53b1f0a4abbaf735b2e2e 840w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payouts_update.png?w=1100&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=3c1d52be987ff89766c91f034f8c6dc3 1100w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payouts_update.png?w=1650&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=01dd412de70635cf0992f4332881b36e 1650w, https://mintcdn.com/dodopayments/r426DlzEVUSPZlYb/images/changelog/payouts_update.png?w=2500&fit=max&auto=format&n=r426DlzEVUSPZlYb&q=85&s=c819464d071bca09351ba85ae41abda9 2500w" />
+    <img alt="Payout Information" />
   </Frame>
 
 * **Official Ruby SDK**: Integrate Dodo Payments into your Ruby applications effortlessly. Check out the [Ruby SDK](https://github.com/dodopayments/dodopayments-ruby) for more details.
@@ -40694,6 +44300,304 @@ Introduced a dedicated subscriptions page, enhanced customer details, detailed p
 * **Enhanced API Filters**: Added filters like `customer_id`, `status`, etc., to relevant list APIs. Refer to the API documentation for more information.
 
 * **Minor Improvements and Bug Fixes**: Various other minor improvements and bug fixes have been implemented.
+
+
+# v1.70.0 (December 24, 2025)
+Source: https://docs.dodopayments.com/changelog/v1.70.0
+
+Inline checkout support, use existing payment methods for instant checkouts, manage subscription plans from dashboard, generate short payment links, skip success pages with redirect_immediately, and enable on-demand subscriptions for all businesses
+
+## New Features 🚀
+
+1. **Inline Checkout - Fully Embedded Checkout Experiences (BETA)**
+
+   Embed Dodo Payments checkout directly into your website for a seamless, branded payment experience. Unlike overlay checkout which opens as a modal, inline checkout embeds the payment form directly into your page layout.
+
+   <Frame>
+     <img alt="Inline Checkout Cover Image" />
+   </Frame>
+
+   ### Benefits
+
+   * **Fully integrated**: Create checkout experiences that blend seamlessly with your website
+   * **Custom order summaries**: Build custom UI that syncs with checkout in real-time
+   * **Maximum control**: Full control over checkout layout and design
+   * **PCI compliant**: Dodo Payments securely handles all sensitive payment information
+   * **Real-time sync**: Use SDK events to keep your UI in sync with checkout state
+
+   ### How It Works
+
+   Initialize the SDK with `displayType: 'inline'` and embed checkout in a container element:
+
+   ```typescript theme={null}
+   import { DodoPayments } from "dodopayments-checkout";
+
+   // Initialize the SDK for inline mode
+   DodoPayments.Initialize({
+     mode: "test",
+     displayType: "inline",
+     onEvent: (event) => {
+       if (event.event_type === "checkout.breakdown") {
+         // Update your UI with real-time tax and total calculations
+         const breakdown = event.data?.message;
+       }
+     },
+   });
+
+   // Open checkout in a specific container
+   DodoPayments.Checkout.open({
+     checkoutUrl: "https://test.dodopayments.com/session/cks_123",
+     elementId: "dodo-inline-checkout" // ID of the container element
+   });
+   ```
+
+   ### Key Features
+
+   * **Real-time breakdown events**: Receive `checkout.breakdown` events as customers enter their details
+   * **Custom order summaries**: Build your own pricing display that updates in real-time
+   * **Seamless integration**: Checkout frame handles payment collection while you control the layout
+   * **SDK methods**: Use `open()`, `close()`, and `isOpen()` to control checkout programmatically
+
+   <Check>
+     Result: Fully integrated checkout experiences that match your brand and provide maximum control over the payment flow.
+   </Check>
+
+   <Tip>
+     Use inline checkout when you want maximum control over checkout design. Use [overlay checkout](/developer-resources/overlay-checkout) for faster integration with minimal changes to existing pages.
+   </Tip>
+
+   Learn more: [Inline Checkout Guide](/developer-resources/inline-checkout)
+
+2. **Create Payments, Subscriptions, and Checkouts Using Existing Payment Methods**\
+   Streamline checkout flows by using saved payment methods from existing customers. The new `payment_method_id` parameter allows you to create payments, subscriptions, or checkout sessions using a customer's previously saved payment method.
+
+   ### Benefits
+
+   * **Faster checkout**: Skip payment method collection for returning customers
+   * **One-click purchases**: Enable instant purchases with saved payment methods
+   * **Subscription management**: Easily create subscriptions using existing payment methods
+   * **Improved conversion**: Reduce checkout friction for repeat customers
+
+   ### How It Works
+
+   Use `payment_method_id` when creating checkout sessions, payments, or subscriptions:
+
+   <Tabs>
+     <Tab title="Checkout Sessions">
+       ```javascript theme={null}
+       const session = await client.checkoutSessions.create({
+         product_cart: [{ product_id: 'prod_123', quantity: 1 }],
+         customer: {
+           customer_id: 'cus_123'
+         },
+         payment_method_id: 'pm_abc123',
+         confirm: true
+       });
+       ```
+     </Tab>
+
+     <Tab title="One-Time Payments">
+       ```javascript theme={null}
+       const payment = await client.payments.create({
+         product_cart: [{ product_id: 'prod_123', quantity: 1 }],
+         customer_id: 'cus_123',
+         payment_method_id: 'pm_abc123'
+       });
+       ```
+     </Tab>
+
+     <Tab title="Subscriptions">
+       ```javascript theme={null}
+       const subscription = await client.subscriptions.create({
+         customer_id: 'cus_123',
+         product_id: 'prod_subscription',
+         payment_method_id: 'pm_abc123'
+       });
+       ```
+     </Tab>
+   </Tabs>
+
+   <Warning>
+     When using `payment_method_id` in checkout sessions, `confirm` must be set to `true`, and an existing `customer_id` must be provided. The payment method will be validated for eligibility with the payment's currency.
+   </Warning>
+
+   <Info>
+     The payment method must belong to the customer and be compatible with the payment currency. If validation fails, the request will return an error.
+   </Info>
+
+3. **Subscription Plan Changes in Dashboard with Next Billing Date Updates**
+
+   Manage subscription plans directly from the dashboard with enhanced control. You can now change subscription plans and update the next billing date in a single action, giving you complete flexibility over subscription management.
+
+   <Frame>
+     <img alt="Subscription plan changes in dashboard" />
+   </Frame>
+
+   ### Dashboard Features
+
+   * **Plan changes**: Upgrade or downgrade subscriptions with a single click
+   * **Billing date control**: Update the next billing date when changing plans
+   * **Proration options**: Choose how to handle proration when changing plans
+   * **Visual preview**: See exactly how plan changes affect billing before confirming
+
+   ### Use Cases
+
+   * **Customer support**: Quickly adjust subscription plans for customer requests
+   * **Promotional upgrades**: Temporarily upgrade customers with specific billing dates
+   * **Plan migrations**: Smoothly transition customers between subscription tiers
+   * **Billing alignment**: Align billing dates across multiple subscriptions
+
+   <Check>
+     Result: Complete subscription management control from the dashboard, reducing the need for API calls for common subscription adjustments.
+   </Check>
+
+   <Tip>
+     Use the dashboard for quick subscription plan changes, and the API for programmatic subscription management in your application.
+   </Tip>
+
+4. **Short Links for Payment URLs**\
+   Generate cleaner, more shareable payment links with our new short link feature. Short links provide shortened checkout URLs with custom slugs, making them easier to share with customers or embed on your website.
+
+   <Frame>
+     <img alt="Short links feature for payment URLs" />
+   </Frame>
+
+   ### Benefits
+
+   * **Cleaner URLs**: Replace long payment URLs with short, branded links
+   * **Better trust**: Professional-looking links that build customer confidence
+   * **Easier sharing**: Simplified URLs perfect for SMS, email, or social media
+   * **Custom slugs**: Create memorable, branded short links for your products
+
+   ### How It Works
+
+   Enable short links when creating checkout sessions or payment links:
+
+   <Tabs>
+     <Tab title="Checkout Sessions">
+       ```javascript theme={null}
+       const session = await client.checkoutSessions.create({
+         product_cart: [{ product_id: 'prod_123', quantity: 1 }],
+         short_link: true,
+         return_url: 'https://yourapp.com/success'
+       });
+       ```
+     </Tab>
+
+     <Tab title="Payment Links">
+       ```javascript theme={null}
+       const payment = await client.payments.create({
+         product_cart: [{ product_id: 'prod_123', quantity: 1 }],
+         short_link: true,
+         return_url: 'https://yourapp.com/success'
+       });
+       ```
+     </Tab>
+   </Tabs>
+
+   <Check>
+     Result: A shortened payment link that's easier to share and more professional-looking, improving conversion rates and customer trust.
+   </Check>
+
+   <Info>
+     Short links are managed in your dashboard and can be viewed via the [List Short Links API](/api-reference/products/get-products-short-links).
+   </Info>
+
+5. **`redirect_immediately` Flag - Skip Payment Success Page**\
+   Control the checkout flow with the new `redirect_immediately` flag. When enabled, customers are redirected immediately after payment completion, bypassing the default success page for a faster, more streamlined experience.
+
+   ### Use Cases
+
+   * **Faster checkout flow**: Reduce friction by skipping intermediate pages
+   * **Custom success pages**: Redirect directly to your branded success page
+   * **Mobile optimization**: Improve mobile checkout experience with immediate redirects
+   * **Embedded checkouts**: Seamlessly integrate with overlay or embedded checkout flows
+
+   ### How It Works
+
+   Enable immediate redirects in checkout sessions, payments, or subscriptions:
+
+<Tabs>
+  <Tab title="Checkout Sessions">
+    ```javascript theme={null}
+    const session = await client.checkoutSessions.create({
+      product_cart: [{ product_id: 'prod_123', quantity: 1 }],
+      feature_flags: {
+        redirect_immediately: true
+      },
+      return_url: 'https://yourapp.com/success'
+    });
+    ```
+  </Tab>
+
+  <Tab title="One-Time Payments">
+    ```javascript theme={null}
+    const payment = await client.payments.create({
+      product_cart: [{ product_id: 'prod_123', quantity: 1 }],
+      redirect_immediately: true,
+      return_url: 'https://yourapp.com/success'
+    });
+    ```
+  </Tab>
+
+  <Tab title="Subscriptions">
+    ```javascript theme={null}
+    const subscription = await client.subscriptions.create({
+      customer_id: 'cus_123',
+      product_id: 'prod_subscription',
+      redirect_immediately: true,
+      return_url: 'https://yourapp.com/success'
+    });
+    ```
+  </Tab>
+</Tabs>
+
+<Tip>
+  Use `redirect_immediately: true` when you have a custom success page that provides better user experience than the default payment success page.
+</Tip>
+
+<Note>
+  When `redirect_immediately` is enabled, customers are redirected to your `return_url` immediately after payment completion, skipping the default success page entirely.
+</Note>
+
+6. **On-Demand Subscriptions - Available for All Businesses**\
+   On-demand subscriptions are now enabled for all businesses, giving you flexible billing control for usage-based and metered services.
+
+   ### What This Enables
+
+   * **Usage-based billing**: Create subscriptions and charge customers based on actual usage
+   * **Flexible billing cycles**: Charge customers on-demand rather than fixed intervals
+   * **Metered services**: Perfect for API usage, storage, compute time, and other metered resources
+   * **Manual charge control**: Create charges manually when needed, giving you full control over billing timing
+
+   ### How It Works
+
+   Create an on-demand subscription and charge customers as needed:
+
+   ```javascript theme={null}
+   // Create an on-demand subscription
+   const subscription = await client.subscriptions.create({
+     customer_id: 'cus_123',
+     product_id: 'prod_api_access',
+     on_demand: true
+   });
+
+   // Charge the customer when usage occurs
+   await client.subscriptions.createCharge(subscription.id, {
+     amount: 4900,
+     currency: 'USD',
+     description: 'API usage for September: 1,000 requests'
+   });
+   ```
+
+   <Check>
+     Result: Full control over when and how much to charge customers, perfect for usage-based business models.
+   </Check>
+
+   Learn more: [On-Demand Subscriptions](/developer-resources/ondemand-subscriptions)
+
+7. **General Bug Fixes and Enhancements**\
+   This release includes performance improvements, UI polish, and resolves minor bugs for a more reliable, streamlined experience.
 
 
 # Community projects
@@ -40713,7 +44617,7 @@ Discover community-built SDKs, plugins, and boilerplates for Dodo Payments.
   Use at your own risk. Review code, licenses, and security posture before production use.
 </Warning>
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Projects directory" icon="grid" href="/community/projects">
     Browse by type and language with links to code and docs.
   </Card>
@@ -40733,7 +44637,7 @@ Browse community projects by category. Each card links directly to the repositor
 
 <Tabs>
   <Tab title="Libraries & SDKs">
-    <CardGroup cols={1}>
+    <CardGroup>
       <Card title="dodopayments-webhooks (TypeScript)" href="https://github.com/sancho1952007/dodopayments-webhooks" icon="node-js">
         Universal webhook verification and handlers for multiple frameworks.
         <br />Includes signature verification and typed event handling for Express, Hono, Elysia, and more.
@@ -40773,7 +44677,7 @@ Browse community projects by category. Each card links directly to the repositor
   </Tab>
 
   <Tab title="Plugins & Extensions">
-    <CardGroup cols={1}>
+    <CardGroup>
       <Card title="Dodo WHMCS (PHP)" href="https://github.com/Akash123a5/dodo-whmcs" icon="php">
         WHMCS payment gateway module integration.
         <br />Drop-in provider to accept payments in WHMCS using Dodo Payments.
@@ -40784,7 +44688,7 @@ Browse community projects by category. Each card links directly to the repositor
   </Tab>
 
   <Tab title="Boilerplates & Starters">
-    <CardGroup cols={1}>
+    <CardGroup>
       <Card title="DodoPayments Boilerplate" href="https://github.com/snehalsaurabh/DodoPayments-Boilerplate" icon="rocket">
         Starter boilerplate for integrating Dodo Payments quickly.
         <br />Includes example checkout flow, API wiring, and environment configuration.
@@ -40836,7 +44740,7 @@ How to add your open-source project to the Dodo Payments community directory.
   <Step title="Add entry via PR">
     Edit `community/projects.mdx` and add a new `<Card>` under the most relevant tab.
 
-    ```mdx  theme={null}
+    ```mdx theme={null}
     <Card title="PROJECT_NAME (LANG)" href="REPO_URL" icon="code">
       One-sentence description of your project.
       <br/>By <a href="GITHUB_PROFILE_URL">@github_username</a>
@@ -40888,7 +44792,7 @@ Follow these steps to integrate AutoSend with Dodo Payments:
     Navigate to the Webhooks section in your Dodo Payments dashboard.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/autosend.png?fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=8645c6b295d3fecdf62f046e4480b1e4" alt="Add Endpoint and integrations dropdown" data-og-width="1750" width="1750" data-og-height="1234" height="1234" data-path="images/integrations/autosend.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/autosend.png?w=280&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=67c518eacaed2b70c01bf801e4a722b8 280w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/autosend.png?w=560&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=2692084030fd7a5a2069d0e7da7ce5b3 560w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/autosend.png?w=840&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=d0e7eab62dbf7bc57cea16496dfdd1ac 840w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/autosend.png?w=1100&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=b4e59e033ee427f5bfbdd836c7d6edac 1100w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/autosend.png?w=1650&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=bedaba0c737c9afe7d2681c0b731cff2 1650w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/autosend.png?w=2500&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=b176ce5feb86901cd890adbae886c728 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -41094,7 +44998,7 @@ Connect your payment data directly to Close CRM for seamless lead management and
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/close-crm.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=bd462e078ea95d7853eb066cdbaebb0f" alt="Add Endpoint and integrations dropdown" data-og-width="1710" width="1710" data-og-height="948" height="948" data-path="images/integrations/close-crm.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/close-crm.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=7a692373eb1d4e0ccf047320f8ff1fe5 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/close-crm.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=69c366972dc09b09f84c5d925f1a0987 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/close-crm.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=a994876209732621c610c33191793ab7 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/close-crm.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c9c10208ddc6403509c977fe00812c12 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/close-crm.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=38d695b03eb9a3bb45bb76ad6804bc02 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/close-crm.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=5d6c3ca07c1bc10d4a2396a21725565a 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -41211,7 +45115,7 @@ Trigger personalized email campaigns and customer journeys based on payment even
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/customer-io.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=fb4d96b67438c2eb178b2482475903db" alt="Add Endpoint and integrations dropdown" data-og-width="1644" width="1644" data-og-height="952" height="952" data-path="images/integrations/customer-io.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/customer-io.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=a299938b6098ef3b8a4c92cea80317b3 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/customer-io.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=1785cb88a817ecef1ee2c4b248872c8c 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/customer-io.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=edfa146ba37db4c1ac660b5b2d09a294 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/customer-io.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=143e0549c84485782030a9e403422a3b 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/customer-io.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=adb6c818b6756361b41860ed17ba7af3 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/customer-io.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=436baa2190e88834431f5328dde8c9cc 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -41489,7 +45393,7 @@ Configure a webhook endpoint to send payment data to DataFast's Payment API when
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/add.png?fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=3aec6c9e450d0616573a4a7dfe89f78e" alt="Add Endpoint and integrations dropdown" data-og-width="1720" width="1720" data-og-height="1192" height="1192" data-path="images/integrations/datafast/add.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/add.png?w=280&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=8c5a2d5544db8f72de1a2fdf673bfdd9 280w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/add.png?w=560&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=4b5a5e1c2dafe09b036dfb8e8a7135bf 560w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/add.png?w=840&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=9e2422087e7d8f70e5349cca006f1d07 840w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/add.png?w=1100&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=5bd37b03a0b910d7567a95d3c20658f7 1100w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/add.png?w=1650&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=e83ff022c595627d0916a019f499621a 1650w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/add.png?w=2500&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=e226e23a1c0f5cb4e94c69a91107eb38 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -41501,7 +45405,7 @@ Configure a webhook endpoint to send payment data to DataFast's Payment API when
     Provide your DataFast API Key in the configuration field.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/api-key.png?fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=25129c8ca64e38ef44a6960c2f3a2993" alt="Add API Key" data-og-width="1740" width="1740" data-og-height="882" height="882" data-path="images/integrations/datafast/api-key.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/api-key.png?w=280&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=f70f82ceb0be731ed890b3567584668c 280w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/api-key.png?w=560&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=f272db08d39bfa66ed1f974b38ba626d 560w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/api-key.png?w=840&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=25481d98f670d9d4b4e2daf6860a71f3 840w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/api-key.png?w=1100&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=1c75cd8772c8ab5ed898446ef1b2110f 1100w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/api-key.png?w=1650&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=84fdf1fdb2c65920c9b6e24afc067ce4 1650w, https://mintcdn.com/dodopayments/VOF9xBBvs1EjN4xq/images/integrations/datafast/api-key.png?w=2500&fit=max&auto=format&n=VOF9xBBvs1EjN4xq&q=85&s=d1e03bc751fb9373ada9e75414fbb5e9 2500w" />
+      <img alt="Add API Key" />
     </Frame>
   </Step>
 
@@ -41652,7 +45556,7 @@ function handler(webhook) {
 
 ## Additional Resources
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="DataFast Documentation" icon="book" href="https://datafa.st/docs/payments-api">
     Learn more about DataFast's Payment API and revenue attribution features.
   </Card>
@@ -41687,7 +45591,7 @@ Keep your team informed where they already collaborate. The Discord integration 
     In your Dodo Payments dashboard, open <b>Webhooks → + Add Endpoint</b> and expand the dropdown to reveal integrations.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/discord.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=dd9359ae214e43ca779c1c0a522f055b" alt="Add Endpoint and integrations dropdown" data-og-width="1808" width="1808" data-og-height="938" height="938" data-path="images/integrations/discord.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/discord.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=199227e2d7f6397f385b6aa4b2c80306 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/discord.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=16958e8197cc6e6e695c6245fcc65fe0 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/discord.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=14a77afa6b6b13bcd7505a1552232431 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/discord.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=bc9c273385d44376520364df01606608 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/discord.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=24d6035a16ce5de355ea53686605c051 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/discord.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=cac50c44477007e53b6d3d5f79312079 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -41826,7 +45730,7 @@ The Dodo Payments Framer Plugin seamlessly integrates payment processing into yo
 
 ## Features
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Hosted or Overlay Checkout" icon="credit-card">
     Choose a full-page flow or an inline overlay that feels native to your site.
   </Card>
@@ -41982,7 +45886,7 @@ Sync your payment data directly to HubSpot CRM. Create contacts from successful 
     In your Dodo Payments dashboard, go to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/hubspot.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=73c4881df63edfb05bd24d804f01caab" alt="Add Endpoint and integrations dropdown" data-og-width="1724" width="1724" data-og-height="942" height="942" data-path="images/integrations/hubspot.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/hubspot.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=400fd16354eae467db1323bf22fa9923 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/hubspot.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=aea55b9aa14b24d7a011cd3c8e717e6e 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/hubspot.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=8ed8962841666a1f59143edabe66409b 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/hubspot.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=774a0c873da2d59a51a2fd72b6e60486 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/hubspot.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=a50c009ed068fba4ad2c01ae55203bd5 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/hubspot.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=5efb97b270ec276ea9cecf0d3d3bfb03 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -42134,7 +46038,7 @@ Execute serverless functions and background jobs automatically when payment even
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/inngest.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=b160678c00ceed38439160b4b253c8f3" alt="Add Endpoint and integrations dropdown" data-og-width="1646" width="1646" data-og-height="944" height="944" data-path="images/integrations/inngest.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/inngest.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=e396fabdbd7c4a44fd154fcde2120c09 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/inngest.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=b274d6ea944ca574504f0a4910ae1888 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/inngest.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c48e64825f33b19f42cc510d1448fa22 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/inngest.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=1cb8d4dca2dcaebb02aeb88f2833aef7 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/inngest.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=15b8c2192069a466ca047c01a4c62ec4 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/inngest.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=871a64b035cf9d3187857a43f488b449 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -42334,7 +46238,7 @@ Our integrations are designed to be easy to set up and require minimal configura
 
 ## Benefits of Integrations
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="Real-time Notifications" icon="bell">
     Stay informed about important payment events as they happen, ensuring you never miss critical updates about your business.
   </Card>
@@ -42360,7 +46264,7 @@ Our integrations are designed to be easy to set up and require minimal configura
 
 Connect Dodo Payments with the following platforms and tools:
 
-<CardGroup cols={2}>
+<CardGroup>
   <Card title="N8N" icon="diagram-project" href="/integrations/n8n">
     Connect Dodo Payments to 5000+ apps through N8N webhooks for unlimited automation possibilities with self-hosted or cloud workflows.
   </Card>
@@ -42487,7 +46391,7 @@ Send transactional emails and manage customer communication automatically when p
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/loops.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=2d66cf4c1f562427613d7b2704dcc8a3" alt="Add Endpoint and integrations dropdown" data-og-width="1656" width="1656" data-og-height="940" height="940" data-path="images/integrations/loops.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/loops.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=48d0bb597b959cc4dc39e8e90af8ae74 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/loops.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=5edeb91103f623164444dbc676c757ee 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/loops.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=6343e7e78a5defd8635260475bd77439 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/loops.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=1e2070506461708d9c4701c25034aff5 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/loops.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=0ef3d500b3a2e0976174cdc36c4d4006 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/loops.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c05b6be370ef4551095ab495c49c6b92 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -42632,7 +46536,7 @@ Keep your business team in the loop with real-time payment notifications in Micr
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/teams.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=240820e1a3d3162b2faee6fa052535c6" alt="Add Endpoint and integrations dropdown" data-og-width="1694" width="1694" data-og-height="936" height="936" data-path="images/integrations/teams.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/teams.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=aeec40f25b32cc4af4d4a0ea3065bef6 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/teams.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=ab8d962f08e01d3da8cd7d3ba468d446 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/teams.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=e62540924e8382f2af5d06814a9118c0 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/teams.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=618c493e55c756eed3ec571318a0125f 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/teams.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c40c97ce88ea56fc83837dd2ae56dab6 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/teams.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=9267b40c8c7cb11ba80240c074576a5c 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -42849,7 +46753,7 @@ Connect Dodo Payments to thousands of apps and services through N8N. Automate wo
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/OBONg3OSDVHCK_pv/images/integrations/n8n.png?fit=max&auto=format&n=OBONg3OSDVHCK_pv&q=85&s=1477d1a9fdb4446ae4db5c976e7d6fb8" alt="Add Endpoint and integrations dropdown" data-og-width="2870" width="2870" data-og-height="1482" height="1482" data-path="images/integrations/n8n.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/OBONg3OSDVHCK_pv/images/integrations/n8n.png?w=280&fit=max&auto=format&n=OBONg3OSDVHCK_pv&q=85&s=e6e49694e8ca34c95466f832cfc56e08 280w, https://mintcdn.com/dodopayments/OBONg3OSDVHCK_pv/images/integrations/n8n.png?w=560&fit=max&auto=format&n=OBONg3OSDVHCK_pv&q=85&s=160103d0d2ba4d169b4e3b714c5031c3 560w, https://mintcdn.com/dodopayments/OBONg3OSDVHCK_pv/images/integrations/n8n.png?w=840&fit=max&auto=format&n=OBONg3OSDVHCK_pv&q=85&s=ab4dc95d7cb2792098beb2ba7f0f5e78 840w, https://mintcdn.com/dodopayments/OBONg3OSDVHCK_pv/images/integrations/n8n.png?w=1100&fit=max&auto=format&n=OBONg3OSDVHCK_pv&q=85&s=97df03dce54d2a26ff3f7ed4712f82a9 1100w, https://mintcdn.com/dodopayments/OBONg3OSDVHCK_pv/images/integrations/n8n.png?w=1650&fit=max&auto=format&n=OBONg3OSDVHCK_pv&q=85&s=2c8cb6cefba069f4a63c68b92fce784e 1650w, https://mintcdn.com/dodopayments/OBONg3OSDVHCK_pv/images/integrations/n8n.png?w=2500&fit=max&auto=format&n=OBONg3OSDVHCK_pv&q=85&s=9295c47430985455c0764b85d29853da 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -43046,7 +46950,7 @@ Source: https://docs.dodopayments.com/integrations/raycast-extension
 Install the Raycast extension to browse and manage Dodo Payments resources from your keyboard.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/dodo-payments-commands.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=4bf25ee9eaa63ae8f4eadbcd3c61ce48" alt="Raycast extension home showing Dodo Payments commands" data-og-width="2000" width="2000" data-og-height="1250" height="1250" data-path="images/integrations/raycast/dodo-payments-commands.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/dodo-payments-commands.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=779e3352fb683239d060bbf7a2117e0e 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/dodo-payments-commands.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=4fdec7df862a84073750ba8517fcf981 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/dodo-payments-commands.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=1a0afae278e63bfe16cc1153aebc1974 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/dodo-payments-commands.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=b9c1692ddb4214dfcddf163499283910 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/dodo-payments-commands.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=204f2bb3ff867599fd263feee7a1d50b 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/dodo-payments-commands.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=55bb122ada7e149a96e0777cc8403717 2500w" />
+  <img alt="Raycast extension home showing Dodo Payments commands" />
 </Frame>
 
 Your Dodo Payments dashboard, a few keystrokes away. Use Raycast to quickly view payments, subscriptions, customers, products, discount codes, license keys, and refunds without opening the dashboard.
@@ -43102,7 +47006,7 @@ Your Dodo Payments dashboard, a few keystrokes away. Use Raycast to quickly view
 Browse recent payments and jump into detailed views in seconds.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-payments.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=b3f7a7f1b52dd7cc12092c0b97fffcc8" alt="Payments list view in the Raycast extension" data-og-width="2000" width="2000" data-og-height="1250" height="1250" data-path="images/integrations/raycast/view-payments.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-payments.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=763ff477b782fc1933e265b1058c2d5e 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-payments.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=9830275df7aa3ef4059e680d7fc9547f 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-payments.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=29c36e415c576374d653b2691fd46ef5 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-payments.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=b094f2ab5e188f9ebf4a01d037c9c6a3 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-payments.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=d3ce9e3adc26d4d025d5bc009ad6f3b4 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-payments.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c55c400ab6453ae4f8de58e93ad503f7 2500w" />
+  <img alt="Payments list view in the Raycast extension" />
 </Frame>
 
 ### Subscriptions
@@ -43110,7 +47014,7 @@ Browse recent payments and jump into detailed views in seconds.
 Quickly scan active, trialing, and canceled subscriptions.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-subscriptions.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=efdcb47236aa8717d7d5256b1ba271d2" alt="Subscriptions list view in the Raycast extension" data-og-width="2000" width="2000" data-og-height="1250" height="1250" data-path="images/integrations/raycast/view-subscriptions.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-subscriptions.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=6a85c69bd1421dfed3c49966a48f8c0c 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-subscriptions.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=fd58af46bdc5923f078c546cc34cdfa0 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-subscriptions.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=72b3a552389e74b2420ceffb5c29916d 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-subscriptions.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=d62d2d24bac6473639f03f86e9080f45 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-subscriptions.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=d649cdf590574f5f569a1d499bef07c9 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-subscriptions.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=1ce9ce072a8c867150847e6f5a55d947 2500w" />
+  <img alt="Subscriptions list view in the Raycast extension" />
 </Frame>
 
 ### Customers
@@ -43118,7 +47022,7 @@ Quickly scan active, trialing, and canceled subscriptions.
 Find customers fast and open full profiles.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-customers.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c2e7b2cdf47e128f4b4a200ccbb06c9c" alt="Customers list view in the Raycast extension" data-og-width="2000" width="2000" data-og-height="1250" height="1250" data-path="images/integrations/raycast/view-customers.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-customers.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=df871a9ca10c6f58544572ae4245b155 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-customers.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=887cbf1a4d2ed0ee2a5475440a8f09c8 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-customers.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=9a3b69fe1763dc39b26d4b6045310d63 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-customers.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=ce26fb9d309d2e63cdc07aafd8acac55 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-customers.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=2cddd3267b87d1ddda9ea323e0327396 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-customers.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=0f3d16f5b4d3a43736bb393df9dc7cd1 2500w" />
+  <img alt="Customers list view in the Raycast extension" />
 </Frame>
 
 ### Products
@@ -43126,7 +47030,7 @@ Find customers fast and open full profiles.
 Review and manage your product catalog at a glance.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-products.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=973cf1ac1bd6cd4b97bf28bcaa93e09e" alt="Products list view in the Raycast extension" data-og-width="2000" width="2000" data-og-height="1250" height="1250" data-path="images/integrations/raycast/view-products.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-products.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=7c602521a4ac50d998e2436d7aa291a8 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-products.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=6445f9a089f292f6d0d35dee908f07b1 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-products.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=e955b4fc552040680ec4da2284a7f1fb 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-products.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=6a8ba8122d0e4ae7672555161f34351d 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-products.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=705e26b07f55539f3bfedf8baf0cf9e4 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-products.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=bfe8e5609b98426565d185772f3e079e 2500w" />
+  <img alt="Products list view in the Raycast extension" />
 </Frame>
 
 ### Discount Codes
@@ -43134,7 +47038,7 @@ Review and manage your product catalog at a glance.
 Search and reference active discount codes quickly.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-discount-codes.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=51c0d034428ad81397b5df52ddf1d224" alt="Discount codes list view in the Raycast extension" data-og-width="2000" width="2000" data-og-height="1250" height="1250" data-path="images/integrations/raycast/view-discount-codes.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-discount-codes.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=2a8565c8178d30e6001a73ccf4104d4e 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-discount-codes.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=60c191691fd96054e465af92fb0ada0b 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-discount-codes.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=f08a74b27db21f701c81b6334c16b9a7 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-discount-codes.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=ce8cc84686ad1750d9095a487a8dcdc3 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-discount-codes.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=4bcb886da12c0d8c8c8f33f1053c8da8 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-discount-codes.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=666fac4559bc99394ce1222ff862abbb 2500w" />
+  <img alt="Discount codes list view in the Raycast extension" />
 </Frame>
 
 ### License Keys
@@ -43142,7 +47046,7 @@ Search and reference active discount codes quickly.
 Look up and manage license keys without leaving Raycast.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-license-keys.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=11a4eff6666ea52a12e80c66201d0120" alt="License keys list view in the Raycast extension" data-og-width="2000" width="2000" data-og-height="1250" height="1250" data-path="images/integrations/raycast/view-license-keys.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-license-keys.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=d53e03ab8083bf25eb6681be1d4580ff 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-license-keys.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=27a5fddee71aaee2635d068a1006ab80 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-license-keys.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=b5a40d24cc51477300e08d8dae3fa22b 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-license-keys.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=d6f42b9cfe52d01fb291229542e3a24a 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-license-keys.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=f9f86e178e70dc9f3a0aafc0bca014b2 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-license-keys.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=e5c23b5dde68348fab08c621516a1fb4 2500w" />
+  <img alt="License keys list view in the Raycast extension" />
 </Frame>
 
 ### Refunds
@@ -43150,7 +47054,7 @@ Look up and manage license keys without leaving Raycast.
 See recent refunds and drill into their details.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-refunds.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=a1600d565ff683d738ec27a675e23c30" alt="Refunds list view in the Raycast extension" data-og-width="2000" width="2000" data-og-height="1250" height="1250" data-path="images/integrations/raycast/view-refunds.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-refunds.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=aba3ea32bef656d0851f58731677b5a7 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-refunds.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=6fefe4cebe9873724f13f5fea0fa398e 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-refunds.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=29b5ab0d4b4cf659ce6cf38cede7f6aa 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-refunds.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=8230cbfb05596be36b92079f54e6f6c3 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-refunds.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=5c710d5341ac7e8ae89f6b26a9178928 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/raycast/view-refunds.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=17aa5143e77f2ac310fffba5b073c5e6 2500w" />
+  <img alt="Refunds list view in the Raycast extension" />
 </Frame>
 
 <Info>
@@ -43198,7 +47102,7 @@ Send professional transactional emails automatically when payment events occur. 
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/resend.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=80191f648ad4a4f4b5e8186668da0791" alt="Add Endpoint and integrations dropdown" data-og-width="1668" width="1668" data-og-height="946" height="946" data-path="images/integrations/resend.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/resend.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=2dda0717d61a070938efd129abf25305 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/resend.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=490ad04ecf8e27e166d08b6289c32a15 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/resend.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=eb6464098afb7684710bdc272f753f3a 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/resend.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=f88091de0be2ec74a219fc7d037d5419 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/resend.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=7a600f687799aae2e39e8c47d98d98c0 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/resend.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=6fba6a2a5da2f3a550075e98955676da 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -43363,7 +47267,7 @@ Track payment events in Segment to power your analytics, marketing automation, a
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/segment.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=024e80f2cafa4245742eac33f445ebe5" alt="Add Endpoint and integrations dropdown" data-og-width="1644" width="1644" data-og-height="948" height="948" data-path="images/integrations/segment.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/segment.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=62dc4f1b77a02d9861a22a19cf347fb3 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/segment.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=0e5dfeaa9aaaaeb8114f5a6090af8ad1 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/segment.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=0d0434fc2ec184c27a33ebd33571d0be 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/segment.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=83e101d3c3fdcfceffeb8c5349880d49 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/segment.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=78c2711f7666fbeeaad94344f77be7b7 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/segment.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=967a409ee19de9fd2bdd2bfa5ceab816 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -43525,7 +47429,7 @@ Automatically send transactional emails for payment confirmations, subscription 
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/sendgrid.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=bb13e15660cf9765d6501190d738525d" alt="Add Endpoint and integrations dropdown" data-og-width="1682" width="1682" data-og-height="944" height="944" data-path="images/integrations/sendgrid.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/sendgrid.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=edc48c53a71e07df7782b32fa088b75f 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/sendgrid.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=b923f0b33c12df6037f130e3a9f2af81 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/sendgrid.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=988cb8728aed6fcb6c920918b0c2c7da 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/sendgrid.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=3b46ab6aee7741ee5e9ecf2b8e5a5e55 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/sendgrid.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=78c6e0362b2bec8da30d76cc72f7b0f7 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/sendgrid.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=6d6139492078cc67cefc32cd33bd6ebc 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -43693,7 +47597,7 @@ The Dodo Payments Slack integration allows you to receive real-time notification
     Go to the <b>Webhook</b> section in your Dodo Payments dashboard. Click the <b>+ Add Endpoint</b> button, then open the webhook dropdown to reveal other integrations.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/1.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=46218103ebf0646011873758c76b9bb6" alt="Dodo Payments dashboard showing Add Endpoint button and integrations dropdown" data-og-width="1782" width="1782" data-og-height="1016" height="1016" data-path="images/integrations/slack/1.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/1.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=6c869d497d9cae808d2acc13088b23f4 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/1.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=ab867f9731fb294087555ec47a7dfeca 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/1.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=6882f602dd6c2470165e51d1f926e988 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/1.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=dca574ad6b765a69df2bec0301a8dfa7 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/1.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=2e51c56a2f8a8d58f1c53c180baaae58 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/1.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=76111aa5935ec6da30570a4c2e671a12 2500w" />
+      <img alt="Dodo Payments dashboard showing Add Endpoint button and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -43701,7 +47605,7 @@ The Dodo Payments Slack integration allows you to receive real-time notification
     Select the <b>Slack</b> integration and click <b>Connect your Slack workspace</b>.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/2.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=4bd696f82dbbab1bc099c6ccae5b9212" alt="Slack integration card and connect button" data-og-width="1670" width="1670" data-og-height="226" height="226" data-path="images/integrations/slack/2.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/2.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c6a85e2047e54e2380c57a9a8d2eb3d8 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/2.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=381aba1f406e0ceb2fa6225b871e07d0 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/2.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=df853fab89cd4b62e0dc368a92d12338 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/2.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=b93d47546cc4bd1f958cc9a24afe11ba 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/2.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=696697f3321f5676cb5d287615f20ace 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/2.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=b2f8c9f214367cd92b1a9ffd169dbaae 2500w" />
+      <img alt="Slack integration card and connect button" />
     </Frame>
   </Step>
 
@@ -43709,7 +47613,7 @@ The Dodo Payments Slack integration allows you to receive real-time notification
     Grant the necessary permissions to the Incoming Webhooks Slack App so it can post messages in your chosen channel.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/3.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=00f04516a2720e377a29551ae42ad812" alt="Slack OAuth permissions screen for Incoming Webhooks app" data-og-width="1198" width="1198" data-og-height="1536" height="1536" data-path="images/integrations/slack/3.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/3.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c739f89ff7295be230e2b42f980e5dd1 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/3.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=e78e0864fccd8f5c043077d49e6d7fc1 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/3.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=90b76d5e3869da6af1829dd429563b87 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/3.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=ec329050ec388d0b21b212e0b0b76c9d 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/3.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=05ade51f358401eb182950e602a2fe50 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/3.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=db30dc7157a46e140070ea8980c79079 2500w" />
+      <img alt="Slack OAuth permissions screen for Incoming Webhooks app" />
     </Frame>
   </Step>
 
@@ -43717,7 +47621,7 @@ The Dodo Payments Slack integration allows you to receive real-time notification
     Add or edit the transformation code to customize your Slack notifications for your use case. You can use the pre-made templates or write your own logic.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/4.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=f3c7f2b7a9bb6d6ba1d1d6922ad42bc4" alt="Transformation code editor for Slack integration" data-og-width="1686" width="1686" data-og-height="1118" height="1118" data-path="images/integrations/slack/4.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/4.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=0821df53582c4a22f385098f8f2ea232 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/4.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c047831def526b73b7c4f9c432852c09 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/4.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=617c3b709296370e780a38c0a061221d 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/4.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=45b0e8f5739eabbc46546a7b8a58441b 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/4.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=93b6106d7cb59761a73614ed366a8a2f 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/4.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=66fdeb038c2f14265a639b5ef7310331 2500w" />
+      <img alt="Transformation code editor for Slack integration" />
     </Frame>
   </Step>
 
@@ -43725,7 +47629,7 @@ The Dodo Payments Slack integration allows you to receive real-time notification
     Test your transformation code with custom or pre-made event payloads. Once you're satisfied, click <b>Create</b> to activate the integration.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/5.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=7d22a91488a2038a177324fa627b7497" alt="Test transformation and create button" data-og-width="1852" width="1852" data-og-height="490" height="490" data-path="images/integrations/slack/5.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/5.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=fc9d04e898e78fec52e82e1aee9c0090 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/5.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=da048a80c057f552ed56465ddd29e0c7 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/5.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=f8d18b959ff1094b1e091cfe6c35a344 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/5.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=5fecc6886f09da8ccd11728c01dc67d4 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/5.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=72b8f058da8aa460e106828524e89a73 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/slack/5.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=bdb6039adc6936fc8a223cacb8460316 2500w" />
+      <img alt="Test transformation and create button" />
     </Frame>
   </Step>
 
@@ -44172,7 +48076,7 @@ Execute custom workflows and scripts in Windmill when payment events occur. Run 
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/windmill.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=695fe639c086c3d899efae177d646591" alt="Add Endpoint and integrations dropdown" data-og-width="1678" width="1678" data-og-height="954" height="954" data-path="images/integrations/windmill.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/windmill.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=cfc51519d26601fac5ed52204975f36a 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/windmill.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=e973a46f593e1acdde3b4750a2eed544 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/windmill.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=5f2f7cf3594b0bfaaa7c45700d11a759 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/windmill.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=ac1d50cd229f897369e45f03db0bfd2e 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/windmill.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=5ab61518df1fb92d64ea39169b5fca60 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/windmill.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=21dda1274812fc68c5e755d2c2f1f42c 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 
@@ -44370,17 +48274,17 @@ The Dodo Payments WooCommerce plugin provides a seamless integration with your s
 3. Navigate to **Plugins → Add New Plugin**
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/1.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=f26041db02cf678f4785a8d72631d0e2" alt="Dodo Payments for WooCommerce Plugin" data-og-width="447" width="447" data-og-height="136" height="136" data-path="images/woocommerce/1.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/1.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=8adfdb4a35056ef6032e0dc5383024b5 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/1.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=8bc1ffffb0c4c02ed6344f38f29a8231 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/1.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=5ee6a2cdfe7d52f741b397a974fc8d8e 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/1.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=0eab4511c6b29761bfc4462c34e627d6 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/1.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=1b4fdde52e8204bf56ec10033b98ce4b 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/1.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=b814c7945e48ab57d16afd117e7d8d09 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 4. Click on the **Upload Plugin** button and a file selection dialog will appear
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/2.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=9f20388bab236d046cbff312646dcd98" alt="Dodo Payments for WooCommerce Plugin" data-og-width="433" width="433" data-og-height="75" height="75" data-path="images/woocommerce/2.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/2.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=1fbf6bcf4cf9c933b7435c7ad795a4be 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/2.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=97e88e7bc01c915565f99f36c7fe6523 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/2.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=522d84b1997fcd2ff3de2d3dc0eb2b70 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/2.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=47edfca4b705d03c933b453444aea93c 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/2.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6b64ac9647f469aa89b057e200d07b74 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/2.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=80cca27c8e3888efa02582968c6e76bd 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/3.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c9cdccfe01ceda93932c9feea5ee5e65" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1313" width="1313" data-og-height="356" height="356" data-path="images/woocommerce/3.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/3.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=2c1ac69dd79aea961b2e9b2f52dc66f3 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/3.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=55eeccc7cbcad261a7c74a62b27a357b 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/3.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=8dc8e5ffb8542764c5e1cfe8efcaaa24 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/3.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=336759ce62c59549b8c7a3e4a1eb5369 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/3.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=53cd9723476bbee3bf8a1205ed6d2121 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/3.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=dc5e690311aae1e73103aac184c7030a 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 5. Click **Browse…** and select the zip file you downloaded
@@ -44388,13 +48292,13 @@ The Dodo Payments WooCommerce plugin provides a seamless integration with your s
 6. Click the **Install Now** button to begin the installation process
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/4.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3a785b07a5c0f47318893a73059875b5" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1024" width="1024" data-og-height="307" height="307" data-path="images/woocommerce/4.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/4.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=b26f4750d8acbeb29b63ac81203757bc 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/4.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=7aff7b72f9ce792aaac8018500bc574a 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/4.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6fac0df9f864e8456c1edac82b808e5b 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/4.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=18f4b779549348153576550ef703cc3c 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/4.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=46c986349db6b4508892da4b7eeb5a4b 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/4.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ba41370aa3a9235f70e4b1b2e5aabd49 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 7. After installation completes, click **Activate Plugin** or activate it from the **Installed Plugins** section
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/5.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d7a144b16abd059e81a694585f3d6923" alt="Dodo Payments for WooCommerce Plugin" data-og-width="897" width="897" data-og-height="289" height="289" data-path="images/woocommerce/5.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/5.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=8e9822b9516cd2fde4dbbb6dd7c50cc4 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/5.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d8251bb257a1010b77d71583f127d6f1 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/5.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=32dbe8c8f89580510df55a54857b775c 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/5.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=9cfdbaaa1b19b6e6c3f9f01880861cb7 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/5.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=8a53d5b1ed75f904d4d76d47b0116ded 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/5.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=4adee7347dcb9b5cdf7aeb9266f593a8 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 8. The plugin is now installed, but configuration is still required. Continue to the setup guide below.
@@ -44406,11 +48310,11 @@ The Dodo Payments WooCommerce plugin provides a seamless integration with your s
 1. Navigate to **WooCommerce → Settings → Payments** or click the **Payments** button in the left sidebar below the WooCommerce menu item
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/6.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=292552cc453ac05b4a0a368cd0d2adb8" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1887" width="1887" data-og-height="958" height="958" data-path="images/woocommerce/6.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/6.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3abc19f156c6586395b1745a1217d230 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/6.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=5e34f138c0f5cf0f4f2339731f77b01d 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/6.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=499ec7d052d64247098df0728a0e1b92 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/6.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c3c6516fc16d2238107a5cb3cf355189 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/6.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6d521d97c0f05ab7261516f350048ce5 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/6.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=e566aa707553985bb3b7d7a3308963b2 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/7.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=e289459e7a2c95082504229293c0863e" alt="Dodo Payments for WooCommerce Plugin" data-og-width="234" width="234" data-og-height="242" height="242" data-path="images/woocommerce/7.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/7.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=73c7a21be7496e99a46d29774220128a 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/7.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=f3f516c2a3598f04b1a067ed0585c4b6 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/7.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=32248eca8ee07b4ad65cb944a5a7ab8b 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/7.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3e690c0861069a8f79010146b455af66 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/7.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=f8b19fcb179ddd1f09c1f8b535c0d0ec 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/7.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=bb905eea80da078328530115955a64af 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 2. Enable the **Dodo Payments** payment provider if not already enabled, then click **Manage** to configure the plugin
@@ -44418,29 +48322,29 @@ The Dodo Payments WooCommerce plugin provides a seamless integration with your s
 3. You'll see various configuration options, each with helpful explanatory text. Begin by setting up your Live API Key
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/8.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=0cad2f1d5bbba36d54e1d54e8ffb8961" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1658" width="1658" data-og-height="867" height="867" data-path="images/woocommerce/8.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/8.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=9221d08882f36e824b7589efa58ea789 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/8.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=642cba12360d36e2e143717a32b2d1aa 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/8.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=e8863ce7db76ba7d6aab96e8412d743c 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/8.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=a7039a5c1a100425a74c4ee824c286e4 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/8.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=5dd451e4bc06256b5f68c16505938d18 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/8.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ce2571a9c96e6facd518ad37b1c8fdcd 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 4. Log in to your Dodo Payments dashboard in **Live Mode**, then navigate to **Dodo Payments (Live Mode) > Developer > API Keys** or visit [this direct link](https://app.dodopayments.com/developer/api-keys) and click **Add API Key**
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/9.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=baa03ad325826db734456fd30e30363c" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1876" width="1876" data-og-height="991" height="991" data-path="images/woocommerce/9.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/9.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=2318856e2db60d66eebc8fb9a0497170 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/9.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=e7b4e293cf00ab37ff4cb1816cd951c4 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/9.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=1a1a339598aa443897ff55a03ab13d79 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/9.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=04a539c2af9c935ed254079141abe9b4 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/9.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=baa11b47ace6df48551151835730b6c1 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/9.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=a7e2817fbbd66dd3ddb1c9180c4f602d 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 5. Give your API Key a descriptive name and click **Create**
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/10.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=af89376b00b5265c1d375dcc6fa218f3" alt="Dodo Payments for WooCommerce Plugin" data-og-width="549" width="549" data-og-height="365" height="365" data-path="images/woocommerce/10.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/10.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=f89cf37914c281eb784df50f651574eb 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/10.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3be4e0b58189970dba8878ed71c9ff91 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/10.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=f1e82428c9e1815d25af8d28db3d8814 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/10.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=80d2a6338adea11f8f17063b0e860acd 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/10.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=9ce3bfb5076fb31442eb0ed8d6e68e0e 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/10.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=44daf875b0ac452cf7a688d12b56b0f3 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 6. Copy the generated API Key and paste it into the **Live API Key** field in your WooCommerce plugin settings
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/11.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=bd998ae7bb40791d2193b807813521cb" alt="Dodo Payments for WooCommerce Plugin" data-og-width="570" width="570" data-og-height="491" height="491" data-path="images/woocommerce/11.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/11.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=68607695b0ba28dd89aac90639d905cb 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/11.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c4c09fcbab3ed34cd443d3b60f5bc99b 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/11.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=78df3001cd33815e08b3540401cbf37e 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/11.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=569c4f23e891654f5261a6f49f833fb4 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/11.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=84fdb293880e40ca6f4787c91e32b59f 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/11.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d16e30440d1cb5ef550c34aa04a34e01 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/12.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=dd3f751317c6be0401c50bde584705e2" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1395" width="1395" data-og-height="115" height="115" data-path="images/woocommerce/12.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/12.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=96db10c4f94ac529286a0afa5f48daf7 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/12.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c9fd20843a0f7c17463d093f599fb46b 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/12.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=63200b3a6b53734e94ca75304f1d6406 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/12.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=aed7c107cf7479f29dce6c404d1aebe6 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/12.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=5aaf978787112e7440ac9d492d2b1be3 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/12.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=0808328af63af714f0f634116616d36f 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 7. Next, set up the Webhook Signing Key to enable payment status synchronization between Dodo Payments and WooCommerce
@@ -44448,37 +48352,37 @@ The Dodo Payments WooCommerce plugin provides a seamless integration with your s
 8. Scroll to the bottom of the plugin settings page and copy the webhook URL displayed there
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/13.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=becfefe5c5e04aeecefb8b8d126ff571" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1062" width="1062" data-og-height="239" height="239" data-path="images/woocommerce/13.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/13.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=0e057b41793fa38955dce6e766f1d4b4 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/13.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=530fa0b1afa9dcd8fef5c99246e92d85 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/13.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=7e1b346590100a5797e6e7d422789e71 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/13.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=4ec328a2647ba20ad01203cbb952bc78 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/13.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=476e6ca991335de3bdcff58ad3a44d2e 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/13.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c25000df8aca32a101a87021cdf26d82 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 9. Return to your Dodo Payments dashboard and navigate to **Dodo Payments (Live Mode) > Developer > Webhooks** and click **Add Webhook**
 
    <Frame>
-     <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/14.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=fda4e9a992317218190c439b9addb6d3" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1884" width="1884" data-og-height="994" height="994" data-path="images/woocommerce/14.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/14.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=9f8a11532db0ef2cdede6d219c666c01 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/14.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6b22a6aaf659dead69b106577ff05466 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/14.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ab862a7efc80c6c372c2e04a1f327c31 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/14.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=05f669c809db2894eb36f670aedd022e 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/14.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d3b6711442f8698e61d44e52e828e48c 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/14.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=672238e54bb5a2a5f8b577b78c2163e1 2500w" />
+     <img alt="Dodo Payments for WooCommerce Plugin" />
    </Frame>
 
 10. Paste the URL you copied in step 8 into the dialog and click **Add Webhook**
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/15.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=da9541f69ffaa9e37f4135c6163329c0" alt="Dodo Payments for WooCommerce Plugin" data-og-width="542" width="542" data-og-height="417" height="417" data-path="images/woocommerce/15.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/15.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=0bf8c0460d7557db7c711976e4ae9161 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/15.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=0f33bd4bddaeaaa9aff0ec518074a480 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/15.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=24225c9843c803f2214acac0479642d6 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/15.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=f01badbf8baa0b7770fd6e51d03e8045 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/15.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=87b89e2108a0f46f57ebdd4e97cfb3ac 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/15.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d6c1fb19f712fbb340bca686969e8048 2500w" />
+      <img alt="Dodo Payments for WooCommerce Plugin" />
     </Frame>
 
 11. After creating the webhook, click the eye icon next to the redacted **Signing Key** to reveal and copy it
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/16.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=9f342ef95be984773dd065c0fd46f1a4" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1527" width="1527" data-og-height="356" height="356" data-path="images/woocommerce/16.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/16.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3407319293064105d31efa4032e45dd7 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/16.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3a1a0ad20144ae99e4dff2a3c33538be 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/16.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=fb2e1b25dc49f4c0d59d322c16d86388 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/16.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=23f07c1794323d4c3c25770f518da6d4 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/16.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=87c6b74ba1f89b0e72233c1139c0fc09 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/16.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6d06043734c649be1f27cb09453a3f3a 2500w" />
+      <img alt="Dodo Payments for WooCommerce Plugin" />
     </Frame>
 
 12. Paste the Signing Key into the **Live Webhook Signing Key** field in your plugin settings and save the changes
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/17.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=2cfee72402218b0170d63c2b136d9de9" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1608" width="1608" data-og-height="155" height="155" data-path="images/woocommerce/17.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/17.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6398d813108fd0605431e0e64c603f74 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/17.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=8640929633c1b9ab8c495662a450d4e5 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/17.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=75110e10e3f5fbf386275ea2630e460c 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/17.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6568d37b7580255f12ec3085ec0b99fc 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/17.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=88725926847bad143e6805a6b0922f79 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/17.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=321bd9564a79a4727af2c5eaa9f14c0c 2500w" />
+      <img alt="Dodo Payments for WooCommerce Plugin" />
     </Frame>
 
 13. Review the remaining settings such as **Global Tax Category** and **All Prices are Tax Inclusive**, as these options determine how products sync from WooCommerce to Dodo Payments. Note that **Test API Key** and **Test Webhook Signing Key** are only needed if you plan to use Test Mode
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/18.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=746184a19efe5bfb14febfc6955c4c8e" alt="Dodo Payments for WooCommerce Plugin" data-og-width="1612" width="1612" data-og-height="677" height="677" data-path="images/woocommerce/18.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/18.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=0f23a28766d91b883cb9334dc12cd7c5 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/18.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=3e1864f6a2142f3091a8c79b9d2f73b0 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/18.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=6c7d24ddfe7483a18109706a9d4ad19c 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/18.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=b39a6c8d35cd1e0845cb0075210a0117 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/18.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=c979e5b5b0501f5ed39b2a39fd6d8ba2 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/18.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=d54e8b77215565e4549eb45ee2982379 2500w" />
+      <img alt="Dodo Payments for WooCommerce Plugin" />
     </Frame>
 
 ## You're All Set!
@@ -44486,13 +48390,13 @@ The Dodo Payments WooCommerce plugin provides a seamless integration with your s
 Your WooCommerce store is now integrated with Dodo Payments! Customers can select Dodo Payments at checkout to access all supported payment methods.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/19.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=958daded5beb84eb4e54e02c267d7ecc" alt="Dodo Payments checkout option in WooCommerce" data-og-width="1864" width="1864" data-og-height="913" height="913" data-path="images/woocommerce/19.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/19.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=b5dd381890bf2f7ead2fce04e97fd1f5 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/19.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=986fc2c0fb159e38ce98ddbec2ae1ff5 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/19.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=1571d5a8bcfffd65e89ba903630185f3 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/19.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=e9f8a6e02a8ccf9c9fe6e1ea69e51915 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/19.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=9466a32161cda223e86b1e5f527286a7 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/19.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=baab933597b69daf0b8e907a7b202f3f 2500w" />
+  <img alt="Dodo Payments checkout option in WooCommerce" />
 </Frame>
 
 When customers choose Dodo Payments, they'll be seamlessly redirected to the Dodo Payments checkout page to complete their transaction.
 
 <Frame>
-  <img src="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/20.webp?fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=a78bd2b289d9cc8df8d36da9db540c14" alt="Dodo Payments checkout page" data-og-width="1887" width="1887" data-og-height="1006" height="1006" data-path="images/woocommerce/20.webp" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/20.webp?w=280&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=ee10c1bd33ff3472ca83954832e1b2b0 280w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/20.webp?w=560&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=f7deabe25d4de77a2bc9b2107b1242e8 560w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/20.webp?w=840&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=877939c3e1cee93cf5f1e2cbf2563359 840w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/20.webp?w=1100&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=7883ef38e2af9371149ac45041f75462 1100w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/20.webp?w=1650&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=051d146e4e41ca280d5ae23da3b45909 1650w, https://mintcdn.com/dodopayments/rsanoiHs7RZfcFW7/images/woocommerce/20.webp?w=2500&fit=max&auto=format&n=rsanoiHs7RZfcFW7&q=85&s=9becee8cd9e067951d6ffc6018a1450a 2500w" />
+  <img alt="Dodo Payments checkout page" />
 </Frame>
 
 ## Key Features
@@ -44554,7 +48458,7 @@ Connect Dodo Payments to thousands of apps and services through Zapier. Automate
     In your Dodo Payments dashboard, navigate to <b>Webhooks → + Add Endpoint</b> and expand the integrations dropdown.
 
     <Frame>
-      <img src="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/zapier.png?fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=4f04fe274ed3c2135baaa23e7f3cf566" alt="Add Endpoint and integrations dropdown" data-og-width="1636" width="1636" data-og-height="944" height="944" data-path="images/integrations/zapier.png" data-optimize="true" data-opv="3" srcset="https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/zapier.png?w=280&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=5b9dbe8b963b85ef7b59c1a3fd58bbf4 280w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/zapier.png?w=560&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=61a14a0fe0850e99d1c0d5d91dd7726c 560w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/zapier.png?w=840&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=c5eec4281e15eececf621f99a8c2ad56 840w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/zapier.png?w=1100&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=dfed97e8adf23e8d8295379d20ac30f0 1100w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/zapier.png?w=1650&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=9b4b78a71ca2cf4bfb1975201c5de867 1650w, https://mintcdn.com/dodopayments/slbAEdrLLwKHfaRf/images/integrations/zapier.png?w=2500&fit=max&auto=format&n=slbAEdrLLwKHfaRf&q=85&s=d4761c27e35cccf1926461f608370339 2500w" />
+      <img alt="Add Endpoint and integrations dropdown" />
     </Frame>
   </Step>
 

@@ -50,6 +50,7 @@ supabaseDOC.md
 
 # test files and pages (not needed in production)
 app/test/
+app/test-checkout/
 **/__tests__/
 **/*.test.ts
 **/*.test.tsx
