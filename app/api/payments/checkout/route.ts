@@ -94,7 +94,12 @@ export async function POST() {
     });
 
     // Call Dodo Payments API to create subscription
-    const dodoResponse = await fetch('https://api.dodopayments.com/v1/subscriptions', {
+    // Use sandbox for test_mode, live for live_mode
+    const baseUrl = DODO_ENVIRONMENT === 'test_mode'
+      ? 'https://sandbox.dodopayments.com'
+      : 'https://live.dodopayments.com';
+
+    const dodoResponse = await fetch(`${baseUrl}/v1/subscriptions`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${DODO_API_KEY}`,
