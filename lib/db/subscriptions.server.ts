@@ -107,6 +107,18 @@ export async function updateSubscriptionServerSide(
     if (subscription.next_billing_at !== undefined) updateData.next_billing_at = subscription.next_billing_at;
     if (subscription.cancelled_at !== undefined) updateData.cancelled_at = subscription.cancelled_at;
 
+    // Log raw update data BEFORE attempting update
+    logger.info('Attempting subscription update', {
+      userId,
+      updateData: JSON.stringify(updateData),
+      hasPlan: !!subscription.plan,
+      hasStatus: !!subscription.status,
+      hasPeriodStart: !!subscription.current_period_start,
+      hasPeriodEnd: !!subscription.current_period_end,
+      hasDodoCustomerId: !!subscription.dodo_customer_id,
+      hasDodoSubscriptionId: !!subscription.dodo_subscription_id,
+    });
+
     const { data, error } = await supabase
       .from('subscriptions')
       .update(updateData)
@@ -115,6 +127,8 @@ export async function updateSubscriptionServerSide(
       .single();
 
     if (error) {
+      // Log RAW error first (before handleDbError modifies it)
+      console.error('RAW DATABASE ERROR:', JSON.stringify(error, null, 2));
       logger.error('Error updating subscription', {
         userId,
         errorCode: error.code,
