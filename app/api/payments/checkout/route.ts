@@ -66,69 +66,33 @@ export async function POST() {
     }
 
     // ============================================
-    // Stage 4: Call Dodo Payments API
+    // Stage 4: Generate Dodo Checkout URL
     // ============================================
+    // Dodo uses direct checkout URLs - no API call needed
     const returnUrl = process.env.DODO_PAYMENTS_RETURN_URL || 'https://www.qurse.site/checkout/success';
     const cancelUrl = process.env.DODO_PAYMENTS_CANCEL_URL || 'https://www.qurse.site/checkout/cancelled';
 
-    logger.debug('Creating Dodo checkout session', {
+    // Build checkout URL with user metadata
+    const checkoutUrl = new URL(`https://checkout.dodopayments.com/${DODO_PRODUCT_ID}`);
+    checkoutUrl.searchParams.set('return_url', returnUrl);
+    checkoutUrl.searchParams.set('cancel_url', cancelUrl);
+
+    // Add user metadata for webhook
+    if (fullUser.email) {
+      checkoutUrl.searchParams.set('customer_email', fullUser.email);
+    }
+    const customerName = fullUser.user_metadata?.full_name || fullUser.user_metadata?.name;
+    if (customerName) {
+      checkoutUrl.searchParams.set('customer_name', customerName);
+    }
+    checkoutUrl.searchParams.set('metadata_user_id', lightweightUser.userId);
+    checkoutUrl.searchParams.set('metadata_environment', DODO_ENVIRONMENT);
+
+    logger.info('Checkout URL generated', {
       userId: lightweightUser.userId,
       productId: DODO_PRODUCT_ID,
       environment: DODO_ENVIRONMENT,
-    });
-
-    // Call Dodo Payments API to create checkout session (recommended method)
-    // Use test for test_mode, live for live_mode
-    const baseUrl = DODO_ENVIRONMENT === 'test_mode'
-      ? 'https://test.dodopayments.com'
-      : 'https://live.dodopayments.com';
-
-    // Prepare checkout session request
-    const checkoutSessionRequest = {
-      product_cart: [{
-        product_id: DODO_PRODUCT_ID,
-        quantity: 1,
-      }],
-      customer: {
-        email: fullUser.email || '',
-        name: fullUser.user_metadata?.full_name || fullUser.user_metadata?.name || '',
-      },
-      metadata: {
-        user_id: lightweightUser.userId,
-        environment: DODO_ENVIRONMENT,
-      },
-      success_url: returnUrl,
-      cancel_url: cancelUrl,
-    };
-
-    const dodoResponse = await fetch(`${baseUrl}/v1/checkout-sessions`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${DODO_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(checkoutSessionRequest),
-    });
-
-    if (!dodoResponse.ok) {
-      const errorText = await dodoResponse.text();
-      logger.error('Dodo Payments API error', {
-        status: dodoResponse.status,
-        error: errorText,
-        userId: lightweightUser.userId,
-      });
-      return NextResponse.json(
-        { error: 'Failed to create checkout session' },
-        { status: 500 }
-      );
-    }
-
-    const checkoutData = await dodoResponse.json();
-
-    logger.info('Checkout session created', {
-      userId: lightweightUser.userId,
-      checkoutUrl: checkoutData.checkout_url || checkoutData.url,
-      subscriptionId: checkoutData.id,
+      checkoutUrl: checkoutUrl.toString(),
       duration: Date.now() - requestStartTime,
     });
 
@@ -136,8 +100,7 @@ export async function POST() {
     // Stage 5: Return checkout URL
     // ============================================
     return NextResponse.json({
-      checkout_url: checkoutData.checkout_url || checkoutData.url,
-      subscription_id: checkoutData.id,
+      checkout_url: checkoutUrl.toString(),
     });
 
   } catch (error) {
