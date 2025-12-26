@@ -29,6 +29,15 @@ function verifyWebhookSignature(
     // Build signed message: webhookId.timestamp.payload
     const signedContent = `${webhookId}.${timestamp}.${payload}`;
 
+    logger.debug('Signature verification debug', {
+      webhookId,
+      timestamp,
+      signaturePreview: signature.substring(0, 30),
+      payloadLength: payload.length,
+      signedContentLength: signedContent.length,
+      webhookKeyLength: webhookKey.length,
+    });
+
     // Create HMAC SHA256 signature (raw bytes, not hex)
     const hmac = crypto.createHmac('sha256', webhookKey);
     hmac.update(signedContent);
@@ -46,12 +55,25 @@ function verifyWebhookSignature(
     // Decode signature from base64 to raw bytes
     const signatureBuffer = Buffer.from(signatureHash, 'base64');
 
+    logger.debug('Signature comparison', {
+      digestLength: digest.length,
+      signatureBufferLength: signatureBuffer.length,
+      digestBase64: digest.toString('base64').substring(0, 30),
+      receivedSignature: signatureHash.substring(0, 30),
+    });
+
     // Use timing-safe comparison to prevent timing attacks
     if (digest.length !== signatureBuffer.length) {
+      logger.warn('Signature length mismatch', {
+        digestLength: digest.length,
+        signatureBufferLength: signatureBuffer.length,
+      });
       return false;
     }
 
-    return crypto.timingSafeEqual(digest, signatureBuffer);
+    const result = crypto.timingSafeEqual(digest, signatureBuffer);
+    logger.debug('Signature verification result', { result });
+    return result;
   } catch (error) {
     logger.error('Signature verification error', error);
     return false;
