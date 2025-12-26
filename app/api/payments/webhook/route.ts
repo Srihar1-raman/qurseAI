@@ -25,25 +25,29 @@ function verifyWebhookSignature(
   webhookKey: string
 ): boolean {
   try {
-    // Dodo follows Standard Webhooks spec
-    // Build signed message: webhookId.timestamp.payload
-    const signedContent = `${webhookId}.${timestamp}.${payload}`;
-
+    // Based on Standard Webhooks spec - sign webhookId.timestamp.payload
     logger.info('Signature verification debug', {
       webhookId,
       timestamp,
       signaturePreview: signature.substring(0, 30),
       payloadLength: payload.length,
-      signedContentLength: signedContent.length,
       webhookKeyLength: webhookKey.length,
       webhookKeyPreview: webhookKey.substring(0, 10),
       webhookKeyEnd: webhookKey.substring(webhookKey.length - 10),
     });
 
-    // Create HMAC SHA256 signature (raw bytes, not hex)
+    // Build signed message: webhookId.timestamp.payload (Standard Webhooks spec)
+    const signedContent = `${webhookId}.${timestamp}.${payload}`;
+
+    // Create HMAC SHA256 signature - try BOTH methods to see which one Dodo uses
     const hmac = crypto.createHmac('sha256', webhookKey);
     hmac.update(signedContent);
     const digest = hmac.digest();
+
+    // Also try signing ONLY the payload (Python example method)
+    const hmacPayloadOnly = crypto.createHmac('sha256', webhookKey);
+    hmacPayloadOnly.update(payload);
+    const digestPayloadOnly = hmacPayloadOnly.digest();
 
     // Signature format: "v1,base64_hash" - extract base64 hash
     const signatureParts = signature.split(',');
@@ -62,6 +66,8 @@ function verifyWebhookSignature(
       signatureBufferLength: signatureBuffer.length,
       digestBase64: digest.toString('base64').substring(0, 30),
       receivedSignature: signatureHash.substring(0, 30),
+      // Also log payload-only signature for comparison
+      digestPayloadOnlyBase64: digestPayloadOnly.toString('base64').substring(0, 30),
     });
 
     // Use timing-safe comparison to prevent timing attacks
@@ -73,8 +79,29 @@ function verifyWebhookSignature(
       return false;
     }
 
-    const result = crypto.timingSafeEqual(digest, signatureBuffer);
-    logger.info('Signature verification result', { result });
+    // Try Standard Webhooks method first (webhookId.timestamp.payload)
+    let result = crypto.timingSafeEqual(digest, signatureBuffer);
+
+    // If that fails, try payload-only method (Python example)
+    if (!result) {
+      const resultPayloadOnly = crypto.timingSafeEqual(digestPayloadOnly, signatureBuffer);
+      logger.info('Signature verification result', {
+        standardWebhooksMethod: result,
+        payloadOnlyMethod: resultPayloadOnly,
+        usedMethod: resultPayloadOnly ? 'payload-only (Python)' : 'none',
+      });
+
+      // If payload-only method matches, use that result
+      if (resultPayloadOnly) {
+        return true;
+      }
+    } else {
+      logger.info('Signature verification result', {
+        result: true,
+        usedMethod: 'Standard Webhooks (webhookId.timestamp.payload)',
+      });
+    }
+
     return result;
   } catch (error) {
     logger.error('Signature verification error', error);
