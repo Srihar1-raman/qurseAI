@@ -11,7 +11,46 @@ import { isProUser } from '@/lib/services/subscription';
 
 const logger = createScopedLogger('api/payments/checkout');
 
-export async function POST() {
+/**
+ * Detect billing currency from Accept-Language header
+ * Maps locale to currency code (supports any currency)
+ * Current mapping: India -> INR, default -> USD
+ */
+function detectBillingCurrency(acceptLanguage: string | null): string {
+  if (!acceptLanguage) {
+    return 'USD';
+  }
+
+  // Parse Accept-Language header
+  // Format: "en-US,en;q=0.9,hi-IN;q=0.8"
+  const locales = acceptLanguage
+    .split(',')
+    .map(lang => lang.split(';')[0].trim().toLowerCase());
+
+  // Country code to currency mapping (extensible)
+  const countryCodeToCurrency: Record<string, string> = {
+    'in': 'INR',  // India
+    // Add more mappings as needed
+    // 'gb': 'GBP',
+    // 'eu': 'EUR',
+    // 'jp': 'JPY',
+  };
+
+  // Check for country codes in locales
+  for (const locale of locales) {
+    const parts = locale.split('-');
+    if (parts.length === 2) {
+      const countryCode = parts[1];
+      if (countryCodeToCurrency[countryCode]) {
+        return countryCodeToCurrency[countryCode];
+      }
+    }
+  }
+
+  return 'USD';
+}
+
+export async function POST(request: Request) {
   const requestStartTime = Date.now();
 
   try {
@@ -54,7 +93,19 @@ export async function POST() {
     }
 
     // ============================================
-    // Stage 4: Create checkout session using SDK
+    // Stage 4: Detect billing currency
+    // ============================================
+    const acceptLanguage = request.headers.get('accept-language');
+    const billingCurrency = detectBillingCurrency(acceptLanguage);
+
+    logger.info('Billing currency detected', {
+      userId: lightweightUser.userId,
+      currency: billingCurrency,
+      acceptLanguage,
+    });
+
+    // ============================================
+    // Stage 5: Create checkout session using SDK
     // ============================================
     const productId = getProductId();
     const returnUrl = process.env.DODO_PAYMENTS_RETURN_URL || 'https://www.qurse.site/checkout/success';
@@ -80,7 +131,7 @@ export async function POST() {
               fullUser.email?.split('@')[0] ||
               'User',
       },
-      billing_currency: 'USD',
+      billing_currency: billingCurrency as any, // Type assertion: our detector returns valid ISO currency codes
       feature_flags: {
         allow_discount_code: true, // ENABLE DISCOUNT CODES
       },
@@ -102,7 +153,7 @@ export async function POST() {
     }
 
     // ============================================
-    // Stage 5: Return checkout URL
+    // Stage 6: Return checkout URL
     // ============================================
     logger.info('Checkout session created', {
       userId: lightweightUser.userId,

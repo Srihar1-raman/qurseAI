@@ -32,6 +32,7 @@ interface PaymentTransaction {
   id: string;
   event_type: string;
   amount?: number;
+  currency?: string;
   status: string;
   created_at: string;
 }
@@ -168,6 +169,20 @@ export default function PaymentSection() {
     });
   };
 
+  // Format currency with proper symbol (supports any currency)
+  const formatCurrency = (amount: number, currency?: string) => {
+    const currencyCode = currency || 'USD';
+
+    // Use Intl.NumberFormat for proper currency formatting
+    // This handles any currency code (USD, INR, EUR, GBP, etc.)
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: currencyCode,
+      minimumFractionDigits: currencyCode === 'INR' && Number.isInteger(amount / 100) ? 0 : 2,
+      maximumFractionDigits: currencyCode === 'INR' && Number.isInteger(amount / 100) ? 0 : 2,
+    }).format(amount / 100);
+  };
+
   // ========== PRO USER: Billing Management UI ==========
   if (userState.isPro) {
     return (
@@ -223,10 +238,22 @@ export default function PaymentSection() {
           <label className="settings-label">Payment Method</label>
           <div className="account-info">
             <div className="account-details">
-              <h4>Managed via Dodo Payments</h4>
-              <p className="settings-description">
-                Update payment method in customer portal
-              </p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <h4>Managed via Dodo Payments</h4>
+                  <p className="settings-description">
+                    Update payment method, view invoices, or manage subscription in customer portal
+                  </p>
+                </div>
+                <UnifiedButton
+                  variant="secondary"
+                  onClick={handleManageSubscription}
+                  disabled={isLoadingPortal}
+                  style={{ flexShrink: 0 }}
+                >
+                  {isLoadingPortal ? 'Opening...' : 'Manage Subscription'}
+                </UnifiedButton>
+              </div>
             </div>
           </div>
         </div>
@@ -264,7 +291,7 @@ export default function PaymentSection() {
                       </div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontWeight: 500 }}>
-                          ${((transaction.amount || 0) / 100).toFixed(2)}
+                          {formatCurrency(transaction.amount || 0, transaction.currency)}
                         </div>
                         <div style={{
                           fontSize: '12px',
@@ -281,32 +308,6 @@ export default function PaymentSection() {
               )}
             </div>
           </div>
-        </div>
-
-        {/* Subscription Actions - UPDATED WITH PORTAL BUTTON */}
-        <div className="settings-group">
-          <label className="settings-label">Subscription</label>
-          <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-            <UnifiedButton
-              variant="secondary"
-              onClick={handleManageSubscription}
-              disabled={isLoadingPortal}
-            >
-              {isLoadingPortal ? 'Opening Portal...' : 'Manage Subscription'}
-            </UnifiedButton>
-
-            {!subscription?.cancelled_at && (
-              <UnifiedButton
-                variant="danger"
-                onClick={() => setShowCancelModal(true)}
-              >
-                Cancel Plan
-              </UnifiedButton>
-            )}
-          </div>
-          <p className="settings-description" style={{ marginTop: '8px', fontSize: '13px' }}>
-            Manage your subscription, update payment method, or view invoices in the customer portal.
-          </p>
         </div>
 
         {/* Cancel Subscription Modal - UPDATED */}
