@@ -23,3 +23,18 @@
 @tailwind components;
 @tailwind utilities;
 /* stylelint-enable at-rule-no-unknown */
+
+/* Diagram actions for Mermaid, Vega-Lite, PlantUML */
+.diagram-container {
+  @apply relative;
+}
+
+.diagram-actions {
+  @apply absolute top-2 right-2 z-10 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200;
+}
+
+.diagram-actions .action-button {
+  @apply p-1 rounded border border-border bg-background shadow-sm
+         transition-all duration-200 hover:bg-muted hover:scale-105
+         text-muted-foreground flex items-center justify-center;
+}

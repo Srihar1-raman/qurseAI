@@ -28,7 +28,7 @@ export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = React.memo(({ url, clas
     : `https://www.youtube.com/embed/${videoId}`;
 
   return (
-    <div className={`my-6 rounded-lg overflow-hidden border border-border ${className}`}>
+    <div className={`my-6 rounded-lg overflow-hidden ${className}`}>
       <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
         <iframe
           src={embedUrl}

@@ -27,6 +27,7 @@ import {
   PlantUMLEmbed,
 } from '@/components/embeds';
 import { getEmbedType } from '@/lib/embed-utils';
+import { DiagramActions } from '@/components/markdown/DiagramActions';
 
 // Performance constants
 const THROTTLE_DELAY_MS = 150;
@@ -59,6 +60,8 @@ interface MarkdownRendererProps {
   isUserMessage?: boolean;
   /** Indicates if content is actively streaming. Enables performance optimizations like throttling and skipping expensive operations. */
   isStreaming?: boolean;
+  /** Ultra-minimal mode for reasoning sections. Disables ALL expensive rendering: embeds, diagrams, syntax highlighting, table actions, link previews */
+  minimalMode?: boolean;
 }
 
 interface CitationLink {
@@ -176,6 +179,20 @@ const MermaidDiagram: React.FC<{ code: string }> = React.memo(({ code }) => {
     };
   }, [code]);
 
+  const handleDownloadSvg = () => {
+    if (!svg) return;
+
+    const blob = new Blob([svg], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `diagram-${Date.now()}.svg`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   if (error) {
     return (
       <div className="my-5 p-4 border border-border rounded-md bg-destructive/10 text-destructive">
@@ -186,10 +203,13 @@ const MermaidDiagram: React.FC<{ code: string }> = React.memo(({ code }) => {
   }
 
   return (
-    <div
-      className="my-5 flex justify-center"
-      dangerouslySetInnerHTML={{ __html: svg }}
-    />
+    <div className="my-5 relative group diagram-container">
+      <DiagramActions
+        code={code}
+        onDownload={handleDownloadSvg}
+      />
+      <div className="flex justify-center" dangerouslySetInnerHTML={{ __html: svg }} />
+    </div>
   );
 });
 
@@ -554,18 +574,19 @@ function useFastStreamingDetection(content: string, isStreaming: boolean): boole
 const useProcessedContent = (
   content: string,
   isStreaming: boolean = false,
-  isFastStreaming: boolean = false
+  isFastStreaming: boolean = false,
+  explicitMinimalMode: boolean = false
 ): ProcessedContentResult => {
   return useMemo(() => {
     const citations: CitationLink[] = [];
     const latexBlocks: Array<{ id: string; content: string; isBlock: boolean }> = [];
     let modifiedContent = content;
 
-    // NEW: Minimal mode for fast streaming + large content
-    const shouldUseMinimalMode = isStreaming && (
+    // NEW: Minimal mode for fast streaming + large content OR explicit minimal mode
+    const shouldUseMinimalMode = explicitMinimalMode || (isStreaming && (
       content.length > MINIMAL_MODE_THRESHOLD || // Size-based
       isFastStreaming // Rate-based
-    );
+    ));
 
     if (shouldUseMinimalMode) {
       // MINIMAL MODE: Skip ALL expensive operations
@@ -1234,7 +1255,7 @@ const ProcessingIndicator: React.FC = React.memo(() => {
 
 ProcessingIndicator.displayName = 'ProcessingIndicator';
 
-const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false, isStreaming = false }) => {
+const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false, isStreaming = false, minimalMode = false }) => {
   // Detect fast streaming
   const isFastStreaming = useFastStreamingDetection(content, isStreaming);
 
@@ -1243,7 +1264,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
   // This eliminates visible "blocks" and creates buttery smooth streaming experience
 
   // Get current processed content (using content directly, no throttling)
-  const currentProcessed = useProcessedContent(content, isStreaming, isFastStreaming);
+  const currentProcessed = useProcessedContent(content, isStreaming, isFastStreaming, minimalMode);
 
   // Defer full processing if needed
   const { processedContent: finalProcessed, isProcessing: isDeferredProcessing } = useDeferredProcessing(
@@ -1258,9 +1279,12 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
     citations: extractedCitations,
     latexBlocks,
     isProcessing,
-    isMinimalMode
+    isMinimalMode: isProcessedMinimalMode
   } = finalProcessed;
   const citationLinks = extractedCitations;
+
+  // Use explicit minimalMode prop if provided, otherwise use processed result
+  const effectiveMinimalMode = minimalMode || isProcessedMinimalMode;
 
   // Optimized element key generation using content hash instead of indices
   // Use content directly for hash (no throttling needed)
@@ -1455,9 +1479,26 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         const key = getElementKey('code', String(children));
         const code = String(children);
 
+        // MINIMAL MODE: Skip all special renderers, just show plain code blocks
+        if (effectiveMinimalMode) {
+          return (
+            <pre key={key} className="bg-muted rounded-lg p-4 my-4 overflow-x-auto border border-border">
+              <code className="text-sm font-mono">{code}</code>
+            </pre>
+          );
+        }
+
         // Special language renderers
         switch (language) {
           case 'mermaid':
+            // Don't render incomplete mermaid during streaming
+            if (isStreaming && !code.trim().endsWith('```')) {
+              return (
+                <div key={key} className="my-5 p-4 border border-border rounded-md bg-muted/30 text-muted-foreground text-sm">
+                  <p>Rendering diagram...</p>
+                </div>
+              );
+            }
             return <MermaidDiagram key={key} code={code} />;
           case 'vega-lite':
           case 'vegalite':
@@ -1493,7 +1534,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         // Check if this is an embeddable URL
         const embedType = getEmbedType(href);
 
-        if (embedType && !isUserMessage) {
+        // MINIMAL MODE: Skip all embeds
+        if (embedType && !isUserMessage && !effectiveMinimalMode) {
           switch (embedType) {
             case 'youtube':
               return <YouTubeEmbed key={key} url={href} />;
@@ -1536,8 +1578,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
             </Link>
           );
 
-          // Add preview for external links (but not embeds)
-          return external && !embedType ? (
+          // Add preview for external links (but not embeds), skip in minimal mode
+          return external && !embedType && !effectiveMinimalMode ? (
             <LinkPreview key={key} href={href}>
               {linkContent}
             </LinkPreview>
@@ -1575,8 +1617,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           </a>
         );
 
-        // Add preview for external bare URLs (but not embeds)
-        return external && !embedType ? (
+        // Add preview for external bare URLs (but not embeds), skip in minimal mode
+        return external && !embedType && !effectiveMinimalMode ? (
           <LinkPreview key={key} href={href}>
             {bareUrlLink}
           </LinkPreview>
@@ -1640,6 +1682,16 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       },
       table(children) {
         const key = getElementKey('table');
+        // MINIMAL MODE: Simple table without actions
+        if (effectiveMinimalMode) {
+          return (
+            <div key={key} className="my-5 overflow-x-auto border border-border rounded-lg">
+              <table className="min-w-full divide-y divide-border">
+                {children}
+              </table>
+            </div>
+          );
+        }
         return <MarkdownTableWithActions key={key}>{children}</MarkdownTableWithActions>;
       },
       tableRow(children) {
@@ -1706,7 +1758,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         );
       },
     }),
-    [latexBlocks, isUserMessage, getElementKey],
+    [latexBlocks, isUserMessage, getElementKey, effectiveMinimalMode, isStreaming],
   );
 
   // Show a progressive loading state for large content

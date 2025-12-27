@@ -10,7 +10,6 @@ import { createSafeWebhookHandler, extractUserIdSafely } from '@/lib/webhook-saf
 import { updateSubscriptionServerSide } from '@/lib/db/subscriptions.server';
 
 const logger = createScopedLogger('api/payments/webhook');
-const DODO_WEBHOOK_SECRET = process.env.DODO_PAYMENTS_WEBHOOK_SECRET;
 
 // Server-side function to log payment transactions
 async function logPaymentTransaction(
@@ -43,7 +42,7 @@ async function logPaymentTransaction(
 }
 
 export const POST = Webhooks({
-  webhookKey: DODO_WEBHOOK_SECRET!,
+  webhookKey: process.env.DODO_PAYMENTS_WEBHOOK_SECRET || '',
 
   // Log all webhooks for monitoring
   onPayload: async (payload) => {

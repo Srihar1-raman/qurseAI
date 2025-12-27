@@ -25,7 +25,7 @@ export const SpotifyEmbed: React.FC<SpotifyEmbedProps> = React.memo(({ url, clas
   const embedUrl = `https://open.spotify.com/embed/${info.entityType}/${info.id}`;
 
   return (
-    <div className={`my-6 rounded-lg overflow-hidden border border-border ${className}`}>
+    <div className={`my-6 rounded-lg overflow-hidden ${className}`}>
       <iframe
         src={embedUrl}
         title="Spotify embed"

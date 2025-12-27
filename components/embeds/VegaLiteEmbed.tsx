@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
+import { DiagramActions } from '@/components/markdown/DiagramActions';
 
 interface VegaLiteEmbedProps {
   code: string;
@@ -12,6 +13,7 @@ export const VegaLiteEmbed: React.FC<VegaLiteEmbedProps> = React.memo(({ code, c
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [vegaEmbed, setVegaEmbed] = useState<any>(null);
+  const [view, setView] = useState<any>(null);
 
   // Dynamically import vega-embed only on client side
   useEffect(() => {
@@ -51,12 +53,13 @@ export const VegaLiteEmbed: React.FC<VegaLiteEmbedProps> = React.memo(({ code, c
       try {
         const spec = JSON.parse(code);
 
-        await vegaEmbed(containerRef.current!, spec, {
+        const result = await vegaEmbed(containerRef.current!, spec, {
           actions: false,
           renderer: 'svg',
         });
 
         if (!cancelled) {
+          setView(result.view);
           setIsLoading(false);
         }
       } catch (err) {
@@ -79,6 +82,31 @@ export const VegaLiteEmbed: React.FC<VegaLiteEmbedProps> = React.memo(({ code, c
     };
   }, [code, vegaEmbed]);
 
+  const handleDownloadPng = async () => {
+    if (!view) return;
+
+    try {
+      // Get the SVG from the view
+      const url = await view.toImageURL('png', 2);
+
+      // Fetch the image data
+      const response = await fetch(url);
+      const blob = await response.blob();
+
+      // Create download link
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `chart-${Date.now()}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+      console.error('Failed to download chart:', err);
+    }
+  };
+
   return (
     <div className={`my-6 ${className}`}>
       {error ? (
@@ -87,7 +115,13 @@ export const VegaLiteEmbed: React.FC<VegaLiteEmbedProps> = React.memo(({ code, c
           <pre className="text-xs text-muted-foreground overflow-x-auto">{code}</pre>
         </div>
       ) : (
-        <div className="border border-border rounded-lg bg-background overflow-hidden">
+        <div className="relative group">
+          {!isLoading && view && (
+            <DiagramActions
+              code={code}
+              onDownload={handleDownloadPng}
+            />
+          )}
           {isLoading && (
             <div className="flex items-center justify-center p-12 min-h-[300px]">
               <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full"></div>
@@ -95,7 +129,7 @@ export const VegaLiteEmbed: React.FC<VegaLiteEmbedProps> = React.memo(({ code, c
           )}
           <div
             ref={containerRef}
-            className="vega-lite-chart p-4"
+            className="vega-lite-chart p-4 flex justify-center"
             style={{ display: isLoading ? 'none' : 'block' }}
           />
         </div>

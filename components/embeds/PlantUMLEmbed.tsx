@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import encode from 'plantuml-encoder';
+import { DiagramActions } from '@/components/markdown/DiagramActions';
 
 interface PlantUMLEmbedProps {
   code: string;
@@ -55,6 +56,20 @@ export const PlantUMLEmbed: React.FC<PlantUMLEmbedProps> = React.memo(({ code, c
     };
   }, [code]);
 
+  const handleDownloadPng = () => {
+    // Get the PNG version from PlantUML server
+    const encoded = encode.encode(code);
+    const url = `https://www.plantuml.com/plantuml/png/${encoded}`;
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `diagram-${Date.now()}.png`;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  };
+
   return (
     <div className={`my-6 ${className}`}>
       {error ? (
@@ -63,7 +78,13 @@ export const PlantUMLEmbed: React.FC<PlantUMLEmbedProps> = React.memo(({ code, c
           <pre className="text-xs text-muted-foreground overflow-x-auto">{code}</pre>
         </div>
       ) : (
-        <div className="border border-border rounded-lg bg-background overflow-hidden">
+        <div className="relative group">
+          {!isLoading && svg && (
+            <DiagramActions
+              code={code}
+              onDownload={handleDownloadPng}
+            />
+          )}
           {isLoading ? (
             <div className="flex items-center justify-center p-12 min-h-[300px]">
               <div className="flex flex-col items-center gap-3">

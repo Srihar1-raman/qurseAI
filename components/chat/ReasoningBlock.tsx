@@ -117,7 +117,7 @@ export function ReasoningBlock({ reasoning, isStreaming }: ReasoningBlockProps) 
 
           <div className="reasoning-content streaming" ref={previewRef}>
             <div className="reasoning-preview" key={reasoning.length}>
-              <MarkdownRenderer content={reasoning} isUserMessage={false} isStreaming={true} />
+              <MarkdownRenderer content={reasoning} isUserMessage={false} isStreaming={true} minimalMode={true} />
             </div>
           </div>
         </>
@@ -181,7 +181,7 @@ export function ReasoningBlock({ reasoning, isStreaming }: ReasoningBlockProps) 
 
           <div className="reasoning-content">
             <div className="reasoning-full">
-              <MarkdownRenderer content={reasoning} isUserMessage={false} isStreaming={false} />
+              <MarkdownRenderer content={reasoning} isUserMessage={false} isStreaming={false} minimalMode={true} />
             </div>
             <button
               className="reasoning-show-less"
