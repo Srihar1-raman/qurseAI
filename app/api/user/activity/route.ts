@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { createClient } from '@/lib/supabase/server';
-import { transformMessageData, type Message } from '@/app/test/activity-graph/data-transformer';
+import { transformMessageData, type Message } from '@/lib/activity/data-transformer';
 
 export const runtime = 'edge';
 
