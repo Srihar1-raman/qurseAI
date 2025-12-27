@@ -1141,6 +1141,15 @@ const ProcessingIndicator: React.FC = React.memo(() => {
 ProcessingIndicator.displayName = 'ProcessingIndicator';
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content, isUserMessage = false, isStreaming = false, minimalMode = false }) => {
+  // Early return for minimal mode (reasoning) - skip ALL markdown processing
+  if (minimalMode) {
+    return (
+      <div className="whitespace-pre-wrap text-muted-foreground italic opacity-70 leading-relaxed">
+        {content}
+      </div>
+    );
+  }
+
   // Detect fast streaming
   const isFastStreaming = useFastStreamingDetection(content, isStreaming);
 

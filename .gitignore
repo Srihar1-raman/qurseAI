@@ -51,6 +51,7 @@ supabaseDOC.md
 # test files and pages (not needed in production)
 app/test/
 app/test-checkout/
+app/test-activity/
 **/__tests__/
 **/*.test.ts
 **/*.test.tsx
@@ -98,3 +99,4 @@ TEST_*.md
 md/
 claude_code_zai_env.sh
 .env*.local
+
