@@ -247,15 +247,7 @@ const LinkPreview: React.FC<{ href: string; children: React.ReactNode }> = ({ hr
         <span onMouseEnter={handleMouseEnter}>{children}</span>
       </TooltipTrigger>
       <TooltipContent side="bottom" className="max-w-xs p-0" hideArrow>
-        {isLoading ? (
-          <div className="p-3">
-            <div className="animate-pulse space-y-2">
-              <div className="h-3 bg-muted rounded w-3/4"></div>
-              <div className="h-2 bg-muted rounded w-full"></div>
-              <div className="h-2 bg-muted rounded w-1/2"></div>
-            </div>
-          </div>
-        ) : preview ? (
+        {preview ? (
           <div className="p-0">
             {preview.image && (
               <img
@@ -272,11 +264,7 @@ const LinkPreview: React.FC<{ href: string; children: React.ReactNode }> = ({ hr
               <p className="text-xs text-white/70 mt-1.5 truncate">{new URL(href).hostname}</p>
             </div>
           </div>
-        ) : (
-          <div className="p-2.5">
-            <p className="text-xs text-white">{new URL(href).hostname}</p>
-          </div>
-        )}
+        ) : null}
       </TooltipContent>
     </Tooltip>
   );
