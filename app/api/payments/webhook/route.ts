@@ -32,14 +32,49 @@ async function logPaymentTransaction(
 
     // Get internal subscription UUID (foreign key to subscriptions table)
     let internalSubscriptionId: string | null = null;
+
     if (dodoSubscriptionId) {
-      const { data: subData } = await supabase
+      // Try to find subscription by Dodo subscription ID
+      const { data: subData, error: subError } = await supabase
         .from('subscriptions')
         .select('id')
         .eq('user_id', userId)
         .eq('dodo_subscription_id', dodoSubscriptionId)
         .maybeSingle();
-      internalSubscriptionId = subData?.id || null;
+
+      if (subError) {
+        logger.error('Subscription lookup failed', subError, {
+          userId,
+          dodoSubscriptionId,
+        });
+      }
+
+      if (subData?.id) {
+        internalSubscriptionId = subData.id;
+      } else {
+        logger.warn('Subscription not found by dodo_subscription_id, trying fallback', {
+          userId,
+          dodoSubscriptionId,
+        });
+
+        // Fallback: Try to get ANY active subscription for this user
+        const { data: fallbackSub } = await supabase
+          .from('subscriptions')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .maybeSingle();
+
+        internalSubscriptionId = fallbackSub?.id || null;
+
+        if (!internalSubscriptionId) {
+          logger.error('No subscription found for user', {
+            userId,
+            dodoSubscriptionId,
+            eventType,
+          });
+        }
+      }
     }
 
     await supabase.from('payment_transactions').insert({
