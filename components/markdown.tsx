@@ -6,7 +6,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Latex from 'react-latex-next';
 import Marked, { ReactRenderer } from 'marked-react';
-import React, { useCallback, useMemo, useState, Fragment, useRef, lazy, Suspense, useEffect } from 'react';
+import React, { useCallback, useMemo, useState, Fragment, useRef, useEffect } from 'react';
 import mermaid from 'mermaid';
 
 import { Button } from '@/components/ui/button';
@@ -371,125 +371,10 @@ const LazyCodeBlockComponent: React.FC<CodeBlockProps> = ({ children, language, 
   );
 };
 
-const LazyCodeBlock = lazy(() => Promise.resolve({ default: LazyCodeBlockComponent }));
-
-// Synchronous CodeBlock component for smaller blocks
-const SyncCodeBlock: React.FC<CodeBlockProps> = ({ language, children, elementKey }) => {
-  const toast = useToast();
-  const { resolvedTheme } = useTheme();
-  const [highlightedCode, setHighlightedCode] = useState<string>('');
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function highlight() {
-      setIsLoading(true);
-      try {
-        const html = await highlightCode(
-          children,
-          language || 'text',
-          resolvedTheme === 'dark'
-        );
-        if (!cancelled) {
-          setHighlightedCode(html);
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.warn('Syntax highlighting failed, using plain text:', error);
-        if (!cancelled) {
-          setHighlightedCode(escapeHtml(children));
-          setIsLoading(false);
-        }
-      }
-    }
-
-    highlight();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [children, language, resolvedTheme]);
-
-  const handleCopy = useCallback(async () => {
-    try {
-      await navigator.clipboard.writeText(children);
-      toast.success('Code copied to clipboard');
-    } catch (error) {
-      console.error('Failed to copy code:', error);
-      toast.error('Failed to copy code');
-    }
-  }, [children, toast]);
-
-  return (
-    <div className="group relative my-5 rounded-md border border-border bg-accent overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-2 bg-accent border-b border-border">
-        <div className="flex items-center gap-2">
-          {language && (
-            <span className="text-xs font-medium text-muted-foreground lowercase">{language}</span>
-          )}
-        </div>
-
-        <div className="flex gap-1">
-          <button
-            onClick={handleCopy}
-            className="p-1 rounded border border-border bg-background shadow-sm transition-all duration-200 hover:bg-muted hover:scale-105 text-muted-foreground"
-            title="Copy code"
-          >
-            <Icon name="copy" alt="Copy" />
-          </button>
-        </div>
-      </div>
-
-      <div className="relative">
-        {isLoading ? (
-          <div className="font-mono text-sm leading-relaxed p-2 text-muted-foreground animate-pulse">
-            Loading syntax highlighter...
-          </div>
-        ) : (
-          <div
-            className="shiki-wrapper text-sm leading-relaxed p-2 overflow-x-auto"
-            style={{
-              fontFamily: MONOSPACE_FONT,
-            }}
-            dangerouslySetInnerHTML={{
-              __html: highlightedCode,
-            }}
-          />
-        )}
-      </div>
-    </div>
-  );
-};
-
 const CodeBlock: React.FC<CodeBlockProps> = React.memo(
   ({ language, children, elementKey }) => {
-    // Use lazy loading for large code blocks
-    if (children.length > 5000) {
-      return (
-        <Suspense fallback={
-          <div className="group relative my-5 rounded-md border border-border bg-accent overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2 bg-accent border-b border-border">
-              <div className="flex items-center gap-2">
-                {language && (
-                  <span className="text-xs font-medium text-muted-foreground lowercase">{language}</span>
-                )}
-              </div>
-            </div>
-            <div className="font-mono text-sm leading-relaxed p-2 text-muted-foreground">
-              <div className="animate-pulse">Loading code block...</div>
-            </div>
-          </div>
-        }>
-          <LazyCodeBlock language={language} elementKey={elementKey}>
-            {children}
-          </LazyCodeBlock>
-        </Suspense>
-      );
-    }
-
-    // Use synchronous rendering for smaller blocks
-    return <SyncCodeBlock language={language} elementKey={elementKey}>{children}</SyncCodeBlock>;
+    // Always use synchronous rendering to avoid hooks violations
+    return <LazyCodeBlockComponent language={language} elementKey={elementKey}>{children}</LazyCodeBlockComponent>;
   },
   (prevProps, nextProps) => {
     return (

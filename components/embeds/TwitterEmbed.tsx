@@ -10,13 +10,15 @@ interface TwitterEmbedProps {
 
 export const TwitterEmbed: React.FC<TwitterEmbedProps> = React.memo(({ url, className = '' }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // ALL hooks must be called before any conditional returns
   const info = useMemo(() => {
     if (!isTwitterUrl(url)) return null;
     return extractTwitterInfo(url);
   }, [url]);
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || !info) return;
 
     // Load Twitter widget script if not already loaded
     const scriptId = 'twitter-widget-script';
@@ -46,8 +48,9 @@ export const TwitterEmbed: React.FC<TwitterEmbedProps> = React.memo(({ url, clas
     };
 
     loadScript();
-  }, [url]);
+  }, [url, info]);
 
+  // Conditional rendering AFTER all hooks
   if (!info) {
     return (
       <div className={`border border-border rounded-lg p-4 bg-muted/30 ${className}`}>
