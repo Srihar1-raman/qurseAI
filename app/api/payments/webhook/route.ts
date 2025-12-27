@@ -20,12 +20,35 @@ async function logPaymentTransaction(
   const supabase = await createAdminClient();
 
   try {
+    // Extract amount from payload - Dodo uses total_amount field (not amount)
+    // Reference: https://docs.dodopayments.com/webhooks/intents/payment
+    const amount = paymentData.total_amount || paymentData.amount || 0;
+
+    // Extract Dodo's external subscription ID
+    const dodoSubscriptionId = paymentData.subscription_id ||
+                               paymentData.subscription?.id ||
+                               paymentData.subscription?.subscription_id ||
+                               null;
+
+    // Get internal subscription UUID (foreign key to subscriptions table)
+    let internalSubscriptionId: string | null = null;
+    if (dodoSubscriptionId) {
+      const { data: subData } = await supabase
+        .from('subscriptions')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('dodo_subscription_id', dodoSubscriptionId)
+        .maybeSingle();
+      internalSubscriptionId = subData?.id || null;
+    }
+
     await supabase.from('payment_transactions').insert({
       user_id: userId,
+      subscription_id: internalSubscriptionId, // Internal UUID (foreign key)
       dodo_payment_id: paymentData.payment_id || paymentData.id,
-      dodo_subscription_id: paymentData.subscription_id,
+      dodo_subscription_id: dodoSubscriptionId, // External Dodo ID
       event_type: eventType,
-      amount: paymentData.amount,
+      amount: amount,
       currency: paymentData.currency || 'USD',
       status: eventType.includes('succeeded') ? 'succeeded' : 'failed',
       metadata: paymentData,
@@ -35,6 +58,10 @@ async function logPaymentTransaction(
       userId,
       eventType,
       paymentId: paymentData.payment_id || paymentData.id,
+      internalSubscriptionId,
+      dodoSubscriptionId,
+      amount,
+      currency: paymentData.currency,
     });
   } catch (error) {
     logger.error('Failed to log payment transaction', error, { userId });

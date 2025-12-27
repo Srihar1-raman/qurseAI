@@ -34,7 +34,7 @@ export default function CheckoutCancelledPage() {
         href="/"
         className="font-reenie font-medium hover:opacity-80 transition-opacity"
         style={{
-          fontSize: '52px',
+          fontSize: '72px',
           letterSpacing: '-0.5px',
           color: 'var(--color-text)',
           textDecoration: 'none',

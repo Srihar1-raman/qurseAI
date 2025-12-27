@@ -1387,9 +1387,25 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
             return <MermaidDiagram key={key} code={code} />;
           case 'vega-lite':
           case 'vegalite':
+            // Don't render during streaming to avoid hooks violations
+            if (isStreaming) {
+              return (
+                <div key={key} className="my-5 p-4 border border-border rounded-md bg-muted/30 text-muted-foreground text-sm">
+                  <p>Rendering chart...</p>
+                </div>
+              );
+            }
             return <VegaLiteEmbed key={key} code={code} />;
           case 'plantuml':
           case 'puml':
+            // Don't render during streaming to avoid hooks violations
+            if (isStreaming) {
+              return (
+                <div key={key} className="my-5 p-4 border border-border rounded-md bg-muted/30 text-muted-foreground text-sm">
+                  <p>Rendering diagram...</p>
+                </div>
+              );
+            }
             return <PlantUMLEmbed key={key} code={code} />;
           default:
             return (
@@ -1420,7 +1436,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         const embedType = getEmbedType(href);
 
         // MINIMAL MODE: Skip all embeds
-        if (embedType && !isUserMessage && !effectiveMinimalMode) {
+        // Also skip embeds during streaming to prevent hooks violations
+        if (embedType && !isUserMessage && !effectiveMinimalMode && !isStreaming) {
           switch (embedType) {
             case 'youtube':
               return <YouTubeEmbed key={key} url={href} />;

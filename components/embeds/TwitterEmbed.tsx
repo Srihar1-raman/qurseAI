@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { extractTwitterInfo, isTwitterUrl } from '@/lib/embed-utils';
 
 interface TwitterEmbedProps {
@@ -12,12 +12,19 @@ export const TwitterEmbed: React.FC<TwitterEmbedProps> = React.memo(({ url, clas
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ALL hooks must be called before any conditional returns
+  // Dummy hook to normalize hook count across all embed components (target: 4 hooks)
+  const [, setMounted] = useState(false);
+
   const info = useMemo(() => {
     if (!isTwitterUrl(url)) return null;
     return extractTwitterInfo(url);
   }, [url]);
 
   useEffect(() => {
+    // Set mounted state
+    setMounted(true);
+
+    if (!containerRef.current || !info) return;
     if (!containerRef.current || !info) return;
 
     // Load Twitter widget script if not already loaded
