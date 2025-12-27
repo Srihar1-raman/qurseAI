@@ -236,3 +236,27 @@ export function getEmbedType(url: string): EmbedType {
   if (/(?:https?:\/\/)?(?:www\.)?figma\.com\/file\/[\w-]+/.test(url)) return 'figma';
   return null;
 }
+
+/**
+ * Check if JSON code is a Vega-Lite specification
+ */
+export function isVegaLiteSpec(code: string): boolean {
+  try {
+    const parsed = JSON.parse(code);
+
+    // Check for $schema field
+    if (parsed.$schema && typeof parsed.$schema === 'string') {
+      return parsed.$schema.includes('vega-lite');
+    }
+
+    // Check for Vega-Lite specific properties
+    // Must have 'mark' AND either 'data' or 'encoding'
+    const hasMark = parsed.mark !== undefined;
+    const hasDataOrEncoding = parsed.data !== undefined || parsed.encoding !== undefined;
+
+    return hasMark && hasDataOrEncoding;
+  } catch {
+    // Not valid JSON
+    return false;
+  }
+}

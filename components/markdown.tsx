@@ -26,7 +26,7 @@ import {
   VegaLiteEmbed,
   PlantUMLEmbed,
 } from '@/components/embeds';
-import { getEmbedType } from '@/lib/embed-utils';
+import { getEmbedType, isVegaLiteSpec } from '@/lib/embed-utils';
 import { DiagramActions } from '@/components/markdown/DiagramActions';
 
 // Performance constants
@@ -1370,6 +1370,9 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           );
         }
 
+        // Check if JSON is actually Vega-Lite spec
+        const isVegaLiteJson = language === 'json' && isVegaLiteSpec(code);
+
         // Special language renderers
         switch (language) {
           case 'mermaid':
@@ -1384,7 +1387,17 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
             return <MermaidDiagram key={key} code={code} />;
           case 'vega-lite':
           case 'vegalite':
-            // Don't render during streaming to avoid hooks violations
+          case 'json':
+            // Handle Vega-Lite JSON
+            if (language === 'json' && !isVegaLiteJson) {
+              // Regular JSON, render as code
+              return (
+                <CodeBlock language={language} elementKey={key} key={key}>
+                  {code}
+                </CodeBlock>
+              );
+            }
+            // Vega-Lite detected
             if (isStreaming) {
               return (
                 <div key={key} className="my-5 p-4 border border-border rounded-md bg-muted/30 text-muted-foreground text-sm">
