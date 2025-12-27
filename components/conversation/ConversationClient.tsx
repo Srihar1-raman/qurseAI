@@ -32,7 +32,7 @@ export function ConversationClient({
   hasInitialMessageParam,
 }: ConversationClientProps) {
   const { selectedModel, chatMode, setChatMode } = useConversation();
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isAuthenticated, isLoading: isAuthLoading } = useAuth();
   const { error: showToastError, success: showToastSuccess } = useToast();
   const { state: rateLimitState, setRateLimitState } = useRateLimit();
   const router = useRouter();
@@ -239,7 +239,7 @@ export function ConversationClient({
 
   const handleShare = React.useCallback(async () => {
     // Check if user is guest - show login popup
-    if (!user || !user.id) {
+    if (!isAuthenticated) {
       setShareAttemptCount(prev => prev + 1);
       setShowGuestSharePopup(true);
       return;
@@ -259,7 +259,7 @@ export function ConversationClient({
       const errorMessage = error instanceof Error ? error.message : 'Failed to share conversation';
       showToastError(errorMessage);
     }
-  }, [conversationId, shareConversation, showToastError, user]);
+  }, [conversationId, shareConversation, showToastError, isAuthenticated]);
 
   const handleUnshare = React.useCallback(async () => {
     if (!conversationId) {
