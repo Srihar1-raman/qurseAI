@@ -1489,13 +1489,13 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         }
 
         // For bare URLs, render as inline link with domain
-        const domain = useMemo(() => {
-          try {
-            return new URL(href).hostname;
-          } catch {
-            return href;
-          }
-        }, [href]);
+        // Extract domain directly without useMemo (hooks not allowed in renderer)
+        let domain: string;
+        try {
+          domain = new URL(href).hostname;
+        } catch {
+          domain = href;
+        }
 
         const bareUrlLink = (
           <a
