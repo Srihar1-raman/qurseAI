@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect, useRef } from 'react';
 import { extractTwitterInfo, isTwitterUrl } from '@/lib/embed-utils';
 
 interface TwitterEmbedProps {
@@ -9,9 +9,43 @@ interface TwitterEmbedProps {
 }
 
 export const TwitterEmbed: React.FC<TwitterEmbedProps> = React.memo(({ url, className = '' }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
   const info = useMemo(() => {
     if (!isTwitterUrl(url)) return null;
     return extractTwitterInfo(url);
+  }, [url]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    // Load Twitter widget script if not already loaded
+    const scriptId = 'twitter-widget-script';
+    const scriptExists = document.getElementById(scriptId);
+
+    const loadScript = () => {
+      if (scriptExists) {
+        // Script already exists, just trigger widget refresh
+        if ((window as any).twttr?.widgets) {
+          (window as any).twttr.widgets.load(containerRef.current);
+        }
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.id = scriptId;
+      script.src = 'https://platform.twitter.com/widgets.js';
+      script.charset = 'utf-8';
+      script.async = true;
+      script.onload = () => {
+        // Script loaded, trigger widget processing
+        if ((window as any).twttr?.widgets) {
+          (window as any).twttr.widgets.load(containerRef.current);
+        }
+      };
+      document.body.appendChild(script);
+    };
+
+    loadScript();
   }, [url]);
 
   if (!info) {
@@ -22,25 +56,8 @@ export const TwitterEmbed: React.FC<TwitterEmbedProps> = React.memo(({ url, clas
     );
   }
 
-  // Load Twitter widget script if not already loaded
-  React.useEffect(() => {
-    const scriptId = 'twitter-widget-script';
-    if (document.getElementById(scriptId)) return;
-
-    const script = document.createElement('script');
-    script.id = scriptId;
-    script.src = 'https://platform.twitter.com/widgets.js';
-    script.charset = 'utf-8';
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      // Don't remove the script as it might be used by other embeds
-    };
-  }, []);
-
   return (
-    <div className={`my-6 ${className}`}>
+    <div ref={containerRef} className={`my-6 ${className}`}>
       <blockquote className="twitter-tweet" data-theme="dark">
         <a href={url}>Loading tweet...</a>
       </blockquote>
