@@ -6,6 +6,7 @@ import { getIconPath } from '@/lib/icon-utils';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import type { AccountSectionProps } from '@/lib/types';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
+import ActivityGraph from '@/components/settings/ActivityGraph';
 
 export default function AccountSection({ 
   user, 
@@ -131,20 +132,17 @@ export default function AccountSection({
       </div>
 
       {/* Account Activity */}
+      <ActivityGraph userId={user?.id} />
+
+      {/* Account Info */}
       <div className="settings-group">
-        <label className="settings-label">Account Activity</label>
-        <div className="settings-item">
-          <div className="settings-item-content">
-            <h4>Last Login</h4>
-            <p>{new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}</p>
-          </div>
-        </div>
+        <label className="settings-label">Account Info</label>
         <div className="settings-item">
           <div className="settings-item-content">
             <h4>Account Created</h4>
             <p>
               {user.created_at
-                ? `${new Date(user.created_at).toLocaleDateString()} at ${new Date(user.created_at).toLocaleTimeString()}`
+                ? `${new Date(user.created_at).toLocaleDateString()}`
                 : 'Recently'}
             </p>
           </div>

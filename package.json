@@ -48,6 +48,7 @@
     "react-pdf": "^10.2.0",
     "react-player": "^3.4.0",
     "react-syntax-highlighter": "^15.6.6",
+    "recharts": "^3.6.0",
     "shiki": "^3.20.0",
     "sugar-high": "^0.9.5",
     "tailwind-merge": "^3.3.1",
