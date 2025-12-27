@@ -1,10 +1,6 @@
 export { YouTubeEmbed } from './YouTubeEmbed';
 export { TwitterEmbed } from './TwitterEmbed';
-export { RedditEmbed } from './RedditEmbed';
 export { SpotifyEmbed } from './SpotifyEmbed';
-export { GistEmbed } from './GistEmbed';
 export { PdfEmbed } from './PdfEmbed';
 export { VegaLiteEmbed } from './VegaLiteEmbed';
 export { PlantUMLEmbed } from './PlantUMLEmbed';
-export { ExcalidrawEmbed } from './ExcalidrawEmbed';
-export { CodepenEmbed } from './CodepenEmbed';

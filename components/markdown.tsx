@@ -21,14 +21,10 @@ import { highlightCode } from '@/lib/shiki';
 import {
   YouTubeEmbed,
   TwitterEmbed,
-  RedditEmbed,
   SpotifyEmbed,
-  GistEmbed,
   PdfEmbed,
   VegaLiteEmbed,
   PlantUMLEmbed,
-  ExcalidrawEmbed,
-  CodepenEmbed,
 } from '@/components/embeds';
 import { getEmbedType } from '@/lib/embed-utils';
 
@@ -1424,14 +1420,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
             return (
               type === YouTubeEmbed ||
               type === TwitterEmbed ||
-              type === RedditEmbed ||
               type === SpotifyEmbed ||
-              type === GistEmbed ||
               type === PdfEmbed ||
               type === VegaLiteEmbed ||
               type === PlantUMLEmbed ||
-              type === ExcalidrawEmbed ||
-              type === CodepenEmbed ||
               type === MermaidDiagram
             );
           }
@@ -1444,12 +1436,18 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           ? 'my-5 leading-relaxed text-foreground'
           : `${isUserMessage ? 'leading-relaxed text-foreground !m-0' : ''} my-5 leading-relaxed text-foreground`;
 
+        const childrenArray = React.Children.toArray(children ?? []);
+
         return (
           <Tag
             key={key}
             className={className}
           >
-            {children}
+            {childrenArray.length === 1
+              ? childrenArray[0]
+              : childrenArray.map((child, index) => (
+                  <React.Fragment key={`paragraph-child-${key}-${index}`}>{child}</React.Fragment>
+                ))}
           </Tag>
         );
       },
@@ -1467,12 +1465,6 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           case 'plantuml':
           case 'puml':
             return <PlantUMLEmbed key={key} code={code} />;
-          case 'excalidraw':
-            return <ExcalidrawEmbed key={key} code={code} />;
-          case 'codepen':
-            return <CodepenEmbed key={key} code={code} type="codepen" />;
-          case 'codesandbox':
-            return <CodepenEmbed key={key} code={code} type="codesandbox" />;
           default:
             return (
               <CodeBlock language={language} elementKey={key} key={key}>
@@ -1507,19 +1499,10 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
               return <YouTubeEmbed key={key} url={href} />;
             case 'twitter':
               return <TwitterEmbed key={key} url={href} />;
-            case 'reddit':
-              return <RedditEmbed key={key} url={href} />;
             case 'spotify':
               return <SpotifyEmbed key={key} url={href} />;
-            case 'gist':
-              return <GistEmbed key={key} url={href} />;
             case 'pdf':
               return <PdfEmbed key={key} url={href} />;
-            case 'codepen':
-            case 'codesandbox':
-            case 'figma':
-              // These are handled via code blocks, not links
-              break;
           }
         }
 
@@ -1621,12 +1604,15 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       list(children, ordered) {
         const key = getElementKey('list');
         const ListTag = ordered ? 'ol' : 'ul';
+        const childrenArray = React.Children.toArray(children);
         return (
           <ListTag
             key={key}
             className={`my-5 pl-6 space-y-2 text-foreground ${ordered ? 'list-decimal' : 'list-disc'}`}
           >
-            {children}
+            {childrenArray.map((child, index) => (
+              <React.Fragment key={`list-item-${key}-${index}`}>{child}</React.Fragment>
+            ))}
           </ListTag>
         );
       },
@@ -1640,12 +1626,15 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       },
       blockquote(children) {
         const key = getElementKey('blockquote');
+        const childrenArray = React.Children.toArray(children);
         return (
           <blockquote
             key={key}
             className="my-6 border-l-4 border-primary pl-4 py-1 text-foreground italic bg-primary/5 rounded-r-md"
           >
-            {children}
+            {childrenArray.map((child, index) => (
+              <React.Fragment key={`blockquote-child-${key}-${index}`}>{child}</React.Fragment>
+            ))}
           </blockquote>
         );
       },
@@ -1655,12 +1644,20 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
       },
       tableRow(children) {
         const key = getElementKey('tableRow');
-        return <TableRow key={key} className="border-b border-border">{children}</TableRow>;
+        const childrenArray = React.Children.toArray(children);
+        return (
+          <TableRow key={key} className="border-b border-border">
+            {childrenArray.map((child, index) => (
+              <React.Fragment key={`tablecell-${key}-${index}`}>{child}</React.Fragment>
+            ))}
+          </TableRow>
+        );
       },
       tableCell(children, flags) {
         const key = getElementKey('tableCell');
         const alignClass = flags.align ? `text-${flags.align}` : 'text-left';
         const isHeader = flags.header;
+        const childrenArray = React.Children.toArray(children);
 
         return isHeader ? (
           <TableHead
@@ -1671,30 +1668,40 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
               'border-border',
             )}
           >
-            {children}
+            {childrenArray.map((child, index) => (
+              <React.Fragment key={`thead-cell-${key}-${index}`}>{child}</React.Fragment>
+            ))}
           </TableHead>
         ) : (
           <TableCell
             key={key}
             className={cn(alignClass, 'border-r last:border-r-0 !p-2 !m-1 !text-wrap', 'border-border')}
           >
-            {children}
+            {childrenArray.map((child, index) => (
+              <React.Fragment key={`tcell-${key}-${index}`}>{child}</React.Fragment>
+            ))}
           </TableCell>
         );
       },
       tableHeader(children) {
         const key = getElementKey('table');
+        const childrenArray = React.Children.toArray(children);
         return (
           <TableHeader key={key} className="!p-1 !m-1 [&_tr]:border-b [&_tr]:border-border">
-            {children}
+            {childrenArray.map((child, index) => (
+              <React.Fragment key={`thead-${key}-${index}`}>{child}</React.Fragment>
+            ))}
           </TableHeader>
         );
       },
       tableBody(children) {
         const key = getElementKey('table');
+        const childrenArray = React.Children.toArray(children);
         return (
           <TableBody key={key} className="!text-wrap !m-1">
-            {children}
+            {childrenArray.map((child, index) => (
+              <React.Fragment key={`tbody-${key}-${index}`}>{child}</React.Fragment>
+            ))}
           </TableBody>
         );
       },
