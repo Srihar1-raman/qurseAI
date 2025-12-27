@@ -265,16 +265,16 @@ const LinkPreview: React.FC<{ href: string; children: React.ReactNode }> = ({ hr
               />
             )}
             <div className="p-2.5">
-              <p className="font-semibold text-xs text-foreground">{preview.title}</p>
+              <p className="font-semibold text-xs text-white">{preview.title}</p>
               {preview.description && (
-                <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{preview.description}</p>
+                <p className="text-xs text-white/80 mt-1 line-clamp-2">{preview.description}</p>
               )}
-              <p className="text-xs text-muted-foreground mt-1.5 truncate">{new URL(href).hostname}</p>
+              <p className="text-xs text-white/70 mt-1.5 truncate">{new URL(href).hostname}</p>
             </div>
           </div>
         ) : (
           <div className="p-2.5">
-            <p className="text-xs text-foreground">{new URL(href).hostname}</p>
+            <p className="text-xs text-white">{new URL(href).hostname}</p>
           </div>
         )}
       </TooltipContent>
@@ -1091,7 +1091,7 @@ const InlineCode: React.FC<{ code: string; elementKey: string }> = React.memo(({
         'before:content-none after:content-none',
         'hover:bg-muted/70 transition-colors duration-150 cursor-pointer',
         'align-baseline',
-        isCopied && 'ring-1 ring-primary/30 bg-primary/5',
+        isCopied && 'ring-1 ring-primary bg-primary/5',
       )}
       style={{
         fontFamily: MONOSPACE_FONT,
@@ -1573,7 +1573,7 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           const linkContent = external ? (
             <InlineExternalLink key={key} href={href} text={linkText} />
           ) : (
-            <Link key={key} href={href} className="text-primary no-underline hover:underline font-medium">
+            <Link key={key} href={href} className="text-foreground no-underline hover:underline font-medium">
               {linkText}
             </Link>
           );
