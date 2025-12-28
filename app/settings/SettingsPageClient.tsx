@@ -218,9 +218,9 @@ function SettingsPageContent() {
 
   // Wrap handleSignOut with useCallback for stable reference
   const handleSignOut = useCallback(async () => {
-    signOut();
-    router.push('/');
-  }, [signOut, router]);
+    await signOut(); // Await for clean state
+    window.location.href = '/'; // Full reload to clear all cache
+  }, [signOut]);
 
   // Wrap handleDeleteAccount with useCallback for stable reference
   const handleDeleteAccount = useCallback(async () => {

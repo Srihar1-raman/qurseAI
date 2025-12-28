@@ -64,10 +64,18 @@ export function transformMessageData(messages: Message[]): ActivityData[] {
     day.outputTokens += msg.output_tokens || 0;
     day.totalTokens += msg.total_tokens || 0;
 
-    // Track by model
+    // Track by model with flat keys for messages and tokens
     if (msg.model) {
       const modelName = msg.model.replace('openai/', '');
-      day.models.set(modelName, (day.models.get(modelName) || 0) + 1);
+      const messageKey = `${modelName}-messages`;
+      const inputKey = `${modelName}-inputTokens`;
+      const outputKey = `${modelName}-outputTokens`;
+      const totalKey = `${modelName}-totalTokens`;
+
+      day.models.set(messageKey, (day.models.get(messageKey) || 0) + 1);
+      day.models.set(inputKey, (day.models.get(inputKey) || 0) + (msg.input_tokens || 0));
+      day.models.set(outputKey, (day.models.get(outputKey) || 0) + (msg.output_tokens || 0));
+      day.models.set(totalKey, (day.models.get(totalKey) || 0) + (msg.total_tokens || 0));
     }
   });
 

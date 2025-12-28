@@ -64,11 +64,11 @@ function Header({
   }, [user?.name, user?.email]);
 
   // Wrap handleSignOut with useCallback for stable reference
-  const handleSignOut = useCallback(() => {
-    signOut(); // Don't await - let auth state change naturally
+  const handleSignOut = useCallback(async () => {
+    await signOut(); // Await for clean state
     setIsDropdownOpen(false);
-    router.push('/');
-  }, [signOut, router]);
+    window.location.href = '/'; // Full reload to clear all cache
+  }, [signOut]);
 
   // Wrap theme handler with useCallback for stable reference
   const handleThemeChange = useCallback((newTheme: 'light' | 'dark' | 'auto') => {

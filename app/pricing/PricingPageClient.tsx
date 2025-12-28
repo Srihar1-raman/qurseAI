@@ -58,14 +58,34 @@ export default function PricingPageClient({ userState: initialUserState }: Prici
     router.push('/');
   }, [userState.isGuest, router]);
 
-  const handleProUpgrade = useCallback(() => {
+  const handleProUpgrade = useCallback(async () => {
     if (userState.isGuest) {
       // Guest: Show sign-in (handled by card)
       return;
     }
-    // Authenticated user: Redirect to payment page
-    // TODO: Update this URL when dodo payment page is ready
-    router.push('/payment');
+    // Authenticated user: Redirect to Dodo checkout
+    try {
+      const response = await fetch('/api/payments/checkout', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create checkout session');
+      }
+
+      const data = await response.json();
+
+      if (!data.checkout_url) {
+        throw new Error('No checkout URL returned');
+      }
+
+      window.location.href = data.checkout_url;
+    } catch (error) {
+      logger.error('Checkout error:', error);
+      // Fallback: redirect to settings payment section
+      router.push('/settings');
+    }
   }, [userState.isGuest, router]);
 
   return (

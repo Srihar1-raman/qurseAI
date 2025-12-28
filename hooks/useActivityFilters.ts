@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react';
 import type { MetricType, TokenType, TimeRange, ActivityData } from '@/components/settings/activity/types';
-import { DEFAULT_TOKEN_MULTIPLIERS } from '@/components/settings/activity/constants';
 
 interface UseActivityFiltersOptions {
   data: ActivityData[];
@@ -35,9 +34,16 @@ export function useActivityFilters(
   // Get the data key based on selections
   const getDataKey = (): string => {
     if (selectedModel !== 'all') {
-      return selectedModel;
+      // Model-specific filtering
+      if (metric === 'tokens') {
+        // Return model-specific token key (e.g., "gpt-4-inputTokens")
+        return `${selectedModel}-${tokenType}Tokens`;
+      }
+      // Return model-specific message count (e.g., "gpt-4-messages")
+      return `${selectedModel}-messages`;
     }
 
+    // All models - use aggregated keys
     if (metric === 'tokens') {
       if (tokenType === 'input') return 'inputTokens';
       if (tokenType === 'output') return 'outputTokens';
@@ -51,17 +57,10 @@ export function useActivityFilters(
     if (selectedModel === 'all') {
       return data;
     }
-    return data.map((d) => {
-      const modelCount = (d[selectedModel] as number) || 0;
-      return {
-        ...d,
-        messages: modelCount,
-        conversations: Math.ceil(modelCount / 3),
-        inputTokens: Math.floor(modelCount * DEFAULT_TOKEN_MULTIPLIERS.input),
-        outputTokens: Math.floor(modelCount * DEFAULT_TOKEN_MULTIPLIERS.output),
-        totalTokens: Math.floor(modelCount * DEFAULT_TOKEN_MULTIPLIERS.total),
-      };
-    });
+    // Data already contains model-specific keys (e.g., "gpt-4-messages", "gpt-4-inputTokens")
+    // No transformation needed - just return data as-is
+    // Chart will use the correct key based on getDataKey()
+    return data;
   };
 
   // Filter data by time range

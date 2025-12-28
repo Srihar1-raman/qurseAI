@@ -252,23 +252,25 @@ export default function PaymentSection() {
         </div>
 
         {/* Cancel Subscription */}
-        <div className="settings-group row">
-          <div className="settings-text">
-            <label className="settings-label">Cancel Subscription</label>
-            <p className="settings-description" style={{ color: 'var(--color-text-muted)' }}>
-              Cancel your subscription and revert to Free plan
-            </p>
+        {!subscription?.cancelled_at && (
+          <div className="settings-group row">
+            <div className="settings-text">
+              <label className="settings-label">Cancel Subscription</label>
+              <p className="settings-description" style={{ color: 'var(--color-text-muted)' }}>
+                Cancel your subscription and revert to Free plan
+              </p>
+            </div>
+            <div className="settings-control">
+              <UnifiedButton
+                variant="danger"
+                onClick={() => setShowCancelModal(true)}
+                disabled={isLoadingPortal}
+              >
+                Cancel
+              </UnifiedButton>
+            </div>
           </div>
-          <div className="settings-control">
-            <UnifiedButton
-              variant="danger"
-              onClick={() => setShowCancelModal(true)}
-              disabled={isLoadingPortal}
-            >
-              Cancel
-            </UnifiedButton>
-          </div>
-        </div>
+        )}
 
         {/* Billing History - WITH REAL DATA */}
         <div className="settings-group">

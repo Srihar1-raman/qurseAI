@@ -86,7 +86,7 @@ export function HeroBlock({ isOpen, showPricing = false, logoPaddingTop, onIconH
                 
               }}
             >
-              $9/month ₹800/month
+              $9/month ~800/month
             </div>
           )}
         </div>
