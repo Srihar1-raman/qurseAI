@@ -60,6 +60,20 @@ export interface Subscription {
 }
 
 /**
+ * Subscription access calculation result
+ * Pure function return type with detailed access information
+ */
+export interface SubscriptionAccessResult {
+  hasAccess: boolean;
+  reason: 'active' | 'grace_period' | 'expired' | 'no_subscription' | 'free_plan' | 'trial' | 'trial_expired';
+  plan: 'free' | 'pro';
+  status: 'active' | 'cancelled' | 'expired' | 'trial';
+  expiresAt?: string; // When access ends (for grace period)
+  timeRemaining?: number; // Milliseconds until expiration
+  isInGracePeriod: boolean;
+}
+
+/**
  * Payment transaction record
  * Complete audit log of all payment and subscription events
  */

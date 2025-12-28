@@ -1,6 +1,6 @@
 /**
  * Next.js Middleware
- * Handles Supabase session refresh for all requests
+ * Handles Supabase session refresh
  */
 
 import { createServerClient } from '@supabase/ssr';

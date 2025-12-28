@@ -1,52 +1,72 @@
 /**
  * Subscription Service
  * Business logic for subscription management and Pro feature gating
+ * Updated to support grace period and auto-downgrade
  */
 
 import { getUserSubscriptionServerSide, updateSubscriptionServerSide } from '@/lib/db/queries.server';
 import { createScopedLogger } from '@/lib/utils/logger';
-import type { Subscription } from '@/lib/types';
+import type { Subscription, SubscriptionAccessResult } from '@/lib/types';
+import { calculateSubscriptionAccess } from './subscription/subscription-access.service';
 
 const logger = createScopedLogger('services/subscription');
 
 /**
- * Check if user has active Pro subscription
+ * Check if user has active Pro subscription (with grace period support)
+ *
+ * This function now respects the grace period:
+ * - Active subscriptions → Check next_billing_at
+ * - Cancelled subscriptions → Keep access until next_billing_at (grace period)
+ * - Expired subscriptions → No access
+ *
  * @param userId - User ID
- * @returns True if user has active Pro subscription
+ * @returns True if user has Pro access (including grace period)
  */
 export async function isProUser(userId: string): Promise<boolean> {
   try {
     const subscription = await getUserSubscriptionServerSide(userId);
 
-    if (!subscription) {
-      return false;
-    }
+    // Use new pure function for access calculation
+    const accessResult = calculateSubscriptionAccess(subscription);
 
-    // Check if subscription is active
-    if (subscription.status !== 'active') {
-      return false;
-    }
+    logger.debug('Pro access check', {
+      userId,
+      hasAccess: accessResult.hasAccess,
+      reason: accessResult.reason,
+      isInGracePeriod: accessResult.isInGracePeriod,
+    });
 
-    // Check if plan is Pro (non-free)
-    if (subscription.plan === 'free') {
-      return false;
-    }
-
-    // Check if subscription period has ended
-    if (subscription.current_period_end) {
-      const periodEnd = new Date(subscription.current_period_end);
-      if (periodEnd < new Date()) {
-        logger.debug('Subscription period ended', { userId, periodEnd });
-        return false;
-      }
-    }
-
-    logger.debug('User is Pro', { userId, plan: subscription.plan });
-    return true;
+    return accessResult.hasAccess;
   } catch (error) {
     logger.error('Error checking Pro status', error, { userId });
     // Fail secure - return false on error
     return false;
+  }
+}
+
+/**
+ * Get detailed subscription access information
+ * Returns detailed access result for debugging and UI display
+ *
+ * @param userId - User ID
+ * @returns SubscriptionAccessResult with detailed access information
+ */
+export async function getSubscriptionAccess(
+  userId: string
+): Promise<SubscriptionAccessResult> {
+  try {
+    const subscription = await getUserSubscriptionServerSide(userId);
+    return calculateSubscriptionAccess(subscription);
+  } catch (error) {
+    logger.error('Error getting subscription access', error, { userId });
+    // Return no access on error
+    return {
+      hasAccess: false,
+      reason: 'no_subscription',
+      plan: 'free',
+      status: 'active',
+      isInGracePeriod: false,
+    };
   }
 }
 
@@ -83,26 +103,14 @@ export async function updateSubscription(
 }
 
 /**
- * Check if subscription is active and valid
+ * Check if subscription is active and valid (UPDATED for grace period support)
  * @param subscription - Subscription object
  * @returns True if subscription is active and not expired
+ *
+ * This function now uses calculateSubscriptionAccess() which includes grace period logic.
+ * Cancelled users with active billing periods will return true.
  */
 export function isSubscriptionActive(subscription: Subscription | null): boolean {
-  if (!subscription) {
-    return false;
-  }
-
-  if (subscription.status !== 'active') {
-    return false;
-  }
-
-  if (subscription.current_period_end) {
-    const periodEnd = new Date(subscription.current_period_end);
-    if (periodEnd < new Date()) {
-      return false;
-    }
-  }
-
-  return true;
+  return calculateSubscriptionAccess(subscription).hasAccess;
 }
 

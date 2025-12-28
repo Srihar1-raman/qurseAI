@@ -147,7 +147,7 @@ if (typeof window !== 'undefined') {
     theme: 'dark',
     securityLevel: 'loose',
     logLevel: 'error',
-    fontFamily: 'inherit',
+    fontFamily: 'inherit'
   });
 }
 

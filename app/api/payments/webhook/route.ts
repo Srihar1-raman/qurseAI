@@ -156,10 +156,12 @@ export const POST = Webhooks({
     logger.info('Subscription renewed', { userId, subscriptionId: data.id });
 
     await updateSubscriptionServerSide(userId, {
+      status: 'active', // Ensure active (was cancelled before renewal)
       current_period_start: data.current_period_start,
       current_period_end: data.current_period_end,
       next_billing_at: data.next_billing_date || data.next_billing_at,
       last_payment_at: new Date().toISOString(),
+      cancelled_at: undefined, // Clear cancellation timestamp
     });
   }),
 
@@ -173,7 +175,11 @@ export const POST = Webhooks({
       return;
     }
 
-    logger.info('Subscription cancelled', { userId, subscriptionId: data.id });
+    logger.info('Subscription cancelled - grace period starts', {
+      userId,
+      subscriptionId: data.id,
+      nextBillingAt: data.next_billing_date || data.next_billing_at
+    });
 
     await updateSubscriptionServerSide(userId, {
       status: 'cancelled',

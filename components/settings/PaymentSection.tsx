@@ -215,7 +215,7 @@ export default function PaymentSection() {
               <h4>$9/month</h4>
               {subscription?.cancelled_at && (
                 <p className="settings-description" style={{ color: 'rgb(239, 68, 68)' }}>
-                  Expires {formatDate(subscription.current_period_end || '')}
+                  Expires {formatDate(subscription.next_billing_at || subscription.current_period_end || '')}
                 </p>
               )}
               {subscription?.next_billing_at && !subscription?.cancelled_at && (
