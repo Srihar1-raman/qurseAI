@@ -15,23 +15,12 @@
   font-size: 24px;
   font-weight: 600;
   color: var(--color-text);
-  margin: 0 0 28px 0;
+  margin: 0 0 24px 0;
   line-height: 1.2;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--color-border);
 }
 
 .settings-group {
-  margin-bottom: 32px;
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  transition: border-color 0.2s ease;
-  overflow: hidden; /* Ensure children don't break border-radius */
-}
-
-.settings-group:hover {
-  border-color: var(--color-border-hover);
+  margin-bottom: 16px;
 }
 
 .settings-group:last-child {
@@ -40,11 +29,10 @@
 
 .settings-label {
   display: block;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--color-text);
-  padding: 16px 16px 12px 16px;
-  letter-spacing: 0.01em;
+  margin-bottom: 8px;
 }
 
 .settings-description {
@@ -59,11 +47,37 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
+  gap: 16px;
+}
+
+.settings-group.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 8px 0;
+}
+
+.settings-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.settings-control {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.settings-item-with-border {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
   border-bottom: 1px solid var(--color-border);
 }
 
-.settings-item:last-child {
+.settings-item-with-border:last-child {
   border-bottom: none;
 }
 
@@ -82,6 +96,22 @@
 
 .settings-item.danger-item {
   border-color: var(--color-danger, #ef4444);
+  border-bottom: 1px solid var(--color-danger, #ef4444);
+  padding: 8px 0;
+}
+
+.settings-item.danger-item:last-child {
+  border-bottom: none;
+}
+
+/* Account Info section items */
+.settings-group:has(.settings-item:not(.danger-item)) .settings-item {
+  border-bottom: 1px solid var(--color-border);
+  padding: 8px 0;
+}
+
+.settings-group:has(.settings-item:not(.danger-item)) .settings-item:last-child {
+  border-bottom: none;
 }
 
 /* Button styles removed - now using UnifiedButton component */
@@ -91,10 +121,9 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 0 16px 16px 16px; /* Consistent with other content */
-  background: transparent;
-  border-radius: 0;
-  border: none;
+  padding: 12px;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
 }
 
 .account-avatar {
@@ -124,8 +153,8 @@
 }
 
 .account-details h4 {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--color-text);
   margin: 0 0 4px 0;
 }
@@ -144,9 +173,9 @@
 
 /* Linked Providers */
 .linked-providers-list {
-  margin: 0 16px 16px 16px;
+  margin-top: 8px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
+  border-radius: 8px;
   overflow: hidden;
 }
 

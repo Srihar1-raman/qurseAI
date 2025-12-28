@@ -88,28 +88,27 @@ export default function ActivityGraph({ userId }: ActivityGraphProps) {
     <div className="settings-group">
       <label className="settings-label">Account Activity</label>
 
-      {/* Controls + Chart + Stats */}
-      <div style={{ padding: '0 16px 16px 16px' }}>
-        <ActivityControls
-          metric={metric}
-          tokenType={tokenType}
-          timeRange={timeRange}
-          selectedModel={selectedModel}
-          models={models}
-          resolvedTheme={resolvedTheme}
-          mounted={mounted}
-          onMetricChange={setMetric}
-          onTokenTypeChange={setTokenType}
-          onTimeRangeChange={setTimeRange}
-          onModelChange={setSelectedModel}
-        />
+      {/* Controls */}
+      <ActivityControls
+        metric={metric}
+        tokenType={tokenType}
+        timeRange={timeRange}
+        selectedModel={selectedModel}
+        models={models}
+        resolvedTheme={resolvedTheme}
+        mounted={mounted}
+        onMetricChange={setMetric}
+        onTokenTypeChange={setTokenType}
+        onTimeRangeChange={setTimeRange}
+        onModelChange={setSelectedModel}
+      />
 
-        <div style={{ marginTop: '16px' }}>
-          <ActivityChart data={filteredData} dataKey={dataKey} />
+      {/* Chart */}
+      <div style={{ marginTop: '16px' }}>
+        <ActivityChart data={filteredData} dataKey={dataKey} />
 
-          {/* Stats */}
-          <ActivityStats data={filteredData} dataKey={dataKey} average={average} />
-        </div>
+        {/* Stats */}
+        <ActivityStats data={filteredData} dataKey={dataKey} average={average} />
       </div>
     </div>
   );

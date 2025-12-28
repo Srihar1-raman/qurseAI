@@ -193,39 +193,38 @@ export default function PaymentSection() {
         <div className="settings-group">
           <label className="settings-label">Plan Status</label>
           <div className="account-info">
-            <div className="account-details">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                <h4>Pro Plan</h4>
+            <div className="account-avatar" style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={{ textAlign: 'center' }}>
+                <h4 style={{ fontFamily: 'var(--font-reenie)', fontSize: '32px', fontWeight: 400, margin: 0, lineHeight: 1 }}>
+                  Qurse Pro
+                </h4>
                 <span style={{
-                  padding: '2px 8px',
-                  borderRadius: '4px',
-                  fontSize: '12px',
+                  fontSize: '11px',
                   fontWeight: 500,
-                  backgroundColor: subscription?.cancelled_at
-                    ? 'rgba(239, 68, 68, 0.1)'
-                    : 'rgba(16, 163, 127, 0.1)',
                   color: subscription?.cancelled_at
                     ? 'rgb(239, 68, 68)'
-                    : 'rgb(16, 163, 127)'
+                    : 'rgb(16, 163, 127)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
                 }}>
                   {subscription?.cancelled_at ? 'Cancelling' : 'Active'}
                 </span>
               </div>
-              <p className="settings-description">
-                $9/month • Unlimited messages
-                {subscription?.cancelled_at && (
-                  <span style={{ color: 'rgb(239, 68, 68)', marginLeft: '8px' }}>
-                    • Expires {formatDate(subscription.current_period_end || '')}
-                  </span>
-                )}
-              </p>
+            </div>
+            <div className="account-details">
+              <h4>$9/month</h4>
+              {subscription?.cancelled_at && (
+                <p className="settings-description" style={{ color: 'rgb(239, 68, 68)' }}>
+                  Expires {formatDate(subscription.current_period_end || '')}
+                </p>
+              )}
               {subscription?.next_billing_at && !subscription?.cancelled_at && (
-                <p className="settings-description" style={{ fontSize: '13px', marginTop: '4px' }}>
+                <p className="settings-description">
                   Next billing: {formatDate(subscription.next_billing_at)}
                 </p>
               )}
               {subscription?.last_payment_at && (
-                <p className="settings-description" style={{ fontSize: '13px', marginTop: '4px' }}>
+                <p className="settings-description">
                   Last payment: {formatDate(subscription.last_payment_at)}
                 </p>
               )}
@@ -234,80 +233,59 @@ export default function PaymentSection() {
         </div>
 
         {/* Payment Method - LINK TO PORTAL */}
-        <div className="settings-group">
-          <label className="settings-label">Payment Method</label>
-          <div className="account-info">
-            <div className="account-details">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '16px' }}>
-                <div style={{ flex: 1 }}>
-                  <h4>Managed via Dodo Payments</h4>
-                  <p className="settings-description">
-                    Update payment method, view invoices, or manage subscription in customer portal
-                  </p>
-                </div>
-                <UnifiedButton
-                  variant="secondary"
-                  onClick={handleManageSubscription}
-                  disabled={isLoadingPortal}
-                  style={{ flexShrink: 0 }}
-                >
-                  {isLoadingPortal ? 'Opening...' : 'Manage Subscription'}
-                </UnifiedButton>
-              </div>
-            </div>
+        <div className="settings-group row">
+          <div className="settings-text">
+            <label className="settings-label">Payment Method</label>
+            <p className="settings-description">
+              Update payment method, view invoices, or manage subscription in customer portal
+            </p>
+          </div>
+          <div className="settings-control">
+            <UnifiedButton
+              variant="secondary"
+              onClick={handleManageSubscription}
+              disabled={isLoadingPortal}
+            >
+              {isLoadingPortal ? 'Opening...' : 'Manage Subscription'}
+            </UnifiedButton>
           </div>
         </div>
 
         {/* Billing History - WITH REAL DATA */}
         <div className="settings-group">
           <label className="settings-label">Billing History</label>
-          <div className="account-info">
-            <div className="account-details">
-              {isLoadingDetails ? (
-                <p className="settings-description">Loading billing history...</p>
-              ) : billingHistory.length === 0 ? (
-                <p className="settings-description">No billing history available</p>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                  {billingHistory.map((transaction) => (
-                    <div
-                      key={transaction.id}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        padding: '12px',
-                        borderRadius: '8px',
-                        backgroundColor: 'var(--color-bg-secondary)',
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 500, marginBottom: '4px' }}>
-                          {transaction.event_type === 'payment.succeeded' ? 'Payment' : 'Subscription'}
-                        </div>
-                        <div style={{ fontSize: '13px', color: 'var(--color-text-secondary)' }}>
-                          {formatDate(transaction.created_at)}
-                        </div>
-                      </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div style={{ fontWeight: 500 }}>
-                          {formatCurrency(transaction.amount || 0, transaction.currency)}
-                        </div>
-                        <div style={{
-                          fontSize: '12px',
-                          color: transaction.status === 'succeeded'
-                            ? 'rgb(16, 163, 127)'
-                            : 'rgb(239, 68, 68)',
-                        }}>
-                          {transaction.status}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+          {isLoadingDetails ? (
+            <div className="linked-providers-list">
+              <p style={{ color: 'var(--color-text-muted)', padding: '12px 0' }}>Loading billing history...</p>
             </div>
-          </div>
+          ) : billingHistory.length === 0 ? (
+            <div className="linked-providers-list">
+              <p style={{ color: 'var(--color-text-muted)', padding: '12px 0' }}>No billing history available</p>
+            </div>
+          ) : (
+            <div className="linked-providers-list">
+              {billingHistory.map((transaction) => (
+                <div key={transaction.id} className="provider-item">
+                  <div style={{ flex: 1 }}>
+                    <span className="provider-name">
+                      {transaction.event_type === 'payment.succeeded' ? 'Payment' : 'Subscription'}
+                    </span>
+                    <div style={{ fontSize: '12px', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
+                      {formatDate(transaction.created_at)}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'right' }}>
+                    <div style={{ fontWeight: 500 }}>
+                      {formatCurrency(transaction.amount || 0, transaction.currency)}
+                    </div>
+                    <span className={`provider-status ${transaction.status === 'succeeded' ? 'connected' : 'not-connected'}`}>
+                      {transaction.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Cancel Subscription Modal - UPDATED */}
