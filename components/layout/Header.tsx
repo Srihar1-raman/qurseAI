@@ -24,7 +24,7 @@ function Header({
   const router = useRouter();
   const pathname = usePathname();
   const { theme, setTheme, resolvedTheme, mounted } = useTheme();
-  const { user: authUser, isLoading, signOut } = useAuth();
+  const { user: authUser, isLoading, signOut, isProUser } = useAuth();
   const { navigateOptimistically } = useOptimisticNavigation();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -102,7 +102,7 @@ function Header({
       >
         {/* Left side - Logo */}
         <div>
-          <Link 
+          <Link
             href="/"
             className="font-reenie font-medium hover:opacity-80 transition-opacity"
             style={{
@@ -112,7 +112,7 @@ function Header({
               textDecoration: 'none',
             }}
           >
-            {'{Qurse}'}
+            {isProUser ? '{Qurse Pro}' : '{Qurse}'}
           </Link>
         </div>
 
@@ -153,7 +153,7 @@ function Header({
     >
       {/* Left side - Logo */}
       <div>
-        <Link 
+        <Link
           href="/"
           className="font-reenie font-medium hover:opacity-80 transition-opacity"
           style={{
@@ -163,7 +163,7 @@ function Header({
             textDecoration: 'none',
           }}
         >
-          {'{Qurse}'}
+          {isProUser ? '{Qurse Pro}' : '{Qurse}'}
         </Link>
       </div>
 

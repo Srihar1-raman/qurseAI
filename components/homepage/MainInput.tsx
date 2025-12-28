@@ -16,8 +16,12 @@ import { useAutoFocus } from '@/hooks/use-auto-focus';
 import { useTextareaAutoResize } from '@/hooks/use-textarea-auto-resize';
 import type { Conversation } from '@/lib/types';
 
-export default function MainInput() {
-  const [inputValue, setInputValue] = useState('');
+interface MainInputProps {
+  inputValue: string;
+  setInputValue: (value: string) => void;
+}
+
+export default function MainInput({ inputValue, setInputValue }: MainInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();

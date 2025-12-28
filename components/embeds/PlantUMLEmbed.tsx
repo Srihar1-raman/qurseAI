@@ -13,6 +13,7 @@ export const PlantUMLEmbed: React.FC<PlantUMLEmbedProps> = React.memo(({ code, c
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [hasError, setHasError] = useState<boolean>(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -20,8 +21,17 @@ export const PlantUMLEmbed: React.FC<PlantUMLEmbedProps> = React.memo(({ code, c
     async function renderDiagram() {
       setIsLoading(true);
       setError('');
+      setHasError(false);
 
       try {
+        // Check if code is empty or just whitespace
+        const trimmedCode = code.trim();
+        if (!trimmedCode || trimmedCode.length < 3) {
+          setHasError(true);
+          setIsLoading(false);
+          return;
+        }
+
         // Encode the PlantUML code
         const encoded = encode.encode(code);
 
@@ -30,6 +40,14 @@ export const PlantUMLEmbed: React.FC<PlantUMLEmbedProps> = React.memo(({ code, c
 
         // Fetch the SVG
         const response = await fetch(url);
+
+        // PlantUML returns 400 for invalid/incomplete diagrams
+        if (response.status === 400) {
+          setHasError(true);
+          setIsLoading(false);
+          return;
+        }
+
         if (!response.ok) {
           throw new Error(`Failed to fetch: ${response.status}`);
         }
@@ -42,8 +60,8 @@ export const PlantUMLEmbed: React.FC<PlantUMLEmbedProps> = React.memo(({ code, c
         }
       } catch (err) {
         if (!cancelled) {
-          console.error('PlantUML rendering error:', err);
-          setError('Failed to render PlantUML diagram');
+          // Mark as error but don't set error message - we'll show code instead
+          setHasError(true);
           setIsLoading(false);
         }
       }
@@ -72,10 +90,10 @@ export const PlantUMLEmbed: React.FC<PlantUMLEmbedProps> = React.memo(({ code, c
 
   return (
     <div className={`my-6 ${className}`}>
-      {error ? (
-        <div className="border border-destructive/50 rounded-lg p-4 bg-destructive/10">
-          <p className="text-sm text-destructive font-medium mb-2">Failed to render PlantUML diagram</p>
-          <pre className="text-xs text-muted-foreground overflow-x-auto">{code}</pre>
+      {hasError ? (
+        // Show code block when diagram fails to render
+        <div className="border border-border rounded-lg bg-muted/30 p-4">
+          <pre className="text-sm overflow-x-auto"><code>{code}</code></pre>
         </div>
       ) : (
         <div className="relative group">

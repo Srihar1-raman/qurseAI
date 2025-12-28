@@ -37,7 +37,7 @@
     "katex": "^0.16.23",
     "lucide-react": "^0.525.0",
     "marked-react": "^3.0.1",
-    "mermaid": "^11.12.2",
+    "mermaid": "^10.9.3",
     "next": "15.5.7",
     "nuqs": "^2.8.5",
     "pdfjs-dist": "^5.4.449",

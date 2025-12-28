@@ -146,6 +146,8 @@ if (typeof window !== 'undefined') {
     startOnLoad: false,
     theme: 'dark',
     securityLevel: 'loose',
+    logLevel: 'error',
+    fontFamily: 'inherit',
   });
 }
 
@@ -159,15 +161,21 @@ const MermaidDiagram: React.FC<{ code: string }> = React.memo(({ code }) => {
 
     async function renderDiagram() {
       try {
-        const { svg } = await mermaid.render(`mermaid-${Math.random().toString(36).substr(2, 9)}`, code);
+        // Validate syntax before rendering
+        await mermaid.parse(code);
+
+        // Only render if parsing succeeded
+        const uniqueId = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
+        const { svg } = await mermaid.render(uniqueId, code);
+
         if (!cancelled) {
           setSvg(svg);
           setError('');
         }
       } catch (err) {
+        // Parse or render failed - show code block instead
         if (!cancelled) {
-          console.error('Mermaid rendering error:', err);
-          setError('Failed to render diagram');
+          setError('Invalid');
         }
       }
     }
@@ -194,10 +202,10 @@ const MermaidDiagram: React.FC<{ code: string }> = React.memo(({ code }) => {
   };
 
   if (error) {
+    // Show code block without error message when diagram fails to render
     return (
-      <div className="my-5 p-4 border border-border rounded-md bg-destructive/10 text-destructive">
-        <p className="text-sm">Failed to render Mermaid diagram</p>
-        <pre className="mt-2 text-xs overflow-x-auto">{code}</pre>
+      <div className="my-5 p-4 border border-border rounded-md bg-muted/30">
+        <pre className="text-sm overflow-x-auto"><code>{code}</code></pre>
       </div>
     );
   }
@@ -1320,19 +1328,50 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         }
 
         // Check if children contain block-level embeds (divs, iframes, etc.)
+        // Also check if children have nested div/iframe structures (like embeds)
         const hasBlockContent = React.Children.toArray(children).some((child: any) => {
-          if (React.isValidElement(child)) {
-            const type = child.type;
-            return (
-              type === YouTubeEmbed ||
-              type === TwitterEmbed ||
-              type === SpotifyEmbed ||
-              type === PdfEmbed ||
-              type === VegaLiteEmbed ||
-              type === PlantUMLEmbed ||
-              type === MermaidDiagram
-            );
+          if (!React.isValidElement(child)) return false;
+
+          const type = child.type;
+          const props = child.props as any;
+
+          // Direct component type check
+          const isDirectEmbed =
+            type === YouTubeEmbed ||
+            type === TwitterEmbed ||
+            type === SpotifyEmbed ||
+            type === PdfEmbed ||
+            type === VegaLiteEmbed ||
+            type === PlantUMLEmbed ||
+            type === MermaidDiagram;
+
+          if (isDirectEmbed) return true;
+
+          // Check if this is an element that renders a div container with embed-like className
+          // This catches wrapped components like memo'd YouTubeEmbed
+          if (props?.className && typeof props.className === 'string') {
+            // YouTube embed has 'rounded-lg overflow-hidden' className
+            if (props.className.includes('rounded-lg') && props.className.includes('overflow-hidden')) {
+              return true;
+            }
           }
+
+          // Deep check: render the child briefly to check what it produces
+          // This is a fallback for wrapped components
+          try {
+            if (typeof type !== 'string') {
+              const typeDisplayName = (type as any)?.displayName || (type as any)?.name;
+              if (typeDisplayName) {
+                return (
+                  typeDisplayName.includes('Embed') ||
+                  typeDisplayName.includes('Diagram')
+                );
+              }
+            }
+          } catch {
+            // Ignore errors during introspection
+          }
+
           return false;
         });
 
@@ -1376,8 +1415,8 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
         // Special language renderers
         switch (language) {
           case 'mermaid':
-            // Don't render incomplete mermaid during streaming
-            if (isStreaming && !code.trim().endsWith('```')) {
+            // Don't render mermaid during streaming - wait for completion
+            if (isStreaming) {
               return (
                 <div key={key} className="my-5 p-4 border border-border rounded-md bg-muted/30 text-muted-foreground text-sm">
                   <p>Rendering diagram...</p>
@@ -1408,8 +1447,16 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
             return <VegaLiteEmbed key={key} code={code} />;
           case 'plantuml':
           case 'puml':
-            // Don't render during streaming to avoid hooks violations
+            // Don't render during streaming to avoid errors with incomplete syntax
             if (isStreaming) {
+              return (
+                <div key={key} className="my-5 p-4 border border-border rounded-md bg-muted/30 text-muted-foreground text-sm">
+                  <p>Rendering diagram...</p>
+                </div>
+              );
+            }
+            // Additional check: don't render if code is too short to be valid
+            if (code.trim().length < 10) {
               return (
                 <div key={key} className="my-5 p-4 border border-border rounded-md bg-muted/30 text-muted-foreground text-sm">
                   <p>Rendering diagram...</p>

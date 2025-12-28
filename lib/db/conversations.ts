@@ -13,27 +13,36 @@ const logger = createScopedLogger('db/conversations');
 /**
  * Get conversations for a user with optional pagination
  * @param userId - User ID
- * @param options - Pagination options (limit, offset)
+ * @param options - Pagination options (limit, offset, ignorePinned)
  * @returns Array of conversations (default limit: 50)
  */
 export async function getConversations(
   userId: string,
-  options?: { limit?: number; offset?: number }
-): Promise<{ 
+  options?: { limit?: number; offset?: number; ignorePinned?: boolean }
+): Promise<{
   conversations: Conversation[];
   hasMore: boolean;
 }> {
   const supabase = createClient();
-  
+
   const limit = options?.limit ?? 50;
   const offset = options?.offset ?? 0;
-  
+  const ignorePinned = options?.ignorePinned ?? false;
+
   let query = supabase
     .from('conversations')
     .select('*, message_count:messages(count)')
-    .eq('user_id', userId)
-    .order('pinned', { ascending: false })
-    .order('updated_at', { ascending: false });
+    .eq('user_id', userId);
+
+  // Order by pinned first only if not ignoring pinned status
+  // Otherwise, just order by updated_at to get most recent
+  if (ignorePinned) {
+    query = query.order('updated_at', { ascending: false });
+  } else {
+    query = query
+      .order('pinned', { ascending: false })
+      .order('updated_at', { ascending: false });
+  }
   
   // Use range() for pagination (handles both offset and limit)
   // When offset = 0, range(0, limit - 1) = first 'limit' rows
@@ -78,16 +87,26 @@ export async function getConversations(
  * Mirror of getConversations for auth users
  */
 export async function getGuestConversations(
-  options?: { limit?: number; offset?: number }
-): Promise<{ 
+  options?: { limit?: number; offset?: number; ignorePinned?: boolean }
+): Promise<{
   conversations: Conversation[];
   hasMore: boolean;
 }> {
   const limit = options?.limit ?? 50;
   const offset = options?.offset ?? 0;
+  const ignorePinned = options?.ignorePinned ?? false;
+
+  const params = new URLSearchParams({
+    limit: limit.toString(),
+    offset: offset.toString(),
+  });
+
+  if (ignorePinned) {
+    params.append('ignorePinned', 'true');
+  }
 
   const response = await fetch(
-    `/api/guest/conversations?limit=${limit}&offset=${offset}`
+    `/api/guest/conversations?${params.toString()}`
   );
 
   if (!response.ok) {

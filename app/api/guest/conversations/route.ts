@@ -32,15 +32,25 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const limit = parseInt(searchParams.get('limit') || '50', 10);
     const offset = parseInt(searchParams.get('offset') || '0', 10);
+    const ignorePinned = searchParams.get('ignorePinned') === 'true';
 
     // Query guest conversations (service-role client required)
-    const { data, error } = await serviceSupabase
+    let query = serviceSupabase
       .from('guest_conversations')
       .select('id, title, created_at, updated_at, session_hash, pinned')
-      .eq('session_hash', sessionHash)
-      .order('pinned', { ascending: false })
-      .order('updated_at', { ascending: false })
-      .range(offset, offset + limit - 1);
+      .eq('session_hash', sessionHash);
+
+    // Order by pinned first only if not ignoring pinned status
+    // Otherwise, just order by updated_at to get most recent
+    if (ignorePinned) {
+      query = query.order('updated_at', { ascending: false });
+    } else {
+      query = query
+        .order('pinned', { ascending: false })
+        .order('updated_at', { ascending: false });
+    }
+
+    const { data, error } = await query.range(offset, offset + limit - 1);
 
     if (error) {
       const userMessage = handleDbError(error, 'api/guest/conversations');

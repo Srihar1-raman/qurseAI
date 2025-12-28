@@ -111,6 +111,18 @@ export function useConversationMessages({
         }
 
         if (!response.ok) {
+          // Try to parse error to see if it's "conversation not found"
+          // This can happen for fresh guest conversations where DB hasn't caught up yet
+          try {
+            const errorData = await response.json();
+            if (errorData.error === 'Conversation not found') {
+              logger.debug('Conversation not found (likely new conversation)', { conversationId: id });
+              setIsLoadingInitialMessages(false);
+              return;
+            }
+          } catch {
+            // If we can't parse the error, fall through to throwing
+          }
           throw new Error('Failed to load messages');
         }
 

@@ -4,6 +4,7 @@ import { useState, useMemo, useCallback, Suspense } from 'react';
 import { useQueryState } from 'nuqs';
 import { messageParser } from '@/lib/url-params/parsers';
 import dynamicImport from 'next/dynamic';
+import { TypingProvider } from '@/lib/contexts/TypingContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/homepage/Hero';
@@ -31,7 +32,11 @@ const ConversationClient = dynamicImport(
 function HomePageContent() {
   const [selectedSearchOption, setSelectedSearchOption] = useState('Chat');
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [inputValue, setInputValue] = useState('');
   const { user } = useAuth();
+
+  // Track if user is typing
+  const isTyping = inputValue.trim().length > 0;
 
   // Extract conversation ID from URL pathname using hook
   const conversationId = useConversationId();
@@ -63,27 +68,28 @@ function HomePageContent() {
   // Always mount ConversationClient (matching Scira's pattern)
   // Conditionally show homepage UI or ConversationClient based on conversationId
   return (
-    <div className="homepage-container">
-      <Header 
-        user={user}
-        showHistoryButton={true}
-        onHistoryClick={handleHistoryClick}
-        showNewChatButton={!!conversationId}
-        onNewChatClick={handleNewChat}
-      />
-      
-      {/* Show homepage UI when no conversation */}
-      {!conversationId && (
-        <>
-      <main 
-        className="flex-1 flex flex-col justify-center items-center px-5 py-10 max-w-3xl mx-auto w-full"
-      >
-        <Hero />
-        
-        {/* Input comes FIRST */}
-        <div style={{ marginTop: '12px', marginBottom: '8px', width: '100%' }}>
-          <MainInput />
-        </div>
+    <TypingProvider isTyping={isTyping}>
+      <div className="homepage-container">
+        <Header
+          user={user}
+          showHistoryButton={true}
+          onHistoryClick={handleHistoryClick}
+          showNewChatButton={!!conversationId}
+          onNewChatClick={handleNewChat}
+        />
+
+        {/* Show homepage UI when no conversation */}
+        {!conversationId && (
+          <>
+        <main
+          className="flex-1 flex flex-col justify-center items-center px-5 py-10 max-w-3xl mx-auto w-full"
+        >
+          <Hero />
+
+          {/* Input comes FIRST */}
+          <div style={{ marginTop: '12px', marginBottom: '8px', width: '100%' }}>
+            <MainInput inputValue={inputValue} setInputValue={setInputValue} />
+          </div>
 
         {/* Control Buttons come BELOW the input */}
         <div 
@@ -104,29 +110,30 @@ function HomePageContent() {
         </div>
       </main>
 
-      <Footer />
-        </>
-      )}
-      
-      {/* Always mount ConversationClient (matching Scira's pattern) */}
-      {/* When conversationId exists, it's visible; when null, it's hidden but mounted */}
-      {/* This pre-initializes useChat hook for instant sends when conversation starts */}
-      <div style={{ display: conversationId ? 'block' : 'none' }}>
-        <ConversationClient
-          conversationId={conversationId || undefined}
-          initialMessages={[]}
-          initialHasMore={false}
-          initialDbRowCount={0}
-          hasInitialMessageParam={hasInitialMessageParam}
+        <Footer user={user} />
+          </>
+        )}
+
+        {/* Always mount ConversationClient (matching Scira's pattern) */}
+        {/* When conversationId exists, it's visible; when null, it's hidden but mounted */}
+        {/* This pre-initializes useChat hook for instant sends when conversation starts */}
+        <div style={{ display: conversationId ? 'block' : 'none' }}>
+          <ConversationClient
+            conversationId={conversationId || undefined}
+            initialMessages={[]}
+            initialHasMore={false}
+            initialDbRowCount={0}
+            hasInitialMessageParam={hasInitialMessageParam}
+          />
+        </div>
+
+        {/* History Sidebar */}
+        <HistorySidebar
+          isOpen={isHistoryOpen}
+          onClose={handleHistoryClose}
         />
       </div>
-      
-      {/* History Sidebar */}
-      <HistorySidebar 
-        isOpen={isHistoryOpen}
-        onClose={handleHistoryClose}
-      />
-    </div>
+    </TypingProvider>
   );
 }
 

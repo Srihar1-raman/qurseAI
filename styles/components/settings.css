@@ -205,8 +205,9 @@
 
 .provider-name {
   flex: 1;
-  font-weight: 500;
+  font-weight: 400;
   color: var(--color-text);
+  font-size: 14px;
 }
 
 .provider-status {

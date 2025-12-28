@@ -1,0 +1,80 @@
+/* ===================================
+   HOMEPAGE COMPONENT STYLES
+   =================================== */
+
+/* Recent Chats */
+.recent-chats {
+  position: fixed;
+  bottom: 30px; /* Above footer */
+  right: 20px;
+  text-align: right;
+  color: var(--color-text-muted);
+  opacity: 0.4;
+  font-size: 11px;
+  font-weight: 400;
+  z-index: 10;
+}
+
+.recent-chats-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 10px;
+  padding: 2px 4px;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s;
+  line-height: 1;
+  transform: translateY(-100%);
+}
+
+.recent-chats:hover .recent-chats-close {
+  opacity: 0.6;
+}
+
+.recent-chats-close:hover {
+  opacity: 1 !important;
+}
+
+.recent-chats-label {
+  display: block;
+  margin-bottom: 4px;
+  text-transform: lowercase;
+  letter-spacing: 0.5px;
+}
+
+.recent-chats-links {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  text-align: right;
+}
+
+.recent-chat-link {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+  font-family: inherit;
+  display: block;
+}
+
+.recent-chat-link:hover {
+  opacity: 0.7;
+}
+
+.recent-chat-separator {
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  opacity: 0.3;
+}
