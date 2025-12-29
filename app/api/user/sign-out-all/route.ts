@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createScopedLogger } from '@/lib/utils/logger';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, createAdminClient } from '@/lib/supabase/server';
 
 export const runtime = 'edge';
 
@@ -11,9 +11,9 @@ const logger = createScopedLogger('api/user/sign-out-all');
  * POST /api/user/sign-out-all
  *
  * Uses Supabase Admin API to revoke all sessions for the user
- * This forces sign out on all devices by invalidating all refresh tokens
+ * This forces sign out on all devices by deleting all sessions for the user
  */
-export async function POST(request: NextRequest) {
+export async function POST() {
   try {
     // Initialize Supabase client
     const supabase = await createClient();
@@ -28,47 +28,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the user's session to extract the JWT
-    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    // Get the user's JWT token from their current session
+    const { data: { session } } = await supabase.auth.getSession();
 
-    if (sessionError || !session) {
-      logger.error('Error getting session', sessionError);
+    if (!session || !session.access_token) {
+      logger.error('No active session found');
       return NextResponse.json(
-        { error: 'Failed to get session' },
-        { status: 500 }
+        { error: 'No active session' },
+        { status: 400 }
       );
     }
 
-    // Use Supabase Management API to revoke all sessions
-    // We need to use the admin client which requires service role key
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+    // Use admin client to sign out from all devices
+    // Pass the JWT token and specify 'global' scope to revoke all sessions
+    const adminClient = await createAdminClient();
 
-    if (!supabaseUrl || !supabaseServiceKey) {
-      logger.error('Supabase service role credentials not configured');
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
-      );
-    }
+    const { error: signOutError } = await adminClient.auth.admin.signOut(
+      session.access_token,  // JWT token
+      'global'              // Revoke all sessions across all devices
+    );
 
-    // Call Supabase Management API to revoke all sessions
-    // This invalidates all refresh tokens for the user
-    const adminResponse = await fetch(`${supabaseUrl}/auth/v1/admin/users/${user.id}/logout`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${supabaseServiceKey}`,
-        'Content-Type': 'application/json',
-        'apikey': supabaseServiceKey,
-      },
-    });
-
-    if (!adminResponse.ok) {
-      const errorData = await adminResponse.json().catch(() => ({}));
-      logger.error('Failed to revoke all sessions', {
-        status: adminResponse.status,
-        error: errorData,
-      });
+    if (signOutError) {
+      logger.error('Failed to sign out from all devices', signOutError);
       return NextResponse.json(
         { error: 'Failed to sign out from all devices' },
         { status: 500 }

@@ -63,7 +63,7 @@ export function ToastComponent({ toast, onDismiss }: ToastProps) {
       }}
     >
       {/* Message */}
-      <div className="flex-1 text-sm font-medium text-[var(--color-text)]">
+      <div className="flex-1 text-sm text-[var(--color-text)]">
         {toast.message}
       </div>
 

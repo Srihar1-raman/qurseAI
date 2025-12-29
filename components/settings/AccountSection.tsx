@@ -8,6 +8,7 @@ import { useAuth } from '@/lib/contexts/AuthContext';
 import type { AccountSectionProps } from '@/lib/types';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 import ActivityGraph from '@/components/settings/ActivityGraph';
+import SignOutAllModal from '@/components/settings/SignOutAllModal';
 
 export default function AccountSection({
   user,
@@ -19,25 +20,38 @@ export default function AccountSection({
 }: AccountSectionProps) {
   const { resolvedTheme, mounted } = useTheme();
   const [isSigningOutAll, setIsSigningOutAll] = useState(false);
+  const [showSignOutAllModal, setShowSignOutAllModal] = useState(false);
+
   // Get linked providers from AuthContext (cached across navigations)
   const { linkedProviders, isLoadingProviders } = useAuth();
 
   const handleSignOutAllDevices = async () => {
-    if (!confirm('Are you sure you want to sign out from all devices? This will immediately sign you out from all devices where your account is logged in.')) {
-      return;
-    }
-
     setIsSigningOutAll(true);
     try {
       const result = await onSignOutAllDevices();
       if (result.success) {
-        // Sign out was successful, the method already redirects
+        // Sign out was successful, close modal and redirect
+        setShowSignOutAllModal(false);
         window.location.href = '/';
       } else {
+        setShowSignOutAllModal(false);
         alert(result.error || 'Failed to sign out from all devices');
+        setIsSigningOutAll(false);
       }
-    } finally {
+    } catch {
+      setShowSignOutAllModal(false);
+      alert('An unexpected error occurred');
       setIsSigningOutAll(false);
+    }
+  };
+
+  const openSignOutAllModal = () => {
+    setShowSignOutAllModal(true);
+  };
+
+  const closeSignOutAllModal = () => {
+    if (!isSigningOutAll) {
+      setShowSignOutAllModal(false);
     }
   };
 
@@ -196,10 +210,10 @@ export default function AccountSection({
           </div>
           <UnifiedButton
             variant="secondary"
-            onClick={handleSignOutAllDevices}
+            onClick={openSignOutAllModal}
             disabled={isSigningOutAll}
           >
-            {isSigningOutAll ? 'Signing Out...' : 'Sign Out All'}
+            Sign Out All
           </UnifiedButton>
         </div>
         <div className="settings-item danger-item">
@@ -221,6 +235,14 @@ export default function AccountSection({
           </UnifiedButton>
         </div>
       </div>
+
+      {/* Sign Out All Devices Modal */}
+      <SignOutAllModal
+        isOpen={showSignOutAllModal}
+        onClose={closeSignOutAllModal}
+        onConfirm={handleSignOutAllDevices}
+        isSigningOut={isSigningOutAll}
+      />
     </div>
   );
 }

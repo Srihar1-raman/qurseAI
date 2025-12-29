@@ -9,8 +9,15 @@ interface ActivityStatsProps {
 }
 
 export function ActivityStats({ data, dataKey, average }: ActivityStatsProps) {
-  const total = data.reduce((sum, d) => sum + (d[dataKey as keyof typeof d] as number), 0);
-  const peak = Math.max(...data.map((d) => d[dataKey as keyof typeof d] as number));
+  // Handle missing values (when model doesn't have data for certain days)
+  // Use 0 as fallback for undefined values
+  const getValue = (d: ActivityData): number => {
+    const value = d[dataKey as keyof typeof d] as number | undefined;
+    return value ?? 0;
+  };
+
+  const total = data.reduce((sum, d) => sum + getValue(d), 0);
+  const peak = Math.max(...data.map((d) => getValue(d)));
   const days = data.length;
 
   return (

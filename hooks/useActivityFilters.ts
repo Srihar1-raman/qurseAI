@@ -39,8 +39,8 @@ export function useActivityFilters(
         // Return model-specific token key (e.g., "gpt-4-inputTokens")
         return `${selectedModel}-${tokenType}Tokens`;
       }
-      // Return model-specific message count (e.g., "gpt-4-messages")
-      return `${selectedModel}-messages`;
+      // Return model-specific message or conversation count (e.g., "gpt-4-messages", "gpt-4-conversations")
+      return `${selectedModel}-${metric}`;
     }
 
     // All models - use aggregated keys

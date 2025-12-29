@@ -95,8 +95,7 @@
 }
 
 .settings-item.danger-item {
-  border-color: var(--color-danger, #ef4444);
-  border-bottom: 1px solid var(--color-danger, #ef4444);
+  border-bottom: 1px solid var(--color-border);
   padding: 8px 0;
 }
 

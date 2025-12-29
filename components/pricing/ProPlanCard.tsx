@@ -60,7 +60,7 @@ export function ProPlanCard({ userState, onUpgrade }: ProPlanCardProps) {
         isDisabled={isDisabled}
         backgroundImage="/images/login-page.jpeg"
       >
-        <PricingCardHeader title="PRO" pricing="$9/month ~800/month" />
+        <PricingCardHeader title="PRO" pricing="$9/month ~₹800/month" />
         <PricingCardFeatures features={PRO_PLAN_FEATURES} marginBottom="24px" />
         
         {/* Model Icon Carousel */}

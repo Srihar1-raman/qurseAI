@@ -37,7 +37,8 @@ export function transformMessageData(messages: Message[]): ActivityData[] {
     inputTokens: number;
     outputTokens: number;
     totalTokens: number;
-    models: Map<string, number>;
+    modelMetrics: Map<string, number>; // For messages and tokens
+    modelConversations: Map<string, Set<string>>; // For conversations per model
   }>();
 
   messages.forEach((msg) => {
@@ -53,7 +54,8 @@ export function transformMessageData(messages: Message[]): ActivityData[] {
         inputTokens: 0,
         outputTokens: 0,
         totalTokens: 0,
-        models: new Map(),
+        modelMetrics: new Map(),
+        modelConversations: new Map(),
       });
     }
 
@@ -71,25 +73,42 @@ export function transformMessageData(messages: Message[]): ActivityData[] {
       const inputKey = `${modelName}-inputTokens`;
       const outputKey = `${modelName}-outputTokens`;
       const totalKey = `${modelName}-totalTokens`;
+      const convoKey = `${modelName}-conversations`;
 
-      day.models.set(messageKey, (day.models.get(messageKey) || 0) + 1);
-      day.models.set(inputKey, (day.models.get(inputKey) || 0) + (msg.input_tokens || 0));
-      day.models.set(outputKey, (day.models.get(outputKey) || 0) + (msg.output_tokens || 0));
-      day.models.set(totalKey, (day.models.get(totalKey) || 0) + (msg.total_tokens || 0));
+      // Track messages and tokens
+      day.modelMetrics.set(messageKey, (day.modelMetrics.get(messageKey) || 0) + 1);
+      day.modelMetrics.set(inputKey, (day.modelMetrics.get(inputKey) || 0) + (msg.input_tokens || 0));
+      day.modelMetrics.set(outputKey, (day.modelMetrics.get(outputKey) || 0) + (msg.output_tokens || 0));
+      day.modelMetrics.set(totalKey, (day.modelMetrics.get(totalKey) || 0) + (msg.total_tokens || 0));
+
+      // Track conversations per model
+      if (!day.modelConversations.has(convoKey)) {
+        day.modelConversations.set(convoKey, new Set());
+      }
+      day.modelConversations.get(convoKey)!.add(msg.conversation_id);
     }
   });
 
   // Convert map to array and sort by date
   const sortedData = Array.from(dailyData.entries())
-    .map(([date, data]) => ({
-      date,
-      messages: data.messages,
-      conversations: data.conversations.size,
-      inputTokens: data.inputTokens,
-      outputTokens: data.outputTokens,
-      totalTokens: data.totalTokens,
-      ...Object.fromEntries(data.models),
-    }))
+    .map(([date, data]) => {
+      // Convert model conversations Set to count
+      const modelConversions: Record<string, number> = {};
+      data.modelConversations.forEach((convos, key) => {
+        modelConversions[key] = convos.size;
+      });
+
+      return {
+        date,
+        messages: data.messages,
+        conversations: data.conversations.size,
+        inputTokens: data.inputTokens,
+        outputTokens: data.outputTokens,
+        totalTokens: data.totalTokens,
+        ...Object.fromEntries(data.modelMetrics),
+        ...modelConversions,
+      };
+    })
     .sort((a, b) => {
       const dateA = new Date(a.date + ', 2024');
       const dateB = new Date(b.date + ', 2024');

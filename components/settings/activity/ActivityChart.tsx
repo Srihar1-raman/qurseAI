@@ -17,6 +17,36 @@ interface ActivityChartProps {
   dataKey: string;
 }
 
+// Custom tooltip to show only the relevant metric
+function CustomTooltip({ active, payload, label }: any) {
+  if (!active || !payload || !payload.length) {
+    return null;
+  }
+
+  // Get the value from the first (and should be only) payload item
+  const value = payload[0].value ?? 0;
+
+  return (
+    <div
+      style={{
+        backgroundColor: 'var(--color-bg)',
+        border: '1px solid var(--color-border)',
+        borderRadius: '6px',
+        color: 'var(--color-text)',
+        padding: '8px 12px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+      }}
+    >
+      <div style={{ color: 'var(--color-text-muted)', fontSize: '12px', marginBottom: '4px' }}>
+        {label}
+      </div>
+      <div style={{ fontSize: '14px', fontWeight: 500 }}>
+        {value.toLocaleString()}
+      </div>
+    </div>
+  );
+}
+
 export function ActivityChart({ data, dataKey }: ActivityChartProps) {
   return (
     <ResponsiveContainer width="100%" height={300}>
@@ -46,17 +76,7 @@ export function ActivityChart({ data, dataKey }: ActivityChartProps) {
           tickLine={false}
           axisLine={false}
         />
-        <Tooltip
-          contentStyle={{
-            backgroundColor: 'transparent',
-            border: '1px solid var(--color-border)',
-            borderRadius: '6px',
-            color: 'var(--color-text)',
-            padding: '6px 14px',
-          }}
-          labelStyle={{ color: 'var(--color-text-muted)' }}
-          formatter={(value: number | undefined) => (value ?? 0).toLocaleString()}
-        />
+        <Tooltip content={<CustomTooltip />} />
         <Area
           type="monotone"
           dataKey={dataKey}
