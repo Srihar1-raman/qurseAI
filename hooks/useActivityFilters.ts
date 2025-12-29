@@ -26,10 +26,10 @@ export function useActivityFilters(
 ): UseActivityFiltersResult {
   const { data } = options;
 
-  const [metric, setMetric] = useState<MetricType>('messages');
+  const [metric, setMetric] = useState<MetricType>('tokens');
   const [tokenType, setTokenType] = useState<TokenType>('total');
   const [selectedModel, setSelectedModel] = useState<string>('all');
-  const [timeRange, setTimeRange] = useState<TimeRange>('30days');
+  const [timeRange, setTimeRange] = useState<TimeRange>('all');
 
   // Get the data key based on selections
   const getDataKey = (): string => {

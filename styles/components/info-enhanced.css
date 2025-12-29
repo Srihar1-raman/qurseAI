@@ -248,9 +248,18 @@
   }
 }
 
-/* MDX Content Styling */
-.info-section {
-  /* No animation */
+/* About page content section */
+.info-about-content {
+  width: 100%;
+  max-width: 768px;
+  margin: 0 auto;
+  padding: 20px 20px 40px 20px; /* Reduced top padding from 100px to 20px */
+}
+
+/* About page layout - full width, no grid */
+.info-about-layout {
+  display: block !important;
+  max-width: 100% !important;
 }
 
 .mdx-content {

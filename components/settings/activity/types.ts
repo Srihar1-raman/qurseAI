@@ -11,7 +11,8 @@ export interface ActivityData {
 }
 
 export interface ActivityGraphProps {
-  userId?: string;
+  variant?: 'user' | 'global'; // 'user' = default
+  userId?: string; // Optional, kept for backward compat
 }
 
 export type MetricType = 'messages' | 'conversations' | 'tokens';

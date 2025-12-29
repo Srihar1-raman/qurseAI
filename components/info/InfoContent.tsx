@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
 import { mdxComponents } from '@/components/mdx/MDXComponents';
+import ActivityGraph from '@/components/settings/ActivityGraph';
 import type { InfoSection } from '@/lib/types';
 
 const SECTION_PATHS: Record<InfoSection, string> = {
@@ -71,25 +72,65 @@ export function InfoContent({ sectionId }: InfoContentProps) {
     );
   }
 
-  // About section - hardcoded placeholder content
+  // About section - written content only (hero is rendered separately in InfoPageClient)
   if (sectionId === 'about') {
     return (
-      <div className="info-section">
-        <h2>About Qurse</h2>
-        <p>Qurse is a modern AI chat interface that provides seamless conversations with advanced language models. Our platform offers a clean, intuitive experience for users to interact with AI assistants across multiple models.</p>
+      <div className="info-about-content">
+        <div className="info-section">
+          <h2>About Qurse</h2>
+          <p>Qurse is a modern AI chat interface that provides seamless conversations with advanced language models. Qurse offers a clean, intuitive experience for users to interact with AI assistants across multiple models.</p>
 
-        <h3>Features</h3>
-        <ul>
-          <li>Multiple AI models including GPT-4o, Claude 3.5 Sonnet, and more</li>
-          <li>Real-time conversation capabilities</li>
-          <li>Local storage for conversation history</li>
-          <li>Dark and light theme support</li>
-          <li>Responsive design for all devices</li>
-          <li>Secure authentication options</li>
-        </ul>
+          <p>Built for <strong>speed</strong>, Qurse delivers fast web inference capabilities, ensuring your AI conversations are responsive and fluid. </p>
 
-        <h3>Technology</h3>
-        <p>Built with Next.js, TypeScript, and modern web technologies, Qurse provides a fast and reliable chat experience. We integrate with leading AI providers to offer the best possible conversation quality.</p>
+          {/* Separator */}
+          <div style={{ borderBottom: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
+
+          {/* Global Activity Graph - with h3 heading */}
+          <ActivityGraph variant="global" />
+
+          {/* Separator */}
+          <div style={{ borderBottom: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
+
+          <h3>Features</h3>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '12px 24px',
+            marginTop: '16px',
+            marginBottom: '16px'
+          }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span style={{ color: 'var(--color-primary)', minWidth: '4px' }}>•</span>
+              <span>Optimized background processing</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span style={{ color: 'var(--color-primary)', minWidth: '4px' }}>•</span>
+              <span>Fast web inference with minimal latency</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span style={{ color: 'var(--color-primary)', minWidth: '4px' }}>•</span>
+              <span>Multi step inference capabilities</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span style={{ color: 'var(--color-primary)', minWidth: '4px' }}>•</span>
+              <span>Open sourced project</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span style={{ color: 'var(--color-primary)', minWidth: '4px' }}>•</span>
+              <span>Various dedicated agnetic chat modes</span>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <span style={{ color: 'var(--color-primary)', minWidth: '4px' }}>•</span>
+              <span>Global context using Supermemory</span>
+            </div>
+          </div>
+
+          {/* Separator */}
+          <div style={{ borderBottom: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
+
+          <h3>Technology</h3>
+          <p>Built with Next.js, TypeScript, and modern web technologies, Qurse provides a fast and reliable chat experience. We integrate with leading AI providers to offer the best possible conversation quality.</p>
+        </div>
       </div>
     );
   }

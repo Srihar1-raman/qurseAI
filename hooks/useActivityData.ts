@@ -10,21 +10,23 @@ interface UseActivityDataResult {
   error: string | null;
 }
 
-export function useActivityData(userId?: string): UseActivityDataResult {
+export function useActivityData(options?: { userId?: string; isGlobal?: boolean }): UseActivityDataResult {
+  const { isGlobal = false } = options || {};
+
   const [data, setData] = useState<ActivityData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [models, setModels] = useState<string[]>(['all']);
 
   useEffect(() => {
-    if (!userId) return;
-
     async function fetchActivityData() {
       try {
         setIsLoading(true);
         setError(null);
 
-        const response = await fetch('/api/user/activity');
+        // Choose endpoint based on isGlobal flag
+        const endpoint = isGlobal ? '/api/activity/global' : '/api/user/activity';
+        const response = await fetch(endpoint);
 
         if (!response.ok) {
           throw new Error('Failed to fetch activity data');
@@ -34,8 +36,6 @@ export function useActivityData(userId?: string): UseActivityDataResult {
         setData(result.data || []);
 
         // Extract unique models from data
-        // New flat structure: keys like "gpt-4-messages", "gpt-4-inputTokens", "gpt-4-conversations", etc.
-        // Need to extract full model name by removing the suffix (-messages, -conversations, -inputTokens, etc.)
         const suffixes = ['-messages', '-conversations', '-inputTokens', '-outputTokens', '-totalTokens'];
         const uniqueModels = Array.from(
           new Set(
@@ -43,7 +43,6 @@ export function useActivityData(userId?: string): UseActivityDataResult {
               Object.keys(d)
                 .filter((k) => k.includes('-'))
                 .map((k) => {
-                  // Remove suffix to get model name
                   for (const suffix of suffixes) {
                     if (k.endsWith(suffix)) {
                       return k.slice(0, -suffix.length);
@@ -64,7 +63,7 @@ export function useActivityData(userId?: string): UseActivityDataResult {
     }
 
     fetchActivityData();
-  }, [userId]);
+  }, [isGlobal]);
 
   return { data, models, isLoading, error };
 }

@@ -10,6 +10,7 @@ import Footer from '@/components/layout/Footer';
 import { InfoTableOfContents } from '@/components/info/InfoTableOfContents';
 import { InfoProgressIndicator } from '@/components/info/InfoProgressIndicator';
 import { InfoContent } from '@/components/info/InfoContent';
+import { AboutHero } from '@/components/info/AboutHero';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import type { TableOfContentsItem, InfoSection } from '@/lib/types';
 
@@ -219,13 +220,16 @@ function InfoPageContent() {
         </div>
       </div>
 
-      {/* Progress Bar */}
-      <InfoProgressIndicator />
+      {/* Progress Bar - hide for About page */}
+      {activeSection !== 'about' && <InfoProgressIndicator />}
+
+      {/* About Hero - rendered outside container for full width */}
+      {activeSection === 'about' && <AboutHero />}
 
       {/* Main Content Area */}
       <main className="info-page-container">
-        {/* Mobile TOC Toggle */}
-        {isMobile && headings.length > 0 && (
+        {/* Mobile TOC Toggle - hide for About page */}
+        {isMobile && headings.length > 0 && activeSection !== 'about' && (
           <button
             className="info-toc-toggle-container"
             onClick={() => setIsTocOpen(true)}
@@ -238,15 +242,15 @@ function InfoPageContent() {
           </button>
         )}
 
-        {/* Two-column layout for desktop, single for mobile */}
-        <div className="info-page-layout">
+        {/* Two-column layout for desktop, single for mobile - full width for About */}
+        <div className={`info-page-layout ${activeSection === 'about' ? 'info-about-layout' : ''}`}>
           {/* MDX Content */}
           <div className="info-content-wrapper">
             <InfoContent sectionId={activeSection} />
           </div>
 
-          {/* TOC Sidebar */}
-          {!isMobile && headings.length > 0 && (
+          {/* TOC Sidebar - hide for About page */}
+          {!isMobile && headings.length > 0 && activeSection !== 'about' && (
             <InfoTableOfContents
               headings={headings}
               activeId={activeId}
@@ -263,8 +267,8 @@ function InfoPageContent() {
       {/* Footer */}
       <Footer />
 
-      {/* Mobile TOC Drawer */}
-      {isMobile && headings.length > 0 && (
+      {/* Mobile TOC Drawer - hide for About page */}
+      {isMobile && headings.length > 0 && activeSection !== 'about' && (
         <InfoTableOfContents
           headings={headings}
           activeId={activeId}
