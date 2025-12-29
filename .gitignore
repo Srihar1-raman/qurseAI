@@ -43,6 +43,9 @@ next-env.d.ts
 # docs and markdown files
 *.md
 !README.md
+!PRIVACY_POLICY.md
+!COOKIE_POLICY.md
+!TERMS_OF_SERVICE.md
 supabaseDOC.md
 
 # cursor
