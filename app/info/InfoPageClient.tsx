@@ -12,6 +12,7 @@ import { InfoProgressIndicator } from '@/components/info/InfoProgressIndicator';
 import { InfoContent } from '@/components/info/InfoContent';
 import { AboutHero } from '@/components/info/AboutHero';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { ConversationProvider } from '@/lib/contexts/ConversationContext';
 import type { TableOfContentsItem, InfoSection } from '@/lib/types';
 
 /**
@@ -67,6 +68,11 @@ function InfoPageContent() {
   // URL state management
   const [section, setSection] = useQueryState('section', sectionParser);
   const activeSection: InfoSection = (section || 'about') as InfoSection;
+
+  // Scroll to top on mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // Load headings when section changes
   useEffect(() => {
@@ -191,101 +197,103 @@ function InfoPageContent() {
   );
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Header
-        user={user}
-        showNewChatButton={true}
-        onNewChatClick={handleNewChatClick}
-        showHistoryButton={true}
-        onHistoryClick={handleHistoryClick}
-      />
+    <ConversationProvider>
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Header
+          user={user}
+          showNewChatButton={true}
+          onNewChatClick={handleNewChatClick}
+          showHistoryButton={true}
+          onHistoryClick={handleHistoryClick}
+        />
 
-      {/* Navigation Tabs */}
-      <div className="info-tabs-container">
-        <div className="info-tabs">
-          {SECTIONS.map((sectionItem) => (
-            <button
-              key={sectionItem.id}
-              onClick={() => handleTabClick(sectionItem.id)}
-              className={`info-tab ${
-                activeSection === sectionItem.id ? 'active' : ''
-              }`}
-              aria-current={
-                activeSection === sectionItem.id ? 'page' : undefined
-              }
-            >
-              {sectionItem.label}
-            </button>
-          ))}
+        {/* Navigation Tabs */}
+        <div className="info-tabs-container">
+          <div className="info-tabs">
+            {SECTIONS.map((sectionItem) => (
+              <button
+                key={sectionItem.id}
+                onClick={() => handleTabClick(sectionItem.id)}
+                className={`info-tab ${
+                  activeSection === sectionItem.id ? 'active' : ''
+                }`}
+                aria-current={
+                  activeSection === sectionItem.id ? 'page' : undefined
+                }
+              >
+                {sectionItem.label}
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Progress Bar - hide for About page */}
-      {activeSection !== 'about' && <InfoProgressIndicator />}
+        {/* Progress Bar - hide for About page */}
+        {activeSection !== 'about' && <InfoProgressIndicator />}
 
-      {/* About Hero - rendered outside container for full width */}
-      {activeSection === 'about' && <AboutHero />}
+        {/* About Hero - rendered outside container for full width */}
+        {activeSection === 'about' && <AboutHero />}
 
-      {/* Main Content Area */}
-      <main className="info-page-container">
-        {/* Mobile TOC Toggle - hide for About page */}
+        {/* Main Content Area */}
+        <main className="info-page-container">
+          {/* Mobile TOC Toggle - hide for About page */}
+          {isMobile && headings.length > 0 && activeSection !== 'about' && (
+            <button
+              className="info-toc-toggle-container"
+              onClick={() => setIsTocOpen(true)}
+              aria-label="Open table of contents"
+            >
+              <span>Contents</span>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+          )}
+
+          {/* Two-column layout for desktop, single for mobile - full width for About */}
+          <div className={`info-page-layout ${activeSection === 'about' ? 'info-about-layout' : ''}`}>
+            {/* MDX Content */}
+            <div className="info-content-wrapper">
+              <InfoContent sectionId={activeSection} />
+            </div>
+
+            {/* TOC Sidebar - hide for About page */}
+            {!isMobile && headings.length > 0 && activeSection !== 'about' && (
+              <InfoTableOfContents
+                headings={headings}
+                activeId={activeId}
+                onSectionClick={handleSectionClick}
+                isMobile={false}
+                isOpen={false}
+                onClose={() => {}}
+                tocListRef={tocListRef}
+              />
+            )}
+          </div>
+        </main>
+
+        {/* Footer */}
+        <Footer />
+
+        {/* Mobile TOC Drawer - hide for About page */}
         {isMobile && headings.length > 0 && activeSection !== 'about' && (
-          <button
-            className="info-toc-toggle-container"
-            onClick={() => setIsTocOpen(true)}
-            aria-label="Open table of contents"
-          >
-            <span>Contents</span>
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </button>
+          <InfoTableOfContents
+            headings={headings}
+            activeId={activeId}
+            onSectionClick={handleSectionClick}
+            isMobile={true}
+            isOpen={isTocOpen}
+            onClose={() => setIsTocOpen(false)}
+            tocListRef={tocListRef}
+          />
         )}
 
-        {/* Two-column layout for desktop, single for mobile - full width for About */}
-        <div className={`info-page-layout ${activeSection === 'about' ? 'info-about-layout' : ''}`}>
-          {/* MDX Content */}
-          <div className="info-content-wrapper">
-            <InfoContent sectionId={activeSection} />
-          </div>
-
-          {/* TOC Sidebar - hide for About page */}
-          {!isMobile && headings.length > 0 && activeSection !== 'about' && (
-            <InfoTableOfContents
-              headings={headings}
-              activeId={activeId}
-              onSectionClick={handleSectionClick}
-              isMobile={false}
-              isOpen={false}
-              onClose={() => {}}
-              tocListRef={tocListRef}
-            />
-          )}
-        </div>
-      </main>
-
-      {/* Footer */}
-      <Footer />
-
-      {/* Mobile TOC Drawer - hide for About page */}
-      {isMobile && headings.length > 0 && activeSection !== 'about' && (
-        <InfoTableOfContents
-          headings={headings}
-          activeId={activeId}
-          onSectionClick={handleSectionClick}
-          isMobile={true}
-          isOpen={isTocOpen}
-          onClose={() => setIsTocOpen(false)}
-          tocListRef={tocListRef}
+        {/* History Sidebar - Always mounted for smooth animations */}
+        <HistorySidebar
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
         />
-      )}
-
-      {/* History Sidebar - Always mounted for smooth animations */}
-      <HistorySidebar
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-      />
-    </div>
+      </div>
+    </ConversationProvider>
   );
 }
 

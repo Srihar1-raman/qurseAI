@@ -1,8 +1,13 @@
 'use client';
 
 import React, { useEffect, useState, useMemo } from 'react';
+import Image from 'next/image';
 import { mdxComponents } from '@/components/mdx/MDXComponents';
 import ActivityGraph from '@/components/settings/ActivityGraph';
+import MainInput from '@/components/homepage/MainInput';
+import { UnifiedButton } from '@/components/ui/UnifiedButton';
+import { useTheme } from '@/lib/theme-provider';
+import { getIconPath } from '@/lib/icon-utils';
 import type { InfoSection } from '@/lib/types';
 
 const SECTION_PATHS: Record<InfoSection, string> = {
@@ -25,6 +30,19 @@ export function InfoContent({ sectionId }: InfoContentProps) {
   const [markdown, setMarkdown] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [demoInputValue, setDemoInputValue] = useState('');
+  const { resolvedTheme, mounted } = useTheme();
+
+  const techIcons = [
+    { name: 'Next.js', icon: 'nextjs' },
+    { name: 'Vercel', icon: 'vercel' },
+    { name: 'Supabase', icon: 'supabase' },
+    { name: 'Sentry', icon: 'sentry' },
+    { name: 'Upstash', icon: 'upstash' },
+    { name: 'Exa', icon: 'exaAI' },
+    { name: 'Tavily', icon: 'tavily' },
+    { name: 'AI SDK', icon: 'aisdk.png' },
+  ];
 
   // Memoize the path to avoid unnecessary re-renders
   const filePath = useMemo(() => SECTION_PATHS[sectionId], [sectionId]);
@@ -83,13 +101,13 @@ export function InfoContent({ sectionId }: InfoContentProps) {
           <p>Built for <strong>speed</strong>, Qurse delivers fast web inference capabilities, ensuring your AI conversations are responsive and fluid. </p>
 
           {/* Separator */}
-          <div style={{ borderBottom: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
+          <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
 
           {/* Global Activity Graph - with h3 heading */}
           <ActivityGraph variant="global" />
 
           {/* Separator */}
-          <div style={{ borderBottom: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
+          <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
 
           <h3>Features</h3>
           <div style={{
@@ -117,7 +135,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <span style={{ color: 'var(--color-primary)', minWidth: '4px' }}>•</span>
-              <span>Various dedicated agnetic chat modes</span>
+              <span>Dedicated agnetic chat modes</span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <span style={{ color: 'var(--color-primary)', minWidth: '4px' }}>•</span>
@@ -126,10 +144,161 @@ export function InfoContent({ sectionId }: InfoContentProps) {
           </div>
 
           {/* Separator */}
-          <div style={{ borderBottom: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
+          <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
 
           <h3>Technology</h3>
-          <p>Built with Next.js, TypeScript, and modern web technologies, Qurse provides a fast and reliable chat experience. We integrate with leading AI providers to offer the best possible conversation quality.</p>
+          <p>Robust architecture with Next.js, Vercel, Supabase, upstash, and more.</p>
+
+          {/* Tech Icons */}
+          <div
+            style={{
+              position: 'relative',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '32px',
+              marginTop: '24px',
+              padding: '32px',
+              border: '1px solid var(--color-border)',
+              borderRadius: '8px',
+              justifyItems: 'center',
+              alignItems: 'center',
+              marginLeft: 'auto',
+              marginRight: 'auto',
+              width: '560px',
+            }}
+          >
+            {/* Horizontal line */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '0',
+              right: '0',
+              height: '1px',
+              backgroundColor: 'var(--color-border)',
+              transform: 'translateY(-50%)'
+            }}></div>
+
+            {/* Vertical lines - positioned exactly in the middle of gaps */}
+            <div style={{
+              position: 'absolute',
+              left: '148px',
+              top: '0',
+              bottom: '0',
+              width: '1px',
+              backgroundColor: 'var(--color-border)',
+            }}></div>
+            <div style={{
+              position: 'absolute',
+              left: '280px',
+              top: '0',
+              bottom: '0',
+              width: '1px',
+              backgroundColor: 'var(--color-border)',
+            }}></div>
+            <div style={{
+              position: 'absolute',
+              left: '412px',
+              top: '0',
+              bottom: '0',
+              width: '1px',
+              backgroundColor: 'var(--color-border)',
+            }}></div>
+
+            {techIcons.map((tech) => (
+              <div
+                key={tech.icon}
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '100%',
+                  height: '100px',
+                }}
+              >
+                <Image
+                  src={tech.icon.endsWith('.png')
+                    ? `/${resolvedTheme === 'dark' ? 'icon_light' : 'icon'}/${tech.icon}`
+                    : getIconPath(tech.icon, resolvedTheme, false, mounted)}
+                  alt={tech.name}
+                  width={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 64 : 48}
+                  height={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 64 : 48}
+                  style={{
+                    opacity: 0.8
+                  }}
+                />
+              </div>
+            ))}
+          </div>
+
+          {/* Separator */}
+          <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
+
+          {/* Try Qurse Section */}
+          <h3>Try Qurse</h3>
+          <p style={{ color: 'var(--color-text-secondary)' }}>Experience <span style={{ fontFamily: 'var(--font-reenie)', fontSize: '28px' }}>Qurse</span> now.</p>
+
+          <div style={{ marginTop: '24px', paddingBottom: '32px' }}>
+            <MainInput inputValue={demoInputValue} setInputValue={setDemoInputValue} showAttachButton={false} />
+          </div>
+
+          {/* Social Buttons */}
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '16px', paddingBottom: '32px' }}>
+            <a
+              href="https://github.com/qurse"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}
+            >
+              <UnifiedButton variant="secondary">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Image
+                    src={getIconPath('github', resolvedTheme, false, mounted)}
+                    alt="GitHub"
+                    width={21}
+                    height={21}
+                  />
+                  <span>GitHub</span>
+                </div>
+              </UnifiedButton>
+            </a>
+
+            <a
+              href="https://x.com/qurse"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}
+            >
+              <UnifiedButton variant="secondary">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Image
+                    src={getIconPath('x-twitter', resolvedTheme, false, mounted)}
+                    alt="X (Twitter)"
+                    width={16}
+                    height={16}
+                  />
+                  <span>X(Twitter)</span>
+                </div>
+              </UnifiedButton>
+            </a>
+
+            <a
+              href="mailto:qurse.chat@gmail.com"
+              style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}
+            >
+              <UnifiedButton variant="secondary">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <Image
+                    src={getIconPath('mail', resolvedTheme, false, mounted)}
+                    alt="Email"
+                    width={21}
+                    height={21}
+                  />
+                  <span>Email</span>
+                </div>
+              </UnifiedButton>
+            </a>
+          </div>
         </div>
       </div>
     );

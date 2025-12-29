@@ -19,9 +19,10 @@ import type { Conversation } from '@/lib/types';
 interface MainInputProps {
   inputValue: string;
   setInputValue: (value: string) => void;
+  showAttachButton?: boolean;
 }
 
-export default function MainInput({ inputValue, setInputValue }: MainInputProps) {
+export default function MainInput({ inputValue, setInputValue, showAttachButton = true }: MainInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
@@ -71,12 +72,10 @@ export default function MainInput({ inputValue, setInputValue }: MainInputProps)
     // Construct URL with message params
     // Same URL format for both auth and guest users
     const url = `/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`;
-    
-    // Use window.history.replaceState() for true SPA behavior (0ms, no navigation)
-    // Next.js usePathname() hook automatically detects replaceState() changes
-    // This eliminates 200-500ms navigation delay
-    window.history.replaceState({}, '', url);
-    
+
+    // Navigate to conversation page
+    router.push(url);
+
     // Clear input
     setInputValue('');
   };
@@ -179,31 +178,33 @@ export default function MainInput({ inputValue, setInputValue }: MainInputProps)
         {/* Buttons - position changes based on mode */}
         {!(isMultiline || isMobile) ? (
           // Single-line mode: buttons on the right
-          <div 
+          <div
             className="absolute right-3 top-1/2 flex items-center gap-2"
             style={{ transform: 'translateY(-50%)', transition: 'all 0.2s' }}
           >
             {/* Attach Button */}
-            <button
-              type="button"
-              className="flex items-center justify-center transition-all"
-              aria-label="Attach file"
-              style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '50%',
-                background: 'var(--color-bg-secondary)',
-                border: '1px solid var(--color-border)',
-                padding: '0',
-              }}
-            >
-              <Image
-                src={getIconPath('attach', resolvedTheme, false, mounted)}
-                alt="Attach"
-                width={16}
-                height={16}
-              />
-            </button>
+            {showAttachButton && (
+              <button
+                type="button"
+                className="flex items-center justify-center transition-all"
+                aria-label="Attach file"
+                style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '50%',
+                  background: 'var(--color-bg-secondary)',
+                  border: '1px solid var(--color-border)',
+                  padding: '0',
+                }}
+              >
+                <Image
+                  src={getIconPath('attach', resolvedTheme, false, mounted)}
+                  alt="Attach"
+                  width={16}
+                  height={16}
+                />
+              </button>
+            )}
 
             {/* Send Button */}
             <button
@@ -235,32 +236,34 @@ export default function MainInput({ inputValue, setInputValue }: MainInputProps)
         ) : (
           // Multiline mode: buttons at bottom
           <>
-            <div 
-              className="absolute left-3 bottom-2 flex items-center gap-2"
-              style={{ zIndex: 10, transition: 'all 0.2s' }}
-            >
-              {/* Attach Button */}
-              <button
-                type="button"
-                className="flex items-center justify-center transition-all"
-                aria-label="Attach file"
-                style={{
-                  width: '36px',
-                  height: '36px',
-                  borderRadius: '50%',
-                  background: 'var(--color-bg-secondary)',
-                  border: '1px solid var(--color-border)',
-                  padding: '0',
-                }}
+            {showAttachButton && (
+              <div
+                className="absolute left-3 bottom-2 flex items-center gap-2"
+                style={{ zIndex: 10, transition: 'all 0.2s' }}
               >
-                <Image
-                  src={getIconPath('attach', resolvedTheme, false, mounted)}
-                  alt="Attach"
-                  width={16}
-                  height={16}
-                />
-              </button>
-            </div>
+                {/* Attach Button */}
+                <button
+                  type="button"
+                  className="flex items-center justify-center transition-all"
+                  aria-label="Attach file"
+                  style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '50%',
+                    background: 'var(--color-bg-secondary)',
+                    border: '1px solid var(--color-border)',
+                    padding: '0',
+                  }}
+                >
+                  <Image
+                    src={getIconPath('attach', resolvedTheme, false, mounted)}
+                    alt="Attach"
+                    width={16}
+                    height={16}
+                  />
+                </button>
+              </div>
+            )}
             
             <div 
               className="absolute right-3 bottom-2 flex items-center gap-2"
