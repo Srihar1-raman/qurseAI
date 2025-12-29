@@ -922,10 +922,8 @@ We are not liable for delays or failures caused by events beyond our reasonable 
 ## 20. Contact Information
 
 For questions about these Terms, please contact us through:
-- **Email:** qurse.chat@gmail.com
-- **Website:** https://wwww.qurse.site
-
----
+- **Email:** [qurse.chat@gmail.com](mailto:qurse.chat@gmail.com)
+- **Website:** [www.qurse.site](https://wwww.qurse.site)
 
 **By using Qurse, you acknowledge that you have read, understood, and agree to be bound by these Terms of Service.**
 

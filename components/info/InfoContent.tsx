@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { mdxComponents } from '@/components/mdx/MDXComponents';
 import type { InfoSection } from '@/lib/types';
 
@@ -106,55 +106,175 @@ function MarkdownRenderer({ content }: { content: string }) {
   const sections = useMemo(() => {
     const lines = content.split('\n');
     const result: React.ReactNode[] = [];
-    let inList = false;
-    let listItems: string[] = [];
+    let keyCounter = 0;
+
+    // Track nested structure
+    interface ListItem {
+      text: string;
+      level: number;
+      children: ListItem[];
+    }
+    let currentList: ListItem[] = [];
+    let listStack: ListItem[] = [];
 
     const flushList = () => {
-      if (listItems.length > 0) {
+      if (currentList.length > 0) {
         result.push(
-          <ul key={`list-${result.length}`} className="info-list info-list-ul">
-            {listItems.map((item, i) => (
-              <li key={i} className="info-list-item" dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(item) }} />
-            ))}
+          <ul key={`list-${keyCounter++}`} className="info-list info-list-ul">
+            {renderListItems(currentList)}
           </ul>
         );
-        listItems = [];
-        inList = false;
+        currentList = [];
+        listStack = [];
+      }
+    };
+
+    const renderListItems = (items: ListItem[]): React.ReactNode => {
+      return items.map((item, i) => {
+        const hasChildren = item.children && item.children.length > 0;
+        return (
+          <li key={i} className="info-list-item">
+            <span dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(item.text) }} />
+            {hasChildren && (
+              <ul className="info-list info-list-ul">
+                {renderListItems(item.children)}
+              </ul>
+            )}
+          </li>
+        );
+      });
+    };
+
+    let paragraphLines: string[] = [];
+
+    const flushParagraph = () => {
+      if (paragraphLines.length > 0) {
+        const text = paragraphLines.join(' ').trim();
+        if (text) {
+          // Check if this is a bold heading (starts with ** and ends with **:)
+          const boldHeadingMatch = text.match(/^\*\*([^:]+):\*\*$/);
+          if (boldHeadingMatch) {
+            result.push(
+              <h4 key={`h4-${keyCounter++}`} className="info-heading info-h4">
+                {boldHeadingMatch[1]}
+              </h4>
+            );
+          } else {
+            result.push(
+              <p key={`p-${keyCounter++}`} className="info-paragraph" dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(text) }} />
+            );
+          }
+        }
+        paragraphLines = [];
       }
     };
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+      const trimmed = line.trim();
 
-      // H2 Heading (##)
-      if (line.startsWith('## ')) {
+      // Empty line - flush any accumulated content
+      if (trimmed === '') {
         flushList();
-        const text = line.slice(3).replace(/\*\*/g, '');
-        result.push(<h2 key={i} className="info-heading info-h2" id={slugify(text)}>{text}</h2>);
+        flushParagraph();
+        continue;
       }
-      // H3 Heading (###)
-      else if (line.startsWith('### ')) {
+
+      // Headings (##, ###, ####)
+      const headingMatch = trimmed.match(/^(#{2,4})\s+(.+)$/);
+      if (headingMatch) {
         flushList();
-        const text = line.slice(4).replace(/\*\*/g, '');
-        result.push(<h3 key={i} className="info-heading info-h3" id={slugify(text)}>{text}</h3>);
+        flushParagraph();
+
+        const level = headingMatch[1].length;
+        const text = headingMatch[2].replace(/\*\*/g, '');
+        const HeadingTag = `h${level}` as 'h2' | 'h3' | 'h4';
+        result.push(
+          React.createElement(HeadingTag, {
+            key: `h${level}-${keyCounter++}`,
+            className: `info-heading info-h${level}`,
+            id: slugify(text)
+          }, text)
+        );
+        continue;
       }
-      // List item (- or *)
-      else if (line.match(/^\s*[-*]\s+/)) {
-        inList = true;
-        listItems.push(line.replace(/^\s*[-*]\s+/, ''));
+
+      // Check for list item (hyphen or asterisk, possibly indented)
+      const indentMatch = line.match(/^(\s*)[-*]\s+(.+)$/);
+      if (indentMatch) {
+        flushParagraph();
+
+        const indent = indentMatch[1].length;
+        const text = indentMatch[2];
+        const level = Math.floor(indent / 2); // 2 spaces = 1 level
+
+        const newItem: ListItem = { text, level, children: [] };
+
+        if (level === 0) {
+          // Top-level item
+          if (listStack.length > 0) {
+            // We're finishing a nested section
+            flushList();
+          }
+          currentList.push(newItem);
+          listStack = [newItem];
+        } else {
+          // Nested item
+          if (listStack.length > 0) {
+            // Find the parent at the appropriate level
+            while (listStack.length > level) {
+              listStack.pop();
+            }
+            if (listStack.length > 0) {
+              listStack[listStack.length - 1].children.push(newItem);
+              listStack.push(newItem);
+            } else {
+              // Fallback: treat as top-level
+              currentList.push(newItem);
+              listStack = [newItem];
+            }
+          } else {
+            // No parent, treat as top-level
+            currentList.push(newItem);
+            listStack = [newItem];
+          }
+        }
+        continue;
       }
-      // Empty line
-      else if (line.trim() === '') {
+
+      // Ordered list item (1. 2. etc.)
+      const olMatch = trimmed.match(/^(\d+)\.\s+(.+)$/);
+      if (olMatch) {
+        flushList();
+        flushParagraph();
+
+        const num = parseInt(olMatch[1]);
+        const text = olMatch[2];
+
+        result.push(
+          <ol key={`olist-${keyCounter++}`} className="info-list info-list-ol" start={num}>
+            <li key={0} className="info-list-item" dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(text) }} />
+          </ol>
+        );
+        continue;
+      }
+
+      // If we were in a list and now we're not, flush it
+      if (currentList.length > 0 && !indentMatch) {
         flushList();
       }
-      // Paragraph
-      else if (line.trim() !== '') {
-        flushList();
-        result.push(<p key={i} className="info-paragraph" dangerouslySetInnerHTML={{ __html: formatInlineMarkdown(line) }} />);
+
+      // Paragraph content (accumulate multi-line paragraphs)
+      if (paragraphLines.length > 0) {
+        paragraphLines.push(' '); // Add space between lines
       }
+      paragraphLines.push(trimmed);
     }
 
+    // Flush any remaining content
     flushList();
+    flushParagraph();
+
     return result;
   }, [content]);
 
@@ -169,7 +289,7 @@ function formatInlineMarkdown(text: string): string {
     // Bold (**text**)
     .replace(/\*\*(.+?)\*\*/g, '<strong class="info-strong">$1</strong>')
     // Links [text](url)
-    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" className="info-link" target="_blank" rel="noopener noreferrer">$1</a>');
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="info-link" target="_blank" rel="noopener noreferrer">$1</a>');
 }
 
 /**

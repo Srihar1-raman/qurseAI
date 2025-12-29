@@ -226,7 +226,7 @@ Qurse ("we," "our," or "us") uses cookies and similar technologies to provide, s
 
 **Purpose:** Processes your subscription payments safely
 
-**Privacy Policy:** [Dodo Payments Privacy Policy](https://dodopayments.com/privacy)
+**Privacy Policy:** [Dodo Payments Privacy Policy](https://dodopayments.com/privacy-policy)
 
 ### 6.4 AI Model Providers
 
@@ -335,10 +335,7 @@ The only tracking we use is:
 ## 13. Contact Information
 
 **For questions about cookies or this policy:**
-- **Email:** qurse.chat@gmail.com
-- **Website:** https://wwww.qurse.site
-
-
----
+- **Email:** [qurse.chat@gmail.com](mailto:qurse.chat@gmail.com)
+- **Website:** [www.qurse.site](https://wwww.qurse.site)
 
 **By using Qurse, you acknowledge that you have read, understood, and agree to this Cookie Policy.**

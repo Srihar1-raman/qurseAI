@@ -397,9 +397,7 @@ If we discover that we have collected information from a child under 13, we will
 ## 13. Contact Information
 
 **For privacy-related questions, concerns, or requests:**
-- **Email:** qurse.chat@gmail.com
-- **Website:** https://wwww.qurse.site
-
----
+- **Email:** [qurse.chat@gmail.com](mailto:qurse.chat@gmail.com)
+- **Website:** [www.qurse.site](https://wwww.qurse.site)
 
 **By using Qurse, you acknowledge that you have read, understood, and agree to this Privacy Policy.**
