@@ -1,11 +1,6 @@
-# Terms of Service
-
 **Last Updated:** December 29, 2025
-**Effective Date:** December 29, 2025
 
----
-
-## ⚖️ IMPORTANT DISCLAIMER
+## IMPORTANT INFORMATION
 
 **Qurse is a personal open-source software project provided "as-is" without any formal registration, trademark, or legal entity.**
 
@@ -15,8 +10,6 @@ By using Qurse, you acknowledge and agree that:
 - **No formal legal entity, trademark registration, or business license exists**
 - **You use the Service entirely at your own risk**
 - **The operators of Qurse are personal individual(s), not a company**
-
----
 
 ## 1. Introduction
 

@@ -58,14 +58,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
   }, [sectionId, filePath]);
 
   if (isLoading) {
-    return (
-      <div className="info-section">
-        <div className="info-loading">
-          <div className="info-loading-spinner" />
-          <p>Loading content...</p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   if (error) {

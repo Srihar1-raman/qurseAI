@@ -88,44 +88,46 @@ function InfoPageContent() {
   useEffect(() => {
     if (headings.length === 0) return;
 
-    // Track which headings are visible and their ratios
-    const visibleHeadings = new Map<string, number>();
+    // Track all heading positions for accurate detection
+    const headingElements = headings
+      .map((heading) => ({
+        id: heading.id,
+        element: document.getElementById(heading.id),
+      }))
+      .filter((h) => h.element !== null);
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          const id = entry.target.id;
-          if (entry.isIntersecting) {
-            visibleHeadings.set(id, entry.intersectionRatio);
-          } else {
-            visibleHeadings.delete(id);
+      () => {
+        // Find the heading closest to top of viewport (with offset)
+        let closestHeading: string | null = null;
+        let closestDistance = Infinity;
+
+        headingElements.forEach(({ id, element }) => {
+          if (!element) return;
+
+          const rect = element.getBoundingClientRect();
+          const distanceFromTop = Math.abs(rect.top - 120); // 120px offset from top
+
+          // Check if heading is in the upper portion of viewport
+          if (rect.top <= 200 && rect.top >= -300) {
+            if (distanceFromTop < closestDistance) {
+              closestDistance = distanceFromTop;
+              closestHeading = id;
+            }
           }
         });
 
-        // Find the heading with the highest intersection ratio
-        let bestId: string | null = null;
-        let bestRatio = 0;
-
-        visibleHeadings.forEach((ratio, id) => {
-          if (ratio > bestRatio) {
-            bestRatio = ratio;
-            bestId = id;
-          }
-        });
-
-        if (bestId) {
-          setActiveId(bestId);
+        if (closestHeading) {
+          setActiveId(closestHeading);
         }
       },
       {
-        // Use a smaller threshold at the top of the viewport
-        rootMargin: '-100px 0px -70% 0px',
-        threshold: [0, 0.25, 0.5, 0.75, 1.0]
+        rootMargin: '-80px 0px -70% 0px',
+        threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0]
       }
     );
 
-    headings.forEach((heading) => {
-      const element = document.getElementById(heading.id);
+    headingElements.forEach(({ element }) => {
       if (element) observer.observe(element);
     });
 
@@ -225,11 +227,14 @@ function InfoPageContent() {
         {/* Mobile TOC Toggle */}
         {isMobile && headings.length > 0 && (
           <button
-            className="info-toc-toggle"
+            className="info-toc-toggle-container"
             onClick={() => setIsTocOpen(true)}
             aria-label="Open table of contents"
           >
-            ☰ Contents
+            <span>Contents</span>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </button>
         )}
 

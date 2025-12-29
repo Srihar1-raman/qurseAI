@@ -18,7 +18,8 @@
 .info-progress-fill {
   height: 100%;
   background: var(--color-primary);
-  transition: width 0.1s linear;
+  transition: none;
+  will-change: width;
 }
 
 /* Page Layout - Centered container */
@@ -27,7 +28,7 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 40px 20px 20px;
+  padding: 20px;
 }
 
 .info-page-layout {
@@ -35,22 +36,25 @@
   grid-template-columns: 1fr;
   gap: 40px;
   position: relative;
-  max-width: 1000px;
+  max-width: 768px;
   margin: 0 auto;
 }
 
-/* Desktop: Two-column layout (content on left, TOC on right) */
+/* Desktop: Content width matches conversation thread (768px), TOC on right, centered */
 @media (min-width: 1024px) {
   .info-page-layout {
-    grid-template-columns: 1fr 220px;
+    grid-template-columns: 768px 220px;
+    max-width: 988px; /* 768px + 220px + 40px gap = centered */
+    margin: 0 auto;
   }
 }
 
-/* Tablet: Slightly narrower TOC */
+/* Tablet: Similar layout */
 @media (min-width: 768px) and (max-width: 1023px) {
   .info-page-layout {
-    grid-template-columns: 200px 1fr;
-    gap: 40px;
+    grid-template-columns: 1fr 180px;
+    max-width: 900px;
+    gap: 30px;
   }
 }
 
@@ -67,6 +71,10 @@
   max-height: calc(100vh - 120px);
   overflow-y: auto;
   align-self: start;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px;
+  background: var(--color-bg);
 }
 
 /* TOC Navigation */
@@ -123,24 +131,39 @@
 
 /* Mobile TOC */
 @media (max-width: 767px) {
-  .info-toc-toggle {
+  .info-toc-toggle-container {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    background: var(--color-bg-secondary);
+    justify-content: space-between;
+    padding: 6px 14px;
+    background: transparent;
     border: 1px solid var(--color-border);
-    border-radius: 8px;
+    border-radius: 6px;
     margin-bottom: 20px;
     color: var(--color-text);
     font-size: 14px;
-    font-weight: 500;
+    font-family: inherit;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s;
+    width: fit-content;
   }
 
-  .info-toc-toggle:hover {
+  .info-toc-toggle-container:hover {
     background: var(--color-bg-hover);
+    border-color: var(--color-border-hover);
+  }
+
+  .info-toc-toggle {
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
   }
 
   .info-toc-backdrop {
@@ -189,15 +212,18 @@
   .info-toc-close {
     background: transparent;
     border: none;
-    font-size: 20px;
     color: var(--color-text-secondary);
     cursor: pointer;
     padding: 4px;
-    line-height: 1;
-    transition: color 0.2s ease;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
   }
 
   .info-toc-close:hover {
+    background: var(--color-bg-hover);
     color: var(--color-text);
   }
 
@@ -210,6 +236,7 @@
 
 /* Hide mobile TOC on desktop */
 @media (min-width: 768px) {
+  .info-toc-toggle-container,
   .info-toc-toggle {
     display: none;
   }
@@ -223,18 +250,7 @@
 
 /* MDX Content Styling */
 .info-section {
-  animation: fadeInUp 0.3s ease-out;
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  /* No animation */
 }
 
 .mdx-content {
@@ -422,10 +438,6 @@
 
   .info-content-wrapper {
     max-width: 100%;
-  }
-
-  .info-section {
-    animation: none;
   }
 
   .mdx-content {

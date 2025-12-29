@@ -1,7 +1,4 @@
-# Cookie Policy
-
 **Last Updated:** December 29, 2025
-**Effective Date:** December 29, 2025
 
 ## 1. Introduction
 

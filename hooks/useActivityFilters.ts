@@ -82,7 +82,10 @@ export function useActivityFilters(
   const average = useMemo(() => {
     if (filteredData.length === 0) return 0;
     const sum = filteredData.reduce(
-      (sum, d) => sum + (d[dataKey as keyof typeof d] as number),
+      (sum, d) => {
+        const value = d[dataKey as keyof typeof d] as number;
+        return sum + (typeof value === 'number' && !isNaN(value) ? value : 0);
+      },
       0
     );
     return sum / filteredData.length;
