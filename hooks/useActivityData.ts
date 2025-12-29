@@ -35,12 +35,22 @@ export function useActivityData(userId?: string): UseActivityDataResult {
 
         // Extract unique models from data
         // New flat structure: keys like "gpt-4-messages", "gpt-4-inputTokens", etc.
+        // Need to extract full model name by removing the suffix (-messages, -inputTokens, etc.)
+        const suffixes = ['-messages', '-inputTokens', '-outputTokens', '-totalTokens'];
         const uniqueModels = Array.from(
           new Set(
             (result.data || []).flatMap((d: ActivityData) =>
               Object.keys(d)
                 .filter((k) => k.includes('-'))
-                .map((k) => k.split('-')[0]) // Extract model name from "gpt-4-messages"
+                .map((k) => {
+                  // Remove suffix to get model name
+                  for (const suffix of suffixes) {
+                    if (k.endsWith(suffix)) {
+                      return k.slice(0, -suffix.length);
+                    }
+                  }
+                  return k;
+                })
             )
           )
         ) as string[];

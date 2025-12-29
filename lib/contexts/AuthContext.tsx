@@ -21,6 +21,7 @@ interface AuthContextType {
   linkedProviders: string[];
   isLoadingProviders: boolean;
   signOut: () => Promise<void>;
+  signOutAllDevices: () => Promise<{ success: boolean; error?: string }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -309,7 +310,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     if (!supabase) return;
-    
+
     try {
       await supabase.auth.signOut();
       setUser(null);
@@ -321,10 +322,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const signOutAllDevices = async (): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const response = await fetch('/api/user/sign-out-all', {
+        method: 'POST',
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        logger.error('Failed to sign out from all devices', errorData);
+        return { success: false, error: errorData.error || 'Failed to sign out from all devices' };
+      }
+
+      // Successfully revoked all sessions
+      // Now sign out from the current device as well
+      await signOut();
+
+      return { success: true };
+    } catch (error) {
+      logger.error('Error signing out from all devices', error);
+      return { success: false, error: 'Network error. Please try again.' };
+    }
+  };
+
   return (
-    <AuthContext.Provider 
-      value={{ 
-        user, 
+    <AuthContext.Provider
+      value={{
+        user,
         session,
         isLoading,
         isAuthenticated: !!user,
@@ -332,7 +356,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isLoadingProStatus,
         linkedProviders,
         isLoadingProviders,
-        signOut
+        signOut,
+        signOutAllDevices
       }}
     >
       {children}

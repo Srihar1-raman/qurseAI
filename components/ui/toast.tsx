@@ -51,7 +51,7 @@ export function ToastComponent({ toast, onDismiss }: ToastProps) {
       role="alert"
       aria-live="assertive"
       className={cn(
-        'min-w-[300px] max-w-[500px] rounded-lg border-2 shadow-lg',
+        'min-w-[300px] max-w-[500px] rounded-lg border shadow-lg',
         'p-4 flex items-start gap-3',
         'animate-in slide-in-from-right-full',
         'bg-[var(--color-bg)]',

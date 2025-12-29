@@ -292,6 +292,7 @@ export interface AccountSectionProps {
   user: User | null;
   userStats: UserStats;
   onSignOut: () => void;
+  onSignOutAllDevices: () => Promise<{ success: boolean; error?: string }>;
   onClearChats: () => void;
   onDeleteAccount: () => void;
 }

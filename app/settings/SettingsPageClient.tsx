@@ -62,7 +62,7 @@ function SettingsPageContent() {
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
   
   const { resolvedTheme, mounted } = useTheme();
-  const { user: mockUser, signOut } = useAuth();
+  const { user: mockUser, signOut, signOutAllDevices } = useAuth();
   const router = useRouter();
 
   // Get conversation count from HistorySidebarContext (shared cache)
@@ -360,6 +360,7 @@ function SettingsPageContent() {
               user={mockUser}
               userStats={userStats}
               onSignOut={handleSignOut}
+              onSignOutAllDevices={signOutAllDevices}
               onClearChats={() => setShowClearChatsConfirm(true)}
               onDeleteAccount={() => setShowDeleteConfirm(true)}
             />
