@@ -135,7 +135,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <span style={{ color: 'var(--color-primary)', minWidth: '4px' }}>•</span>
-              <span>Dedicated agnetic chat modes</span>
+              <span>Dedicated agentic chat modes</span>
             </div>
             <div style={{ display: 'flex', gap: '8px' }}>
               <span style={{ color: 'var(--color-primary)', minWidth: '4px' }}>•</span>
@@ -147,7 +147,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
           <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
 
           <h3>Technology</h3>
-          <p>Robust architecture with Next.js, Vercel, Supabase, upstash, and more.</p>
+          <p>Modern architecture with Next.js, Vercel, Supabase, upstash, and more.</p>
 
           {/* Tech Icons */}
           <div
@@ -221,8 +221,8 @@ export function InfoContent({ sectionId }: InfoContentProps) {
                     ? `/${resolvedTheme === 'dark' ? 'icon_light' : 'icon'}/${tech.icon}`
                     : getIconPath(tech.icon, resolvedTheme, false, mounted)}
                   alt={tech.name}
-                  width={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 64 : 48}
-                  height={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 64 : 48}
+                  width={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 84 : 48}
+                  height={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 84 : 48}
                   style={{
                     opacity: 0.8
                   }}
