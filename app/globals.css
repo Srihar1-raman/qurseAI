@@ -11,6 +11,7 @@
 /* Import component styles */
 @import '../styles/components/auth.css';
 @import '../styles/components/info.css';
+@import '../styles/components/info-enhanced.css';
 @import '../styles/components/conversation.css';
 @import '../styles/components/history.css';
 @import '../styles/components/settings.css';

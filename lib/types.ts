@@ -421,3 +421,43 @@ export interface ShareConversationResponse {
   shareUrl: string;
 }
 
+// ============================================
+// Info Page Types
+// ============================================
+
+/**
+ * Info page sections
+ * Used for navigation and content routing
+ */
+export type InfoSection = 'about' | 'terms' | 'privacy' | 'cookies';
+
+/**
+ * Table of contents item
+ * Represents a heading in the document structure
+ */
+export interface TableOfContentsItem {
+  id: string;
+  text: string;
+  level: number; // 2 for h2, 3 for h3
+  children?: TableOfContentsItem[];
+}
+
+/**
+ * Policy document metadata
+ * Extracted from markdown frontmatter or content
+ */
+export interface PolicyMetadata {
+  title: string;
+  lastUpdated: string;
+  effectiveDate: string;
+}
+
+/**
+ * Scroll progress tracking
+ * Used for reading progress indicator
+ */
+export interface ScrollProgress {
+  percentage: number;
+  activeSection: string | null;
+}
+
