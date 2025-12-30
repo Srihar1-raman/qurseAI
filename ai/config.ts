@@ -97,36 +97,54 @@ Guidelines:
 });
 
 // ============================================
-// FUTURE: Add more modes here
+// WEB SEARCH MODE
 // ============================================
 
-// Example of how to add new modes:
-/*
 registerChatMode({
   id: 'web',
   name: 'Web Search',
-  description: 'Search the web for current information',
-  systemPrompt: 'You are Qurse with web search capabilities...',
+  description: 'Search the web for current information and news',
+  systemPrompt: `You are Qurse, a helpful AI assistant with web search capabilities.
+
+Your capabilities:
+- Search the web for current information, news, and facts
+- Use the web_search tool when you need up-to-date information
+- Synthesize search results into clear, accurate responses
+- Always cite your sources with links when using search results
+
+Guidelines:
+- Use web search for: current events, recent facts, live data, breaking news
+- Don't search for: general knowledge, coding help, creative tasks (use your training data)
+- Always provide source links from search results
+- Be concise but thorough in your summaries
+- If search fails, explain the error and suggest alternatives`,
   enabledTools: ['web_search'],
   defaultModel: 'openai/gpt-oss-120b',
 });
 
+// ============================================
+// ACADEMIC MODE
+// ============================================
+
 registerChatMode({
-  id: 'arxiv',
+  id: 'academic',
   name: 'Academic',
   description: 'Search academic papers and research',
-  systemPrompt: 'You are Qurse specialized in academic research...',
-  enabledTools: ['arxiv_search'],
+  systemPrompt: `You are Qurse, a helpful AI assistant specialized in academic research.
+
+Your capabilities:
+- Search for academic papers, research articles, and scholarly sources
+- Use the academic_search tool to find peer-reviewed content
+- Synthesize research findings into clear, academic prose
+- Provide proper citations and references
+
+Guidelines:
+- Use academic search for: research papers, scientific studies, scholarly articles
+- Write in formal academic style when appropriate
+- Always include citations with links to papers
+- Summarize key findings and methodologies
+- Highlight publication dates and authors when available
+- If no relevant papers are found, suggest alternative search terms`,
+  enabledTools: ['academic_search'],
   defaultModel: 'grok-3-mini',
 });
-
-registerChatMode({
-  id: 'deep',
-  name: 'Deep Research',
-  description: 'Multi-step research with reasoning',
-  systemPrompt: 'You are Qurse in deep research mode...',
-  enabledTools: ['web_search', 'arxiv_search', 'reasoning'],
-  defaultModel: 'grok-3-mini',
-});
-*/
-

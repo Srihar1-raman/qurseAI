@@ -240,6 +240,7 @@ export default async function ConversationPage({ params, searchParams }: PagePro
       initialHasMore={initialHasMore}
       initialDbRowCount={initialDbRowCount}
       hasInitialMessageParam={!!validatedParams.message}
+      initialMode={validatedParams.mode}
         user={user}
     />
     </ErrorBoundary>

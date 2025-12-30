@@ -3,6 +3,13 @@
  * Central export point for all tool-related functionality
  */
 
+// ============================================
+// TOOL IMPORTS - Side effect registration
+// ============================================
+// Import tool files to trigger their self-registration
+import './web-search';
+import './academic-search';
+
 export {
   registerTool,
   getTool,
@@ -13,10 +20,19 @@ export {
 } from './registry';
 
 // ============================================
-// FUTURE: Export individual tools here
+// Export search infrastructure
 // ============================================
 
-// export { webSearchTool } from './web-search';
-// export { arxivSearchTool } from './arxiv-search';
-// export { calculatorTool } from './calculator';
+export {
+  ExaSearchStrategy,
+  TavilySearchStrategy,
+  createSearchStrategy,
+  getDefaultProvider,
+} from './search/factory';
+export type {
+  SearchStrategy,
+  SearchResults,
+  SearchParams,
+  AcademicSearchParams,
+} from './search/types';
 

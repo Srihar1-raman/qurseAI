@@ -7,6 +7,7 @@ import Header from '@/components/layout/Header';
 import HistorySidebar from '@/components/layout/history/HistorySidebar';
 import { ConversationPageSkeleton } from '@/components/ui/ConversationPageSkeleton';
 import { useAuth } from '@/lib/contexts/AuthContext';
+import { useConversation } from '@/lib/contexts/ConversationContext';
 import { createScopedLogger } from '@/lib/utils/logger';
 import type { User } from '@/lib/types';
 import type { UIMessagePart, UIDataTypes, UITools } from 'ai';
@@ -29,6 +30,7 @@ interface ConversationPageClientProps {
   initialHasMore: boolean;
   initialDbRowCount: number;
   hasInitialMessageParam: boolean;
+  initialMode?: string;
   user: User | null;
 }
 
@@ -40,29 +42,32 @@ export default function ConversationPageClient({
   initialHasMore,
   initialDbRowCount,
   hasInitialMessageParam,
+  initialMode,
   user: userProp,
 }: ConversationPageClientProps) {
   const router = useRouter();
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const { user: authUser, isLoading: isAuthLoading } = useAuth();
+  const { setChatMode } = useConversation();
   const previousUserPropRef = useRef(userProp);
   const previousAuthUserRef = useRef(authUser);
   const hasRedirectedRef = useRef(false);
+  const hasInitializedModeRef = useRef(false);
 
   // Handle logout: Redirect to homepage when user logs out
   // This handles the case where user logs out in another tab while on conversation route
   useEffect(() => {
     const previousUserProp = previousUserPropRef.current;
     const previousAuthUser = previousAuthUserRef.current;
-    
+
     previousUserPropRef.current = userProp;
     previousAuthUserRef.current = authUser;
-    
+
     // Don't redirect while auth is still loading (prevents race condition)
     if (isAuthLoading || hasRedirectedRef.current) {
       return;
     }
-    
+
     // If user was authenticated (prop or context) but now logged out (context), redirect
     if ((previousUserProp || previousAuthUser) && !authUser) {
       hasRedirectedRef.current = true;
@@ -70,6 +75,16 @@ export default function ConversationPageClient({
       router.replace('/');
     }
   }, [isAuthLoading, userProp, authUser, router, conversationId]);
+
+  // Initialize chat mode from URL parameter on mount
+  // This ensures the mode selected on homepage is used when creating new conversation
+  useEffect(() => {
+    if (initialMode && !hasInitializedModeRef.current) {
+      setChatMode(initialMode);
+      hasInitializedModeRef.current = true;
+      logger.debug('Initialized chat mode from URL', { conversationId, mode: initialMode });
+    }
+  }, [initialMode, setChatMode]);
 
   // Handle New Chat button click
   const handleNewChat = () => {

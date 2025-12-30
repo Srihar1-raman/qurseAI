@@ -3,9 +3,9 @@ import type { SearchOption } from './types';
 
 // Web search options
 export const WEB_SEARCH_OPTIONS: SearchOption[] = [
-  { name: 'Chat', enabled: false, icon: 'chat' },
+  { name: 'Chat', enabled: true, icon: 'chat' },
   { name: 'Web Search (Exa)', enabled: true, icon: 'exa' },
-  { name: 'arXiv', enabled: false, icon: 'arxiv-logo' }
+  { name: 'Academic', enabled: true, icon: 'book-open' }
 ];
 
 // Export short names for convenience

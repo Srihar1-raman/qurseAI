@@ -5,6 +5,7 @@ import { useQueryState } from 'nuqs';
 import { messageParser } from '@/lib/url-params/parsers';
 import dynamicImport from 'next/dynamic';
 import { TypingProvider } from '@/lib/contexts/TypingContext';
+import { useConversation } from '@/lib/contexts/ConversationContext';
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import Hero from '@/components/homepage/Hero';
@@ -16,6 +17,7 @@ import HistorySidebar from '@/components/layout/history/HistorySidebar';
 import { ConversationPageSkeleton } from '@/components/ui/ConversationPageSkeleton';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversationId } from '@/hooks/use-conversation-id';
+import { mapDisplayNameToModeId, mapModeIdToDisplayName } from '@/lib/utils/chat-mode-mapper';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,10 +32,19 @@ const ConversationClient = dynamicImport(
 );
 
 function HomePageContent() {
-  const [selectedSearchOption, setSelectedSearchOption] = useState('Chat');
+  const { chatMode: contextChatMode, setChatMode: setContextChatMode } = useConversation();
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const { user } = useAuth();
+
+  // Derive display name from context chat mode
+  const selectedSearchOption = mapModeIdToDisplayName(contextChatMode);
+
+  // Handle search option selection - sync to context
+  const handleSearchOptionChange = useCallback((optionName: string) => {
+    const modeId = mapDisplayNameToModeId(optionName);
+    setContextChatMode(modeId);
+  }, [setContextChatMode]);
 
   // Track if user is typing
   const isTyping = inputValue.trim().length > 0;
@@ -105,7 +116,7 @@ function HomePageContent() {
           
           <WebSearchSelector
             selectedOption={selectedSearchOption}
-            onSelectOption={setSelectedSearchOption}
+            onSelectOption={handleSearchOptionChange}
           />
         </div>
       </main>

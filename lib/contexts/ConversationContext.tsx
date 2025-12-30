@@ -22,19 +22,32 @@ interface ConversationProviderProps {
 }
 
 export function ConversationProvider({ children }: ConversationProviderProps) {
-  const [selectedModel, setSelectedModel] = useState<string>(() => {
-    // Initialize from localStorage if available (for instant UI)
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('user_default_model');
-      if (saved) return saved;
-    }
-    return 'openai/gpt-oss-120b'; // Default free model
-  });
+  const [selectedModel, setSelectedModel] = useState<string>('openai/gpt-oss-120b'); // Default free model
   const [chatMode, setChatMode] = useState<string>('chat'); // Default chat mode
+  const [isInitialized, setIsInitialized] = useState(false);
   const { user } = useAuth();
 
-  // Load user's default model from preferences on mount
+  // Initialize state from localStorage and user preferences on mount (client-side only)
   useEffect(() => {
+    // Load from localStorage first (for instant UI)
+    let initialMode = 'chat';
+    let initialModel = 'openai/gpt-oss-120b';
+
+    if (typeof window !== 'undefined') {
+      const savedMode = localStorage.getItem('user_chat_mode');
+      const savedModel = localStorage.getItem('user_default_model');
+      if (savedMode) initialMode = savedMode;
+      if (savedModel) initialModel = savedModel;
+    }
+
+    // Apply initial values
+    setChatMode(initialMode);
+    setSelectedModel(initialModel);
+
+    // Mark as initialized to prevent re-initialization
+    setIsInitialized(true);
+
+    // Then load user's default model from preferences (can override localStorage)
     async function loadDefaultModel() {
       try {
         const response = await fetch('/api/user/preferences');
@@ -57,6 +70,13 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
 
     loadDefaultModel();
   }, [user?.id]);
+
+  // Persist chatMode changes to localStorage (only after initialization)
+  useEffect(() => {
+    if (isInitialized && typeof window !== 'undefined') {
+      localStorage.setItem('user_chat_mode', chatMode);
+    }
+  }, [chatMode, isInitialized]);
 
   return (
     <ConversationContext.Provider
