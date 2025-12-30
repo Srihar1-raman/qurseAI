@@ -20,9 +20,10 @@ interface MainInputProps {
   inputValue: string;
   setInputValue: (value: string) => void;
   showAttachButton?: boolean;
+  shouldNavigate?: boolean;
 }
 
-export default function MainInput({ inputValue, setInputValue, showAttachButton = true }: MainInputProps) {
+export default function MainInput({ inputValue, setInputValue, showAttachButton = true, shouldNavigate = false }: MainInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
@@ -74,7 +75,12 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
     const url = `/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`;
 
     // Navigate to conversation page
-    router.push(url);
+    if (shouldNavigate) {
+      router.push(url);
+    } else {
+      // Use window.history.replaceState() for instant response (0ms navigation overhead)
+      window.history.replaceState({}, '', url);
+    }
 
     // Clear input
     setInputValue('');

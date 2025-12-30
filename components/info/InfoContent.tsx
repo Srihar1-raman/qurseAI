@@ -239,7 +239,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
           <p style={{ color: 'var(--color-text-secondary)' }}>Experience <span style={{ fontFamily: 'var(--font-reenie)', fontSize: '28px' }}>Qurse</span> now.</p>
 
           <div style={{ marginTop: '24px', paddingBottom: '32px' }}>
-            <MainInput inputValue={demoInputValue} setInputValue={setDemoInputValue} showAttachButton={false} />
+            <MainInput inputValue={demoInputValue} setInputValue={setDemoInputValue} showAttachButton={false} shouldNavigate={true} />
           </div>
 
           {/* Social Buttons */}
