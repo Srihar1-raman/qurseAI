@@ -256,6 +256,13 @@
   padding: 20px 20px 40px 20px; /* Reduced top padding from 100px to 20px */
 }
 
+/* Mobile responsive adjustments for About page */
+@media (max-width: 767px) {
+  .info-about-content {
+    padding: 20px 16px 40px 16px; /* Reduced horizontal padding for mobile */
+  }
+}
+
 /* About page layout - full width, no grid */
 .info-about-layout {
   display: block !important;

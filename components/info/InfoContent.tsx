@@ -8,6 +8,7 @@ import MainInput from '@/components/homepage/MainInput';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 import { useTheme } from '@/lib/theme-provider';
 import { getIconPath } from '@/lib/icon-utils';
+import { useMobile } from '@/hooks/use-mobile';
 import type { InfoSection } from '@/lib/types';
 
 const SECTION_PATHS: Record<InfoSection, string> = {
@@ -32,6 +33,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
   const [error, setError] = useState<string | null>(null);
   const [demoInputValue, setDemoInputValue] = useState('');
   const { resolvedTheme, mounted } = useTheme();
+  const isMobile = useMobile();
 
   const techIcons = [
     { name: 'Next.js', icon: 'nextjs' },
@@ -154,55 +156,91 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             style={{
               position: 'relative',
               display: 'grid',
-              gridTemplateColumns: 'repeat(4, 1fr)',
-              gap: '32px',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+              gap: isMobile ? '16px' : '32px',
               marginTop: '24px',
-              padding: '32px',
+              padding: isMobile ? '16px' : '32px',
               border: '1px solid var(--color-border)',
               borderRadius: '8px',
               justifyItems: 'center',
               alignItems: 'center',
               marginLeft: 'auto',
               marginRight: 'auto',
-              width: '560px',
+              maxWidth: '560px',
+              width: '100%',
             }}
           >
-            {/* Horizontal line */}
+            {/* Horizontal lines */}
             <div style={{
               position: 'absolute',
-              top: '50%',
+              top: isMobile ? '25%' : '50%',
               left: '0',
               right: '0',
               height: '1px',
               backgroundColor: 'var(--color-border)',
               transform: 'translateY(-50%)'
             }}></div>
+            {isMobile && (
+              <>
+                <div style={{
+                  position: 'absolute',
+                  top: '50%',
+                  left: '0',
+                  right: '0',
+                  height: '1px',
+                  backgroundColor: 'var(--color-border)',
+                  transform: 'translateY(-50%)'
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  top: '75%',
+                  left: '0',
+                  right: '0',
+                  height: '1px',
+                  backgroundColor: 'var(--color-border)',
+                  transform: 'translateY(-50%)'
+                }}></div>
+              </>
+            )}
 
-            {/* Vertical lines - positioned exactly in the middle of gaps */}
+            {/* Vertical lines */}
             <div style={{
               position: 'absolute',
-              left: '148px',
+              left: '50%',
               top: '0',
               bottom: '0',
               width: '1px',
               backgroundColor: 'var(--color-border)',
+              transform: 'translateX(-50%)'
             }}></div>
-            <div style={{
-              position: 'absolute',
-              left: '280px',
-              top: '0',
-              bottom: '0',
-              width: '1px',
-              backgroundColor: 'var(--color-border)',
-            }}></div>
-            <div style={{
-              position: 'absolute',
-              left: '412px',
-              top: '0',
-              bottom: '0',
-              width: '1px',
-              backgroundColor: 'var(--color-border)',
-            }}></div>
+            {!isMobile && (
+              <>
+                <div style={{
+                  position: 'absolute',
+                  left: '148px',
+                  top: '0',
+                  bottom: '0',
+                  width: '1px',
+                  backgroundColor: 'var(--color-border)',
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  left: '280px',
+                  top: '0',
+                  bottom: '0',
+                  width: '1px',
+                  backgroundColor: 'var(--color-border)',
+                }}></div>
+                <div style={{
+                  position: 'absolute',
+                  left: '412px',
+                  top: '0',
+                  bottom: '0',
+                  width: '1px',
+                  backgroundColor: 'var(--color-border)',
+                }}></div>
+              </>
+            )}
 
             {techIcons.map((tech) => (
               <div
@@ -243,7 +281,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
           </div>
 
           {/* Social Buttons */}
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '16px', paddingBottom: '32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '16px', paddingBottom: '32px', flexWrap: 'wrap' }}>
             <a
               href="https://github.com/qurse"
               target="_blank"
