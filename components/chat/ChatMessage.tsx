@@ -9,14 +9,16 @@ import { ReasoningBlock } from './ReasoningBlock';
 import { ToolCallCard } from './ToolCallCard';
 import { WebSearchResult } from './WebSearchResult';
 import { AcademicSearchResult } from './AcademicSearchResult';
+import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
 interface ToolExecution {
   toolName: string;
   toolCallId: string;
-  args: Record<string, unknown>;
+  args?: Record<string, unknown>;
   result?: unknown;
   status: 'loading' | 'complete' | 'error';
+  state?: string; // AI SDK tool state: 'input-streaming', 'input-available', 'output-available'
 }
 
 // Helper function to check if result has search results
@@ -43,6 +45,15 @@ function hasSearchResults(result: unknown): result is {
 function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false }: ChatMessageProps) {
   const { resolvedTheme, mounted } = useTheme();
 
+  // DEBUG: Log all parts to see what we're getting
+  if (!isUser && message.parts.length > 0) {
+    console.log('[ChatMessage] Assistant message parts:', {
+      messageId: message.id,
+      partsCount: message.parts.length,
+      parts: message.parts.map(p => ({ type: p.type, hasData: Object.keys(p).length > 1 })),
+    });
+  }
+
   // Extract text content from message parts
   const content = message.parts
     .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
@@ -55,55 +66,51 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
     .map(p => p.text)
     .join('\n\n') || null;
 
-  // Extract tool calls and results
+  // Extract tool calls and results using AI SDK's isToolUIPart
   const toolExecutions = React.useMemo(() => {
     const executions: ToolExecution[] = [];
 
-    // Find all tool-call parts using type guard
-    const toolCalls = message.parts.filter((p) => {
-      return p.type === 'tool-call' ||
-             (typeof p.type === 'string' && p.type.startsWith('tool-'));
-    }) as Array<{
-      type: string;
-      toolCallId?: string;
-      toolName?: string;
-      args?: Record<string, unknown>;
-    }>;
+    // Use AI SDK's official type guard to find tool parts
+    const toolParts = message.parts.filter(isToolUIPart);
 
-    // Match each tool call with its result
-    for (const call of toolCalls) {
-      if (!call.toolCallId || !call.toolName) continue;
+    // DEBUG: Log what we found
+    console.log('[ChatMessage] Tool parts found:', {
+      messageId: message.id,
+      toolPartsFound: toolParts.length,
+      toolPartTypes: toolParts.map(p => p.type),
+    });
 
-      const resultPart = message.parts.find((p) => {
-        return (p.type === 'tool-result' ||
-                typeof p.type === 'string' && p.type.startsWith('tool-')) &&
-               'toolCallId' in p &&
-               p.toolCallId === call.toolCallId;
-      }) as {
-        toolCallId: string;
-        result?: unknown;
-      } | undefined;
+    // Each tool part contains both input and output (when available)
+    for (const part of toolParts) {
+      // Extract tool name from type (e.g., 'tool-web_search' -> 'web_search')
+      const toolName = (part as { type: string }).type.replace('tool-', '');
 
-      let result: unknown;
+      // Tool parts have toolCallId, state, input, and output
+      const toolCallId = 'toolCallId' in part ? (part.toolCallId as string) : (part as { type: string }).type;
+      const state = 'state' in part ? (part.state as string) : undefined;
+      const input = 'input' in part ? (part.input as Record<string, unknown>) : {};
+      const output = 'output' in part ? part.output : undefined;
+
       let status: 'loading' | 'complete' | 'error' = 'loading';
 
-      if (resultPart?.result) {
-        result = resultPart.result;
-
-        // Check if result is an error
-        if (result && typeof result === 'object' && 'error' in result) {
+      // Determine status from state
+      if (state === 'output-available') {
+        if (output && typeof output === 'object' && 'error' in output) {
           status = 'error';
         } else {
           status = 'complete';
         }
+      } else if (state === 'input-streaming') {
+        status = 'loading';
       }
 
       executions.push({
-        toolName: call.toolName,
-        toolCallId: call.toolCallId,
-        args: call.args || {},
-        result,
-        status: isStreaming ? 'loading' : status,
+        toolName,
+        toolCallId,
+        args: input,
+        result: output,
+        status: isStreaming && status === 'complete' ? 'loading' : status,
+        state,
       });
     }
 
@@ -162,14 +169,14 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                   <>
                     {execution.toolName === 'web_search' && (
                       <WebSearchResult
-                        query={execution.args.query as string}
+                        query={execution.args?.query as string || ''}
                         results={execution.result.results}
                         provider={execution.result.provider}
                       />
                     )}
                     {execution.toolName === 'academic_search' && (
                       <AcademicSearchResult
-                        query={execution.args.query as string}
+                        query={execution.args?.query as string || ''}
                         results={execution.result.results}
                         provider={execution.result.provider}
                       />

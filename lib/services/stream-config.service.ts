@@ -160,6 +160,7 @@ export function buildStreamConfig(config: StreamConfig) {
       dataStream.merge(
         result.toUIMessageStream({
           sendReasoning: shouldSendReasoning,
+          // Note: Tool parts (tool-call, tool-result) are sent by default
           messageMetadata: ({ part }) => {
             if (part.type === 'finish') {
               const processingTime = (Date.now() - requestStartTime) / 1000;
@@ -228,6 +229,20 @@ async function saveAssistantMessages(config: {
   });
 
   const assistantMessage = messages[messages.length - 1];
+
+  // DEBUG: Log all parts in the assistant message
+  if (assistantMessage?.parts) {
+    logger.info('Assistant message parts', {
+      messageId: assistantMessage.id,
+      partsCount: assistantMessage.parts.length,
+      partTypes: assistantMessage.parts.map(p => p.type),
+      // Log full parts for debugging
+      parts: assistantMessage.parts.map(p => ({
+        type: p.type,
+        keys: Object.keys(p),
+      })),
+    });
+  }
 
   // Early return if no valid assistant message
   if (!assistantMessage || assistantMessage.role !== 'assistant' || !assistantMessage.parts || assistantMessage.parts.length === 0) {
