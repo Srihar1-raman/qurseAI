@@ -20,6 +20,8 @@ import { buildStreamConfig } from '@/lib/services/stream-config.service';
 import { trimContext } from '@/lib/services/context-manager.service';
 import { getUserPreferences } from '@/lib/services/user-preferences';
 import { buildSystemPrompt } from '@/lib/services/prompt-builder.service';
+import { getUserMemoryContext } from '@/lib/services/supermemory.service';
+import { buildMemoryPrompt } from '@/lib/utils/memory-prompt';
 import type { User } from '@/lib/types';
 
 const logger = createScopedLogger('api/chat');
@@ -151,6 +153,31 @@ export async function POST(req: Request) {
     const messageData = processMessages(messagesToSend);
 
     // ============================================
+    // Stage 7.5: Fetch memory context (authenticated users only)
+    // ============================================
+    let memoryPrompt = '';
+    if (fullUserData) {
+      try {
+        const memoryContext = await getUserMemoryContext(
+          fullUserData.id,
+          messageData.userMessageText
+        );
+        memoryPrompt = buildMemoryPrompt(memoryContext);
+        if (memoryPrompt) {
+          logger.debug('Memory context fetched and injected', {
+            userId: fullUserData.id,
+            hasStatic: memoryContext.static.length > 0,
+            hasDynamic: memoryContext.dynamic.length > 0,
+            hasMemories: memoryContext.memories.length > 0,
+          });
+        }
+      } catch (error: unknown) {
+        logger.warn('Failed to fetch memory context, continuing without memory', error as Record<string, unknown>);
+        // Continue without memory - don't break chat
+      }
+    }
+
+    // ============================================
     // Stage 8: Database operations
     // ============================================
     const resolvedConversationIdRef = { current: conversationId };
@@ -202,6 +229,8 @@ export async function POST(req: Request) {
       conversationId,
       contextMetadata: trimResult.metadata,
       customPrompt: userPreferences?.custom_prompt,
+      memoryPrompt, // Add memory context to stream
+      userMessageText: messageData.userMessageText, // Add user message text for memory saving
     });
 
     // ============================================

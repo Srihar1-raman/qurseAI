@@ -13,6 +13,8 @@ import { saveGuestMessage } from '@/lib/db/guest-messages.server';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { StreamingError, ProviderError } from '@/lib/errors';
 import { buildSystemPrompt } from './prompt-builder.service';
+import { saveConversation } from './supermemory.service';
+import { extractMessageText } from '@/lib/utils/memory-prompt';
 import type { StreamTextProviderOptions } from '@/lib/utils/message-adapters';
 import type { User } from '@/lib/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
@@ -60,6 +62,10 @@ export interface StreamConfig {
   };
   /** User's custom system prompt (optional) */
   customPrompt?: string | null;
+  /** Memory context from Supermemory (for authenticated users) */
+  memoryPrompt?: string;
+  /** User message text for saving to memory */
+  userMessageText?: string;
 }
 
 /**
@@ -85,6 +91,8 @@ export function buildStreamConfig(config: StreamConfig) {
     conversationId,
     contextMetadata,
     customPrompt,
+    memoryPrompt,
+    userMessageText,
   } = config;
 
   return {
@@ -111,11 +119,18 @@ export function buildStreamConfig(config: StreamConfig) {
       }
 
       // Start streaming
-      // Merge mode system prompt with user's custom prompt
-      const finalSystemPrompt = buildSystemPrompt(
-        modeConfig.systemPrompt || '',
-        customPrompt
-      );
+      // Merge prompts: Mode system prompt + Memory prompt + Custom prompt
+      let finalSystemPrompt = modeConfig.systemPrompt || '';
+
+      // Add memory context first (before custom prompt)
+      if (memoryPrompt) {
+        finalSystemPrompt = `${finalSystemPrompt}\n\n${memoryPrompt}`;
+      }
+
+      // Add custom prompt last
+      if (customPrompt) {
+        finalSystemPrompt = buildSystemPrompt(finalSystemPrompt, customPrompt);
+      }
 
       const result = streamText({
         model: qurse.languageModel(model),
@@ -191,6 +206,7 @@ export function buildStreamConfig(config: StreamConfig) {
         model,
         requestStartTime,
         supabaseClient,
+        userMessageText,
       });
     },
   };
@@ -209,6 +225,7 @@ async function saveAssistantMessages(config: {
   model: string;
   requestStartTime: number;
   supabaseClient: SupabaseClient;
+  userMessageText?: string;
 }): Promise<void> {
   const {
     messages,
@@ -219,6 +236,7 @@ async function saveAssistantMessages(config: {
     model,
     requestStartTime,
     supabaseClient,
+    userMessageText,
   } = config;
 
   logger.info('onFinish called', {
@@ -313,6 +331,46 @@ async function saveAssistantMessages(config: {
           tokens: totalTokens,
           model,
         });
+
+        // Save conversation to Supermemory (only for authenticated users)
+        if (user && user.id) {
+          logger.info('Attempting to save conversation to Supermemory', {
+            userId: user.id,
+            conversationId: resolvedConversationId,
+          });
+
+          try {
+            logger.info('Extracted message texts for Supermemory', {
+              userId: user.id,
+              userMessageLength: userMessageText?.length || 0,
+              assistantMessageLength: messageContentText.length,
+            });
+
+            if (userMessageText && messageContentText) {
+              await saveConversation(user.id, userMessageText, messageContentText);
+              logger.info('Supermemory save completed', { userId: user.id });
+            } else {
+              logger.warn('Skipped Supermemory save - empty message text', {
+                userId: user.id,
+                hasUserMessage: !!userMessageText,
+                hasAssistantMessage: !!messageContentText,
+              });
+            }
+          } catch (error) {
+            // Log but don't fail - memory save failure shouldn't break chat
+            logger.error('Failed to save conversation to Supermemory', {
+              error: error as Error,
+              userId: user.id,
+              conversationId: resolvedConversationId,
+              errorMessage: (error as Error).message,
+            });
+          }
+        } else {
+          logger.debug('Skipping Supermemory save - no authenticated user', {
+            hasUser: !!user,
+            hasUserId: !!user?.id,
+          });
+        }
       }
     } catch (error) {
       logger.error('Assistant message save error', error, { conversationId: resolvedConversationId });
