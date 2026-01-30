@@ -28,6 +28,14 @@ export interface AnannasOptions {
   parallelToolCalls?: boolean;
 }
 
+// Native OpenAI provider options
+export interface OpenAIOptions {
+  reasoningEffort?: 'minimal' | 'low' | 'medium' | 'high';
+  parallelToolCalls?: boolean;
+  structuredOutputs?: boolean;
+  maxCompletionTokens?: number;
+}
+
 /**
  * Model Configuration Interface
  * Defines all metadata for an AI model
@@ -101,6 +109,7 @@ export interface ModelConfig {
     groq?: GroqOptions;
     xai?: XaiOptions;
     anannas?: AnannasOptions;
+    openai?: OpenAIOptions;
   };
 }
 
@@ -252,6 +261,55 @@ export const models: ModelConfig[] = [
     providerConfig: {
       anannas: {
         parallelToolCalls: false,
+      },
+    },
+  },
+
+  // ============================================
+  // OPENAI MODELS (Native)
+  // ============================================
+  {
+    value: 'gpt-5-nano-2025-08-07',
+    label: 'GPT-5 Nano',
+    description: 'OpenAI\'s latest compact reasoning model with 400K context window, vision support, and native reasoning',
+    provider: 'openai',
+
+    // Capabilities
+    vision: true,
+    reasoning: true,
+    streaming: true,
+    structuredOutput: true,
+
+    // Access
+    requiresAuth: true,
+    requiresPro: true,
+    free: false,
+    freeUnlimited: false,
+
+    // Additional capabilities
+    experimental: false,
+    pdf: false,
+
+    // Limits
+    maxOutputTokens: 128000,
+    contextWindow: 400000,
+
+    // UI
+    category: 'Pro',
+    tags: ['smart', 'reasoning', 'vision', 'new'],
+
+    // Reasoning configuration
+    reasoningConfig: {
+      middleware: 'native',
+      streamable: true,
+      format: 'hidden',  // OpenAI's native reasoning is hidden by default
+    },
+
+    // Provider configuration
+    providerConfig: {
+      openai: {
+        reasoningEffort: 'medium',
+        structuredOutputs: true,
       },
     },
   },
@@ -428,30 +486,36 @@ export function getModelParameters(modelValue: string): ModelConfig['parameters'
 export function getProviderOptions(modelValue: string): {
   groq?: GroqOptions;
   xai?: XaiOptions;
-  openai?: AnannasOptions;
+  openai?: OpenAIOptions;
 } {
   const model = getModelConfig(modelValue);
   if (!model?.providerConfig) return {};
-  
+
   // Return provider-specific configs
   const options: {
     groq?: GroqOptions;
     xai?: XaiOptions;
-    openai?: AnannasOptions;
+    openai?: OpenAIOptions;
   } = {};
-  
+
   if (model.provider === 'groq' && model.providerConfig.groq) {
     options.groq = model.providerConfig.groq;
   }
-  
+
   if (model.provider === 'xai' && model.providerConfig.xai) {
     options.xai = model.providerConfig.xai;
   }
-  
+
+  // Anannas uses OpenAI-compatible interface
   if (model.provider === 'anannas' && model.providerConfig.anannas) {
     options.openai = model.providerConfig.anannas;
   }
-  
+
+  // Native OpenAI provider
+  if (model.provider === 'openai' && model.providerConfig.openai) {
+    options.openai = model.providerConfig.openai;
+  }
+
   return options;
 }
 

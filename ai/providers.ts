@@ -46,6 +46,14 @@ function wrapReasoningModel(
 }
 
 /**
+ * Native OpenAI Provider
+ * Direct access to OpenAI models (GPT-4, GPT-5, etc.)
+ */
+const openai = createOpenAI({
+  apiKey: process.env.OPENAI_API_KEY || '',
+});
+
+/**
  * Anannas AI - OpenAI-compatible provider with access to multiple models
  * Cheaper alternative to direct API access for many models
  */
@@ -91,7 +99,14 @@ export const qurse = customProvider({
     // ============================================
     // Kimi K2 does not support reasoning, keep unwrapped
     'moonshotai/kimi-k2-instruct': anannas.chat('moonshotai/kimi-k2-instruct'),
-    
+
+    // ============================================
+    // OPENAI MODELS (Native)
+    // ============================================
+    // GPT-5 Nano - OpenAI handles reasoning natively
+    // No middleware needed - reasoning comes in native format
+    'gpt-5-nano-2025-08-07': openai.chat('gpt-5-nano-2025-08-07'),
+
     // ============================================
     // FUTURE: Add more models here
     // ============================================
