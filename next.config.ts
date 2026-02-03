@@ -42,6 +42,18 @@ const nextConfig: NextConfig = {
   // typescript: {
   //   ignoreBuildErrors: false, // Keep this false to catch TS errors
   // },
+  webpack: (config, { isServer }) => {
+    // Stub out canvas module for client-side builds
+    // vega-canvas depends on it but it doesn't work in the browser
+    if (!isServer) {
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        canvas: false,
+        'vega-canvas': false,
+      };
+    }
+    return config;
+  },
 };
 
 // Only wrap with Sentry if DSN is configured
