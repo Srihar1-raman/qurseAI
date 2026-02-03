@@ -39,7 +39,7 @@
     "marked-react": "^3.0.1",
     "mdx": "^0.3.1",
     "mermaid": "^10.9.3",
-    "next": "15.5.7",
+    "next": "15.5.9",
     "next-mdx-remote": "^5.0.0",
     "nuqs": "^2.8.5",
     "pdfjs-dist": "^5.4.449",
