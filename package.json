@@ -44,6 +44,7 @@
     "nuqs": "^2.8.5",
     "pdfjs-dist": "^5.4.449",
     "plantuml-encoder": "^1.4.0",
+    "puppeteer": "^24.36.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-latex-next": "^3.0.0",

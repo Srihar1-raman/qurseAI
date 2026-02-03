@@ -13,20 +13,21 @@ const logger = createScopedLogger('components/settings/GeneralSection');
 
 export default function GeneralSection({
   autoSaveConversations,
-  setAutoSaveConversations,
+  onAutoSaveChange,
+  enableSupermemory,
+  onSupermemoryChange,
   language,
-  setLanguage,
+  onLanguageChange,
   user,
-  isSaving,
-  onSaveSettings,
   defaultModel,
-  setDefaultModel
+  onDefaultModelChange
 }: GeneralSectionProps) {
+
   const { theme, setTheme, resolvedTheme, mounted } = useTheme();
 
   const handleThemeChange = async (newTheme: 'light' | 'dark' | 'auto') => {
     setTheme(newTheme);
-    
+
     // Persist theme to database if user is logged in
     if (user) {
       try {
@@ -103,18 +104,40 @@ export default function GeneralSection({
         type="checkbox"
         id="auto-save"
         checked={autoSaveConversations}
-        onChange={(e) => setAutoSaveConversations(e.target.checked)}
+        onChange={(e) => onAutoSaveChange(e.target.checked)}
       />
       <label htmlFor="auto-save"></label>
     </div>
   </div>
-</div>
+ </div>
 
+
+      {/* Memory Feature */}
+      <div className="settings-group row">
+        <div className="settings-text">
+          <label className="settings-label">Memory Feature</label>
+          <p className="settings-description">
+            Enable AI to remember context across conversations.
+          </p>
+        </div>
+
+        <div className="settings-control">
+          <div className="settings-toggle">
+            <input
+              type="checkbox"
+              id="enable-supermemory"
+              checked={enableSupermemory}
+              onChange={(e) => onSupermemoryChange(e.target.checked)}
+            />
+            <label htmlFor="enable-supermemory"></label>
+          </div>
+        </div>
+      </div>
 
       {/* Language */}
       <StyledDropdown
         value={language}
-        onChange={setLanguage}
+        onChange={onLanguageChange}
         options={[
           { value: 'English', label: 'English' },
           { value: 'Spanish', label: 'Spanish' },
@@ -130,32 +153,8 @@ export default function GeneralSection({
       {/* Default Model */}
       <ModelPreferenceSelector
         value={defaultModel}
-        onChange={setDefaultModel}
+        onChange={onDefaultModelChange}
       />
-
-      {/* Settings Sync */}
-      <div className="settings-group row">
-  <div className="settings-text">
-    <label className="settings-label">Settings Sync</label>
-    <p className="settings-description">
-      {user
-        ? 'Your settings sync across devices.'
-        : 'Sign in to enable sync.'}
-    </p>
-  </div>
-
-  <div className="settings-control">
-    {user && (
-      <UnifiedButton
-        variant="secondary"
-        onClick={onSaveSettings}
-        disabled={isSaving}
-      >
-        {isSaving ? 'Saving...' : 'Save'}
-      </UnifiedButton>
-    )}
-  </div>
-</div>
 
     </div>
   );

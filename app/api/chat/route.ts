@@ -156,7 +156,7 @@ export async function POST(req: Request) {
     // Stage 7.5: Fetch memory context (authenticated users only)
     // ============================================
     let memoryPrompt = '';
-    if (fullUserData) {
+    if (fullUserData && userPreferences?.enable_supermemory !== false) {
       try {
         const memoryContext = await getUserMemoryContext(
           fullUserData.id,
@@ -231,6 +231,7 @@ export async function POST(req: Request) {
       customPrompt: userPreferences?.custom_prompt,
       memoryPrompt, // Add memory context to stream
       userMessageText: messageData.userMessageText, // Add user message text for memory saving
+      enableSupermemory: userPreferences?.enable_supermemory ?? true,
     });
 
     // ============================================

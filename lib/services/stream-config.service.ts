@@ -66,6 +66,8 @@ export interface StreamConfig {
   memoryPrompt?: string;
   /** User message text for saving to memory */
   userMessageText?: string;
+  /** Whether Supermemory is enabled for this user */
+  enableSupermemory?: boolean;
 }
 
 /**
@@ -93,6 +95,7 @@ export function buildStreamConfig(config: StreamConfig) {
     customPrompt,
     memoryPrompt,
     userMessageText,
+    enableSupermemory,
   } = config;
 
   return {
@@ -207,6 +210,7 @@ export function buildStreamConfig(config: StreamConfig) {
         requestStartTime,
         supabaseClient,
         userMessageText,
+        enableSupermemory,
       });
     },
   };
@@ -226,6 +230,7 @@ async function saveAssistantMessages(config: {
   requestStartTime: number;
   supabaseClient: SupabaseClient;
   userMessageText?: string;
+  enableSupermemory?: boolean;
 }): Promise<void> {
   const {
     messages,
@@ -237,6 +242,7 @@ async function saveAssistantMessages(config: {
     requestStartTime,
     supabaseClient,
     userMessageText,
+    enableSupermemory,
   } = config;
 
   logger.info('onFinish called', {
@@ -333,7 +339,7 @@ async function saveAssistantMessages(config: {
         });
 
         // Save conversation to Supermemory (only for authenticated users)
-        if (user && user.id) {
+        if (user && user.id && enableSupermemory !== false) {
           logger.info('Attempting to save conversation to Supermemory', {
             userId: user.id,
             conversationId: resolvedConversationId,

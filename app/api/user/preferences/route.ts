@@ -21,6 +21,7 @@ const updatePreferencesSchema = z.object({
   theme: z.enum(['light', 'dark', 'auto']).optional(),
   language: z.string().min(1).optional(),
   auto_save_conversations: z.boolean().optional(),
+  enable_supermemory: z.boolean().optional(),
   custom_prompt: z.string().max(5000).nullable().optional(),
   default_model: z.string().min(1).optional(),
 });
@@ -85,6 +86,7 @@ export async function PUT(req: Request) {
         field: issue.path.join('.'),
         message: issue.message,
       }));
+      logger.error('Preferences validation failed', { errors });
       throw new ValidationError('Invalid preferences data', errors);
     }
 

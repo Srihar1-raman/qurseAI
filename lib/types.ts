@@ -34,6 +34,7 @@ export interface UserPreferences {
   theme: 'light' | 'dark' | 'auto';
   language: string;
   auto_save_conversations: boolean;
+  enable_supermemory: boolean;
   custom_prompt?: string | null;
   default_model: string;
   created_at: string;
@@ -299,14 +300,14 @@ export interface AccountSectionProps {
 
 export interface GeneralSectionProps {
   autoSaveConversations: boolean;
-  setAutoSaveConversations: (value: boolean) => void;
+  onAutoSaveChange: (value: boolean) => void;
+  enableSupermemory: boolean;
+  onSupermemoryChange: (value: boolean) => void;
   language: string;
-  setLanguage: (value: string) => void;
+  onLanguageChange: (value: string) => void;
   user: User | null;
-  isSaving: boolean;
-  onSaveSettings: () => void;
   defaultModel: string;
-  setDefaultModel: (value: string) => void;
+  onDefaultModelChange: (value: string) => void;
 }
 
 export interface DeleteAccountModalProps {

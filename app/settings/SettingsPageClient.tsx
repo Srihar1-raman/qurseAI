@@ -49,6 +49,7 @@ function SettingsPageContent() {
   const [isClearingChats, setIsClearingChats] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState('');
   const [autoSaveConversations, setAutoSaveConversations] = useState(true);
+  const [enableSupermemory, setEnableSupermemory] = useState(true);
   const [language, setLanguage] = useState('English');
   const [defaultModel, setDefaultModel] = useState<string>(() => {
     // Initialize from localStorage if available (for instant UI)
@@ -58,7 +59,6 @@ function SettingsPageContent() {
     }
     return 'openai/gpt-oss-120b';
   });
-  const [isSaving, setIsSaving] = useState(false);
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(true);
   
   const { resolvedTheme, mounted } = useTheme();
@@ -111,6 +111,7 @@ function SettingsPageContent() {
 
         const preferences = await response.json();
         setAutoSaveConversations(preferences.auto_save_conversations ?? true);
+        setEnableSupermemory(preferences.enable_supermemory ?? true);
         setLanguage(preferences.language ?? 'English');
         setDefaultModel(preferences.default_model ?? 'openai/gpt-oss-120b');
         // Cache to localStorage for instant load on next visit
@@ -139,7 +140,101 @@ function SettingsPageContent() {
     loadPreferences();
   }, [mockUser?.id]);
   const { error: showToastError, warning: showToastWarning, success: showToastSuccess } = useToast();
-  
+
+  // Immediate save handlers with optimistic UI
+  const handleAutoSaveChange = useCallback(async (newValue: boolean) => {
+    const oldValue = autoSaveConversations;
+    setAutoSaveConversations(newValue); // Optimistic update
+
+    if (!mockUser?.id) return;
+
+    try {
+      const response = await fetch('/api/user/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ auto_save_conversations: newValue }),
+      });
+
+      if (!response.ok) throw new Error('Failed to save');
+      showToastSuccess('Settings saved');
+    } catch (error) {
+      setAutoSaveConversations(oldValue); // Revert on error
+      showToastError('Failed to save settings');
+      logger.error('Error saving auto-save preference', error);
+    }
+  }, [autoSaveConversations, mockUser?.id, showToastSuccess, showToastError]);
+
+  const handleSupermemoryChange = useCallback(async (newValue: boolean) => {
+    const oldValue = enableSupermemory;
+    setEnableSupermemory(newValue); // Optimistic update
+
+    if (!mockUser?.id) return;
+
+    try {
+      const response = await fetch('/api/user/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ enable_supermemory: newValue }),
+      });
+
+      if (!response.ok) throw new Error('Failed to save');
+      showToastSuccess('Settings saved');
+    } catch (error) {
+      setEnableSupermemory(oldValue); // Revert on error
+      showToastError('Failed to save settings');
+      logger.error('Error saving supermemory preference', error);
+    }
+  }, [enableSupermemory, mockUser?.id, showToastSuccess, showToastError]);
+
+  const handleLanguageChange = useCallback(async (newValue: string) => {
+    const oldValue = language;
+    setLanguage(newValue); // Optimistic update
+
+    if (!mockUser?.id) return;
+
+    try {
+      const response = await fetch('/api/user/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ language: newValue }),
+      });
+
+      if (!response.ok) throw new Error('Failed to save');
+      showToastSuccess('Settings saved');
+    } catch (error) {
+      setLanguage(oldValue); // Revert on error
+      showToastError('Failed to save settings');
+      logger.error('Error saving language preference', error);
+    }
+  }, [language, mockUser?.id, showToastSuccess, showToastError]);
+
+  const handleDefaultModelChange = useCallback(async (newValue: string) => {
+    const oldValue = defaultModel;
+    setDefaultModel(newValue); // Optimistic update
+
+    // Update localStorage immediately
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('user_default_model', newValue);
+    }
+
+    if (!mockUser?.id) return;
+
+    try {
+      const response = await fetch('/api/user/preferences', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ default_model: newValue }),
+      });
+
+      if (!response.ok) throw new Error('Failed to save');
+      showToastSuccess('Settings saved');
+    } catch (error) {
+      setDefaultModel(oldValue); // Revert on error
+      showToastError('Failed to save settings');
+      logger.error('Error saving default model preference', error);
+    }
+  }, [defaultModel, mockUser?.id, showToastSuccess, showToastError]);
+
   // Read tab and section from URL using nuqs - no Suspense needed!
   const [tab] = useQueryState('tab', parseAsString);
   const [section] = useQueryState('section', parseAsString);
@@ -157,57 +252,6 @@ function SettingsPageContent() {
       setActiveSection('accounts');
     }
   }, [tab, section, router]);
-
-  // Wrap handleSaveSettings with useCallback for stable reference
-  const handleSaveSettings = useCallback(async (isAutoSave: boolean = false) => {
-    if (!mockUser?.id) {
-      return;
-    }
-
-    if (!isAutoSave) {
-      setIsSaving(true);
-    }
-    
-    try {
-      const response = await fetch('/api/user/preferences', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          auto_save_conversations: autoSaveConversations,
-          language: language,
-          default_model: defaultModel,
-          // Note: theme is saved separately when changed via GeneralSection
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to save preferences');
-      }
-
-      if (!isAutoSave) {
-        showToastSuccess('Settings saved successfully');
-      }
-    } catch (error) {
-      if (!isAutoSave) {
-        showToastError('Failed to save settings. Please try again.');
-      }
-      logger.error('Error saving preferences', error);
-    } finally {
-      if (!isAutoSave) {
-        setIsSaving(false);
-      }
-    }
-  }, [mockUser?.id, showToastError, autoSaveConversations, language, defaultModel]);
-
-  // Auto-save settings when they change (debounced)
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      handleSaveSettings(true);
-    }, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [autoSaveConversations, language, defaultModel, handleSaveSettings]);
 
   // Update localStorage immediately when defaultModel changes (for instant UI sync)
   useEffect(() => {
@@ -369,14 +413,14 @@ function SettingsPageContent() {
           <div style={{ display: activeSection === 'general' ? 'block' : 'none' }}>
             <GeneralSection
               autoSaveConversations={autoSaveConversations}
-              setAutoSaveConversations={setAutoSaveConversations}
+              onAutoSaveChange={handleAutoSaveChange}
+              enableSupermemory={enableSupermemory}
+              onSupermemoryChange={handleSupermemoryChange}
               language={language}
-              setLanguage={setLanguage}
+              onLanguageChange={handleLanguageChange}
               user={mockUser}
-              isSaving={isSaving}
-              onSaveSettings={() => handleSaveSettings(false)}
               defaultModel={defaultModel}
-              setDefaultModel={setDefaultModel}
+              onDefaultModelChange={handleDefaultModelChange}
             />
           </div>
 
