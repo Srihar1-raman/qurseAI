@@ -63,8 +63,6 @@ export const PREMIUM_MODELS = [
   { name: 'OpenAI', icon: 'OpenAI' },
   { name: 'Anthropic', icon: 'Anthropic' },
   { name: 'Grok', icon: 'grok' },
-  { name: 'Exa AI', icon: 'exaAI' },
-  { name: 'Tavily', icon: 'tavily' },
   { name: 'Moonshot', icon: 'moonshot' },
   { name: 'Zai', icon: 'zai' },
   { name: 'DeepSeek', icon: 'deepseek' },

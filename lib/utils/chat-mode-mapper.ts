@@ -10,14 +10,13 @@ export interface ChatModeMapping {
 
 /**
  * Map UI display names to internal chat mode IDs
- * @param displayName - Display name from UI (e.g., 'Web Search (Exa)')
+ * @param displayName - Display name from UI (e.g., 'Web Search')
  * @returns Internal mode ID (e.g., 'web')
  */
 export function mapDisplayNameToModeId(displayName: string): string {
   const mappings: Record<string, string> = {
     'Chat': 'chat',
-    'Web Search (Exa)': 'web',
-    'Academic': 'academic',
+    'Web Search': 'web',
   };
 
   return mappings[displayName] || 'chat'; // Default to 'chat'
@@ -28,7 +27,7 @@ export function mapDisplayNameToModeId(displayName: string): string {
  * @returns Array of mode IDs
  */
 export function getAvailableChatModes(): string[] {
-  return ['chat', 'web', 'academic'];
+  return ['chat', 'web'];
 }
 
 /**
@@ -43,13 +42,12 @@ export function isValidChatMode(modeId: string): boolean {
 /**
  * Map internal mode ID to display name
  * @param modeId - Internal mode ID (e.g., 'web')
- * @returns Display name for UI (e.g., 'Web Search (Exa)')
+ * @returns Display name for UI (e.g., 'Web Search')
  */
 export function mapModeIdToDisplayName(modeId: string): string {
   const mappings: Record<string, string> = {
     'chat': 'Chat',
-    'web': 'Web Search (Exa)',
-    'academic': 'Academic',
+    'web': 'Web Search',
   };
 
   return mappings[modeId] || 'Chat';

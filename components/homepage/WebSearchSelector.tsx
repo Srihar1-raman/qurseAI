@@ -15,24 +15,19 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme, mounted } = useTheme();
 
-  // Close dropdown on outside click using hook
   useClickOutside(dropdownRef, () => {
     setIsOpen(false);
   }, isOpen);
 
   const handleSelectOption = (optionName: string) => {
-    // Always allow selection, just show disabled state visually
     onSelectOption(optionName);
     setIsOpen(false);
   };
 
-  // Show all options, not just enabled ones
-  const allOptions = WEB_SEARCH_OPTIONS;
-  const selectedOptionData = allOptions.find(opt => opt.name === selectedOption);
+  const selectedOptionData = WEB_SEARCH_OPTIONS.find(opt => opt.name === selectedOption);
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Trigger Button */}
       <Button
         type="button"
         variant="secondary"
@@ -53,7 +48,6 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
             alt={selectedOption}
             width={16}
             height={16}
-            className={selectedOptionData?.icon === 'arxiv-logo' ? 'arxiv-icon' : ''}
           />
           <span className="web-search-text">{selectedOption}</span>
           <Image
@@ -69,12 +63,10 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
         </div>
       </Button>
 
-      {/* Dropdown Menu */}
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 min-w-[200px] bg-background border border-border rounded-lg shadow-lg z-50 overflow-hidden">
-          {allOptions.map((option) => {
+          {WEB_SEARCH_OPTIONS.map((option) => {
             const isSelected = selectedOption === option.name;
-            const isDisabled = !option.enabled;
             
             return (
               <div
@@ -90,7 +82,6 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
                   fontWeight: 500,
                   color: isSelected ? 'white' : 'var(--color-text)',
                   backgroundColor: isSelected ? 'var(--color-primary)' : 'transparent',
-                  opacity: isDisabled && !isSelected ? 0.6 : 1,
                 }}
                 onMouseEnter={(e) => {
                   if (!isSelected) {
@@ -119,7 +110,6 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
                     alt={option.name}
                     width={9}
                     height={9}
-                    className={option.icon === 'arxiv-logo' ? 'arxiv-icon-sm' : ''}
                   />
                 </div>
               </div>
@@ -130,4 +120,3 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
     </div>
   );
 }
-

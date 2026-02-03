@@ -4,10 +4,9 @@
  */
 
 import type { UIMessage, UIMessageStreamWriter } from 'ai';
-import { streamText } from 'ai';
+import { streamText, stepCountIs } from 'ai';
 import { qurse } from '@/ai/providers';
 import { getModelParameters, getProviderOptions, getModelConfig } from '@/ai/models';
-import { getToolsByIds } from '@/lib/tools';
 import { saveUserMessageServerSide } from '@/lib/db/messages.server';
 import { saveGuestMessage } from '@/lib/db/guest-messages.server';
 import { createScopedLogger } from '@/lib/utils/logger';
@@ -18,6 +17,7 @@ import { extractMessageText } from '@/lib/utils/memory-prompt';
 import type { StreamTextProviderOptions } from '@/lib/utils/message-adapters';
 import type { User } from '@/lib/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { webSearchTool } from '@/lib/tools/web-search';
 
 const logger = createScopedLogger('services/stream-config');
 
@@ -72,7 +72,7 @@ export interface StreamConfig {
 
 /**
  * Build stream configuration object
- * Creates the full configuration for createUIMessageStream
+ * Creates a full configuration for createUIMessageStream
  *
  * @param config - Stream configuration inputs
  * @returns Configuration object for createUIMessageStream
@@ -100,9 +100,6 @@ export function buildStreamConfig(config: StreamConfig) {
 
   return {
     execute: async ({ writer: dataStream }: { writer: UIMessageStreamWriter<UIMessage> }) => {
-      // Load tools synchronously (fast operation, no need for promise)
-      const tools = getToolsByIds(modeConfig.enabledTools);
-
       // Import convertToModelMessages for use in streamText
       const { convertToModelMessages } = await import('ai');
 
@@ -135,6 +132,11 @@ export function buildStreamConfig(config: StreamConfig) {
         finalSystemPrompt = buildSystemPrompt(finalSystemPrompt, customPrompt);
       }
 
+      // Build tools based on mode configuration
+      const tools = modeConfig.enabledTools.includes('web_search')
+        ? { web_search: webSearchTool }
+        : {};
+
       const result = streamText({
         model: qurse.languageModel(model),
         messages: convertToModelMessages(uiMessages),
@@ -142,7 +144,8 @@ export function buildStreamConfig(config: StreamConfig) {
         maxRetries: 5,
         ...getModelParameters(model),
         providerOptions: getProviderOptions(model) as StreamTextProviderOptions,
-        tools: Object.keys(tools).length > 0 ? tools : undefined,
+        tools: modeConfig.enabledTools.length > 0 ? { web_search: webSearchTool } : undefined,
+        stopWhen: modeConfig.enabledTools.length > 0 ? stepCountIs(5) : undefined,
         abortSignal: abortController.signal,
         onError: (err) => {
           logger.error('Stream error', err.error, { model });
@@ -178,7 +181,6 @@ export function buildStreamConfig(config: StreamConfig) {
       dataStream.merge(
         result.toUIMessageStream({
           sendReasoning: shouldSendReasoning,
-          // Note: Tool parts (tool-call, tool-result) are sent by default
           messageMetadata: ({ part }) => {
             if (part.type === 'finish') {
               const processingTime = (Date.now() - requestStartTime) / 1000;
@@ -254,7 +256,7 @@ async function saveAssistantMessages(config: {
 
   const assistantMessage = messages[messages.length - 1];
 
-  // DEBUG: Log all parts in the assistant message
+  // DEBUG: Log all parts in assistant message
   if (assistantMessage?.parts) {
     logger.info('Assistant message parts', {
       messageId: assistantMessage.id,

@@ -6,9 +6,7 @@ import Image from 'next/image';
 import MarkdownRenderer from '@/components/markdown';
 import { getIconPath } from '@/lib/icon-utils';
 import { ReasoningBlock } from './ReasoningBlock';
-import { ToolCallCard } from './ToolCallCard';
-import { WebSearchResult } from './WebSearchResult';
-import { AcademicSearchResult } from './AcademicSearchResult';
+import { ToolCallBlock } from './ToolCallBlock';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -18,28 +16,7 @@ interface ToolExecution {
   args?: Record<string, unknown>;
   result?: unknown;
   status: 'loading' | 'complete' | 'error';
-  state?: string; // AI SDK tool state: 'input-streaming', 'input-available', 'output-available'
-}
-
-// Helper function to check if result has search results
-function hasSearchResults(result: unknown): result is {
-  results: Array<{
-    index: number;
-    title: string;
-    url: string;
-    content: string;
-    publishedDate?: string;
-    author?: string;
-  }>;
-  provider: 'exa' | 'tavily';
-} {
-  return (
-    typeof result === 'object' &&
-    result !== null &&
-    'results' in result &&
-    Array.isArray((result as Record<string, unknown>).results) &&
-    'provider' in result
-  );
+  state?: string;
 }
 
 function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false }: ChatMessageProps) {
@@ -66,34 +43,20 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
     .map(p => p.text)
     .join('\n\n') || null;
 
-  // Extract tool calls and results using AI SDK's isToolUIPart
+  // Extract tool executions using AI SDK's isToolUIPart
   const toolExecutions = React.useMemo(() => {
     const executions: ToolExecution[] = [];
-
-    // Use AI SDK's official type guard to find tool parts
     const toolParts = message.parts.filter(isToolUIPart);
-
-    // DEBUG: Log what we found
-    console.log('[ChatMessage] Tool parts found:', {
-      messageId: message.id,
-      toolPartsFound: toolParts.length,
-      toolPartTypes: toolParts.map(p => p.type),
-    });
-
-    // Each tool part contains both input and output (when available)
+    
     for (const part of toolParts) {
-      // Extract tool name from type (e.g., 'tool-web_search' -> 'web_search')
       const toolName = (part as { type: string }).type.replace('tool-', '');
-
-      // Tool parts have toolCallId, state, input, and output
       const toolCallId = 'toolCallId' in part ? (part.toolCallId as string) : (part as { type: string }).type;
       const state = 'state' in part ? (part.state as string) : undefined;
       const input = 'input' in part ? (part.input as Record<string, unknown>) : {};
       const output = 'output' in part ? part.output : undefined;
-
+      
       let status: 'loading' | 'complete' | 'error' = 'loading';
-
-      // Determine status from state
+      
       if (state === 'output-available') {
         if (output && typeof output === 'object' && 'error' in output) {
           status = 'error';
@@ -103,7 +66,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       } else if (state === 'input-streaming') {
         status = 'loading';
       }
-
+      
       executions.push({
         toolName,
         toolCallId,
@@ -113,7 +76,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
         state,
       });
     }
-
+    
     return executions;
   }, [message.parts, isStreaming]);
 
@@ -146,44 +109,17 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
           />
         )}
 
-        {/* Tool execution UI (for assistant messages only) */}
+        {/* Tool execution blocks (collapsible, shows results when clicked) */}
         {!isUser && toolExecutions.length > 0 && (
           <div className="tool-executions">
             {toolExecutions.map((execution) => (
-              <React.Fragment key={execution.toolCallId}>
-                <ToolCallCard
-                  toolName={execution.toolName}
-                  status={execution.status}
-                  resultCount={
-                    hasSearchResults(execution.result)
-                      ? execution.result.results.length
-                      : undefined
-                  }
-                  error={
-                    execution.result && typeof execution.result === 'object' && 'error' in execution.result
-                      ? String((execution.result as { error?: string }).error)
-                      : undefined
-                  }
-                />
-                {execution.status === 'complete' && hasSearchResults(execution.result) && (
-                  <>
-                    {execution.toolName === 'web_search' && (
-                      <WebSearchResult
-                        query={execution.args?.query as string || ''}
-                        results={execution.result.results}
-                        provider={execution.result.provider}
-                      />
-                    )}
-                    {execution.toolName === 'academic_search' && (
-                      <AcademicSearchResult
-                        query={execution.args?.query as string || ''}
-                        results={execution.result.results}
-                        provider={execution.result.provider}
-                      />
-                    )}
-                  </>
-                )}
-              </React.Fragment>
+              <ToolCallBlock
+                key={execution.toolCallId}
+                toolName={execution.toolName}
+                status={execution.status}
+                result={execution.result}
+                query={execution.args && typeof execution.args.query === 'string' ? execution.args.query : undefined}
+              />
             ))}
           </div>
         )}
@@ -286,12 +222,8 @@ export default React.memo(ChatMessageComponent, (prevProps, nextProps) => {
     .join('');
 
   // Compare tool parts
-  const prevToolParts = prevProps.message.parts.filter(p =>
-    p.type === 'tool-call' || p.type === 'tool-result'
-  );
-  const nextToolParts = nextProps.message.parts.filter(p =>
-    p.type === 'tool-call' || p.type === 'tool-result'
-  );
+  const prevToolParts = prevProps.message.parts.filter(isToolUIPart);
+  const nextToolParts = nextProps.message.parts.filter(isToolUIPart);
 
   // Check if streaming status changed
   if (prevProps.isStreaming !== nextProps.isStreaming) {

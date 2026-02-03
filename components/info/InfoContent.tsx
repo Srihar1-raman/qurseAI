@@ -41,8 +41,6 @@ export function InfoContent({ sectionId }: InfoContentProps) {
     { name: 'Supabase', icon: 'supabase' },
     { name: 'Sentry', icon: 'sentry' },
     { name: 'Upstash', icon: 'upstash' },
-    { name: 'Exa', icon: 'exaAI' },
-    { name: 'Tavily', icon: 'tavily' },
     { name: 'AI SDK', icon: 'aisdk.png' },
   ];
 
