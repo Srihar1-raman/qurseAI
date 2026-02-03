@@ -30,42 +30,46 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Exclude Sentry's optional dependencies from externalization
-  // These packages should be bundled, not externalized (they're optional Sentry deps)
-  serverExternalPackages: [],
-  // Ignore ESLint errors during build for Vercel deployment
-  // ESLint will still run in development and can be fixed incrementally
+  serverExternalPackages: ['vega', 'vega-lite', 'vega-embed', 'vega-canvas', 'canvas'],
   eslint: {
     ignoreDuringBuilds: true,
   },
-  // Ignore TypeScript errors during build (only if needed)
-  // typescript: {
-  //   ignoreBuildErrors: false, // Keep this false to catch TS errors
-  // },
   webpack: (config, { isServer }) => {
-    // Stub out canvas module for client-side builds
-    // vega-canvas depends on it but it doesn't work in the browser
-    if (!isServer) {
-      config.resolve.alias = {
-        ...config.resolve.alias,
-        canvas: false,
-        'vega-canvas': false,
+    // Completely ignore canvas and vega-canvas modules
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      canvas: false,
+      'vega-canvas': false,
+      '@napi-rs/canvas': false,
+      'napi-rs/canvas': false,
+    };
+    
+    // Make vega packages external for both client and server
+    config.externals = config.externals || [];
+    const externalPackages = ['vega', 'vega-lite', 'vega-embed', 'vega-canvas', 'canvas'];
+    
+    if (Array.isArray(config.externals)) {
+      config.externals = [...config.externals, ...externalPackages];
+    } else if (typeof config.externals === 'function') {
+      const originalExternals = config.externals as any;
+      config.externals = ({ request }: any, callback: any) => {
+        if (externalPackages.includes(request)) {
+          return callback(null, `commonjs ${request}`);
+        }
+        return originalExternals({ request }, callback);
       };
     }
+    
     return config;
   },
 };
 
-// Only wrap with Sentry if DSN is configured
 export default process.env.NEXT_PUBLIC_SENTRY_DSN
   ? withSentryConfig(nextConfig, {
-      // Sentry webpack plugin options
       silent: true,
       org: process.env.SENTRY_ORG,
       project: process.env.SENTRY_PROJECT,
-      // Automatically instrument server routes
       widenClientFileUpload: true,
-      // Tunnel requests to avoid ad blockers
       tunnelRoute: "/monitoring",
     })
   : nextConfig;
