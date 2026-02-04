@@ -76,6 +76,7 @@ function SearchResultCard({ result }: { result: SearchResult }) {
   }, [hasExaImage, result.url]);
 
   const imageUrl = hasExaImage ? firstImage?.url : (fetchedPreview || faviconUrl);
+  const hasImage = !!imageUrl;
 
   return (
     <a
@@ -83,7 +84,7 @@ function SearchResultCard({ result }: { result: SearchResult }) {
       target="_blank"
       rel="noopener noreferrer"
       className="search-result-card"
-      style={{ backgroundImage: `url(${imageUrl})` }}
+      style={hasImage ? { backgroundImage: `url(${imageUrl})` } : undefined}
     >
       <div className="search-result-card-overlay" />
       <div className="search-result-card-header">
