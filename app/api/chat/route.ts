@@ -67,6 +67,16 @@ export async function POST(req: Request) {
       userLocation,
     } = validationResult.data!;
 
+    console.log('[DEBUG] API received messages count:', messages.length);
+    console.log('[DEBUG] API received messages structure:', messages.map((m: any) => ({
+      id: m.id,
+      role: m.role,
+      hasParts: !!m.parts,
+      hasContent: !!m.content,
+      partTypes: m.parts?.map((p: any) => p.type),
+      contentIsArray: Array.isArray(m.content),
+    })));
+
     // ============================================
     // Stage 2.5: Smart context trimming
     // ============================================

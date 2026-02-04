@@ -108,14 +108,15 @@ export function useChatTransport({
         return response;
       },
       prepareSendMessagesRequest({ messages }) {
+        console.log('[DEBUG] prepareSendMessagesRequest - sending messages:', messages.map((m: any) => ({
+          id: m.id,
+          role: m.role,
+          partTypes: m.parts?.map((p: any) => p.type),
+        })));
+
         return {
           body: {
-            messages: messages
-              .filter((msg: any) => msg.role !== 'tool')
-              .map(msg => ({
-                ...msg,
-                parts: msg.parts.filter(part => part.type !== 'tool-call'),
-              })),
+            messages,
             conversationId: conversationIdRef.current,
             model: selectedModelRef.current,
             chatMode: chatModeRef.current,

@@ -99,10 +99,31 @@ export function buildStreamConfig(config: StreamConfig) {
      enableSupermemory,
   } = config;
 
-  return {
+    return {
     execute: async ({ writer: dataStream }: { writer: UIMessageStreamWriter<UIMessage> }) => {
       // Import convertToModelMessages for use in streamText
       const { convertToModelMessages } = await import('ai');
+
+      // Filter out tool messages and tool-call parts from uiMessages before converting to ModelMessages
+      const filteredUiMessages = uiMessages
+        .filter((msg: any) => msg.role !== 'tool')
+        .map(msg => ({
+          ...msg,
+          parts: msg.parts.filter((part: any) => !part.type?.startsWith('tool')),
+        }));
+
+      console.log('[DEBUG] Server - original uiMessages count:', uiMessages.length);
+      console.log('[DEBUG] Server - original uiMessages:', uiMessages.map((m: any) => ({
+        id: m.id,
+        role: m.role,
+        partTypes: m.parts?.map((p: any) => p.type) || [],
+      })));
+      console.log('[DEBUG] Server - filtered uiMessages count:', filteredUiMessages.length);
+      console.log('[DEBUG] Server - filtered uiMessages:', filteredUiMessages.map((m: any) => ({
+        id: m.id,
+        role: m.role,
+        partTypes: m.parts?.map((p: any) => p.type) || [],
+      })));
 
       // Await DB operations (user message must be saved before streaming)
       const dbResult = await dbOperationsPromise;
@@ -159,7 +180,7 @@ export function buildStreamConfig(config: StreamConfig) {
 
       const streamTextOptions: any = {
         model: qurse.languageModel(model),
-        messages: convertToModelMessages(uiMessages),
+        messages: convertToModelMessages(filteredUiMessages),
         system: finalSystemPrompt,
         maxRetries: 5,
         ...getModelParameters(model),
