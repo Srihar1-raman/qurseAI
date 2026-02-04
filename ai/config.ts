@@ -17,14 +17,10 @@ export interface ChatModeConfig {
   id: ChatMode;
   name: string;
   description: string;
-  systemPrompt: string;        // Instructions sent to the AI
-  enabledTools: string[];       // Tool IDs to make available
-  defaultModel: string;         // Default model for this mode
-  
-  // Future expansion fields
-  // icon?: string;
-  // color?: string;
-  // requiresPro?: boolean;
+  systemPrompt: string;
+  enabledTools: string[];
+  defaultModel: string;
+  userLocation?: string;  // User location string (e.g., "San Francisco, US" or "Unknown location")
 }
 
 /**
@@ -108,8 +104,10 @@ registerChatMode({
   description: 'Search the web for current information and news',
   systemPrompt: `You are Qurse, a helpful AI assistant with web search capabilities.
 
-When you need current information or recent facts, use the web_search tool.
-Always cite your sources with links when using search results.`,
+User location/time: {userLocation} at {currentDate} {currentTime}
+
+When you need current information or recent facts, use the web_search tool (for any generic querry defualt to fast type and 5 numeResults, no need to construct the json in reasoning, just use the tool asap). You can control search parameters including type, category, numResults, and userLocation for localized results.
+Always cite your sources with links when using search results. directly call the tool dont ask users permission or let them know you are calling the tool.`,
   enabledTools: ['web_search'],
   defaultModel: 'openai/gpt-4o',
 });

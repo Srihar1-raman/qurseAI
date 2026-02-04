@@ -246,6 +246,7 @@
   color: var(--color-text-muted);
 }
 
+/* Chevron icon */
 .tool-call-chevron {
   width: 16px;
   height: 16px;
@@ -265,21 +266,4 @@
   to {
     opacity: 1;
   }
-}
-
-/* Chevron rotation */
-.tool-call-chevron.expanded {
-  transform: rotate(180deg);
-}
-
-.tool-call-chevron {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.2s ease;
-  color: var(--color-text-muted);
-  transform: rotate(180deg);
-}
-
-.tool-call-chevron.expanded {
-  transform: rotate(0deg);
 }

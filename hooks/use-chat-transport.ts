@@ -3,12 +3,13 @@
  * Handles transport creation, error handling, and rate limit detection
  */
 
-import { useEffect, useMemo, useRef, useCallback } from 'react';
+import { useEffect, useMemo, useRef, useCallback, useState } from 'react';
 import { useChat } from '@ai-sdk/react';
 import { DefaultChatTransport, type UIMessagePart, type UIMessage } from 'ai';
 import { isRateLimitError, extractRateLimitInfo } from '@/lib/conversation/rate-limit-utils';
 import { handleClientError } from '@/lib/utils/error-handler';
 import type { RateLimitState } from '@/lib/contexts/RateLimitContext';
+import { useUserLocation } from './useUserLocation';
 
 interface UseChatTransportProps {
   conversationId: string | undefined;
@@ -18,6 +19,7 @@ interface UseChatTransportProps {
   user: { id?: string } | null;
   setRateLimitState: (state: RateLimitState) => void;
   showToastError: (message: string) => void;
+  userLocation?: string;
   onSendAttempt?: () => void;
 }
 
@@ -38,17 +40,20 @@ export function useChatTransport({
   user,
   setRateLimitState,
   showToastError,
+  userLocation,
   onSendAttempt,
 }: UseChatTransportProps): UseChatTransportReturn {
   const conversationIdRef = useRef(conversationId);
   const selectedModelRef = useRef(selectedModel);
   const chatModeRef = useRef(chatMode);
+  const userLocationRef = useRef(userLocation);
 
   useEffect(() => {
     conversationIdRef.current = conversationId;
     selectedModelRef.current = selectedModel;
     chatModeRef.current = chatMode;
-  }, [conversationId, selectedModel, chatMode]);
+    userLocationRef.current = userLocation;
+  }, [conversationId, selectedModel, chatMode, userLocation]);
 
   // Ensure initialMessages have valid parts array for UIMessage type
   // Filter out messages without valid parts (e.g., tool messages, system messages)
@@ -105,10 +110,16 @@ export function useChatTransport({
       prepareSendMessagesRequest({ messages }) {
         return {
           body: {
-            messages,
+            messages: messages
+              .filter((msg: any) => msg.role !== 'tool')
+              .map(msg => ({
+                ...msg,
+                parts: msg.parts.filter(part => part.type !== 'tool-call'),
+              })),
             conversationId: conversationIdRef.current,
             model: selectedModelRef.current,
             chatMode: chatModeRef.current,
+            userLocation: userLocationRef.current,
           },
         };
       },

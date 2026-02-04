@@ -131,13 +131,15 @@ export function ToolCallBlock({ toolName, status, result, query }: ToolCallBlock
             <span className="tool-call-header-text">
               {headerText}
             </span>
-            <Image
-              src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-              alt=""
-              width={16}
-              height={16}
-              className="tool-call-chevron"
-            />
+            {showExpanded && (
+              <Image
+                src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
+                alt=""
+                width={16}
+                height={16}
+                className="tool-call-chevron expanded"
+              />
+            )}
           </div>
 
           <div className="tool-call-content">

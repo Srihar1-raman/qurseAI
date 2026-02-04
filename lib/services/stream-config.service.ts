@@ -31,6 +31,7 @@ export interface StreamConfig {
   modeConfig: {
     systemPrompt?: string;
     enabledTools: string[];
+    userLocation?: string;  // User location string (e.g., "San Francisco, US" or "Unknown location")
   };
   /** Model identifier */
   model: string;
@@ -78,24 +79,24 @@ export interface StreamConfig {
  * @returns Configuration object for createUIMessageStream
  */
 export function buildStreamConfig(config: StreamConfig) {
-  const {
-    uiMessages,
-    modeConfig,
-    model,
-    user,
-    resolvedConversationIdRef,
-    sessionHash,
-    supabaseClient,
-    fullUserData,
-    requestStartTime,
-    dbOperationsPromise,
-    abortController,
-    conversationId,
-    contextMetadata,
-    customPrompt,
-    memoryPrompt,
-    userMessageText,
-    enableSupermemory,
+   const {
+     uiMessages,
+     modeConfig,
+     model,
+     user,
+     resolvedConversationIdRef,
+     sessionHash,
+     supabaseClient,
+     fullUserData,
+     requestStartTime,
+     dbOperationsPromise,
+     abortController,
+     conversationId,
+     contextMetadata,
+     customPrompt,
+     memoryPrompt,
+     userMessageText,
+     enableSupermemory,
   } = config;
 
   return {
@@ -122,6 +123,25 @@ export function buildStreamConfig(config: StreamConfig) {
       // Merge prompts: Mode system prompt + Memory prompt + Custom prompt
       let finalSystemPrompt = modeConfig.systemPrompt || '';
 
+      // Inject current date/time if placeholders exist
+      const now = new Date();
+      const currentDate = now.toLocaleDateString('en-US', { 
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const currentTime = now.toLocaleTimeString('en-US', { 
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+
+      finalSystemPrompt = finalSystemPrompt
+        .replace('{currentDate}', currentDate)
+        .replace('{currentTime}', currentTime)
+        .replace('{userLocation}', modeConfig.userLocation || 'Unknown location');
+
       // Add memory context first (before custom prompt)
       if (memoryPrompt) {
         finalSystemPrompt = `${finalSystemPrompt}\n\n${memoryPrompt}`;
@@ -137,42 +157,22 @@ export function buildStreamConfig(config: StreamConfig) {
         ? { web_search: webSearchTool }
         : {};
 
-      const result = streamText({
+      const streamTextOptions: any = {
         model: qurse.languageModel(model),
         messages: convertToModelMessages(uiMessages),
         system: finalSystemPrompt,
         maxRetries: 5,
         ...getModelParameters(model),
         providerOptions: getProviderOptions(model) as StreamTextProviderOptions,
-        tools: modeConfig.enabledTools.length > 0 ? { web_search: webSearchTool } : undefined,
-        stopWhen: modeConfig.enabledTools.length > 0 ? stepCountIs(5) : undefined,
         abortSignal: abortController.signal,
-        onError: (err) => {
-          logger.error('Stream error', err.error, { model });
-          const errorMessage = err.error instanceof Error ? err.error.message : String(err.error);
-          if (errorMessage.includes('API key')) {
-            throw new ProviderError(
-              'Provider authentication failed',
-              model.split('/')[0] || 'unknown',
-              false
-            );
-          }
-        },
-        onAbort: ({ steps }) => {
-          logger.info('Stream aborted (streamText onAbort)', {
-            conversationId: resolvedConversationIdRef.current,
-            stepsCount: steps.length,
-            hasSteps: steps.length > 0,
-          });
-        },
-        onFinish: async ({ usage }) => {
-          const processingTime = (Date.now() - requestStartTime) / 1000;
-          logger.info('Stream completed', {
-            duration: `${processingTime.toFixed(2)}s`,
-            tokens: usage?.totalTokens || 0,
-          });
-        },
-      });
+      };
+
+      if (Object.keys(tools).length > 0) {
+        streamTextOptions.tools = tools;
+        streamTextOptions.stopWhen = stepCountIs(5);
+      }
+
+      const result = streamText(streamTextOptions);
 
       // Merge stream with conditional reasoning
       const modelConfig = getModelConfig(model);

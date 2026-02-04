@@ -20,6 +20,7 @@ import { useShareConversation } from '@/hooks/use-share-conversation';
 import { GuestSaveNudge } from '@/components/guest/GuestSaveNudge';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { getModelConfig } from '@/ai/models';
+import { useUserLocation } from '@/hooks/useUserLocation';
 import type { ConversationClientProps } from './types';
 
 const logger = createScopedLogger('components/conversation/ConversationClient');
@@ -43,6 +44,8 @@ export function ConversationClient({
   const [isShared, setIsShared] = React.useState(false);
   const [showGuestSharePopup, setShowGuestSharePopup] = React.useState(false);
   const [shareAttemptCount, setShareAttemptCount] = React.useState(0);
+
+  const { location: userLocation } = useUserLocation();
 
   const conversationIdRef = useRef(conversationId);
   const initialMessageSentRef = useRef(false);
@@ -68,6 +71,7 @@ export function ConversationClient({
     user: user ? { id: user.id } : null,
     setRateLimitState,
     showToastError,
+    userLocation,
     onSendAttempt: () => {
       setSendAttemptCount((prev) => prev + 1);
     },
