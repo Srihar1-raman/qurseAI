@@ -1109,14 +1109,15 @@ const InlineExternalLink: React.FC<{
       {text}
       <span className="inline-flex items-center gap-1 text-muted-foreground text-xs ml-1">
         <Image
-          src={`https://www.google.com/s2/favicons?domain=${domain}&sz=16`}
+          src={`https://icons.duckduckgo.com/ip3/${domain}.ico`}
           alt=""
           width={12}
           height={12}
           className="rounded-sm opacity-70"
           loading="lazy"
+          onError={(e) => { e.currentTarget.style.display = 'none'; }}
         />
-        <span className="opacity-70">{domain}</span>
+        <span className="text-xs opacity-70">{domain}</span>
       </span>
     </a>
   );
@@ -1564,12 +1565,13 @@ const MarkdownRenderer: React.FC<MarkdownRendererProps> = React.memo(({ content,
           >
             <span className="inline-flex items-center gap-1 text-muted-foreground text-xs">
               <Image
-                src={`https://www.google.com/s2/favicons?domain=${domain}&sz=16`}
+                src={`https://icons.duckduckgo.com/ip3/${domain}.ico`}
                 alt=""
                 width={12}
                 height={12}
                 className="rounded-sm opacity-70"
                 loading="lazy"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
               <span className="opacity-70">{domain}</span>
             </span>

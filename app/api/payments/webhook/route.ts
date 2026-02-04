@@ -12,9 +12,19 @@ import { updateSubscriptionServerSide } from '@/lib/db/subscriptions.server';
 const logger = createScopedLogger('api/payments/webhook');
 
 // Server-side function to log payment transactions
+interface PaymentData {
+  total_amount?: number;
+  amount?: number;
+  subscription_id?: string;
+  subscription?: { id?: string; subscription_id?: string };
+  payment_id?: string;
+  id?: string;
+  currency?: string;
+}
+
 async function logPaymentTransaction(
   userId: string,
-  paymentData: any,
+  paymentData: PaymentData,
   eventType: string
 ) {
   const supabase = await createAdminClient();
@@ -108,7 +118,7 @@ export const POST = Webhooks({
 
   // Log all webhooks for monitoring
   onPayload: async (payload) => {
-    const data = payload.data as any;
+    const data = payload.data as Record<string, unknown>;
     logger.info('Webhook received', {
       eventType: payload.type,
       payloadId: data?.id,
@@ -117,7 +127,7 @@ export const POST = Webhooks({
 
   // Subscription became active (new or reactivation)
   onSubscriptionActive: createSafeWebhookHandler('SubscriptionActive', async (payload) => {
-    const data = payload.data as any;
+    const data = payload.data as Record<string, unknown>;
     const { userId } = extractUserIdSafely(payload);
 
     if (!userId) {
@@ -128,14 +138,16 @@ export const POST = Webhooks({
     logger.info('Subscription activated', { userId, subscriptionId: data.id });
 
     // Extract fields with fallbacks (CRITICAL: handle structure variations)
+    const dataObj = data as Record<string, unknown>;
+    const customer = dataObj.customer as Record<string, unknown> | undefined;
     const updateData = {
       plan: 'pro' as const,
       status: 'active' as const,
-      dodo_customer_id: data.customer?.customer_id || data.customer_id,
-      dodo_subscription_id: data.subscription_id || data.id,
-      current_period_start: data.current_period_start,
-      current_period_end: data.current_period_end,
-      next_billing_at: data.next_billing_date || data.next_billing_at,
+      dodo_customer_id: (customer?.customer_id as string) || (dataObj.customer_id as string),
+      dodo_subscription_id: (dataObj.subscription_id as string) || (dataObj.id as string),
+      current_period_start: dataObj.current_period_start as string,
+      current_period_end: dataObj.current_period_end as string,
+      next_billing_at: (dataObj.next_billing_date as string) || (dataObj.next_billing_at as string),
       last_payment_at: new Date().toISOString(),
       cancel_at_period_end: false,
     };
@@ -145,7 +157,7 @@ export const POST = Webhooks({
 
   // Subscription renewed
   onSubscriptionRenewed: createSafeWebhookHandler('SubscriptionRenewed', async (payload) => {
-    const data = payload.data as any;
+    const data = payload.data as Record<string, unknown>;
     const { userId } = extractUserIdSafely(payload);
 
     if (!userId) {
@@ -157,9 +169,9 @@ export const POST = Webhooks({
 
     await updateSubscriptionServerSide(userId, {
       status: 'active', // Ensure active (was cancelled before renewal)
-      current_period_start: data.current_period_start,
-      current_period_end: data.current_period_end,
-      next_billing_at: data.next_billing_date || data.next_billing_at,
+      current_period_start: data.current_period_start as string,
+      current_period_end: data.current_period_end as string,
+      next_billing_at: (data.next_billing_date as string) || (data.next_billing_at as string),
       last_payment_at: new Date().toISOString(),
       cancelled_at: undefined, // Clear cancellation timestamp
     });
@@ -167,7 +179,7 @@ export const POST = Webhooks({
 
   // Subscription cancelled
   onSubscriptionCancelled: createSafeWebhookHandler('SubscriptionCancelled', async (payload) => {
-    const data = payload.data as any;
+    const data = payload.data as Record<string, unknown>;
     const { userId } = extractUserIdSafely(payload);
 
     if (!userId) {
@@ -178,7 +190,7 @@ export const POST = Webhooks({
     logger.info('Subscription cancelled - grace period starts', {
       userId,
       subscriptionId: data.id,
-      nextBillingAt: data.next_billing_date || data.next_billing_at
+      nextBillingAt: (data.next_billing_date as string) || (data.next_billing_at as string)
     });
 
     await updateSubscriptionServerSide(userId, {
@@ -190,7 +202,7 @@ export const POST = Webhooks({
 
   // Subscription expired
   onSubscriptionExpired: createSafeWebhookHandler('SubscriptionExpired', async (payload) => {
-    const data = payload.data as any;
+    const data = payload.data as Record<string, unknown>;
     const { userId } = extractUserIdSafely(payload);
 
     if (!userId) {
@@ -208,7 +220,7 @@ export const POST = Webhooks({
 
   // Subscription failed (payment failure)
   onSubscriptionFailed: createSafeWebhookHandler('SubscriptionFailed', async (payload) => {
-    const data = payload.data as any;
+    const data = payload.data as Record<string, unknown>;
     const { userId } = extractUserIdSafely(payload);
 
     if (!userId) {
@@ -223,7 +235,7 @@ export const POST = Webhooks({
 
   // Subscription on hold
   onSubscriptionOnHold: createSafeWebhookHandler('SubscriptionOnHold', async (payload) => {
-    const data = payload.data as any;
+    const data = payload.data as Record<string, unknown>;
     const { userId } = extractUserIdSafely(payload);
 
     if (!userId) {
@@ -236,7 +248,7 @@ export const POST = Webhooks({
 
   // Payment succeeded
   onPaymentSucceeded: createSafeWebhookHandler('PaymentSucceeded', async (payload) => {
-    const data = payload.data as any;
+    const data = payload.data as PaymentData;
     const { userId } = extractUserIdSafely(payload);
 
     if (!userId) {
@@ -252,7 +264,7 @@ export const POST = Webhooks({
 
   // Payment failed
   onPaymentFailed: createSafeWebhookHandler('PaymentFailed', async (payload) => {
-    const data = payload.data as any;
+    const data = payload.data as PaymentData;
     const { userId } = extractUserIdSafely(payload);
 
     if (!userId) {

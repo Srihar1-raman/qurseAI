@@ -24,9 +24,9 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'www.google.com',
+        hostname: 'icons.duckduckgo.com',
         port: '',
-        pathname: '/s2/favicons/**',
+        pathname: '/**',
       },
     ],
   },
@@ -51,8 +51,8 @@ const nextConfig: NextConfig = {
     if (Array.isArray(config.externals)) {
       config.externals = [...config.externals, ...externalPackages];
     } else if (typeof config.externals === 'function') {
-      const originalExternals = config.externals as any;
-      config.externals = ({ request }: any, callback: any) => {
+      const originalExternals = config.externals;
+      config.externals = ({ request }: { request: string }, callback: (err: null, result: string) => void) => {
         if (externalPackages.includes(request)) {
           return callback(null, `commonjs ${request}`);
         }

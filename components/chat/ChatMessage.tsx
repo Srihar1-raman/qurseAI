@@ -7,6 +7,7 @@ import MarkdownRenderer from '@/components/markdown';
 import { getIconPath } from '@/lib/icon-utils';
 import { ReasoningBlock } from './ReasoningBlock';
 import { ToolCallBlock } from './ToolCallBlock';
+import { WebSearchResults } from './WebSearchResults';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -19,7 +20,7 @@ interface ToolExecution {
   state?: string;
 }
 
-function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false }: ChatMessageProps) {
+function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false, reasoningTime }: ChatMessageProps) {
   const { resolvedTheme, mounted } = useTheme();
 
   // DEBUG: Log all parts to see what we're getting
@@ -47,16 +48,16 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
   const toolExecutions = React.useMemo(() => {
     const executions: ToolExecution[] = [];
     const toolParts = message.parts.filter(isToolUIPart);
-    
+
     for (const part of toolParts) {
       const toolName = (part as { type: string }).type.replace('tool-', '');
       const toolCallId = 'toolCallId' in part ? (part.toolCallId as string) : (part as { type: string }).type;
       const state = 'state' in part ? (part.state as string) : undefined;
       const input = 'input' in part ? (part.input as Record<string, unknown>) : {};
       const output = 'output' in part ? part.output : undefined;
-      
+
       let status: 'loading' | 'complete' | 'error' = 'loading';
-      
+
       if (state === 'output-available') {
         if (output && typeof output === 'object' && 'error' in output) {
           status = 'error';
@@ -66,7 +67,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       } else if (state === 'input-streaming') {
         status = 'loading';
       }
-      
+
       executions.push({
         toolName,
         toolCallId,
@@ -76,9 +77,27 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
         state,
       });
     }
-    
+
     return executions;
   }, [message.parts, isStreaming]);
+
+  // Separate web_search executions from other tools
+  const webSearchExecutions = React.useMemo(() => {
+    type ToolCallResultWithResults = { results: { title: string; url: string; text: string; publishedDate?: string | null; images: { url: string; alt?: string }[] }[] };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'web_search')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        query: e.args && typeof e.args.query === 'string' ? e.args.query : '',
+        status: e.status,
+        result: e.result as ToolCallResultWithResults | undefined,
+      }));
+  }, [toolExecutions]);
+
+  const otherToolExecutions = React.useMemo(() => {
+    return toolExecutions.filter(e => e.toolName !== 'web_search');
+  }, [toolExecutions]);
 
   // Check if message contains stop text and split it
   const stopTextPattern = '*User stopped this message here*';
@@ -106,13 +125,22 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
           <ReasoningBlock
             reasoning={reasoning}
             isStreaming={isStreaming}
+            reasoningTime={reasoningTime}
           />
         )}
 
-        {/* Tool execution blocks (collapsible, shows results when clicked) */}
-        {!isUser && toolExecutions.length > 0 && (
+        {/* Web search results (unified box for all queries) */}
+        {!isUser && webSearchExecutions.length > 0 && (
+          <WebSearchResults
+            executions={webSearchExecutions}
+            isStreaming={isStreaming}
+          />
+        )}
+
+        {/* Other tool execution blocks (collapsible, shows results when clicked) */}
+        {!isUser && otherToolExecutions.length > 0 && (
           <div className="tool-executions">
-            {toolExecutions.map((execution) => (
+            {otherToolExecutions.map((execution) => (
               <ToolCallBlock
                 key={execution.toolCallId}
                 toolName={execution.toolName}

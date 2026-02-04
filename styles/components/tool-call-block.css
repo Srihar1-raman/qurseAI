@@ -139,74 +139,127 @@
   font-size: 14px;
 }
 
-/* Results section */
-.tool-call-results {
-  padding: 12px;
-  border-top: 1px solid var(--color-border);
-  margin-top: 12px;
+/* Horizontal Scroll Results Container */
+.search-results-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 0 12px 0;
+  margin: 0 -4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
 }
 
-.tool-call-results-header {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-text-muted);
-  margin-bottom: 12px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--color-border);
+.search-results-scroll::-webkit-scrollbar {
+  display: none;
+  height: 0;
 }
 
-.tool-call-result-item {
-  margin-bottom: 16px;
-  padding: 12px;
+.search-results-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-results-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+/* Search Result Card */
+.search-result-card {
+  flex: 0 0 280px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
   border: 1px solid var(--color-border);
-  border-radius: 6px;
-  background: var(--color-bg-secondary);
+  border-radius: 10px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  min-height: 160px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.tool-call-result-item:last-child {
-  margin-bottom: 0;
+.search-result-card:hover {
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.tool-call-result-title {
-  margin-bottom: 4px;
+.search-result-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.1) 0%,
+    rgba(0, 0, 0, 0.35) 40%,
+    rgba(0, 0, 0, 0.65) 100%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
 
-.tool-call-result-link {
-  font-size: 14px;
+.search-result-card-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  position: relative;
+  z-index: 2;
+}
+
+.search-result-favicon {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+
+.search-result-domain {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
-  color: var(--color-text-secondary);
-  text-decoration: none;
-  transition: color 0.2s ease;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.tool-call-result-link:hover {
-  color: var(--color-primary);
-}
-
-.tool-call-result-date {
-  font-size: 11px;
-  color: var(--color-text-muted);
+.search-result-card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.3;
   margin-bottom: 6px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
-.tool-call-result-snippet {
-  font-size: 13px;
-  color: var(--color-text);
-  line-height: 1.5;
-  margin-bottom: 6px;
+.search-result-card-snippet {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.4;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  position: relative;
+  z-index: 2;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
-.tool-call-result-url {
-  font-size: 11px;
-  color: var(--color-primary);
-  text-decoration: none;
-  word-break: break-all;
-  transition: color 0.2s ease;
-}
-
-.tool-call-result-url:hover {
-  color: var(--color-primary-hover);
-  text-decoration: underline;
+.search-result-card-date {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+  z-index: 2;
 }
 
 /* Show less button */
@@ -266,4 +319,126 @@
   to {
     opacity: 1;
   }
+}
+
+/* ===================================
+    WEB SEARCH RESULTS BLOCK
+    Grouped web search results in reasoning style
+    =================================== */
+
+.web-search-results-block {
+  margin-bottom: 12px;
+}
+
+.web-search-preview {
+  padding: 8px 0;
+}
+
+.web-search-preview-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.web-search-preview-query {
+  color: var(--color-text);
+  font-style: italic;
+}
+
+.web-search-preview-status {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.web-search-preview-status.loading {
+  color: var(--color-text-muted);
+}
+
+.web-search-preview-status.complete {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.web-search-preview-status.error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.web-search-full {
+  padding: 4px 0;
+}
+
+.web-search-query-section {
+  margin-bottom: 20px;
+}
+
+.web-search-query-section:last-child {
+  margin-bottom: 0;
+}
+
+.web-search-query-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  margin-bottom: 10px;
+}
+
+.web-search-query-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.web-search-query-text {
+  font-size: 13px;
+  color: var(--color-text);
+  font-style: italic;
+}
+
+.web-search-loading-dots {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: '.'; }
+  40% { content: '..'; }
+  60%, 100% { content: '...'; }
+}
+
+.web-search-error {
+  font-size: 11px;
+  padding: 2px 6px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+.web-search-error-message {
+  padding: 10px 12px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.web-search-header-expanded {
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.web-search-header-subtext {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-weight: 400;
+  margin-left: auto;
+  padding-right: 8px;
 }

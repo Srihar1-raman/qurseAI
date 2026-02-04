@@ -29,9 +29,9 @@ const dropdownStyle: React.CSSProperties = {
   fontWeight: 400,
   cursor: 'pointer',
   outline: 'none',
-  appearance: 'none' as any,
-  WebkitAppearance: 'none' as any,
-  MozAppearance: 'none' as any,
+  appearance: 'none',
+  WebkitAppearance: 'none',
+  MozAppearance: 'none',
   fontFamily: 'inherit',
   transition: 'all 0.2s',
 };

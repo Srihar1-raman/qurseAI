@@ -349,6 +349,7 @@ async function saveAssistantMessages(config: {
         output_tokens: outputTokens,
         total_tokens: totalTokens,
         completion_time: completionTime,
+        reasoning_time: completionTime,
       });
 
       if (assistantMsgError) {

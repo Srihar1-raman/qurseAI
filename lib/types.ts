@@ -177,6 +177,7 @@ export interface QurseMessage {
   role: 'user' | 'assistant';
   parts: UIMessagePart<UIDataTypes, UITools>[];
   metadata?: StreamMetadata;
+  reasoning_time?: number;
 }
 
 export interface Conversation {
@@ -236,6 +237,7 @@ export interface ChatMessageProps {
   onShare?: () => void | Promise<void>;
   user?: { id: string } | null;
   isStreaming?: boolean; // Indicates if content is actively streaming
+  reasoningTime?: number;
 }
 
 export interface ModelSelectorProps {

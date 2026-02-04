@@ -134,13 +134,17 @@ export function getUniqueModels(messages: Message[]): string[] {
 /**
  * Sample data parser - paste your exported JSON data here
  */
-export function parseExportedData(jsonData: any): ActivityData[] {
+interface ExportedData {
+  messages?: Message[];
+}
+
+export function parseExportedData(jsonData: ExportedData | string): ActivityData[] {
   try {
     // Parse the nested structure
-    const data = typeof jsonData === 'string' ? JSON.parse(jsonData) : jsonData;
+    const data = typeof jsonData === 'string' ? JSON.parse(jsonData) as ExportedData : jsonData;
 
     // Handle different export formats
-    const messages = data.messages || data[0]?.messages || [];
+    const messages = data.messages || (data as ExportedData[])[0]?.messages || [];
 
     return transformMessageData(messages);
   } catch (error) {

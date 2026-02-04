@@ -79,8 +79,8 @@ export async function saveUserMessageServerSide(
 export async function getMessagesServerSide(
   conversationId: string,
   options?: { limit?: number; offset?: number }
-): Promise<{ 
-  messages: Array<{ id: string; role: 'user' | 'assistant'; parts: MessageParts; model?: string; input_tokens?: number; output_tokens?: number; total_tokens?: number; completion_time?: number }>;
+): Promise<{
+  messages: Array<{ id: string; role: 'user' | 'assistant'; parts: MessageParts; model?: string; input_tokens?: number; output_tokens?: number; total_tokens?: number; completion_time?: number; reasoning_time?: number }>;
   hasMore: boolean;
   dbRowCount: number; // Actual rows queried from DB (for accurate offset calculation)
 }> {
@@ -92,7 +92,7 @@ export async function getMessagesServerSide(
   // Query newest first (DESC), then reverse array to maintain ascending order
   let query = supabase
     .from('messages')
-    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time')
+    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time, reasoning_time')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: false });
   
@@ -134,7 +134,7 @@ export async function getMessagesServerSide(
 
   const messages = reversed.map((msg) => {
     let parts: MessageParts = [];
-    
+
     // Prefer parts array (new format)
     if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
       parts = msg.parts as MessageParts;
@@ -142,7 +142,9 @@ export async function getMessagesServerSide(
       // Fallback: Convert legacy content/reasoning format to parts array
       parts = convertLegacyContentToParts(msg.content);
     }
-    
+
+    const msgWithReasoning = msg as typeof msg & { reasoning_time?: number | null };
+
     return {
       id: msg.id,
       role: msg.role as 'user' | 'assistant',
@@ -152,6 +154,7 @@ export async function getMessagesServerSide(
       output_tokens: msg.output_tokens ?? undefined,
       total_tokens: msg.total_tokens ?? undefined,
       completion_time: msg.completion_time ?? undefined,
+      reasoning_time: msgWithReasoning.reasoning_time ?? undefined,
     };
   });
 
@@ -172,12 +175,12 @@ export async function getMessagesServerSide(
 export async function getSharedMessagesServerSide(
   conversationId: string,
   messageCountLimit: number
-): Promise<Array<{ id: string; role: 'user' | 'assistant'; parts: MessageParts; model?: string; input_tokens?: number; output_tokens?: number; total_tokens?: number; completion_time?: number; created_at: string }>> {
+): Promise<Array<{ id: string; role: 'user' | 'assistant'; parts: MessageParts; model?: string; input_tokens?: number; output_tokens?: number; total_tokens?: number; completion_time?: number; reasoning_time?: number; created_at: string }>> {
   // Use service role client to bypass RLS for public shared conversations
   // Query messages in ascending order, limit to messageCountLimit
   const { data, error } = await serviceSupabase
     .from('messages')
-    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time')
+    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time, reasoning_time')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: true })
     .limit(messageCountLimit);
@@ -194,7 +197,7 @@ export async function getSharedMessagesServerSide(
 
   const messages = filtered.map((msg) => {
     let parts: MessageParts = [];
-    
+
     // Prefer parts array (new format)
     if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
       parts = msg.parts as MessageParts;
@@ -202,7 +205,9 @@ export async function getSharedMessagesServerSide(
       // Fallback: Convert legacy content/reasoning format to parts array
       parts = convertLegacyContentToParts(msg.content);
     }
-    
+
+    const msgWithReasoning = msg as typeof msg & { reasoning_time?: number | null };
+
     return {
       id: msg.id,
       role: msg.role as 'user' | 'assistant',
@@ -212,6 +217,7 @@ export async function getSharedMessagesServerSide(
       output_tokens: msg.output_tokens ?? undefined,
       total_tokens: msg.total_tokens ?? undefined,
       completion_time: msg.completion_time ?? undefined,
+      reasoning_time: msgWithReasoning.reasoning_time ?? undefined,
       created_at: msg.created_at, // Preserve original timestamp
     };
   });
