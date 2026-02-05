@@ -193,12 +193,28 @@
   inset: 0;
   background: linear-gradient(
     to bottom,
-    rgba(0, 0, 0, 0.1) 0%,
-    rgba(0, 0, 0, 0.35) 40%,
-    rgba(0, 0, 0, 0.65) 100%
+    rgba(0, 0, 0, 0.05) 0%,
+    rgba(0, 0, 0, 0.15) 40%,
+    rgba(0, 0, 0, 0.3) 100%
   );
   pointer-events: none;
   z-index: 1;
+}
+
+.search-result-card:not([style*="background-image"]) {
+  background: var(--color-bg-secondary);
+}
+
+.search-result-card:not([style*="background-image"])::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle at 10% 10%, var(--color-primary) 0%, transparent 50%),
+                    radial-gradient(circle at 90% 90%, var(--color-primary) 0%, transparent 50%);
+  background-size: 200% 200%;
+  background-position: 0 0, 100% 100%;
+  opacity: 0.05;
+  pointer-events: none;
 }
 
 .search-result-card-header {
