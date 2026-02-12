@@ -145,9 +145,6 @@ importers:
       vega:
         specifier: ^6.2.0
         version: 6.2.0
-      vega-canvas:
-        specifier: ^2.0.0
-        version: 2.0.0
       vega-embed:
         specifier: ^7.1.0
         version: 7.1.0(vega-lite@6.4.2(vega@6.2.0))(vega@6.2.0)
@@ -5730,9 +5727,6 @@ packages:
 
   validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
-
-  vega-canvas@2.0.0:
-    resolution: {integrity: sha512-9x+4TTw/USYST5nx4yN272sy9WcqSRjAR0tkQYZJ4cQIeon7uVsnohvoPQK1JZu7K1QXGUqzj08z0u/UegBVMA==}
 
   vega-crossfilter@5.1.0:
     resolution: {integrity: sha512-EmVhfP3p6AM7o/lPan/QAoqjblI19BxWUlvl2TSs0xjQd8KbaYYbS4Ixt3cmEvl0QjRdBMF6CdJJ/cy9DTS4Fw==}
@@ -12444,8 +12438,6 @@ snapshots:
     dependencies:
       spdx-correct: 3.2.0
       spdx-expression-parse: 3.0.1
-
-  vega-canvas@2.0.0: {}
 
   vega-crossfilter@5.1.0:
     dependencies:
