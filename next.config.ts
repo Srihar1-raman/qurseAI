@@ -35,11 +35,11 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   webpack: (config, { isServer }) => {
-    // Completely ignore canvas and vega-canvas modules
+    // Only ignore native canvas modules on client side
+    // vega-canvas is required by vega-geo and needs to resolve
     config.resolve.alias = {
       ...config.resolve.alias,
       canvas: false,
-      'vega-canvas': false,
       '@napi-rs/canvas': false,
       'napi-rs/canvas': false,
     };
