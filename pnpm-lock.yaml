@@ -4,7 +4,7 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-pnpmfileChecksum: sha256-heEC6Rn8TwFrXV0i6sC7dSVTM/poblAxDNBFNAawrTs=
+pnpmfileChecksum: sha256-2kFkjBgdVFUtoLYLT2VKJ0eNVUg6HJ1Lp6bUPyIVb78=
 
 importers:
 
@@ -12513,6 +12513,7 @@ snapshots:
       d3-array: 3.2.4
       d3-color: 3.1.0
       d3-geo: 3.1.1
+      vega-canvas: 2.0.0
       vega-dataflow: 6.1.0
       vega-projection: 2.1.0
       vega-statistics: 2.0.0
@@ -12530,6 +12531,7 @@ snapshots:
 
   vega-label@2.1.0:
     dependencies:
+      vega-canvas: 2.0.0
       vega-dataflow: 6.1.0
       vega-scenegraph: 5.1.0
       vega-util: 2.1.0
@@ -12590,6 +12592,7 @@ snapshots:
     dependencies:
       d3-path: 3.1.0
       d3-shape: 3.2.0
+      vega-canvas: 2.0.0
       vega-loader: 5.1.0
       vega-scale: 8.1.0
       vega-util: 2.1.0
@@ -12663,6 +12666,7 @@ snapshots:
 
   vega-wordcloud@5.1.0:
     dependencies:
+      vega-canvas: 2.0.0
       vega-dataflow: 6.1.0
       vega-scale: 8.1.0
       vega-statistics: 2.0.0

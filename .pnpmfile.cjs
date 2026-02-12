@@ -6,7 +6,7 @@ function readPackage(pkg) {
     delete newDeps.canvas;
     delete newDeps['@napi-rs/canvas'];
     delete newDeps['napi-rs/canvas'];
-    delete newDeps['vega-canvas'];
+    // Note: vega-canvas is required by vega-geo, don't remove it
     return newDeps;
   };
 
