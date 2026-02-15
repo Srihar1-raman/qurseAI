@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import MarkdownRenderer from '@/components/markdown';
 import { createScopedLogger } from '@/lib/utils/logger';
 import '@/styles/components/reasoning.css';
@@ -149,11 +148,10 @@ export function ReasoningBlock({ reasoning, isStreaming, reasoningTime }: Reason
             {headerText}
           </span>
           {!isStreaming && (
-            <Image
-              src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-              alt=""
-              width={16}
-              height={16}
+            <Icon
+              name="dropdown-arrow"
+              size={16}
+              aria-label=""
               className="reasoning-chevron"
             />
           )}
@@ -178,11 +176,10 @@ export function ReasoningBlock({ reasoning, isStreaming, reasoningTime }: Reason
             <span className="reasoning-header-text">
               {headerText}
             </span>
-            <Image
-              src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-              alt=""
-              width={16}
-              height={16}
+            <Icon
+              name="dropdown-arrow"
+              size={16}
+              aria-label=""
               className="reasoning-chevron expanded"
             />
           </div>

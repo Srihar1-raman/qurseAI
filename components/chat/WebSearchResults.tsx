@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import '@/styles/components/tool-call-block.css';
 
 interface SearchResultImage {
@@ -260,11 +259,10 @@ export function WebSearchResults({ executions, isStreaming }: WebSearchResultsPr
             {headerText}
           </span>
           {!isStreaming && (
-            <Image
-              src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-              alt=""
-              width={16}
-              height={16}
+            <Icon
+              name="dropdown-arrow"
+              size={16}
+              aria-label=""
               className="reasoning-chevron"
             />
           )}
@@ -291,11 +289,10 @@ export function WebSearchResults({ executions, isStreaming }: WebSearchResultsPr
             {headerSubtext && (
               <span className="web-search-header-subtext">{headerSubtext}</span>
             )}
-            <Image
-              src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-              alt=""
-              width={16}
-              height={16}
+            <Icon
+              name="dropdown-arrow"
+              size={16}
+              aria-label=""
               className="reasoning-chevron expanded"
             />
           </div>

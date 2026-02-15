@@ -19,6 +19,7 @@
   --color-text-muted: #888888;
   --color-shadow: rgba(0, 0, 0, 0.1);
   --color-shadow-lg: rgba(0, 0, 0, 0.15);
+  --icon-color: currentColor;
   --font-reenie: 'Reenie Beanie', cursive;
 }
 
@@ -37,6 +38,7 @@
   --color-text-muted: #999999;
   --color-shadow: rgba(0, 0, 0, 0.3);
   --color-shadow-lg: rgba(0, 0, 0, 0.5);
+  --icon-color: currentColor;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -55,6 +57,7 @@
     --color-text-muted: #999999;
     --color-shadow: rgba(0, 0, 0, 0.3);
     --color-shadow-lg: rgba(0, 0, 0, 0.5);
+    --icon-color: currentColor;
   }
 }
 

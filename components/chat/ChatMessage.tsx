@@ -2,9 +2,8 @@
 
 import React from 'react';
 import { useTheme } from '@/lib/theme-provider';
-import Image from 'next/image';
+import { Icon } from '@/components/icons';
 import MarkdownRenderer from '@/components/markdown';
-import { getIconPath } from '@/lib/icon-utils';
 import { ReasoningBlock } from './ReasoningBlock';
 import { ToolCallBlock } from './ToolCallBlock';
 import { WebSearchResults } from './WebSearchResults';
@@ -169,40 +168,40 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
             </>
           )}
         </div>
-        
+
         {shouldShowActions && (
           <div className="message-actions">
             <button onClick={copyToClipboard} className="action-btn" title="Copy message">
-              <Image src={getIconPath('copy', resolvedTheme, false, mounted)} alt="Copy" width={16} height={16} className="icon" />
+              <Icon name="copy" size={16} aria-label="Copy" />
             </button>
             {onShare && (
-              <button 
+              <button
                 onClick={async () => {
                   try {
                     await onShare();
                   } catch {
                     // Silently handle error
                   }
-                }} 
-                className="action-btn" 
+                }}
+                className="action-btn"
                 title="Share conversation"
               >
-                <Image src={getIconPath('share', resolvedTheme, false, mounted)} alt="Share" width={16} height={16} className="icon" />
+                <Icon name="share" size={16} aria-label="Share" />
               </button>
             )}
             {onRedo && (
-              <button 
+              <button
                 onClick={async () => {
                   try {
                     await onRedo();
                   } catch {
                     // Silently handle error
                   }
-                }} 
-                className="action-btn" 
+                }}
+                className="action-btn"
                 title="Regenerate response"
               >
-                <Image src={getIconPath('redo', resolvedTheme, false, mounted)} alt="Redo" width={16} height={16} className="icon" />
+                <Icon name="redo" size={16} aria-label="Redo" />
               </button>
             )}
           </div>
@@ -219,17 +218,17 @@ export default React.memo(ChatMessageComponent, (prevProps, nextProps) => {
   if (prevProps.message.id !== nextProps.message.id) {
     return false;
   }
-  
+
   // Quick check: if isUser changed, re-render
   if (prevProps.isUser !== nextProps.isUser) {
     return false;
   }
-  
+
   // Quick check: if parts array length changed, content definitely changed
   if (prevProps.message.parts.length !== nextProps.message.parts.length) {
     return false;
   }
-  
+
   // Only re-render if message content actually changed
   const prevContent = prevProps.message.parts
     .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
@@ -265,4 +264,3 @@ export default React.memo(ChatMessageComponent, (prevProps, nextProps) => {
     prevToolParts.length === nextToolParts.length
   );
 });
-

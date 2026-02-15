@@ -13,7 +13,7 @@ import GeneralSection from '@/components/settings/GeneralSection';
 import PaymentSection from '@/components/settings/PaymentSection';
 import SystemSection from '@/components/settings/SystemSection';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useHistorySidebar } from '@/lib/contexts/HistorySidebarContext';
 import { useToast } from '@/lib/contexts/ToastContext';
@@ -377,12 +377,10 @@ function SettingsPageContent() {
               }}
               className={`info-tab ${activeSection === section.id ? 'active' : ''}`}
             >
-              <Image 
-                src={getIconPath(section.icon, resolvedTheme, activeSection === section.id, mounted)} 
-                alt={section.label} 
-                width={16} 
-                height={16} 
-                className="icon" 
+              <Icon
+                name={section.icon as any}
+                size={16}
+                aria-label={section.label}
               />
               <span>{section.label}</span>
             </button>

@@ -21,6 +21,7 @@
 @import '../styles/components/homepage.css';
 @import '../styles/components/tool-call.css';
 @import '../styles/components/search-results.css';
+@import '../styles/components/icons.css';
 
 /* Tailwind directives */
 /* stylelint-disable at-rule-no-unknown */

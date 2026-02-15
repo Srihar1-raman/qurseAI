@@ -1,19 +1,18 @@
 'use client';
 
 import { useState, useLayoutEffect, useRef } from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useTheme } from '@/lib/theme-provider';
 import { useOptimisticNavigation } from '@/hooks/use-optimistic-navigation';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { useClickOutside } from '@/hooks/use-click-outside';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import type { ConversationItemProps } from '@/lib/types';
 
-export default function ConversationItem({ 
-  conversation, 
-  onRename, 
-  onDelete, 
+export default function ConversationItem({
+  conversation,
+  onRename,
+  onDelete,
   onShare,
   onClose,
   isMenuOpen,
@@ -39,7 +38,7 @@ export default function ConversationItem({
     const date = new Date(timestamp);
     const now = new Date();
     const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-    
+
     if (diffInHours < 24) {
       return `${diffInHours}h ago`;
     } else {
@@ -76,7 +75,7 @@ export default function ConversationItem({
     setIsPinning(true);
     try {
       const isGuest = !user;
-      const endpoint = isGuest 
+      const endpoint = isGuest
         ? `/api/guest/conversations/${conversation.id}/pin`
         : `/api/conversations/${conversation.id}/pin`;
 
@@ -92,7 +91,7 @@ export default function ConversationItem({
       }
 
       const data = await response.json();
-      
+
       // Optimistically update local state
       if (onPin) {
         onPin(conversation.id, data.pinned);
@@ -129,26 +128,26 @@ export default function ConversationItem({
   useLayoutEffect(() => {
     if (isMenuOpen && menuTriggerRef.current) {
       const triggerRect = menuTriggerRef.current.getBoundingClientRect();
-      
+
       // Calculate position relative to viewport for fixed positioning
       const sidebar = menuTriggerRef.current.closest('.history-sidebar') as HTMLElement;
       const sidebarRect = sidebar?.getBoundingClientRect();
       const sidebarRight = sidebarRect ? sidebarRect.right : window.innerWidth;
-      
+
       // Find the scrollable container (.history-content) to check space relative to it
       const scrollContainer = menuTriggerRef.current.closest('.history-content') as HTMLElement;
-      
+
       let spaceAbove: number;
       let spaceBelow: number;
-      
+
       if (scrollContainer) {
         // Calculate space relative to scroll container (not window viewport)
         const containerRect = scrollContainer.getBoundingClientRect();
-        
+
         // Find search bar container and account for its height
         const searchContainer = scrollContainer.querySelector('.history-search-container') as HTMLElement;
         const searchBarHeight = searchContainer ? searchContainer.getBoundingClientRect().height : 0;
-        
+
         // Space above = distance from trigger to container top, minus search bar height
         spaceAbove = triggerRect.top - containerRect.top - searchBarHeight;
         spaceBelow = containerRect.bottom - triggerRect.bottom;
@@ -157,14 +156,14 @@ export default function ConversationItem({
         spaceAbove = triggerRect.top;
         spaceBelow = window.innerHeight - triggerRect.bottom;
       }
-      
+
       // Use estimate for calculation (menu not rendered yet in useLayoutEffect)
       // Estimate: 2 items (~32px each) + padding (8px) = ~72px, add buffer = 80px
       const estimatedMenuHeight = 80;
-      
+
       // Calculate menu position
       const menuRight = sidebarRight - triggerRect.right;
-      
+
       // Handle negative space explicitly (edge case: trigger above container)
       if (spaceAbove < 0) {
         setMenuDirection('down');
@@ -174,7 +173,7 @@ export default function ConversationItem({
         });
         return;
       }
-      
+
       // Open upward if there's enough space above, otherwise open downward
       if (spaceAbove >= estimatedMenuHeight) {
         setMenuDirection('up');
@@ -207,7 +206,7 @@ export default function ConversationItem({
 
   return (
     <div className="history-tree-item">
-      <div 
+      <div
         className={`tree-item-content ${isActive ? 'active' : ''}`}
         onClick={handleChatClick}
         onMouseEnter={() => !isEditing && router.prefetch(`/conversation/${conversation.id}`)}
@@ -233,7 +232,7 @@ export default function ConversationItem({
             </>
           )}
         </div>
-        
+
         {/* Actions */}
         <div className="tree-item-actions" ref={menuContainerRef}>
           <button
@@ -243,11 +242,10 @@ export default function ConversationItem({
             title={conversation.pinned ? "Unpin conversation" : "Pin conversation"}
             disabled={isPinning}
           >
-            <Image 
-              src={conversation.pinned ? getIconPath("pin", resolvedTheme, false, mounted) : getIconPath("unpin", resolvedTheme, false, mounted)} 
-              alt={conversation.pinned ? "Unpin" : "Pin"} 
-              width={12} 
-              height={12} 
+            <Icon
+              name={conversation.pinned ? "pin" : "unpin" as any}
+              size={12}
+              aria-label={conversation.pinned ? "Unpin" : "Pin"}
               className={`tree-item-pin ${conversation.pinned ? 'active' : ''}`}
             />
           </button>
@@ -260,17 +258,16 @@ export default function ConversationItem({
             }}
             title="More options"
           >
-            <Image 
-              src={getIconPath("more", resolvedTheme, false, mounted)} 
-              alt="More options" 
-              width={12} 
-              height={12} 
+            <Icon
+              name="more"
+              size={12}
+              aria-label="More options"
               className={`tree-item-more ${isMenuOpen ? 'active' : ''}`}
             />
           </button>
-          
+
           {isMenuOpen && (
-            <div 
+            <div
               ref={menuRef}
               className={`chat-menu chat-menu-${menuDirection}`}
               style={menuPosition}
@@ -287,12 +284,11 @@ export default function ConversationItem({
                 setEditTitle(conversation.title);
                 onMenuToggle(); // Close menu
               }}>
-                <Image 
-                  src={getIconPath("rename", resolvedTheme, false, mounted)} 
-                  alt="Rename" 
-                  width={14} 
-                  height={14} 
-                  className="icon-sm" 
+                <Icon
+                  name="rename"
+                  size={14}
+                  aria-label="Rename"
+                  className="icon-sm"
                 />
                 <span>Rename</span>
               </div>
@@ -309,12 +305,11 @@ export default function ConversationItem({
                 }
                 onMenuToggle(); // Close menu
               }}>
-                <Image 
-                  src={getIconPath("share", resolvedTheme, false, mounted)} 
-                  alt="Share" 
-                  width={14} 
-                  height={14} 
-                  className="icon-sm" 
+                <Icon
+                  name="share"
+                  size={14}
+                  aria-label="Share"
+                  className="icon-sm"
                 />
                 <span>Share</span>
               </div>
@@ -322,12 +317,11 @@ export default function ConversationItem({
                 e.stopPropagation();
                 handleDelete();
               }}>
-                <Image 
-                  src={getIconPath("delete", resolvedTheme, false, mounted)} 
-                  alt="Delete" 
-                  width={14} 
-                  height={14} 
-                  className="icon-sm" 
+                <Icon
+                  name="delete"
+                  size={14}
+                  aria-label="Delete"
+                  className="icon-sm"
                 />
                 <span>Delete</span>
               </div>

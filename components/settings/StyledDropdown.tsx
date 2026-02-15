@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import { useClickOutside } from '@/hooks/use-click-outside';
 
@@ -66,12 +65,10 @@ export function StyledDropdown({
           <span className="truncate">
             {selectedOption?.label || placeholder}
           </span>
-          <Image
-            src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-            alt="Dropdown"
-            width={12}
-            height={12}
-            className={cn("transition-transform flex-shrink-0", isOpen && "rotate-180")}
+          <Icon
+            name="dropdown-arrow"
+            size={12}
+            aria-label="Dropdown"
           />
         </button>
 

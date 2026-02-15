@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useQueryStates } from 'nuqs';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useSidebar } from '@/lib/contexts/SidebarContext';
 import { useHistorySidebar } from '@/lib/contexts/HistorySidebarContext';
@@ -648,12 +648,11 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
           {/* Guest State - Only show if no conversations loaded */}
           {!user && !isLoading && !error && chatHistory.length === 0 && (
             <div className="history-empty">
-              <Image 
-                src={getIconPath("history", resolvedTheme, false, mounted)} 
-                alt="History" 
-                width={48} 
-                height={48} 
-                className="history-empty-icon" 
+              <Icon
+                name="history"
+                size={48}
+                aria-label="History"
+                className="history-empty-icon"
               />
               <p>Sign in to save history</p>
               <span>Your conversations will be saved after signing in</span>
@@ -678,12 +677,11 @@ function HistorySidebar({ isOpen, onClose }: HistorySidebarProps) {
           {/* Empty State (No conversations, not searching) */}
           {chatHistory.length === 0 && !isLoading && !error && !searchQuery.trim() && (
             <div className="history-empty">
-              <Image 
-                src={getIconPath("history", resolvedTheme, false, mounted)} 
-                alt="History" 
-                width={48} 
-                height={48} 
-                className="history-empty-icon" 
+              <Icon
+                name="history"
+                size={48}
+                aria-label="History"
+                className="history-empty-icon"
               />
               <p>No conversations yet</p>
               <span>Start a new chat to begin</span>

@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { Check } from 'lucide-react';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon as GlobalIcon } from '@/components/icons';
 import { highlightCode } from '@/lib/shiki';
 import {
   YouTubeEmbed,
@@ -122,21 +122,18 @@ interface CodeBlockProps {
 }
 
 // Icon Component for theme-aware icons
-const Icon: React.FC<{
+const IconComponent: React.FC<{
   name: string;
   alt: string;
   className?: string;
 }> = ({ name, alt, className }) => {
-  const { resolvedTheme, mounted } = useTheme();
-
   return (
-    <Image
-      src={getIconPath(name, resolvedTheme, false, mounted)}
-      alt={alt}
-      width={14}
-      height={14}
-      className={className}
-    />
+      <GlobalIcon
+        name={name as any}
+        size={14}
+        className={className}
+        aria-label={alt}
+      />
   );
 };
 
@@ -341,7 +338,7 @@ const LazyCodeBlockComponent: React.FC<CodeBlockProps> = ({ children, language, 
             className="p-1 rounded border border-border bg-background shadow-sm transition-all duration-200 hover:bg-muted hover:scale-105 text-muted-foreground"
             title="Copy code"
           >
-            <Icon name="copy" alt="Copy" />
+            <IconComponent name="copy" alt="Copy" />
           </button>
         </div>
       </div>
@@ -1065,7 +1062,7 @@ const MarkdownTableWithActions: React.FC<{ children: React.ReactNode }> = React.
           aria-label="Copy table"
           title="Copy table"
         >
-          <Icon name="copy" alt="Copy" />
+          <IconComponent name="copy" alt="Copy" />
         </button>
 
         <button
@@ -1074,7 +1071,7 @@ const MarkdownTableWithActions: React.FC<{ children: React.ReactNode }> = React.
           aria-label="Download CSV"
           title="Download CSV"
         >
-          <Icon name="download" alt="Download" />
+          <IconComponent name="download" alt="Download" />
         </button>
       </div>
       <div ref={containerRef}>
@@ -1841,7 +1838,7 @@ export const CopyButton = React.memo(({ text }: { text: string }) => {
 
   return (
     <Button variant="ghost" size="sm" onClick={handleCopy} className="h-8 px-2 text-xs rounded-full">
-      {isCopied ? <Check className="h-4 w-4" /> : <Icon name="copy" alt="Copy" />}
+      {isCopied ? <Check className="h-4 w-4" /> : <IconComponent name="copy" alt="Copy" />}
     </Button>
   );
 });

@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useCallback, useMemo } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import MarkdownRenderer from '@/components/markdown';
 import '@/styles/components/tool-call-block.css';
 
@@ -104,11 +103,10 @@ export function ToolCallBlock({ toolName, status, result, query }: ToolCallBlock
           <span className="tool-call-collapsed-text streaming">
             {headerText}
           </span>
-          <Image
-            src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-            alt=""
-            width={16}
-            height={16}
+          <Icon
+            name="dropdown-arrow"
+            size={16}
+            aria-label=""
             className="tool-call-chevron"
           />
         </div>
@@ -132,11 +130,10 @@ export function ToolCallBlock({ toolName, status, result, query }: ToolCallBlock
               {headerText}
             </span>
             {showExpanded && (
-              <Image
-                src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-                alt=""
-                width={16}
-                height={16}
+              <Icon
+                name="dropdown-arrow"
+                size={16}
+                aria-label=""
                 className="tool-call-chevron expanded"
               />
             )}

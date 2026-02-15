@@ -1,9 +1,7 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
-import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 
 interface PdfEmbedProps {
   url: string;
@@ -11,7 +9,6 @@ interface PdfEmbedProps {
 }
 
 export const PdfEmbed: React.FC<PdfEmbedProps> = React.memo(({ url, className = '' }) => {
-  const { resolvedTheme, mounted } = useTheme();
 
   // Use Google Docs Viewer as it's more reliable
   const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(url)}&embedded=true`;
@@ -26,11 +23,10 @@ export const PdfEmbed: React.FC<PdfEmbedProps> = React.memo(({ url, className = 
           title="Open PDF in new tab"
           type="button"
         >
-          <Image
-            src={getIconPath('share', resolvedTheme, false, mounted)}
-            alt="Open"
-            width={14}
-            height={14}
+          <Icon
+            name="share"
+            size={14}
+            aria-label="Open"
           />
         </button>
       </div>

@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { WEB_SEARCH_OPTIONS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -38,26 +37,19 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-2">
-          <Image
-            src={getIconPath(
-              selectedOptionData?.icon || 'search',
-              resolvedTheme,
-              false,
-              mounted
-            )}
-            alt={selectedOption}
-            width={16}
-            height={16}
+          <Icon
+            name={(selectedOptionData?.icon || 'search') as any}
+            size={16}
+            aria-label={selectedOption}
           />
           <span className="web-search-text">{selectedOption}</span>
-          <Image
-            src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-            alt="Dropdown"
-            width={12}
-            height={12}
+          <Icon
+            name="dropdown-arrow"
+            size={12}
+            aria-label="Dropdown"
             className={cn(
               "transition-transform",
-              isOpen && "rotate-180"
+              isOpen && "icon-rotate-180"
             )}
           />
         </div>
@@ -67,7 +59,7 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
         <div className="absolute top-full left-0 right-0 mt-1 min-w-[200px] bg-background border border-border rounded-lg shadow-lg z-50 overflow-hidden">
           {WEB_SEARCH_OPTIONS.map((option) => {
             const isSelected = selectedOption === option.name;
-            
+
             return (
               <div
                 key={option.name}
@@ -105,11 +97,10 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
                     ? "bg-white/10 border border-white/20 opacity-100"
                     : "bg-muted/50 border border-border/50 opacity-70"
                 )}>
-                  <Image
-                    src={getIconPath(option.icon, resolvedTheme, isSelected, mounted)}
-                    alt={option.name}
-                    width={9}
-                    height={9}
+                  <Icon
+                    name={option.icon as any}
+                    size={9}
+                    aria-label={option.name}
                   />
                 </div>
               </div>

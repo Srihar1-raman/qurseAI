@@ -1,10 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-import Image from 'next/image';
+import { Icon } from '@/components/icons';
 import type { Toast, ToastVariant } from '@/lib/contexts/ToastContext';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
 import { cn } from '@/lib/utils';
 
 interface ToastProps {
@@ -52,7 +51,7 @@ export function ToastComponent({ toast, onDismiss }: ToastProps) {
       aria-live="assertive"
       className={cn(
         'min-w-[300px] max-w-[500px] rounded-lg border shadow-lg',
-        'p-4 flex items-start gap-3',
+        'p-4 flex items-center gap-3',
         'animate-in slide-in-from-right-full',
         'bg-[var(--color-bg)]',
         'border-[var(--color-border)]',
@@ -70,17 +69,15 @@ export function ToastComponent({ toast, onDismiss }: ToastProps) {
       {/* Dismiss Button */}
       <button
         onClick={() => onDismiss(toast.id)}
-        className="flex-shrink-0 text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors p-1"
+        className="flex-shrink-0 text-[var(--color-text-secondary)] hover:text-[var(--color-text)] transition-colors p-1 mt-0.5"
         aria-label="Dismiss notification"
       >
-        <Image
-          src={getIconPath('cross', resolvedTheme, false, mounted)}
-          alt="Close"
-          width={16}
-          height={16}
+        <Icon
+          name="cross"
+          size={16}
+          aria-label="Close"
         />
       </button>
     </div>
   );
 }
-

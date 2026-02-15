@@ -1,0 +1,21 @@
+'use client';
+
+import { BaseIcon } from './BaseIcon';
+import type { BaseIconProps } from './BaseIcon';
+
+export function AnthropicIcon({ className, size, style, theme, isActive, isInverted, ...props }: BaseIconProps) {
+  return (
+    <BaseIcon
+      className={className}
+      size={size}
+      style={style}
+      theme={theme}
+      isActive={isActive}
+      isInverted={isInverted}
+      viewBox="0 0 92.2 65"
+      {...props}
+    >
+      <path d="m66.5 0h-14.1l25.7 65h14.1zm-40.8 0-25.7 65h14.4l5.3-13.6h26.9l5.2 13.6h14.4l-25.7-65zm-1.4 39.3 8.8-22.8 8.8 22.8z" fill="currentColor" stroke="none" />
+    </BaseIcon>
+  );
+}

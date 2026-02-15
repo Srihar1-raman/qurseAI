@@ -4,9 +4,8 @@
  */
 
 import React from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import ModelSelector from '@/components/homepage/ModelSelector';
 import WebSearchSelector from '@/components/homepage/WebSearchSelector';
 import { getOptionFromChatMode, getChatModeFromOption } from '@/lib/conversation/chat-mode-utils';
@@ -72,9 +71,9 @@ export function ConversationInput({
                 onDisabledClick();
               }
             }}
-            style={{ 
-              position: 'relative', 
-              width: '100%', 
+            style={{
+              position: 'relative',
+              width: '100%',
               cursor: disabled ? 'not-allowed' : 'text',
               pointerEvents: disabled ? 'auto' : 'auto',
             }}
@@ -144,11 +143,10 @@ export function ConversationInput({
               className="attach-btn"
               title="Attach file"
             >
-              <Image
-                src={getIconPath('attach', resolvedTheme, false, mounted)}
-                alt="Attach"
-                width={16}
-                height={16}
+              <Icon
+                name="attach"
+                size={16}
+                aria-label="Attach"
               />
             </button>
 
@@ -168,11 +166,11 @@ export function ConversationInput({
                 }}
               >
                 <div style={{ opacity: 1 }}>
-                  <Image
-                    src={getIconPath('stop', resolvedTheme, true, mounted)}
-                    alt="Stop"
-                    width={16}
-                    height={16}
+                  <Icon
+                    name="stop"
+                    size={16}
+                    aria-label="Stop"
+                    className="icon-active"
                   />
                 </div>
               </button>
@@ -184,11 +182,11 @@ export function ConversationInput({
                 disabled={!input.trim() || isLoading}
               >
                 <div style={{ opacity: 1 }}>
-                  <Image
-                    src={input.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                    alt="Send"
-                    width={16}
-                    height={16}
+                  <Icon
+                    name="send"
+                    size={16}
+                    aria-label="Send"
+                    className={input.trim() ? "icon-active" : ""}
                   />
                 </div>
               </button>
@@ -199,4 +197,3 @@ export function ConversationInput({
     </div>
   );
 }
-

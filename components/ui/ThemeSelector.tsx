@@ -1,7 +1,6 @@
 'use client';
 
-import Image from 'next/image';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 
 interface ThemeSelectorProps {
   theme: 'light' | 'dark' | 'auto';
@@ -19,11 +18,10 @@ export function ThemeSelector({
   return (
     <div className="flex items-center justify-between px-4 py-2.5">
       <div className="flex items-center gap-3">
-        <Image
-          src={getIconPath('theme', resolvedTheme, false, mounted)}
-          alt="Theme"
-          width={16}
-          height={16}
+        <Icon
+          name="theme"
+          size={16}
+          aria-label="Theme"
         />
         <span className="text-sm font-medium">Theme</span>
       </div>
@@ -31,53 +29,49 @@ export function ThemeSelector({
         <button
           onClick={() => onThemeChange('auto')}
           className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
-            theme === 'auto' 
-              ? 'bg-primary text-white' 
+            theme === 'auto'
+              ? 'bg-primary text-white'
               : 'bg-bg-secondary hover:bg-bg-hover'
           }`}
           aria-label="Auto theme"
         >
-          <Image
-            src={getIconPath('theme-auto', resolvedTheme, theme === 'auto', mounted)}
-            alt="Auto"
-            width={14}
-            height={14}
+          <Icon
+            name="theme-auto"
+            size={14}
+            aria-label="Auto"
           />
         </button>
         <button
           onClick={() => onThemeChange('light')}
           className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
-            theme === 'light' 
-              ? 'bg-primary text-white' 
+            theme === 'light'
+              ? 'bg-primary text-white'
               : 'bg-bg-secondary hover:bg-bg-hover'
           }`}
           aria-label="Light theme"
         >
-          <Image
-            src={getIconPath('theme-light', resolvedTheme, theme === 'light', mounted)}
-            alt="Light"
-            width={14}
-            height={14}
+          <Icon
+            name="theme-light"
+            size={14}
+            aria-label="Light"
           />
         </button>
         <button
           onClick={() => onThemeChange('dark')}
           className={`w-6 h-6 rounded flex items-center justify-center transition-all ${
-            theme === 'dark' 
-              ? 'bg-primary text-white' 
+            theme === 'dark'
+              ? 'bg-primary text-white'
               : 'bg-bg-secondary hover:bg-bg-hover'
           }`}
           aria-label="Dark theme"
         >
-          <Image
-            src={getIconPath('theme-dark', resolvedTheme, theme === 'dark', mounted)}
-            alt="Dark"
-            width={14}
-            height={14}
+          <Icon
+            name="theme-dark"
+            size={14}
+            aria-label="Dark"
           />
         </button>
       </div>
     </div>
   );
 }
-

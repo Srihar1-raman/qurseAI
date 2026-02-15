@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
-import Image from 'next/image';
+import { Icon } from '@/components/icons';
 
 /**
  * Back to top floating action button
@@ -35,11 +34,10 @@ export function BackToTopButton() {
       className="info-back-to-top"
       aria-label="Back to top"
     >
-      <Image
-        src={getIconPath('arrow-up', resolvedTheme, false, true)}
-        alt=""
-        width={20}
-        height={20}
+      <Icon
+        name="arrow-up"
+        size={20}
+        aria-label=""
       />
     </button>
   );

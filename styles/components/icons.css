@@ -1,0 +1,29 @@
+/* Icon Theming */
+.icon {
+  color: var(--icon-color, currentColor);
+  transition: color 0.2s ease;
+}
+
+/* Active state: Always white for contrast on colored backgrounds */
+.icon-active {
+  color: #ffffff !important;
+}
+
+/* Theme-specific overrides (rarely needed with currentColor) */
+[data-theme='light'] .icon {
+  /* Inherits from --icon-color */
+}
+
+[data-theme='dark'] .icon {
+  /* Inherits from --icon-color */
+}
+
+/* Special case: Inverted backgrounds */
+.icon-inverted {
+  color: var(--icon-color-inverted, currentColor);
+}
+
+/* Rotate transformations for dropdown arrows */
+.icon-rotate-180 {
+  transform: rotate(180deg);
+}

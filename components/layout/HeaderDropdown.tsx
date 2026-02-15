@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Dropdown, DropdownItem, DropdownSeparator } from '@/components/ui/dropdown';
 import { useOptimisticNavigation } from '@/hooks/use-optimistic-navigation';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { ThemeSelector } from '@/components/ui/ThemeSelector';
 import type { User } from '@/lib/types';
 
@@ -63,11 +63,10 @@ export function HeaderDropdown({
               {userInitial}
             </span>
           ) : (
-            <Image
-              src={getIconPath('profile', resolvedTheme, false, mounted)}
-              alt="Settings"
-              width={16}
-              height={16}
+            <Icon
+              name="profile"
+              size={16}
+              aria-label="Settings"
             />
           )}
         </button>
@@ -82,7 +81,7 @@ export function HeaderDropdown({
         <>
           <div className="flex items-center gap-3 px-4 py-3" style={{ borderBottom: '1px solid var(--color-border)' }}>
             {user.avatar_url && (
-              <Image
+              <img
                 src={user.avatar_url}
                 alt={user.name || 'User'}
                 width={32}
@@ -116,16 +115,15 @@ export function HeaderDropdown({
 
       {/* Pricing Section - Show for all users */}
       <DropdownSeparator />
-      <DropdownItem 
+      <DropdownItem
         onClick={() => navigateOptimistically('/pricing')}
         onMouseEnter={() => router.prefetch('/pricing')}
       >
         <div className="flex items-center gap-3">
-          <Image
-            src={getIconPath('general', resolvedTheme, false, mounted)}
-            alt="Pricing"
-            width={16}
-            height={16}
+          <Icon
+            name="general"
+            size={16}
+            aria-label="Pricing"
           />
           <span>Pricing</span>
         </div>
@@ -135,16 +133,15 @@ export function HeaderDropdown({
       {user && (
         <>
           <DropdownSeparator />
-          <DropdownItem 
+          <DropdownItem
             onClick={() => navigateOptimistically('/settings')}
             onMouseEnter={() => router.prefetch('/settings')}
           >
             <div className="flex items-center gap-3">
-              <Image
-                src={getIconPath('settings', resolvedTheme, false, mounted)}
-                alt="Settings"
-                width={16}
-                height={16}
+              <Icon
+                name="settings"
+                size={16}
+                aria-label="Settings"
               />
               <span>Settings</span>
             </div>
@@ -154,46 +151,43 @@ export function HeaderDropdown({
 
       <DropdownSeparator />
 
-      <DropdownItem 
+      <DropdownItem
         onClick={() => navigateOptimistically('/info?section=about')}
         onMouseEnter={() => router.prefetch('/info?section=about')}
       >
         <div className="flex items-center gap-3">
-          <Image
-            src={getIconPath('about', resolvedTheme, false, mounted)}
-            alt="About"
-            width={16}
-            height={16}
+          <Icon
+            name="about"
+            size={16}
+            aria-label="About"
           />
           <span>About</span>
         </div>
       </DropdownItem>
 
-      <DropdownItem 
+      <DropdownItem
         onClick={() => navigateOptimistically('/info?section=terms')}
         onMouseEnter={() => router.prefetch('/info?section=terms')}
       >
         <div className="flex items-center gap-3">
-          <Image
-            src={getIconPath('terms', resolvedTheme, false, mounted)}
-            alt="Terms"
-            width={16}
-            height={16}
+          <Icon
+            name="terms"
+            size={16}
+            aria-label="Terms"
           />
           <span>Terms</span>
         </div>
       </DropdownItem>
 
-      <DropdownItem 
+      <DropdownItem
         onClick={() => navigateOptimistically('/info?section=privacy')}
         onMouseEnter={() => router.prefetch('/info?section=privacy')}
       >
         <div className="flex items-center gap-3">
-          <Image
-            src={getIconPath('privacy', resolvedTheme, false, mounted)}
-            alt="Privacy"
-            width={16}
-            height={16}
+          <Icon
+            name="privacy"
+            size={16}
+            aria-label="Privacy"
           />
           <span>Privacy</span>
         </div>
@@ -201,29 +195,27 @@ export function HeaderDropdown({
 
       <DropdownSeparator />
 
-      <DropdownItem 
+      <DropdownItem
         onClick={() => window.open('https://github.com/Srihar1-raman/qurseAI', '_blank', 'noopener,noreferrer')}
       >
         <div className="flex items-center gap-3">
-          <Image
-            src={getIconPath('github', resolvedTheme, false, mounted)}
-            alt="GitHub"
-            width={16}
-            height={16}
+          <Icon
+            name="github"
+            size={16}
+            aria-label="GitHub"
           />
           <span>GitHub</span>
         </div>
       </DropdownItem>
 
-      <DropdownItem 
+      <DropdownItem
         onClick={() => window.open('https://x.com/qursechat', '_blank', 'noopener,noreferrer')}
       >
         <div className="flex items-center gap-3">
-          <Image
-            src={getIconPath('x-twitter', resolvedTheme, false, mounted)}
-            alt="X"
-            width={16}
-            height={16}
+          <Icon
+            name="x-twitter"
+            size={16}
+            aria-label="X"
           />
           <span>X</span>
         </div>
@@ -234,11 +226,10 @@ export function HeaderDropdown({
       {user ? (
         <DropdownItem onClick={onSignOut}>
           <div className="flex items-center gap-3">
-            <Image
-              src={getIconPath('signout', resolvedTheme, false, mounted)}
-              alt="Sign out"
-              width={16}
-              height={16}
+            <Icon
+              name="signout"
+              size={16}
+              aria-label="Sign out"
             />
             <span>Sign out</span>
           </div>
@@ -249,11 +240,10 @@ export function HeaderDropdown({
           window.location.href = url;
         }}>
           <div className="flex items-center gap-3">
-            <Image
-              src={getIconPath('profile', resolvedTheme, false, mounted)}
-              alt="Sign in"
-              width={16}
-              height={16}
+            <Icon
+              name="profile"
+              size={16}
+              aria-label="Sign in"
             />
             <span>Sign in / Sign up</span>
           </div>
@@ -262,4 +252,3 @@ export function HeaderDropdown({
     </Dropdown>
   );
 }
-

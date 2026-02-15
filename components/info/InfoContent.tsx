@@ -7,7 +7,7 @@ import ActivityGraph from '@/components/settings/ActivityGraph';
 import MainInput from '@/components/homepage/MainInput';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { useMobile } from '@/hooks/use-mobile';
 import type { InfoSection } from '@/lib/types';
 
@@ -252,13 +252,12 @@ export function InfoContent({ sectionId }: InfoContentProps) {
                   height: '100px',
                 }}
               >
-                <Image
-                  src={tech.icon.endsWith('.png')
-                    ? `/${resolvedTheme === 'dark' ? 'icon_light' : 'icon'}/${tech.icon}`
-                    : getIconPath(tech.icon, resolvedTheme, false, mounted)}
-                  alt={tech.name}
-                  width={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 84 : 48}
-                  height={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 84 : 48}
+                <Icon
+                  name={tech.icon.endsWith('.png')
+                    ? (tech.icon.replace('.png', '') as any)
+                    : tech.icon as any}
+                  size={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 84 : 48}
+                  aria-label={tech.name}
                   style={{
                     opacity: 0.8
                   }}
@@ -288,11 +287,10 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             >
               <UnifiedButton variant="secondary">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Image
-                    src={getIconPath('github', resolvedTheme, false, mounted)}
-                    alt="GitHub"
-                    width={21}
-                    height={21}
+                  <Icon
+                    name="github"
+                    size={21}
+                    aria-label="GitHub"
                   />
                   <span>GitHub</span>
                 </div>
@@ -307,11 +305,10 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             >
               <UnifiedButton variant="secondary">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Image
-                    src={getIconPath('x-twitter', resolvedTheme, false, mounted)}
-                    alt="X (Twitter)"
-                    width={16}
-                    height={16}
+                  <Icon
+                    name="x-twitter"
+                    size={16}
+                    aria-label="X (Twitter)"
                   />
                   <span>X(Twitter)</span>
                 </div>
@@ -324,11 +321,10 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             >
               <UnifiedButton variant="secondary">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Image
-                    src={getIconPath('mail', resolvedTheme, false, mounted)}
-                    alt="Email"
-                    width={21}
-                    height={21}
+                  <Icon
+                    name="mail"
+                    size={21}
+                    aria-label="Email"
                   />
                   <span>Email</span>
                 </div>

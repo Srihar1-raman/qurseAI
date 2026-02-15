@@ -1,8 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import type { GeneralSectionProps } from '@/lib/types';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 import { ModelPreferenceSelector } from '@/components/settings/ModelPreferenceSelector';
@@ -58,59 +57,56 @@ export default function GeneralSection({
   return (
     <div className="settings-section">
       <h2>General Settings</h2>
-      
+
       {/* Theme */}
       <div className="settings-group row">
-  <div className="settings-text">
-    <label className="settings-label">Theme</label>
-    <p className="settings-description">
-      Choose your preferred appearance. Auto follows your system settings.
-    </p>
-  </div>
+        <div className="settings-text">
+          <label className="settings-label">Theme</label>
+          <p className="settings-description">
+            Choose your preferred appearance. Auto follows your system settings.
+          </p>
+        </div>
 
-  <div className="settings-control">
-    <div className="theme-options">
-      {(['auto', 'light', 'dark'] as const).map((themeOption) => (
-        <button
-          key={themeOption}
-          onClick={() => handleThemeChange(themeOption)}
-          className={`theme-btn ${theme === themeOption ? 'active' : ''}`}
-        >
-          <Image
-            src={getIconPath(`theme-${themeOption}`, resolvedTheme, theme === themeOption, mounted)}
-            alt={themeOption}
-            width={14}
-            height={14}
-          />
-        </button>
-      ))}
-    </div>
-  </div>
-</div>
-
+        <div className="settings-control">
+          <div className="theme-options">
+            {(['auto', 'light', 'dark'] as const).map((themeOption) => (
+              <button
+                key={themeOption}
+                onClick={() => handleThemeChange(themeOption)}
+                className={`theme-btn ${theme === themeOption ? 'active' : ''}`}
+              >
+                <Icon
+                  name={`theme-${themeOption}` as any}
+                  size={14}
+                  aria-label={themeOption}
+                />
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
 
       {/* Auto-save */}
       <div className="settings-group row">
-  <div className="settings-text">
-    <label className="settings-label">Auto-save Conversations</label>
-    <p className="settings-description">
-      Automatically save your conversations to your account.
-    </p>
-  </div>
+        <div className="settings-text">
+          <label className="settings-label">Auto-save Conversations</label>
+          <p className="settings-description">
+            Automatically save your conversations to your account.
+          </p>
+        </div>
 
-  <div className="settings-control">
-    <div className="settings-toggle">
-      <input
-        type="checkbox"
-        id="auto-save"
-        checked={autoSaveConversations}
-        onChange={(e) => onAutoSaveChange(e.target.checked)}
-      />
-      <label htmlFor="auto-save"></label>
-    </div>
-  </div>
- </div>
-
+        <div className="settings-control">
+          <div className="settings-toggle">
+            <input
+              type="checkbox"
+              id="auto-save"
+              checked={autoSaveConversations}
+              onChange={(e) => onAutoSaveChange(e.target.checked)}
+            />
+            <label htmlFor="auto-save"></label>
+          </div>
+        </div>
+      </div>
 
       {/* Memory Feature */}
       <div className="settings-group row">
@@ -147,7 +143,7 @@ export default function GeneralSection({
           { value: 'Japanese', label: 'Japanese' },
         ]}
         label="Language"
-        description="Select your preferred language for the interface."
+        description="Select your preferred language for interface."
       />
 
       {/* Default Model */}
@@ -159,4 +155,3 @@ export default function GeneralSection({
     </div>
   );
 }
-
