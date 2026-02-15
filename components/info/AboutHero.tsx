@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { ModelIconCarousel as UIModelIconCarousel } from '@/components/ui/ModelIconCarousel';
 
 /**
  * About page hero section with background image, parallax effect, and model carousel
- * Uses the same blend technique as the rate limit popup
+ * Uses to same blend technique as to rate limit popup
  */
 export function AboutHero() {
   const [transformY, setTransformY] = useState(0);
@@ -28,7 +29,7 @@ export function AboutHero() {
       rafId = requestAnimationFrame(updateParallax);
     };
 
-    // Start the RAF loop
+    // Start to RAF loop
     rafId = requestAnimationFrame(updateParallax);
 
     // Passive scroll listener for performance
@@ -83,20 +84,29 @@ export function AboutHero() {
           left: 0,
           right: 0,
           height: 'calc(100% + 100px)', // Extend 100px below for bottom fade
-          backgroundImage: 'url(/images/login-page.jpeg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.15,
           zIndex: 0,
           pointerEvents: 'none',
           // Smooth parallax using transform (GPU accelerated)
           transform: `translateY(${transformY}px)`,
           willChange: 'transform',
-          // Mask for gradient fade at top and bottom
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 75%, transparent 100%)',
-          WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 75%, transparent 100%)',
         }}
-      />
+      >
+        <Image
+          src="/images/login-page.jpeg"
+          alt=""
+          fill
+          priority
+          quality={80}
+          sizes="100vw"
+          style={{
+            objectFit: 'cover',
+            objectPosition: 'center',
+            opacity: 0.15,
+            maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 75%, transparent 100%)',
+            WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 75%, transparent 100%)',
+          }}
+        />
+      </div>
 
       {/* Content layer - centered */}
       <div
@@ -153,7 +163,7 @@ export function AboutHero() {
             lineHeight: '1.4',
           }}
         >
-          AI web inference for the{' '}
+          AI web inference for{' '}
           <span
             style={{
               fontStyle: 'italic',

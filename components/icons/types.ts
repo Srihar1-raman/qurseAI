@@ -7,7 +7,7 @@ export interface IconProps {
 }
 
 export type IconName =
-  | 'about' | 'accounts' | 'Anthropic' | 'arrow-up' | 'arxiv-logo'
+  | 'aisdk' | 'about' | 'accounts' | 'Anthropic' | 'arrow-up' | 'arxiv-logo'
   | 'attach' | 'chat' | 'check' | 'clear_history' | 'collapse' | 'convo_branch'
   | 'copy' | 'cross' | 'deep_search' | 'deepseek' | 'delete'
   | 'download' | 'dropdown-arrow' | 'exa' | 'exaAI' | 'expand'

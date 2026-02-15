@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useQueryState } from 'nuqs';
 import { callbackUrlParser } from '@/lib/url-params/parsers';
 import AuthButton from '@/components/auth/AuthButton';
+import { AuthBackground } from './AuthBackground';
 
 interface AuthPageProps {
   mode: 'login' | 'signup';
@@ -11,10 +12,10 @@ interface AuthPageProps {
 
 export default function AuthPage({ mode }: AuthPageProps) {
   const isLogin = mode === 'login';
-  
+
   // Read callbackUrl from URL using nuqs - no Suspense needed!
   const [callbackUrl] = useQueryState('callbackUrl', callbackUrlParser);
-  
+
   // Preserve callbackUrl when switching between login/signup pages
   const callbackUrlParam = callbackUrl ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : '';
 
@@ -23,21 +24,21 @@ export default function AuthPage({ mode }: AuthPageProps) {
       {/* Form Section */}
       <div className="form-section">
         {/* Mobile Background Image */}
-        <div className="mobile-bg-image" />
+        <AuthBackground showMobile />
 
-        <Link 
-          href="/" 
+        <Link
+          href="/"
           className="auth-logo logo font-reenie"
         >
           Qurse
         </Link>
-        
+
         <div className="form-content">
           <h1 className="auth-title">
             {isLogin ? 'Log in' : 'Sign up'}
           </h1>
           <p className="auth-subtitle">
-            {isLogin 
+            {isLogin
               ? 'Log in to your account using your preferred provider'
               : 'Create your account using your preferred provider'
             }
@@ -81,8 +82,7 @@ export default function AuthPage({ mode }: AuthPageProps) {
       </div>
 
       {/* Image Section - Desktop Only */}
-      <div className="image-section" />
+      <AuthBackground />
     </div>
   );
 }
-

@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { ModelIconCarousel } from './ModelIconCarousel';
 import { RATE_LIMIT_CONSTANTS } from './constants';
 
@@ -33,16 +34,27 @@ export function HeroBlock({ isOpen, showPricing = false, logoPaddingTop, onIconH
           left: 0,
           right: 0,
           bottom: RATE_LIMIT_CONSTANTS.BG_IMAGE_OFFSET_BOTTOM,
-          backgroundImage: 'url(/images/login-page.jpeg)',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: RATE_LIMIT_CONSTANTS.BG_IMAGE_OPACITY,
           zIndex: 0,
           pointerEvents: 'none',
-          maskImage: `linear-gradient(to bottom, transparent 0%, black ${RATE_LIMIT_CONSTANTS.BG_IMAGE_MASK_START}, black ${RATE_LIMIT_CONSTANTS.BG_IMAGE_MASK_END}, transparent 100%)`,
-          WebkitMaskImage: `linear-gradient(to bottom, transparent 0%, black ${RATE_LIMIT_CONSTANTS.BG_IMAGE_MASK_START}, black ${RATE_LIMIT_CONSTANTS.BG_IMAGE_MASK_END}, transparent 100%)`,
+          overflow: 'hidden',
         }}
-      />
+      >
+        <Image
+          src="/images/login-page.jpeg"
+          alt=""
+          fill
+          priority
+          quality={80}
+          sizes="(max-width: 768px) 100vw, 100vw"
+          style={{
+            objectFit: 'cover',
+            objectPosition: 'center',
+            opacity: RATE_LIMIT_CONSTANTS.BG_IMAGE_OPACITY,
+            maskImage: `linear-gradient(to bottom, transparent 0%, black ${RATE_LIMIT_CONSTANTS.BG_IMAGE_MASK_START}, black ${RATE_LIMIT_CONSTANTS.BG_IMAGE_MASK_END}, transparent 100%)`,
+            WebkitMaskImage: `linear-gradient(to bottom, transparent 0%, black ${RATE_LIMIT_CONSTANTS.BG_IMAGE_MASK_START}, black ${RATE_LIMIT_CONSTANTS.BG_IMAGE_MASK_END}, transparent 100%)`,
+          }}
+        />
+      </div>
 
       {/* Content layer */}
       <div
@@ -83,7 +95,7 @@ export function HeroBlock({ isOpen, showPricing = false, logoPaddingTop, onIconH
                 color: 'var(--color-text-secondary)',
                 letterSpacing: RATE_LIMIT_CONSTANTS.PRICING_LETTER_SPACING,
                 wordSpacing: RATE_LIMIT_CONSTANTS.PRICING_WORD_SPACING,
-                
+
               }}
             >
               $9/month ~800/month
@@ -100,4 +112,3 @@ export function HeroBlock({ isOpen, showPricing = false, logoPaddingTop, onIconH
     </div>
   );
 }
-

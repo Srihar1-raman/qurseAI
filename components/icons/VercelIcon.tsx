@@ -12,9 +12,10 @@ export function VercelIcon({ className, size, style, theme, isActive, isInverted
       theme={theme}
       isActive={isActive}
       isInverted={isInverted}
+      viewBox="0 0 20 20"
       {...props}
     >
-      <path d="M9.99913 0L20 20H0L9.99913 0Z" fill="currentColor" stroke="none" />
+      <path d="M9.99913 0L20 20H0L9.99913 0Z" fill="currentColor"/>
     </BaseIcon>
   );
 }

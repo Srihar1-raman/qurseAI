@@ -5,6 +5,7 @@ export type { BaseIconProps } from './BaseIcon';
 
 export { AboutIcon } from './AboutIcon';
 export { AccountsIcon } from './AccountsIcon';
+export { AisdkIcon } from './AisdkIcon';
 export { AnthropicIcon } from './AnthropicIcon';
 export { ArrowUpIcon } from './ArrowUpIcon';
 export { AttachIcon } from './AttachIcon';

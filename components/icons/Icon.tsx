@@ -4,6 +4,7 @@ import { useTheme } from '@/lib/theme-provider';
 import type { IconProps, IconName } from './types';
 
 // Import all icon components individually to avoid circular dependency
+import { AisdkIcon } from './AisdkIcon';
 import { AboutIcon } from './AboutIcon';
 import { AccountsIcon } from './AccountsIcon';
 import { AnthropicIcon } from './AnthropicIcon';
@@ -78,6 +79,7 @@ import { ZaiIcon } from './ZaiIcon';
 
 // Map of icon names to components
 const iconMap: Record<string, React.ComponentType<any>> = {
+  'aisdk': AisdkIcon,
   'about': AboutIcon,
   'accounts': AccountsIcon,
   'Anthropic': AnthropicIcon,
