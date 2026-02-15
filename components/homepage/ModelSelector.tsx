@@ -294,36 +294,42 @@ export default function ModelSelector() {
                             {model.vision && (
                               <div
                                 className={cn(
-                                  "w-[18px] h-[18px] rounded flex items-center justify-center",
+                                  "w-[18px] h-[18px] rounded flex items-center justify-center overflow-hidden",
                                   isSelected
                                     ? "bg-white/10 border border-white/20"
                                     : "bg-muted/50 border border-border/50"
                                 )}
                                 title="Vision support"
                               >
-                                <Icon
-                                  name="image"
-                                  size={10}
-                                  aria-label="Vision"
-                                />
+                                <div className="flex items-center justify-center w-full h-full">
+                                  <Icon
+                                    name="image"
+                                    size={10}
+                                    aria-label="Vision"
+                                    style={{ display: 'block' }}
+                                  />
+                                </div>
                               </div>
                             )}
 
                             {model.reasoning && (
                               <div
                                 className={cn(
-                                  "w-[18px] h-[18px] rounded flex items-center justify-center",
+                                  "w-[18px] h-[18px] rounded flex items-center justify-center overflow-hidden",
                                   isSelected
                                     ? "bg-white/10 border border-white/20"
                                     : "bg-muted/50 border border-border/50"
                                 )}
                                 title="Reasoning model"
                               >
-                                <Icon
-                                  name="reason"
-                                  size={10}
-                                  aria-label="Reasoning"
-                                />
+                                <div className="flex items-center justify-center w-full h-full">
+                                  <Icon
+                                    name="reason"
+                                    size={10}
+                                    aria-label="Reasoning"
+                                    style={{ display: 'block' }}
+                                  />
+                                </div>
                               </div>
                             )}
                           </div>

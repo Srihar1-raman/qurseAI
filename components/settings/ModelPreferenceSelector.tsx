@@ -286,38 +286,40 @@ export function ModelPreferenceSelector({
                               {model.vision && (
                                 <div
                                   className={cn(
-                                    "w-[18px] h-[18px] rounded flex items-center justify-center",
-                                    isSelected
-                                      ? "bg-white/10 border border-white/20"
-                                      : "bg-muted/50 border border-border/50"
+                                    "w-[18px] h-[18px] flex items-center justify-center",
+                                    isSelected && "rounded bg-white/10 border border-white/20"
                                   )}
                                   title="Vision support"
                                 >
-                                  <Icon
-                                    name="image"
-                                    size={10}
-                                    aria-label="Vision"
-                                    className={isSelected ? "icon-active" : ""}
-                                  />
+                                  <div className="flex items-center justify-center w-full h-full">
+                                    <Icon
+                                      name="image"
+                                      size={10}
+                                      aria-label="Vision"
+                                      className={isSelected ? "icon-active" : ""}
+                                      style={{ display: 'block' }}
+                                    />
+                                  </div>
                                 </div>
                               )}
 
                               {model.reasoning && (
                                 <div
                                   className={cn(
-                                    "w-[18px] h-[18px] rounded flex items-center justify-center",
-                                    isSelected
-                                      ? "bg-white/10 border border-white/20"
-                                      : "bg-muted/50 border border-border/50"
+                                    "w-[18px] h-[18px] flex items-center justify-center",
+                                    isSelected && "rounded bg-white/10 border border-white/20"
                                   )}
                                   title="Reasoning model"
                                 >
-                                  <Icon
-                                    name="reason"
-                                    size={10}
-                                    aria-label="Reasoning"
-                                    className={isSelected ? "icon-active" : ""}
-                                  />
+                                  <div className="flex items-center justify-center w-full h-full">
+                                    <Icon
+                                      name="reason"
+                                      size={10}
+                                      aria-label="Reasoning"
+                                      className={isSelected ? "icon-active" : ""}
+                                      style={{ display: 'block' }}
+                                    />
+                                  </div>
                                 </div>
                               )}
                             </div>
