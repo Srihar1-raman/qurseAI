@@ -1,10 +1,24 @@
-/* Auth Page Styles */
+/* ===================================
+   AUTH PAGE STYLES
+   Login and signup pages
+   =================================== */
 
+/* Auth Container */
 .auth-container {
   display: flex;
   width: 100%;
   min-height: 100vh;
   min-height: 100dvh;
+}
+
+/* Form Section */
+.form-section {
+  width: 33.333%;
+  padding: 60px 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
   background-color: var(--color-bg);
 }
 
@@ -36,60 +50,46 @@
   opacity: 0.8;
 }
 
-/* Form Section */
-.form-section {
-  width: 33.333%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: clamp(20px, 4vw, 40px);
-  position: relative;
-}
-
+/* Form Content */
 .form-content {
+  max-width: 320px;
   width: 100%;
-  max-width: 400px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  position: relative;
-  z-index: 1;
 }
 
-/* Form Title */
 .auth-title {
-  font-size: clamp(24px, 4vw, 32px);
-  font-weight: 600;
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
   color: var(--color-text);
-  margin: 0;
-  text-align: center;
   line-height: 1.2;
+  font-family: Inter, sans-serif;
+  letter-spacing: -1px;
+  text-align: left;
 }
 
-/* Form Subtitle */
 .auth-subtitle {
-  font-size: clamp(14px, 2vw, 16px);
+  font-size: 16px;
   color: var(--color-text-secondary);
-  margin: 0;
-  text-align: center;
+  margin: 0 0 32px 0;
   line-height: 1.5;
+  text-align: left;
 }
 
-/* Auth Buttons */
+/* Auth Buttons Container */
 .auth-buttons {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
+  margin-bottom: 24px;
 }
 
-/* Auth Footer */
+/* Auth Footer Links */
 .auth-footer {
-  text-align: center;
+  margin-top: 24px;
+  text-align: left;
   font-size: 14px;
   color: var(--color-text-secondary);
-  margin-top: 8px;
 }
 
 .auth-link {
@@ -101,16 +101,14 @@
 
 .auth-link:hover {
   opacity: 0.8;
-  text-decoration: underline;
 }
 
 /* Auth Terms */
 .auth-terms {
+  margin-top: 16px;
   font-size: 12px;
-  color: var(--color-text-secondary);
-  text-align: center;
+  color: var(--color-text-muted);
   line-height: 1.5;
-  margin-top: 8px;
 }
 
 .auth-terms-link {
@@ -122,6 +120,16 @@
 .auth-terms-link:hover {
   opacity: 0.8;
   text-decoration: underline;
+}
+
+/* Image Section - Desktop Only */
+.image-section {
+  width: 66.667%;
+  background-image: url('/images/login-page.jpeg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  overflow: hidden;
 }
 
 /* Mobile responsive styles for auth pages */
@@ -146,6 +154,7 @@
 
   .mobile-bg-image {
     display: block !important;
+    filter: blur(3px) brightness(0.6);
   }
 
   /* Ensure logo is clickable and readable on mobile */
@@ -160,7 +169,7 @@
   .form-content {
     position: relative !important;
     z-index: 1 !important;
-    background: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(255,255,255, 0.9) !important;
     padding: 20px !important;
     border-radius: 12px !important;
     backdrop-filter: blur(10px) !important;
@@ -186,5 +195,9 @@
 
   .image-section {
     display: none !important;
+  }
+
+  .form-section h1 {
+    font-size: 28px !important;
   }
 }
