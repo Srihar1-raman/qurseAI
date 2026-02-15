@@ -286,15 +286,17 @@ export function ModelPreferenceSelector({
                               {model.vision && (
                                 <div
                                   className={cn(
-                                    "w-[18px] h-[18px] flex items-center justify-center",
-                                    isSelected && "rounded bg-white/10 border border-white/20"
+                                    "w-[16px] h-[16px] rounded flex items-center justify-center flex-shrink-0",
+                                    isSelected
+                                      ? "bg-white/10 border border-white/20"
+                                      : "bg-muted/50 border border-border/50 opacity-70"
                                   )}
                                   title="Vision support"
                                 >
                                   <div className="flex items-center justify-center w-full h-full">
                                     <Icon
                                       name="image"
-                                      size={10}
+                                      size={9}
                                       aria-label="Vision"
                                       className={isSelected ? "icon-active" : ""}
                                       style={{ display: 'block' }}
@@ -306,15 +308,17 @@ export function ModelPreferenceSelector({
                               {model.reasoning && (
                                 <div
                                   className={cn(
-                                    "w-[18px] h-[18px] flex items-center justify-center",
-                                    isSelected && "rounded bg-white/10 border border-white/20"
+                                    "w-[16px] h-[16px] rounded flex items-center justify-center flex-shrink-0",
+                                    isSelected
+                                      ? "bg-white/10 border border-white/20"
+                                      : "bg-muted/50 border border-border/50 opacity-70"
                                   )}
                                   title="Reasoning model"
                                 >
                                   <div className="flex items-center justify-center w-full h-full">
                                     <Icon
                                       name="reason"
-                                      size={10}
+                                      size={9}
                                       aria-label="Reasoning"
                                       className={isSelected ? "icon-active" : ""}
                                       style={{ display: 'block' }}

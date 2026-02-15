@@ -297,7 +297,7 @@ export default function ModelSelector() {
                                   "w-[18px] h-[18px] rounded flex items-center justify-center overflow-hidden",
                                   isSelected
                                     ? "bg-white/10 border border-white/20"
-                                    : "bg-muted/50 border border-border/50"
+                                    : "bg-muted/20 border border-border/10"
                                 )}
                                 title="Vision support"
                               >
@@ -318,7 +318,7 @@ export default function ModelSelector() {
                                   "w-[18px] h-[18px] rounded flex items-center justify-center overflow-hidden",
                                   isSelected
                                     ? "bg-white/10 border border-white/20"
-                                    : "bg-muted/50 border border-border/50"
+                                    : "bg-muted/20 border border-border/10"
                                 )}
                                 title="Reasoning model"
                               >
