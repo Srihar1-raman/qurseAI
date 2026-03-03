@@ -21,6 +21,26 @@ if (!supabaseUrl || !serviceKey) {
 const serviceSupabase = createServiceClient(supabaseUrl, serviceKey);
 
 /**
+ * Get user profile by ID (server-side)
+ */
+export async function getUserProfileByIdServerSide(
+  userId: string
+): Promise<{ id: string; name: string | null; email: string | null; avatar_url: string | null } | null> {
+  const { data, error } = await serviceSupabase
+    .from('users')
+    .select('id, name, email, avatar_url')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error) {
+    logger.error('Error fetching user profile', error, { userId });
+    return null;
+  }
+
+  return data;
+}
+
+/**
  * Update user profile (server-side)
  */
 export async function updateUserProfileServerSide(

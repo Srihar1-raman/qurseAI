@@ -18,7 +18,11 @@ interface GroupedModels {
   models: ModelConfig[];
 }
 
-export default function ModelSelector() {
+interface ModelSelectorProps {
+  showChevron?: boolean;
+}
+
+export default function ModelSelector({ showChevron = true }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -170,12 +174,14 @@ export default function ModelSelector() {
           <span className="model-selector-text">
             {selectedModelConfig?.label || selectedModel}
           </span>
-          <Icon
-            name="dropdown-arrow"
-            size={12}
-            aria-label="Dropdown"
-            className={cn("transition-transform", isOpen && "icon-rotate-180")}
-          />
+          {showChevron && (
+            <Icon
+              name="dropdown-arrow"
+              size={12}
+              aria-label="Dropdown"
+              className={cn("transition-transform", isOpen && "icon-rotate-180")}
+            />
+          )}
         </div>
       </Button>
 

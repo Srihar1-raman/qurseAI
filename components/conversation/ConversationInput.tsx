@@ -24,8 +24,9 @@ interface ConversationInputProps {
   onStop?: () => void;
   showStopButton?: boolean;
   disabled?: boolean;
-  onDisabledClick?: () => void; // Handler for when disabled input is clicked/focused
+  onDisabledClick?: () => void;
   contextUsage?: ContextUsage | null;
+  showSelectors?: boolean;
 }
 
 export function ConversationInput({
@@ -42,6 +43,7 @@ export function ConversationInput({
   disabled = false,
   onDisabledClick,
   contextUsage,
+  showSelectors = true,
 }: ConversationInputProps) {
   const { resolvedTheme, mounted } = useTheme();
 
@@ -122,18 +124,23 @@ export function ConversationInput({
           <div className="input-buttons-background" />
 
           <div className="input-actions-left">
-            <div className="input-model-selector">
-              <ModelSelector />
-            </div>
+            {showSelectors && (
+              <>
+                <div className="input-model-selector">
+                  <ModelSelector showChevron={false} />
+                </div>
 
-            <div className="input-model-selector">
-              <WebSearchSelector
-                selectedOption={getOptionFromChatMode(chatMode)}
-                onSelectOption={(optionName) => {
-                  onChatModeChange(getChatModeFromOption(optionName));
-                }}
-              />
-            </div>
+                <div className="input-model-selector">
+                  <WebSearchSelector
+                    selectedOption={getOptionFromChatMode(chatMode)}
+                    onSelectOption={(optionName) => {
+                      onChatModeChange(getChatModeFromOption(optionName));
+                    }}
+                    showChevron={false}
+                  />
+                </div>
+              </>
+            )}
 
             <button
               type="button"

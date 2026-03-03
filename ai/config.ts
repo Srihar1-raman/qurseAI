@@ -89,7 +89,7 @@ Guidelines:
 - Admit uncertainty rather than guessing
 - Stay friendly and professional`,
   enabledTools: [],
-  defaultModel: 'openai/gpt-oss-120b',
+  defaultModel: 'grok-3-mini',
 });
 
 
@@ -109,5 +109,5 @@ User location/time: {userLocation} at {currentDate} {currentTime}
 When you need current information or recent facts, use the web_search tool. You can control search parameters including type, category, numResults, and userLocation(explicitly mention the country code like US, GB, etc.), and  startPublishedDate, endPublishedDate for localized results.
 Always cite your sources with links when using search results. directly call the tool dont ask users permission or let them know you are calling the tool. Run multiple searches if needed to get the most relevant results or more detailed information`,
   enabledTools: ['web_search'],
-  defaultModel: 'openai/gpt-4o',
+  defaultModel: 'grok-3-mini',
 });

@@ -9,7 +9,11 @@ import { cn } from '@/lib/utils';
 import { useClickOutside } from '@/hooks/use-click-outside';
 import type { WebSearchSelectorProps } from '@/lib/types';
 
-export default function WebSearchSelector({ selectedOption, onSelectOption }: WebSearchSelectorProps) {
+export default function WebSearchSelector({ 
+  selectedOption, 
+  onSelectOption,
+  showChevron = true 
+}: WebSearchSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { resolvedTheme, mounted } = useTheme();
@@ -43,15 +47,17 @@ export default function WebSearchSelector({ selectedOption, onSelectOption }: We
             aria-label={selectedOption}
           />
           <span className="web-search-text">{selectedOption}</span>
-          <Icon
-            name="dropdown-arrow"
-            size={12}
-            aria-label="Dropdown"
-            className={cn(
-              "transition-transform",
-              isOpen && "icon-rotate-180"
-            )}
-          />
+          {showChevron && (
+            <Icon
+              name="dropdown-arrow"
+              size={12}
+              aria-label="Dropdown"
+              className={cn(
+                "transition-transform",
+                isOpen && "icon-rotate-180"
+              )}
+            />
+          )}
         </div>
       </Button>
 

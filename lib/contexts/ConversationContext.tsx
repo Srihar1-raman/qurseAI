@@ -22,7 +22,7 @@ interface ConversationProviderProps {
 }
 
 export function ConversationProvider({ children }: ConversationProviderProps) {
-  const [selectedModel, setSelectedModel] = useState<string>('openai/gpt-oss-120b'); // Default free model
+  const [selectedModel, setSelectedModel] = useState<string>('grok-3-mini'); // Default free model
   const [chatMode, setChatMode] = useState<string>('chat'); // Default chat mode
   const [isInitialized, setIsInitialized] = useState(false);
   const { user } = useAuth();
@@ -31,7 +31,7 @@ export function ConversationProvider({ children }: ConversationProviderProps) {
   useEffect(() => {
     // Load from localStorage first (for instant UI)
     let initialMode = 'chat';
-    let initialModel = 'openai/gpt-oss-120b';
+    let initialModel = 'grok-3-mini';
 
     if (typeof window !== 'undefined') {
       const savedMode = localStorage.getItem('user_chat_mode');

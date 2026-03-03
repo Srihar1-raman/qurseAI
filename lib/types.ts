@@ -249,6 +249,7 @@ export interface ModelSelectorProps {
 export interface WebSearchSelectorProps {
   selectedOption: string;
   onSelectOption: (option: string) => void;
+  showChevron?: boolean;
 }
 
 export interface ConversationItemProps {

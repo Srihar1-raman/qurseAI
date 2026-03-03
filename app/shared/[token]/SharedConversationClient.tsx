@@ -17,12 +17,18 @@ interface SharedConversationClientProps {
   conversation: Conversation;
   messages: QurseMessage[];
   shareToken: string;
+  ownerUser?: {
+    name: string | null;
+    email: string | null;
+    avatar_url: string | null;
+  } | null;
 }
 
 export default function SharedConversationClient({
   conversation,
   messages: initialMessages,
   shareToken,
+  ownerUser,
 }: SharedConversationClientProps) {
   const { user } = useAuth();
   const router = useRouter();
@@ -43,6 +49,7 @@ export default function SharedConversationClient({
   }, [user, logger]);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [pendingMessage, setPendingMessage] = useState<string | null>(null);
+  const [showSharedBanner, setShowSharedBanner] = useState(true);
 
   // Refs for conversation thread (needed by ConversationThread)
   const conversationEndRef = React.useRef<HTMLDivElement>(null);
@@ -156,6 +163,75 @@ export default function SharedConversationClient({
         showNewChatButton={true}
         onNewChatClick={handleNewChat}
       />
+      
+      {/* Shared conversation banner - floating card at bottom right */}
+      {showSharedBanner && (
+        <div className="shared-banner">
+          <div className="shared-banner-content">
+            <button className="shared-banner-close" onClick={() => setShowSharedBanner(false)}>×</button>
+            <h3 className="shared-banner-title">Shared Conversation</h3>
+            <p className="shared-banner-text">
+              This conversation was shared with you. Sign in to continue and save your conversations.
+            </p>
+          </div>
+        </div>
+      )}
+      <style>{`
+        .shared-banner {
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          max-width: 360px;
+          width: 90%;
+          z-index: 9998;
+          animation: slideInUp 0.3s ease-out;
+        }
+        @keyframes slideInUp {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        .shared-banner-content {
+          background: var(--color-bg);
+          border: 1px solid var(--color-border);
+          border-radius: 12px;
+          padding: 16px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+          position: relative;
+        }
+        .shared-banner-close {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          background: none;
+          border: none;
+          font-size: 20px;
+          color: var(--color-text-tertiary);
+          cursor: pointer;
+          padding: 4px 8px;
+          line-height: 1;
+        }
+        .shared-banner-close:hover {
+          color: var(--color-text-secondary);
+        }
+        .shared-banner-title {
+          margin: 0 0 8px 0;
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--color-primary);
+        }
+        .shared-banner-text {
+          margin: 0;
+          font-size: 13px;
+          color: var(--color-text-secondary);
+          line-height: 1.5;
+        }
+      `}</style>
       
       <main className="conversation-main-content" style={{ position: 'relative' }}>
         {/* Loading overlay during fork */}

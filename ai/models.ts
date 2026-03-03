@@ -136,11 +136,11 @@ export const models: ModelConfig[] = [
     streaming: true,
     structuredOutput: true,
     
-    // Access
-    requiresAuth: false,
-    requiresPro: false,
-    free: true,
-    freeUnlimited: true,  // Free with no rate limits
+    // Access - PRO only
+    requiresAuth: true,
+    requiresPro: true,
+    free: false,
+    freeUnlimited: false,
     
     // Additional capabilities
     experimental: false,
@@ -151,7 +151,7 @@ export const models: ModelConfig[] = [
     contextWindow: 131072,
     
     // UI
-    category: 'Free',
+    category: 'Pro',
     tags: ['fast', 'reasoning', 'new'],
     
     // Reasoning configuration
@@ -185,10 +185,10 @@ export const models: ModelConfig[] = [
     streaming: true,
     structuredOutput: true,
     
-    // Access
-    requiresAuth: true,
-    requiresPro: true,
-    free: false,
+    // Access - FREE for all users (guests and authenticated)
+    requiresAuth: false,
+    requiresPro: false,
+    free: true,
     freeUnlimited: false,
     
     // Additional capabilities
@@ -200,7 +200,7 @@ export const models: ModelConfig[] = [
     contextWindow: 131072,
     
     // UI
-    category: 'Pro',
+    category: 'Free',
     tags: ['smart', 'reasoning'],
     
     // Reasoning configuration

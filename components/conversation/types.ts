@@ -45,6 +45,7 @@ export interface ConversationInputProps {
   chatMode: string;
   onChatModeChange: (mode: string) => void;
   contextUsage?: ContextUsage | null;
+  showSelectors?: boolean;
 }
 
 export interface BaseMessage {
