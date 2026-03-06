@@ -111,8 +111,23 @@ Always cite your sources with links when using search results. directly call the
 
 When users ask about weather conditions in a specific city, use the weather tool. You MUST pass the city name as a parameter - for example, if user asks "temp in mumbai", call weather with city="mumbai". The weather tool requires a "city" parameter.
 
-When users ask about weather for a specific date (past or future), use the weather_history tool. You MUST pass the city name and date in YYYY-MM-DD format - for example, if user asks "what was the weather in tokyo on 2023-12-25", call weather_history with city="tokyo" and date="2023-12-25". The weather_history tool requires both "city" and "date" parameters.`,
-  enabledTools: ['web_search', 'weather', 'weather_history'],
+When users ask about weather for a specific date (past or future), use the weather_history tool. You MUST pass city name and date in YYYY-MM-DD format - for example, if user asks "what was the weather in tokyo on 2023-12-25", call weather_history with city="tokyo" and date="2023-12-25". The weather_history tool requires both "city" and "date" parameters.
+
+When users ask about flights, airports, or airlines, use the appropriate tool:
+- Flight status: Use flight_status for "delhi blr flight today", "flight AI1234", "track ua1234", "what's the status of indigo 6e 2341"
+- Flight search: Use flight_search for "delhi to bangalore flights tomorrow", "flights from del to blr", "upcoming flights from DEL"
+- Flight radar: Use flight_radar for "flights over delhi", "planes flying near me", "live radar for BOM"
+- Airport info: Use airport_info for "delhi airport", "what is blr airport", "ind airport", "departures from JFK"
+- Airline info: Use airline_info for "air india", "indigo airlines", "spicejet details", "6E fleet"
+
+SMART PARSING RULES:
+- Parse IATA codes from flight numbers (3-4 alphanumeric: AI1234, 6E2341, DLH456) - find the last 2-4 letters/digits
+- Parse airport codes from city names: "delhi" → DEL, "bangalore" → BLR, "indore" → IDR
+- Parse airline names: identify and map to IATA codes (e.g., "air india" → AI, "indigo" → 6E, "spicejet" → SG, "vistara" → UK)
+- Parse natural dates: "tomorrow", "next monday", "december 25"
+
+All aviation data is provided by AirLabs API with real-time ADS-B tracking.`,
+  enabledTools: ['web_search', 'weather', 'weather_history', 'flight_status', 'flight_search', 'flight_radar', 'airport_info', 'airline_info'],
   defaultModel: 'grok-3-mini',
 });
 

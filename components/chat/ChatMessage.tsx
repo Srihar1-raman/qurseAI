@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { useTheme } from '@/lib/theme-provider';
 import { Icon } from '@/components/icons';
 import MarkdownRenderer from '@/components/markdown';
@@ -11,8 +12,17 @@ import { WeatherCard } from './WeatherCard';
 import { StockCard } from './StockCard';
 import { StockChart } from './StockChart';
 import { CompanyInfoCard } from './CompanyInfoCard';
+import { FlightStatusCard } from './FlightStatusCard';
+import { FlightSearchCard } from './FlightSearchCard';
+import { AirportInfoCard } from './AirportInfoCard';
+import { AirlineInfoCard } from './AirlineInfoCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
+
+const FlightRadarCard = dynamic(() => import('./FlightRadarCard').then(mod => ({ default: mod.FlightRadarCard })), {
+  ssr: false,
+  loading: () => <div className="flight-radar-card"><div className="flight-radar-empty">Loading radar...</div></div>
+});
 
 interface ToolExecution {
   toolName: string;
@@ -144,6 +154,116 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
         city: e.args && typeof e.args.city === 'string' ? e.args.city : '',
         status: e.status,
         result: e.result as WeatherHistoryResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Flight status executions
+  const flightStatusExecutions = React.useMemo(() => {
+    type FlightStatusResult = {
+      flightNumber: string;
+      airline: { name: string; iataCode: string; logoUrl: string | null };
+      route: { origin: { code: string; city: string; country: string };
+        destination: { code: string; city: string; country: string };
+      };
+      status: { code: string; display: string; color: string; isLanded: boolean; isDelayed: boolean; isCancelled: boolean };
+      times: { scheduled: { departure: string | undefined; arrival: string | undefined };
+        estimated: { departure: string | undefined; arrival: string | undefined } | null;
+        actual: { departure: string | undefined; arrival: string | undefined } | null;
+        local: { departure: string | undefined; arrival: string | undefined };
+        utc: { departure: string | null; arrival: string | null };
+      } | null;
+      duration: string | null;
+      aircraft: { type: string; code: string };
+      gate: { departure: string; arrival: string };
+      terminal: { departure: string; arrival: string };
+      isLive: boolean;
+      lastUpdate: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'flight_status')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        flightNumber: e.args && typeof e.args.flight === 'string' ? e.args.flight : '',
+        status: e.status,
+        result: e.result as FlightStatusResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Flight search executions
+  const flightSearchExecutions = React.useMemo(() => {
+    type FlightSearchResult = {
+      flights: any[];
+      total: number;
+      hasMore: boolean;
+      query: { origin?: string; destination?: string; airline?: string };
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'flight_search')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as FlightSearchResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Flight radar executions
+  const flightRadarExecutions = React.useMemo(() => {
+    type FlightRadarResult = {
+      flights: any[];
+      total: number;
+      query: { airport?: string; bbox?: string };
+      lastUpdate: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'flight_radar')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as FlightRadarResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Airport info executions
+  const airportInfoExecutions = React.useMemo(() => {
+    type AirportInfoResult = {
+      airport: { code: string; name: string };
+      flights: any[];
+      total: number;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'airport_info')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as AirportInfoResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Airline info executions
+  const airlineInfoExecutions = React.useMemo(() => {
+    type AirlineInfoResult = {
+      airline: { iataCode: string; icaoCode: string; name: string };
+      fleet: any[];
+      fleetStats: {
+        totalAircraft: number;
+        averageAge: number | null;
+        aircraftTypes: [string, number][];
+        manufacturers: [string, number][];
+      };
+      total: number;
+      hasMore: boolean;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'airline_info')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as AirlineInfoResult | undefined,
       }));
   }, [toolExecutions]);
 
@@ -400,6 +520,88 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                     windSpeed: historyData.windSpeed,
                   }}
                   showForecast={false}
+                />
+              );
+            })}
+
+            {/* Flight status cards */}
+            {flightStatusExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              const flightData = execution.result as any;
+
+              return (
+                <FlightStatusCard
+                  key={execution.toolCallId}
+                  data={flightData}
+                />
+              );
+            })}
+
+            {/* Flight search cards */}
+            {flightSearchExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              return (
+                <FlightSearchCard
+                  key={execution.toolCallId}
+                  data={execution.result as any}
+                />
+              );
+            })}
+
+            {/* Flight radar cards */}
+            {flightRadarExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              return (
+                <FlightRadarCard
+                  key={execution.toolCallId}
+                  data={execution.result as any}
+                />
+              );
+            })}
+
+            {/* Airport info cards */}
+            {airportInfoExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              return (
+                <AirportInfoCard
+                  key={execution.toolCallId}
+                  data={execution.result as any}
+                />
+              );
+            })}
+
+            {/* Airline info cards */}
+            {airlineInfoExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              return (
+                <AirlineInfoCard
+                  key={execution.toolCallId}
+                  data={execution.result as any}
                 />
               );
             })}

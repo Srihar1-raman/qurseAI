@@ -20,6 +20,11 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { webSearchTool } from '@/lib/tools/web-search';
 import { weatherTool } from '@/lib/tools/weather';
 import { weatherHistoryTool } from '@/lib/tools/weather-history';
+import { flightStatusTool } from '@/lib/tools/flight-status';
+import { flightSearchTool } from '@/lib/tools/flight-search';
+import { flightRadarTool } from '@/lib/tools/flight-radar';
+import { airportInfoTool } from '@/lib/tools/airport-info';
+import { airlineInfoTool } from '@/lib/tools/airline-info';
 import {
   stockQuoteTool,
   stockHistoryTool,
@@ -193,6 +198,21 @@ export function buildStreamConfig(config: StreamConfig) {
       }
       if (modeConfig.enabledTools.includes('weather_history')) {
         tools.weather_history = weatherHistoryTool;
+      }
+      if (modeConfig.enabledTools.includes('flight_status')) {
+        tools.flight_status = flightStatusTool;
+      }
+      if (modeConfig.enabledTools.includes('flight_search')) {
+        tools.flight_search = flightSearchTool;
+      }
+      if (modeConfig.enabledTools.includes('flight_radar')) {
+        tools.flight_radar = flightRadarTool;
+      }
+      if (modeConfig.enabledTools.includes('airport_info')) {
+        tools.airport_info = airportInfoTool;
+      }
+      if (modeConfig.enabledTools.includes('airline_info')) {
+        tools.airline_info = airlineInfoTool;
       }
       if (modeConfig.enabledTools.includes('stock_quote')) {
         tools.stock_quote = stockQuoteTool;
