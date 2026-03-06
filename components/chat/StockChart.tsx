@@ -44,16 +44,21 @@ export function StockChart({ symbol, data, priceChange }: StockChartProps) {
   return (
     <div className="stock-chart">
       <div className="stock-chart-header">
-        <span className="stock-chart-symbol">{symbol}</span>
+        <div className="stock-chart-title">
+          <span className="stock-chart-symbol">{symbol}</span>
+          <span className={`stock-chart-label ${isPositive ? 'positive' : 'negative'}`}>
+            {isPositive ? '+' : ''}{priceChange.toFixed(2)}%
+          </span>
+        </div>
         <span className="stock-chart-period">Last 90 Days</span>
       </div>
       
       <div className="stock-chart-container">
-        <ResponsiveContainer width="100%" height={200}>
+        <ResponsiveContainer width="100%" height={220}>
           <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id={`gradient-${symbol}`} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={gradientColor} stopOpacity={0.3} />
+                <stop offset="5%" stopColor={gradientColor} stopOpacity={0.35} />
                 <stop offset="95%" stopColor={gradientColor} stopOpacity={0} />
               </linearGradient>
             </defs>
@@ -75,14 +80,15 @@ export function StockChart({ symbol, data, priceChange }: StockChartProps) {
               fontSize={11}
               tickLine={false}
               axisLine={false}
-              width={50}
+              width={55}
             />
             <Tooltip
               contentStyle={{
                 backgroundColor: 'var(--color-bg)',
                 border: '1px solid var(--color-border)',
-                borderRadius: '8px',
+                borderRadius: '12px',
                 fontSize: '12px',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
               }}
               labelFormatter={(label) => formatTooltipDate(label as string)}
               formatter={(value) => [`$${Number(value).toFixed(2)}`, 'Price']}
@@ -91,9 +97,9 @@ export function StockChart({ symbol, data, priceChange }: StockChartProps) {
               type="monotone"
               dataKey="close"
               stroke={strokeColor}
-              strokeWidth={2}
+              strokeWidth={2.5}
               fill={`url(#gradient-${symbol})`}
-              animationDuration={500}
+              animationDuration={800}
             />
           </AreaChart>
         </ResponsiveContainer>

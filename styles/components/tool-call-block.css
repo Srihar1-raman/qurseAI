@@ -465,34 +465,36 @@
     =================================== */
 
 .weather-card {
-  background: var(--color-bg);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 197, 253, 0.04) 100%);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 20px;
   margin-bottom: 12px;
-  max-width: 320px;
+  width: 100%;
+  max-width: 100%;
+  backdrop-filter: blur(8px);
 }
 
-.weather-card-header {
-  margin-bottom: 12px;
+.weather-card-top {
+  margin-bottom: 16px;
 }
 
 .weather-card-location {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-wrap: wrap;
 }
 
 .weather-card-location-icon {
   width: 14px;
   height: 14px;
-  color: var(--color-text-muted);
+  color: var(--color-primary);
 }
 
 .weather-card-city {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--color-text);
 }
 
@@ -506,57 +508,39 @@
   color: var(--color-text-muted);
 }
 
-.weather-card-body {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.weather-card-main {
+.weather-card-main-row {
   display: flex;
   align-items: center;
   gap: 16px;
+  margin-bottom: 16px;
 }
 
-.weather-card-icon-wrapper {
+.weather-card-icon-box {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.weather-card-icon {
-  width: 48px;
-  height: 48px;
-  color: var(--color-text-secondary);
+.weather-card-main-icon {
+  width: 40px;
+  height: 40px;
+  color: white;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
 }
 
-.weather-card-icon.sunny {
-  color: #f59e0b;
-}
-
-.weather-card-icon.cloudy {
-  color: #64748b;
-}
-
-.weather-card-icon.rainy {
-  color: #3b82f6;
-}
-
-.weather-card-icon.snowy {
-  color: #a5f3fc;
-}
-
-.weather-card-icon.stormy {
-  color: #8b5cf6;
-}
-
-.weather-card-icon.foggy {
-  color: #94a3b8;
+.weather-card-temp-section {
+  flex: 1;
 }
 
 .weather-card-temp {
   display: flex;
   align-items: flex-start;
+  line-height: 1;
 }
 
 .weather-card-temp-value {
@@ -576,30 +560,38 @@
 .weather-card-description {
   font-size: 16px;
   color: var(--color-text-secondary);
+  font-weight: 500;
 }
 
 .weather-card-details {
   display: flex;
+  align-items: center;
   gap: 20px;
-  padding-top: 12px;
-  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .weather-card-detail {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
+}
+
+.weather-card-detail-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--color-border);
 }
 
 .weather-card-detail-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--color-text-muted);
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
 }
 
 .weather-card-detail-value {
-  font-size: 14px;
-  font-weight: 500;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--color-text);
 }
 
@@ -616,27 +608,43 @@
 .stock-card {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 20px;
   margin-bottom: 12px;
-  max-width: 380px;
+  width: 100%;
+  max-width: 100%;
+  backdrop-filter: blur(8px);
 }
 
 .stock-card-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
 }
 
 .stock-card-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stock-card-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: contain;
+  background: var(--color-bg-secondary);
+}
+
+.stock-card-title-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
 .stock-card-symbol {
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: var(--color-text);
 }
@@ -650,36 +658,43 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.stock-card-change.positive {
-  color: #10b981;
-  background: rgba(16, 185, 129, 0.1);
-}
-
-.stock-card-change.negative {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.1);
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .stock-card-change-icon {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
+  color: white;
 }
 
-.stock-card-price {
-  margin-bottom: 12px;
+.stock-card-price-section {
+  margin-bottom: 16px;
 }
 
 .stock-card-price-value {
-  font-size: 36px;
-  font-weight: 600;
+  font-size: 42px;
+  font-weight: 700;
   color: var(--color-text);
   display: block;
+  line-height: 1;
+}
+
+.stock-card-price-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.stock-card-change-absolute {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
 }
 
 .stock-card-price-label {
@@ -690,9 +705,64 @@
 .stock-card-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  padding-top: 12px;
-  border-top: 1px solid var(--color-border);
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+@media (max-width: 480px) {
+  .stock-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stock-chart-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .company-info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .weather-card-details {
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .weather-card-detail-divider {
+    display: none;
+  }
+  
+  .weather-card,
+  .stock-card,
+  .stock-chart,
+  .company-info-card,
+  .crypto-card,
+  .forex-card {
+    padding: 16px;
+  }
+  
+  .stock-card-price-value,
+  .weather-card-temp-value {
+    font-size: 32px;
+  }
+  
+  .company-info-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .company-info-logo {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .stock-chart-container {
+    margin: 0 -4px;
+  }
+  
+  .stock-chart-container .recharts-wrapper {
+    font-size: 10px;
+  }
 }
 
 .stock-card-stat {
@@ -773,27 +843,51 @@
 .stock-chart {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 20px;
   margin-bottom: 12px;
-  max-width: 450px;
+  width: 100%;
+  max-width: 100%;
 }
 
 .stock-chart-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.stock-chart-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .stock-chart-symbol {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 18px;
+  font-weight: 700;
   color: var(--color-text);
 }
 
+.stock-chart-label {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 6px;
+}
+
+.stock-chart-label.positive {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+}
+
+.stock-chart-label.negative {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.12);
+}
+
 .stock-chart-period {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--color-text-muted);
 }
 
@@ -804,27 +898,28 @@
 .stock-chart-stats {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid var(--color-border);
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .stock-chart-stat {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .stock-chart-stat-label {
-  font-size: 10px;
+  font-size: 11px;
   color: var(--color-text-muted);
   text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .stock-chart-stat-value {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 14px;
+  font-weight: 600;
   color: var(--color-text);
 }
 
@@ -834,29 +929,31 @@
     =================================== */
 
 .crypto-card {
-  background: var(--color-bg);
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(147, 197, 253, 0.05) 100%);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 20px;
   margin-bottom: 12px;
-  max-width: 250px;
+  width: 100%;
+  max-width: 100%;
+  backdrop-filter: blur(8px);
 }
 
 .crypto-card-header {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .crypto-card-symbol {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--color-text);
 }
 
 .crypto-card-price {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 32px;
+  font-weight: 700;
   color: var(--color-text);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .crypto-card-updated {
@@ -870,29 +967,31 @@
     =================================== */
 
 .forex-card {
-  background: var(--color-bg);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(96, 165, 250, 0.05) 100%);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 20px;
   margin-bottom: 12px;
-  max-width: 250px;
+  width: 100%;
+  max-width: 100%;
+  backdrop-filter: blur(8px);
 }
 
 .forex-card-header {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 
 .forex-card-symbol {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--color-text);
 }
 
 .forex-card-rate {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 32px;
+  font-weight: 700;
   color: var(--color-text);
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
 .forex-card-updated {
@@ -908,10 +1007,176 @@
 .company-info-card {
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 16px;
+  border-radius: 16px;
+  padding: 24px;
   margin-bottom: 12px;
-  max-width: 400px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.company-info-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.company-info-logo {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  object-fit: contain;
+  background: var(--color-bg-secondary);
+  padding: 4px;
+}
+
+.company-info-title {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.company-info-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.company-info-symbol {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.company-info-description {
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.company-info-description p {
+  margin: 0;
+}
+
+.company-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.company-info-stat-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+}
+
+.company-info-stat-card-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.company-info-stat-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.company-info-stat-card-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.company-info-stat-card-value {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.company-info-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.company-info-footer-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.company-info-footer-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.company-info-footer-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.company-info-footer-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.company-info-footer-link:hover {
+  text-decoration: underline;
+}
+
+.company-info-footer-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ===================================
+    TOOL CARDS CONTAINER
+    Center all tool result cards
+    =================================== */
+
+.tool-cards-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.tool-cards-container .weather-card,
+.tool-cards-container .stock-card,
+.tool-cards-container .stock-chart,
+.tool-cards-container .company-info-card,
+.tool-cards-container .crypto-card,
+.tool-cards-container .forex-card {
+  width: 100%;
+  max-width: 100%;
+  margin-left: 0;
+  margin-right: 0;
+}
+.tool-cards-container .company-info-card,
+.tool-cards-container .crypto-card,
+.tool-cards-container .forex-card {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .company-info-header {
