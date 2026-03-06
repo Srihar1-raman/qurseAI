@@ -22,7 +22,12 @@ import { weatherTool } from '@/lib/tools/weather';
 import {
   stockQuoteTool,
   stockHistoryTool,
+  stockIntradayTool,
   companyInfoTool,
+  stockNewsTool,
+  stockEarningsTool,
+  stockComparisonTool,
+  marketIndicesTool,
   cryptoPriceTool,
   forexRateTool,
   stockSearchTool,
@@ -196,8 +201,23 @@ export function buildStreamConfig(config: StreamConfig) {
       if (modeConfig.enabledTools.includes('stock_history')) {
         tools.stock_history = stockHistoryTool;
       }
+      if (modeConfig.enabledTools.includes('stock_intraday')) {
+        tools.stock_intraday = stockIntradayTool;
+      }
       if (modeConfig.enabledTools.includes('company_info')) {
         tools.company_info = companyInfoTool;
+      }
+      if (modeConfig.enabledTools.includes('stock_news')) {
+        tools.stock_news = stockNewsTool;
+      }
+      if (modeConfig.enabledTools.includes('stock_earnings')) {
+        tools.stock_earnings = stockEarningsTool;
+      }
+      if (modeConfig.enabledTools.includes('stock_comparison')) {
+        tools.stock_comparison = stockComparisonTool;
+      }
+      if (modeConfig.enabledTools.includes('market_indices')) {
+        tools.market_indices = marketIndicesTool;
       }
       if (modeConfig.enabledTools.includes('crypto_price')) {
         tools.crypto_price = cryptoPriceTool;

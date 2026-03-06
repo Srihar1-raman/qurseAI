@@ -476,6 +476,9 @@
 }
 
 .weather-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: 16px;
 }
 
@@ -484,6 +487,36 @@
   align-items: center;
   gap: 6px;
   flex-wrap: wrap;
+}
+
+.weather-unit-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.weather-unit-toggle:hover {
+  background: var(--color-bg-hover);
+}
+
+.weather-unit-toggle span {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.weather-unit-toggle span.active {
+  background: var(--color-primary);
+  color: white;
 }
 
 .weather-card-location-icon {
@@ -598,6 +631,110 @@
 .weather-card-detail-label {
   font-size: 12px;
   color: var(--color-text-muted);
+}
+
+/* ===================================
+    WEATHER FORECAST
+    =================================== */
+
+.weather-forecast-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.weather-forecast-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.weather-forecast-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.weather-forecast-chart {
+  margin: 0 -8px 16px -8px;
+}
+
+.weather-forecast-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.weather-forecast-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.weather-forecast-day:hover {
+  background: var(--color-bg-hover);
+  transform: translateY(-2px);
+}
+
+.weather-forecast-day-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.weather-forecast-day-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.weather-forecast-day-temps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.weather-forecast-day-high {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.weather-forecast-day-low {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.weather-forecast-day-precip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: #3b82f6;
+  margin-top: 2px;
+}
+
+.precip-icon {
+  width: 10px;
+  height: 10px;
+}
+
+@media (max-width: 480px) {
+  .weather-forecast-days {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .weather-forecast-day:nth-child(n+5) {
+    display: none;
+  }
 }
 
 /* ===================================
@@ -1318,4 +1455,412 @@
 .company-info-website-icon {
   width: 14px;
   height: 14px;
+}
+
+/* ===================================
+    MARKET INDICES CARD
+    =================================== */
+
+.market-indices-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.market-indices-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.market-indices-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--color-primary);
+}
+
+.market-indices-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.market-indices-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.market-index-item {
+  padding: 16px;
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+}
+
+.market-index-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.index-country-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+}
+
+.market-index-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.market-index-price {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.market-index-change {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.market-index-change.positive {
+  color: #10b981;
+}
+
+.market-index-change.negative {
+  color: #ef4444;
+}
+
+.market-index-change-icon {
+  width: 14px;
+  height: 14px;
+}
+
+/* ===================================
+    STOCK COMPARISON CARD
+    =================================== */
+
+.stock-comparison-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.stock-comparison-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stock-comparison-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--color-primary);
+}
+
+.stock-comparison-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.stock-comparison-table {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.stock-comparison-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1.5fr;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+  align-items: center;
+}
+
+.stock-comparison-row.header {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stock-comparison-cell {
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.stock-comparison-cell.symbol {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stock-comparison-symbol {
+  font-weight: 700;
+}
+
+.stock-comparison-exchange {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.stock-comparison-cell.price {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.stock-comparison-cell.change {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.stock-comparison-cell.change.positive {
+  color: #10b981;
+}
+
+.stock-comparison-cell.change.negative {
+  color: #ef4444;
+}
+
+.cell-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.stock-comparison-cell.volume {
+  color: var(--color-text-secondary);
+}
+
+.stock-comparison-cell.range {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.stock-comparison-bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stock-comparison-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bar-label {
+  width: 60px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.bar-container {
+  flex: 1;
+  height: 8px;
+  background: var(--color-bg-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.3s ease;
+}
+
+.bar.positive {
+  background: linear-gradient(90deg, #10b981, #34d399);
+}
+
+.bar.negative {
+  background: linear-gradient(90deg, #ef4444, #f87171);
+}
+
+.bar-value {
+  width: 70px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-align: right;
+}
+
+/* ===================================
+    STOCK NEWS CARD
+    =================================== */
+
+.stock-news-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.stock-news-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stock-news-icon {
+  width: 22px;
+  height: 22px;
+  color: var(--color-primary);
+}
+
+.stock-news-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.stock-news-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stock-news-item {
+  display: block;
+  padding: 16px;
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.stock-news-item:hover {
+  background: var(--color-bg-hover);
+  transform: translateY(-2px);
+}
+
+.stock-news-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.stock-news-source {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-transform: uppercase;
+}
+
+.stock-news-date {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.stock-news-item-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.4;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.stock-news-item-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.stock-news-sentiment {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.news-sentiment-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.news-sentiment-icon.positive {
+  color: #10b981;
+}
+
+.news-sentiment-icon.negative {
+  color: #ef4444;
+}
+
+.news-sentiment-icon.neutral {
+  color: var(--color-text-muted);
+}
+
+.stock-news-sentiment.positive {
+  color: #10b981;
+}
+
+.stock-news-sentiment.negative {
+  color: #ef4444;
+}
+
+.stock-news-sentiment.neutral {
+  color: var(--color-text-muted);
+}
+
+.stock-news-external {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+}
+
+/* ===================================
+    RESPONSIVE
+    =================================== */
+
+@media (max-width: 640px) {
+  .market-indices-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .stock-comparison-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  
+  .stock-comparison-row.header {
+    display: none;
+  }
+  
+  .stock-comparison-cell:nth-child(4),
+  .stock-comparison-cell:nth-child(5) {
+    display: none;
+  }
 }

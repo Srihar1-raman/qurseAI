@@ -11,6 +11,9 @@ import { WeatherCard } from './WeatherCard';
 import { StockCard } from './StockCard';
 import { StockChart } from './StockChart';
 import { CompanyInfoCard } from './CompanyInfoCard';
+import { MarketIndices } from './MarketIndices';
+import { StockComparison } from './StockComparison';
+import { StockNews } from './StockNews';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -109,6 +112,15 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       description: string;
       humidity: number;
       windSpeed: number;
+      forecast?: Array<{
+        date: string;
+        day: string;
+        maxTemp: number;
+        minTemp: number;
+        description: string;
+        icon: string;
+        precipitation: number;
+      }>;
     } | { error: string };
 
     return toolExecutions
@@ -251,13 +263,90 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       }));
   }, [toolExecutions]);
 
+  // Market indices executions
+  const marketIndicesExecutions = React.useMemo(() => {
+    type MarketIndicesResult = {
+      indices: Array<{
+        symbol: string;
+        name: string;
+        country: string;
+        price: number;
+        change: number;
+        changePercent: number;
+        volume: number;
+      }>;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'market_indices')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as MarketIndicesResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Stock comparison executions
+  const stockComparisonExecutions = React.useMemo(() => {
+    type StockComparisonResult = {
+      comparisons: Array<{
+        symbol: string;
+        exchange: string;
+        price: number;
+        change: number;
+        changePercent: number;
+        volume: number;
+        high: number;
+        low: number;
+      }>;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'stock_comparison')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as StockComparisonResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Stock news executions
+  const stockNewsExecutions = React.useMemo(() => {
+    type StockNewsResult = {
+      news: Array<{
+        title: string;
+        publishedDate: string;
+        site: string;
+        text: string;
+        url: string;
+        sentiment: string;
+      }>;
+      symbol: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'stock_news')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as StockNewsResult | undefined,
+      }));
+  }, [toolExecutions]);
+
   const otherToolExecutions = React.useMemo(() => {
     return toolExecutions.filter(e => 
       e.toolName !== 'web_search' && 
       e.toolName !== 'weather' &&
       e.toolName !== 'stock_quote' &&
       e.toolName !== 'stock_history' &&
+      e.toolName !== 'stock_intraday' &&
       e.toolName !== 'company_info' &&
+      e.toolName !== 'stock_news' &&
+      e.toolName !== 'stock_earnings' &&
+      e.toolName !== 'stock_comparison' &&
+      e.toolName !== 'market_indices' &&
+      e.toolName !== 'nse_quote' &&
+      e.toolName !== 'bse_quote' &&
       e.toolName !== 'crypto_price' &&
       e.toolName !== 'forex_rate'
     );
@@ -399,6 +488,46 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                     Last updated: {execution.result.lastRefreshed}
                   </div>
                 </div>
+              );
+            })}
+
+            {/* Market indices */}
+            {marketIndicesExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+              
+              return (
+                <MarketIndices
+                  key={execution.toolCallId}
+                  indices={execution.result.indices}
+                />
+              );
+            })}
+
+            {/* Stock comparison */}
+            {stockComparisonExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+              
+              return (
+                <StockComparison
+                  key={execution.toolCallId}
+                  comparisons={execution.result.comparisons}
+                />
+              );
+            })}
+
+            {/* Stock news */}
+            {stockNewsExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+              
+              return (
+                <StockNews
+                  key={execution.toolCallId}
+                  news={execution.result.news}
+                  symbol={execution.result.symbol}
+                />
               );
             })}
           </div>
