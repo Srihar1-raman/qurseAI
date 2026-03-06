@@ -1460,7 +1460,7 @@
    =================================== */
 
 .flight-search-card {
-  background: var(--color-bg);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(99, 102, 241, 0.04) 100%);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 20px;
@@ -1485,7 +1485,7 @@
   align-items: flex-start;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .flight-search-header-left {
@@ -1497,7 +1497,7 @@
 .flight-search-header-icon {
   width: 20px;
   height: 20px;
-  color: var(--color-primary);
+  color: #3b82f6;
 }
 
 .flight-search-title {
@@ -1522,24 +1522,48 @@
 
 .flight-search-flights {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  max-height: 500px;
-  overflow-y: auto;
+  flex-direction: row;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.flight-search-flights::-webkit-scrollbar {
+  height: 6px;
+}
+
+.flight-search-flights::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.flight-search-flights::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.3);
+  border-radius: 3px;
+}
+
+.flight-search-flights::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5);
 }
 
 .flight-search-flight {
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 14px;
   padding: 16px;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  min-width: 320px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
 .flight-search-flight:hover {
-  background: var(--color-bg);
-  border-color: var(--color-border);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 4px 20px rgba(59, 130, 246, 0.1);
+  transform: translateY(-2px);
 }
 
 .flight-search-flight-main {
@@ -1617,9 +1641,10 @@
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 12px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 197, 253, 0.02) 100%);
-  border-radius: 10px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(99, 102, 241, 0.06) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(59, 130, 246, 0.15);
 }
 
 .flight-search-flight-point {
@@ -1628,39 +1653,44 @@
 }
 
 .flight-search-flight-code {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--color-text);
 }
 
 .flight-search-flight-arrow {
-  width: 18px;
-  height: 18px;
-  color: var(--color-text-muted);
+  width: 20px;
+  height: 20px;
+  color: #3b82f6;
 }
 
 .flight-search-flight-duration {
   font-size: 13px;
   color: var(--color-text-secondary);
-  margin-left: 8px;
+  margin-left: auto;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
 }
 
 .flight-search-flight-details {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 .flight-search-flight-time {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .flight-search-time-label {
   font-size: 10px;
   color: var(--color-text-muted);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -1674,20 +1704,20 @@
 .flight-search-flight-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .flight-search-info-label {
   font-size: 10px;
   color: var(--color-text-muted);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .flight-search-info-value {
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-text);
 }
 
@@ -1746,8 +1776,8 @@
    =================================== */
 
 .flight-radar-card {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(16, 185, 129, 0.04) 100%);
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(6, 182, 212, 0.06) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 12px;
@@ -2014,7 +2044,7 @@
    =================================== */
 
 .airport-info-card {
-  background: var(--color-bg);
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.08) 0%, rgba(168, 85, 247, 0.04) 100%);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 20px;
@@ -2039,7 +2069,7 @@
   align-items: flex-start;
   margin-bottom: 16px;
   padding-bottom: 16px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .airport-info-header-left {
@@ -2051,7 +2081,7 @@
 .airport-info-header-icon {
   width: 20px;
   height: 20px;
-  color: var(--color-primary);
+  color: #ec4899;
 }
 
 .airport-info-name {
@@ -2093,30 +2123,54 @@
 
 .airport-info-flights {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  max-height: 450px;
-  overflow-y: auto;
+  flex-direction: row;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.airport-info-flights::-webkit-scrollbar {
+  height: 6px;
+}
+
+.airport-info-flights::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.airport-info-flights::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.3);
+  border-radius: 3px;
+}
+
+.airport-info-flights::-webkit-scrollbar-thumb:hover {
+  background: rgba(236, 72, 153, 0.5);
 }
 
 .airport-info-flight {
-  background: var(--color-bg-secondary);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 14px;
   padding: 14px;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  min-width: 280px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
 .airport-info-flight:hover {
-  background: var(--color-bg);
-  border-color: var(--color-border);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(236, 72, 153, 0.3);
+  box-shadow: 0 4px 20px rgba(236, 72, 153, 0.1);
+  transform: translateY(-2px);
 }
 
 .airport-info-flight-main {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .airport-info-flight-header {
@@ -2149,8 +2203,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 12px;
-  border-radius: 16px;
+  padding: 5px 12px;
+  border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
   color: white;
@@ -2183,19 +2237,20 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.05) 0%, rgba(147, 197, 253, 0.02) 100%);
-  border-radius: 8px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(168, 85, 247, 0.05) 100%);
+  border-radius: 10px;
+  border: 1px solid rgba(236, 72, 153, 0.15);
 }
 
 .airport-info-route-arrow {
   width: 18px;
   height: 18px;
-  color: var(--color-text-muted);
+  color: #ec4899;
 }
 
 .airport-info-destination-code {
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--color-text);
 }
@@ -2203,7 +2258,10 @@
 .airport-info-duration {
   font-size: 13px;
   color: var(--color-text-secondary);
-  margin-left: 8px;
+  margin-left: auto;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
 }
 
 .airport-info-flight-details {
@@ -2215,13 +2273,13 @@
 .airport-info-detail-item {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .airport-info-detail-label {
   font-size: 10px;
   color: var(--color-text-muted);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -2260,8 +2318,8 @@
    =================================== */
 
 .airline-info-card {
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 197, 253, 0.04) 100%);
-  border: 1px solid rgba(59, 130, 246, 0.2);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(239, 68, 68, 0.06) 100%);
+  border: 1px solid rgba(245, 158, 11, 0.2);
   border-radius: 16px;
   padding: 20px;
   margin-bottom: 12px;
@@ -2297,7 +2355,7 @@
 .airline-info-header-icon {
   width: 22px;
   height: 22px;
-  color: var(--color-primary);
+  color: #f59e0b;
 }
 
 .airline-info-name {
@@ -2320,20 +2378,21 @@
   align-items: center;
   gap: 8px;
   padding: 10px 16px;
-  background: rgba(59, 130, 246, 0.1);
-  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15) 0%, rgba(239, 68, 68, 0.08) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(245, 158, 11, 0.2);
 }
 
 .airline-info-fleet-value {
-  font-size: 20px;
+  font-size: 24px;
   font-weight: 700;
-  color: #3b82f6;
+  color: #f59e0b;
 }
 
 .airline-info-fleet-label {
   font-size: 12px;
   color: var(--color-text);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .airline-info-more {
@@ -2354,11 +2413,11 @@
 .airline-info-stat-box {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px;
-  background: var(--color-bg);
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
+  gap: 6px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .airline-info-stat-label {
@@ -2370,31 +2429,55 @@
 }
 
 .airline-info-stat-value {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--color-text);
 }
 
 .airline-info-fleet {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 12px;
-  max-height: 600px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.airline-info-fleet::-webkit-scrollbar {
+  height: 6px;
+}
+
+.airline-info-fleet::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 3px;
+}
+
+.airline-info-fleet::-webkit-scrollbar-thumb {
+  background: rgba(245, 158, 11, 0.3);
+  border-radius: 3px;
+}
+
+.airline-info-fleet::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 158, 11, 0.5);
 }
 
 .airline-info-aircraft {
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 14px;
   padding: 14px;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
+  min-width: 340px;
+  flex-shrink: 0;
+  scroll-snap-align: start;
 }
 
 .airline-info-aircraft:hover {
-  background: var(--color-bg-secondary);
-  border-color: rgba(59, 130, 246, 0.3);
-  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(245, 158, 11, 0.3);
+  box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+  transform: translateY(-2px);
 }
 
 .airline-info-aircraft-header {
@@ -2403,7 +2486,7 @@
   justify-content: space-between;
   margin-bottom: 10px;
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 .airline-info-aircraft-title {
@@ -2428,7 +2511,7 @@
   font-size: 12px;
   color: var(--color-text-muted);
   padding: 3px 8px;
-  background: var(--color-bg-secondary);
+  background: rgba(255, 255, 255, 0.05);
   border-radius: 6px;
 }
 
@@ -2555,7 +2638,8 @@
 
 @media (max-width: 768px) {
   .airline-info-fleet {
-    grid-template-columns: 1fr;
+    flex-direction: row;
+    grid-template-columns: unset;
   }
 
   .airline-info-stats-grid {
@@ -2563,7 +2647,7 @@
   }
 
   .airline-info-aircraft-specs {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -2572,7 +2656,7 @@
    =================================== */
 
 .flight-status-card {
-  background: var(--color-bg);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(99, 102, 241, 0.04) 100%);
   border: 1px solid var(--color-border);
   border-radius: 16px;
   padding: 20px;
@@ -2654,22 +2738,23 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 24px;
+  gap: 32px;
   margin-bottom: 20px;
-  padding: 16px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 197, 253, 0.04) 100%);
-  border-radius: 12px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(99, 102, 241, 0.08) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(139, 92, 246, 0.2);
 }
 
 .flight-status-route-point {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
 }
 
 .flight-status-code {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 700;
   color: var(--color-text);
 }
@@ -2685,9 +2770,9 @@
 }
 
 .flight-status-arrow-icon {
-  width: 20px;
-  height: 20px;
-  color: var(--color-text-muted);
+  width: 28px;
+  height: 28px;
+  color: #8b5cf6;
 }
 
 .flight-status-times-grid {
@@ -2700,24 +2785,24 @@
 .flight-status-time-box {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px;
-  background: var(--color-bg-secondary);
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
+  gap: 6px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
 }
 
 .flight-status-time-label {
   font-size: 11px;
   color: var(--color-text-muted);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .flight-status-time-value {
-  font-size: 18px;
-  font-weight: 600;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--color-text);
 }
 
@@ -2799,30 +2884,31 @@
 .flight-status-detail {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px;
-  background: var(--color-bg-secondary);
-  border-radius: 10px;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .flight-status-detail-icon {
   width: 18px;
   height: 18px;
-  color: var(--color-primary);
+  color: #8b5cf6;
   flex-shrink: 0;
 }
 
 .flight-status-detail-content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   flex: 1;
 }
 
 .flight-status-detail-label {
   font-size: 11px;
   color: var(--color-text-muted);
-  font-weight: 500;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -2830,16 +2916,17 @@
 .flight-status-detail-value {
   font-size: 14px;
   color: var(--color-text);
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .flight-status-aircraft {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 12px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(147, 197, 253, 0.04) 100%);
-  border-radius: 10px;
+  gap: 10px;
+  padding: 14px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+  border-radius: 12px;
+  border: 1px solid rgba(139, 92, 246, 0.15);
   margin-bottom: 12px;
 }
 
@@ -2921,9 +3008,10 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
-  background: var(--color-bg-secondary);
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
   border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   margin-bottom: 12px;
   font-size: 13px;
   color: var(--color-text-secondary);
@@ -3081,8 +3169,9 @@
 
 .flight-radar-map-container {
   margin-bottom: 16px;
-  border-radius: 0 0 16px 16px;
+  border-radius: 12px;
   overflow: hidden;
+  border: 1px solid rgba(16, 185, 129, 0.2);
 }
 
 .flight-radar-map {
@@ -3144,7 +3233,7 @@
 .airline-info-header-icon {
   width: 22px;
   height: 22px;
-  color: var(--color-primary);
+  color: #f59e0b;
 }
 
 .airline-info-name {
@@ -3243,8 +3332,12 @@
 
 .airline-info-fleet {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  flex-direction: row;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
 }
 
 .airline-info-aircraft {
