@@ -7,6 +7,10 @@ import MarkdownRenderer from '@/components/markdown';
 import { ReasoningBlock } from './ReasoningBlock';
 import { ToolCallBlock } from './ToolCallBlock';
 import { WebSearchResults } from './WebSearchResults';
+import { WeatherCard } from './WeatherCard';
+import { StockCard } from './StockCard';
+import { StockChart } from './StockChart';
+import { CompanyInfoCard } from './CompanyInfoCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -94,8 +98,169 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       }));
   }, [toolExecutions]);
 
+  // Weather executions
+  const weatherExecutions = React.useMemo(() => {
+    type WeatherResult = {
+      city: string;
+      country: string;
+      region?: string | null;
+      temperature: number;
+      unit: 'C' | 'F';
+      description: string;
+      humidity: number;
+      windSpeed: number;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'weather')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        city: e.args && typeof e.args.city === 'string' ? e.args.city : '',
+        status: e.status,
+        result: e.result as WeatherResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Stock executions
+  const stockQuoteExecutions = React.useMemo(() => {
+    type StockQuoteResult = {
+      symbol: string;
+      price: number;
+      open: number;
+      high: number;
+      low: number;
+      volume: number;
+      previousClose: number;
+      change: number;
+      changePercent: number;
+      latestTradingDay: string;
+      isPositive: boolean;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'stock_quote')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        symbol: e.args && typeof e.args.symbol === 'string' ? e.args.symbol : '',
+        status: e.status,
+        result: e.result as StockQuoteResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Stock history executions (for charts)
+  const stockHistoryExecutions = React.useMemo(() => {
+    type StockHistoryResult = {
+      symbol: string;
+      historicalData: Array<{
+        date: string;
+        open: number;
+        high: number;
+        low: number;
+        close: number;
+        volume: number;
+      }>;
+      latestPrice: number;
+      priceChange: number;
+      priceChangePercent: number;
+      period: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'stock_history')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        symbol: e.args && typeof e.args.symbol === 'string' ? e.args.symbol : '',
+        status: e.status,
+        result: e.result as StockHistoryResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Company info executions
+  const companyInfoExecutions = React.useMemo(() => {
+    type CompanyInfoResult = {
+      symbol: string;
+      name: string;
+      currency: string;
+      exchange: string;
+      exchangeShortName: string;
+      industry: string;
+      website: string;
+      description: string;
+      ceo: string;
+      sector: string;
+      country: string;
+      fullTimeEmployees: number;
+      address: string;
+      city: string;
+      state: string;
+      zip: string;
+      mktCap: number;
+      beta: number;
+      volAvg: number;
+      lastDiv: number;
+      price: number;
+      image: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'company_info')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        symbol: e.args && typeof e.args.symbol === 'string' ? e.args.symbol : '',
+        status: e.status,
+        result: e.result as CompanyInfoResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Crypto executions
+  const cryptoExecutions = React.useMemo(() => {
+    type CryptoResult = {
+      fromCurrency: string;
+      toCurrency: string;
+      exchangeRate: number;
+      lastRefreshed: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'crypto_price')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        fromCurrency: e.args && typeof e.args.fromCurrency === 'string' ? e.args.fromCurrency : '',
+        status: e.status,
+        result: e.result as CryptoResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Forex executions
+  const forexExecutions = React.useMemo(() => {
+    type ForexResult = {
+      fromCurrency: string;
+      toCurrency: string;
+      exchangeRate: number;
+      lastRefreshed: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'forex_rate')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        fromCurrency: e.args && typeof e.args.fromCurrency === 'string' ? e.args.fromCurrency : '',
+        toCurrency: e.args && typeof e.args.toCurrency === 'string' ? e.args.toCurrency : '',
+        status: e.status,
+        result: e.result as ForexResult | undefined,
+      }));
+  }, [toolExecutions]);
+
   const otherToolExecutions = React.useMemo(() => {
-    return toolExecutions.filter(e => e.toolName !== 'web_search');
+    return toolExecutions.filter(e => 
+      e.toolName !== 'web_search' && 
+      e.toolName !== 'weather' &&
+      e.toolName !== 'stock_quote' &&
+      e.toolName !== 'stock_history' &&
+      e.toolName !== 'company_info' &&
+      e.toolName !== 'crypto_price' &&
+      e.toolName !== 'forex_rate'
+    );
   }, [toolExecutions]);
 
   // Check if message contains stop text and split it
@@ -135,6 +300,105 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
             isStreaming={isStreaming}
           />
         )}
+
+        {/* Weather card */}
+        {!isUser && weatherExecutions.length > 0 && weatherExecutions.map((execution) => {
+          if (execution.status !== 'complete' || !execution.result) return null;
+          if ('error' in execution.result) return null;
+          
+          return (
+            <WeatherCard
+              key={execution.toolCallId}
+              weather={execution.result}
+            />
+          );
+        })}
+
+        {/* Stock quote cards */}
+        {!isUser && stockQuoteExecutions.length > 0 && stockQuoteExecutions.map((execution) => {
+          if (execution.status !== 'complete' || !execution.result) return null;
+          if ('error' in execution.result) return null;
+          
+          // Get company info for this symbol if available
+          const companyInfo = companyInfoExecutions.find(c => c.symbol === execution.symbol);
+          const companyData = companyInfo?.result && !('error' in companyInfo.result) ? companyInfo.result : undefined;
+          
+          return (
+            <StockCard
+              key={execution.toolCallId}
+              quote={execution.result}
+              company={companyData as any}
+            />
+          );
+        })}
+
+        {/* Stock charts */}
+        {!isUser && stockHistoryExecutions.length > 0 && stockHistoryExecutions.map((execution) => {
+          if (execution.status !== 'complete' || !execution.result) return null;
+          if ('error' in execution.result) return null;
+          
+          return (
+            <StockChart
+              key={execution.toolCallId}
+              symbol={execution.result.symbol}
+              data={execution.result.historicalData}
+              priceChange={execution.result.priceChange}
+            />
+          );
+        })}
+
+        {/* Crypto price cards */}
+        {!isUser && cryptoExecutions.length > 0 && cryptoExecutions.map((execution) => {
+          if (execution.status !== 'complete' || !execution.result) return null;
+          if ('error' in execution.result) return null;
+          
+          return (
+            <div key={execution.toolCallId} className="crypto-card">
+              <div className="crypto-card-header">
+                <span className="crypto-card-symbol">{execution.result.fromCurrency}/{execution.result.toCurrency}</span>
+              </div>
+              <div className="crypto-card-price">
+                ${execution.result.exchangeRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+              <div className="crypto-card-updated">
+                Last updated: {execution.result.lastRefreshed}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Forex rate cards */}
+        {!isUser && forexExecutions.length > 0 && forexExecutions.map((execution) => {
+          if (execution.status !== 'complete' || !execution.result) return null;
+          if ('error' in execution.result) return null;
+          
+          return (
+            <div key={execution.toolCallId} className="forex-card">
+              <div className="forex-card-header">
+                <span className="forex-card-symbol">{execution.result.fromCurrency}/{execution.result.toCurrency}</span>
+              </div>
+              <div className="forex-card-rate">
+                {execution.result.exchangeRate.toFixed(4)}
+              </div>
+              <div className="forex-card-updated">
+                Last updated: {execution.result.lastRefreshed}
+              </div>
+            </div>
+          );
+        })}
+
+        {/* Company info cards */}
+        {!isUser && companyInfoExecutions.length > 0 && companyInfoExecutions.map((execution) => {
+          if (execution.status !== 'complete' || !execution.result) return null;
+          if ('error' in execution.result) return null;
+          
+          return (
+            <CompanyInfoCard
+              key={execution.toolCallId}
+              company={execution.result}
+            />
+          );
+        })}
 
         {/* Other tool execution blocks (collapsible, shows results when clicked) */}
         {!isUser && otherToolExecutions.length > 0 && (

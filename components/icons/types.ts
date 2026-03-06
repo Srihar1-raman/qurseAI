@@ -19,5 +19,5 @@ export type IconName =
   | 'search' | 'send' | 'sentry' | 'settings' | 'share'
   | 'signout' | 'stop' | 'supabase' | 'system' | 'tavily'
   | 'terms' | 'theme' | 'theme-auto' | 'theme-light' | 'theme-dark'
-  | 'thumbs-down' | 'thumbs-up' | 'unpin' | 'upstash'
+  | 'thumbs-down' | 'thumbs-up' | 'trending-up' | 'unpin' | 'upstash'
   | 'vercel' | 'x-twitter' | 'zai';

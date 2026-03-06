@@ -18,6 +18,15 @@ import type { StreamTextProviderOptions } from '@/lib/utils/message-adapters';
 import type { User } from '@/lib/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { webSearchTool } from '@/lib/tools/web-search';
+import { weatherTool } from '@/lib/tools/weather';
+import {
+  stockQuoteTool,
+  stockHistoryTool,
+  companyInfoTool,
+  cryptoPriceTool,
+  forexRateTool,
+  stockSearchTool,
+} from '@/lib/tools/finance';
 
 const logger = createScopedLogger('services/stream-config');
 
@@ -174,9 +183,31 @@ export function buildStreamConfig(config: StreamConfig) {
       }
 
       // Build tools based on mode configuration
-      const tools = modeConfig.enabledTools.includes('web_search')
-        ? { web_search: webSearchTool }
-        : {};
+      const tools: Record<string, any> = {};
+      if (modeConfig.enabledTools.includes('web_search')) {
+        tools.web_search = webSearchTool;
+      }
+      if (modeConfig.enabledTools.includes('weather')) {
+        tools.weather = weatherTool;
+      }
+      if (modeConfig.enabledTools.includes('stock_quote')) {
+        tools.stock_quote = stockQuoteTool;
+      }
+      if (modeConfig.enabledTools.includes('stock_history')) {
+        tools.stock_history = stockHistoryTool;
+      }
+      if (modeConfig.enabledTools.includes('company_info')) {
+        tools.company_info = companyInfoTool;
+      }
+      if (modeConfig.enabledTools.includes('crypto_price')) {
+        tools.crypto_price = cryptoPriceTool;
+      }
+      if (modeConfig.enabledTools.includes('forex_rate')) {
+        tools.forex_rate = forexRateTool;
+      }
+      if (modeConfig.enabledTools.includes('stock_search')) {
+        tools.stock_search = stockSearchTool;
+      }
 
       const streamTextOptions: any = {
         model: qurse.languageModel(model),

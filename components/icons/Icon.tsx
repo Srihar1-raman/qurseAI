@@ -71,6 +71,7 @@ import { ThemeIcon } from './ThemeIcon';
 import { ThemeLightIcon } from './ThemeLightIcon';
 import { ThumbsDownIcon } from './ThumbsDownIcon';
 import { ThumbsUpIcon } from './ThumbsUpIcon';
+import { TrendingIcon } from './TrendingIcon';
 import { UnpinIcon } from './UnpinIcon';
 import { UpstashIcon } from './UpstashIcon';
 import { VercelIcon } from './VercelIcon';
@@ -146,6 +147,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'theme-light': ThemeLightIcon,
   'thumbs-down': ThumbsDownIcon,
   'thumbs-up': ThumbsUpIcon,
+  'trending-up': TrendingIcon,
   'unpin': UnpinIcon,
   'upstash': UpstashIcon,
   'vercel': VercelIcon,

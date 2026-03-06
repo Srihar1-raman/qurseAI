@@ -17,6 +17,7 @@ export function mapDisplayNameToModeId(displayName: string): string {
   const mappings: Record<string, string> = {
     'Chat': 'chat',
     'Web Search': 'web',
+    'Finance': 'finance',
   };
 
   return mappings[displayName] || 'chat'; // Default to 'chat'
@@ -27,7 +28,7 @@ export function mapDisplayNameToModeId(displayName: string): string {
  * @returns Array of mode IDs
  */
 export function getAvailableChatModes(): string[] {
-  return ['chat', 'web'];
+  return ['chat', 'web', 'finance'];
 }
 
 /**
@@ -48,6 +49,7 @@ export function mapModeIdToDisplayName(modeId: string): string {
   const mappings: Record<string, string> = {
     'chat': 'Chat',
     'web': 'Web Search',
+    'finance': 'Finance',
   };
 
   return mappings[modeId] || 'Chat';

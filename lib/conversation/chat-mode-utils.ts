@@ -9,6 +9,7 @@
 const CHAT_MODE_TO_OPTION: Record<string, string> = {
   'web': 'Web Search',
   'chat': 'Chat',
+  'finance': 'Finance',
 };
 
 /**
@@ -17,6 +18,7 @@ const CHAT_MODE_TO_OPTION: Record<string, string> = {
 const OPTION_TO_CHAT_MODE: Record<string, string> = {
   'Web Search': 'web',
   'Chat': 'chat',
+  'Finance': 'finance',
 };
 
 /**

@@ -458,3 +458,599 @@
   margin-left: auto;
   padding-right: 8px;
 }
+
+/* ===================================
+    WEATHER CARD
+    Weather information card component
+    =================================== */
+
+.weather-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  max-width: 320px;
+}
+
+.weather-card-header {
+  margin-bottom: 12px;
+}
+
+.weather-card-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.weather-card-location-icon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+}
+
+.weather-card-city {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.weather-card-region {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.weather-card-country {
+  font-size: 14px;
+  color: var(--color-text-muted);
+}
+
+.weather-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.weather-card-main {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.weather-card-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weather-card-icon {
+  width: 48px;
+  height: 48px;
+  color: var(--color-text-secondary);
+}
+
+.weather-card-icon.sunny {
+  color: #f59e0b;
+}
+
+.weather-card-icon.cloudy {
+  color: #64748b;
+}
+
+.weather-card-icon.rainy {
+  color: #3b82f6;
+}
+
+.weather-card-icon.snowy {
+  color: #a5f3fc;
+}
+
+.weather-card-icon.stormy {
+  color: #8b5cf6;
+}
+
+.weather-card-icon.foggy {
+  color: #94a3b8;
+}
+
+.weather-card-temp {
+  display: flex;
+  align-items: flex-start;
+}
+
+.weather-card-temp-value {
+  font-size: 48px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.weather-card-temp-unit {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  margin-top: 4px;
+}
+
+.weather-card-description {
+  font-size: 16px;
+  color: var(--color-text-secondary);
+}
+
+.weather-card-details {
+  display: flex;
+  gap: 20px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.weather-card-detail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.weather-card-detail-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+}
+
+.weather-card-detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.weather-card-detail-label {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* ===================================
+    STOCK CARD
+    Stock quote card component
+    =================================== */
+
+.stock-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  max-width: 380px;
+}
+
+.stock-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+}
+
+.stock-card-title-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stock-card-symbol {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.stock-card-name {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.stock-card-change {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.stock-card-change.positive {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.stock-card-change.negative {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.stock-card-change-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.stock-card-price {
+  margin-bottom: 12px;
+}
+
+.stock-card-price-value {
+  font-size: 36px;
+  font-weight: 600;
+  color: var(--color-text);
+  display: block;
+}
+
+.stock-card-price-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.stock-card-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.stock-card-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stock-card-stat-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.stock-card-stat-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.stock-card-company {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.stock-card-company-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 10px;
+}
+
+.stock-card-company-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.stock-card-company-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stock-card-company-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stock-card-company-stat-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stock-card-company-stat-value {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.stock-card-company-ceo {
+  margin-top: 8px;
+  font-size: 12px;
+  display: flex;
+  gap: 4px;
+}
+
+/* ===================================
+    STOCK CHART
+    Stock price chart component
+    =================================== */
+
+.stock-chart {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  max-width: 450px;
+}
+
+.stock-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.stock-chart-symbol {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.stock-chart-period {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.stock-chart-container {
+  margin: 0 -8px;
+}
+
+.stock-chart-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.stock-chart-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stock-chart-stat-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.stock-chart-stat-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+/* ===================================
+    CRYPTO CARD
+    Cryptocurrency price card
+    =================================== */
+
+.crypto-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  max-width: 250px;
+}
+
+.crypto-card-header {
+  margin-bottom: 8px;
+}
+
+.crypto-card-symbol {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.crypto-card-price {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.crypto-card-updated {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+/* ===================================
+    FOREX CARD
+    Forex rate card
+    =================================== */
+
+.forex-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  max-width: 250px;
+}
+
+.forex-card-header {
+  margin-bottom: 8px;
+}
+
+.forex-card-symbol {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.forex-card-rate {
+  font-size: 28px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 4px;
+}
+
+.forex-card-updated {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+/* ===================================
+    COMPANY INFO CARD
+    Company information card
+    =================================== */
+
+.company-info-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  max-width: 400px;
+}
+
+.company-info-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.company-info-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: contain;
+  background: var(--color-bg-secondary);
+}
+
+.company-info-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.company-info-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.company-info-symbol {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.company-info-price {
+  margin-bottom: 16px;
+}
+
+.company-info-price-value {
+  font-size: 32px;
+  font-weight: 600;
+  color: var(--color-text);
+  display: block;
+}
+
+.company-info-exchange {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.company-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.company-info-stat {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.company-info-stat-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.company-info-stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.company-info-stat-label {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.company-info-stat-value {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.company-info-ceo {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+  font-size: 13px;
+}
+
+.company-info-ceo-label {
+  color: var(--color-text-muted);
+  margin-right: 4px;
+}
+
+.company-info-ceo-value {
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.company-info-description {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.company-info-description p {
+  margin: 0;
+}
+
+.company-info-website {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+  font-size: 13px;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.company-info-website:hover {
+  text-decoration: underline;
+}
+
+.company-info-website-icon {
+  width: 14px;
+  height: 14px;
+}
