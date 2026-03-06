@@ -1,10 +1,10 @@
 /**
  * Stream Config Service
- * Builds configuration for AI streaming responses
+ * Builds configuration for AI streaming responses with UI rendering
  */
 
 import type { UIMessage, UIMessageStreamWriter } from 'ai';
-import { streamText, stepCountIs } from 'ai';
+import { streamText, stepCountIs, convertToModelMessages } from 'ai';
 import { qurse } from '@/ai/providers';
 import { getModelParameters, getProviderOptions, getModelConfig } from '@/ai/models';
 import { saveUserMessageServerSide } from '@/lib/db/messages.server';
@@ -19,6 +19,7 @@ import type { User } from '@/lib/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { webSearchTool } from '@/lib/tools/web-search';
 import { weatherTool } from '@/lib/tools/weather';
+import { weatherHistoryTool } from '@/lib/tools/weather-history';
 import {
   stockQuoteTool,
   stockHistoryTool,
@@ -190,6 +191,9 @@ export function buildStreamConfig(config: StreamConfig) {
       if (modeConfig.enabledTools.includes('weather')) {
         tools.weather = weatherTool;
       }
+      if (modeConfig.enabledTools.includes('weather_history')) {
+        tools.weather_history = weatherHistoryTool;
+      }
       if (modeConfig.enabledTools.includes('stock_quote')) {
         tools.stock_quote = stockQuoteTool;
       }
@@ -233,7 +237,7 @@ export function buildStreamConfig(config: StreamConfig) {
       dataStream.merge(
         result.toUIMessageStream({
           sendReasoning: shouldSendReasoning,
-          messageMetadata: ({ part }) => {
+          messageMetadata: ({ part }: { part: any }) => {
             if (part.type === 'finish') {
               const processingTime = (Date.now() - requestStartTime) / 1000;
               return {

@@ -26,6 +26,7 @@ interface WeatherData {
 
 interface WeatherCardProps {
   weather: WeatherData;
+  showForecast?: boolean;
 }
 
 function celsiusToFahrenheit(c: number): number {
@@ -102,7 +103,7 @@ function formatDate(dateStr: string): string {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-export function WeatherCard({ weather }: WeatherCardProps) {
+export function WeatherCard({ weather, showForecast = true }: WeatherCardProps) {
   const [unit, setUnit] = useState<'C' | 'F' | null>(null);
   const [mounted, setMounted] = useState(false);
   
@@ -121,7 +122,7 @@ export function WeatherCard({ weather }: WeatherCardProps) {
   
   const displayTemp = unit ? convertTemp(weather.temperature, weather.unit, unit) : weather.temperature;
   
-  const chartData = weather.forecast?.map((day) => ({
+  const chartData = showForecast && weather.forecast?.map((day) => ({
     day: day.day,
     max: unit ? convertTemp(day.maxTemp, weather.unit, unit) : day.maxTemp,
     min: unit ? convertTemp(day.minTemp, weather.unit, unit) : day.minTemp,
@@ -178,7 +179,7 @@ export function WeatherCard({ weather }: WeatherCardProps) {
         </div>
       </div>
 
-      {weather.forecast && weather.forecast.length > 0 && (
+      {showForecast !== false && weather.forecast && weather.forecast.length > 0 && (
         <div className="weather-forecast-section">
           <div className="weather-forecast-header">
             <span className="weather-forecast-title">7-Day Forecast</span>

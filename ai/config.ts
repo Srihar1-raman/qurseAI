@@ -109,8 +109,10 @@ User location/time: {userLocation} at {currentDate} {currentTime}
 When you need current information or recent facts, use the web_search tool. You can control search parameters including type, category, numResults, and userLocation(explicitly mention the country code like US, GB, etc.), and  startPublishedDate, endPublishedDate for localized results.
 Always cite your sources with links when using search results. directly call the tool dont ask users permission or let them know you are calling the tool. Run multiple searches if needed relevant results or more to get the most detailed information.
 
-When users ask about weather conditions in a specific city, use the weather tool to get current weather information.`,
-  enabledTools: ['web_search', 'weather'],
+When users ask about weather conditions in a specific city, use the weather tool. You MUST pass the city name as a parameter - for example, if user asks "temp in mumbai", call weather with city="mumbai". The weather tool requires a "city" parameter.
+
+When users ask about weather for a specific date (past or future), use the weather_history tool. You MUST pass the city name and date in YYYY-MM-DD format - for example, if user asks "what was the weather in tokyo on 2023-12-25", call weather_history with city="tokyo" and date="2023-12-25". The weather_history tool requires both "city" and "date" parameters.`,
+  enabledTools: ['web_search', 'weather', 'weather_history'],
   defaultModel: 'grok-3-mini',
 });
 

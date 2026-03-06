@@ -76,7 +76,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
         toolCallId,
         args: input,
         result: output,
-        status: isStreaming && status === 'complete' ? 'loading' : status,
+        status, // Show tool result immediately when available, even while AI streams text
         state,
       });
     }
@@ -118,6 +118,32 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
         city: e.args && typeof e.args.city === 'string' ? e.args.city : '',
         status: e.status,
         result: e.result as WeatherResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Weather history executions
+  const weatherHistoryExecutions = React.useMemo(() => {
+    type WeatherHistoryResult = {
+      city: string;
+      country: string;
+      region?: string | null;
+      date: string;
+      displayDate: string;
+      temperature: number;
+      unit: 'C' | 'F';
+      description: string;
+      icon: string;
+      humidity: number;
+      windSpeed: number;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'weather_history')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        city: e.args && typeof e.args.city === 'string' ? e.args.city : '',
+        status: e.status,
+        result: e.result as WeatherHistoryResult | undefined,
       }));
   }, [toolExecutions]);
 
@@ -304,15 +330,76 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
         {/* Tool result cards - centered */}
         {!isUser && (
           <div className="tool-cards-container">
-            {/* Weather card */}
+            {/* Weather card - render generated UI or data-based UI */}
             {weatherExecutions.map((execution) => {
               if (execution.status !== 'complete' || !execution.result) return null;
-              if ('error' in execution.result) return null;
+              
+              // Check if result is a React element (from generate) or data object (from execute)
+              if (React.isValidElement(execution.result)) {
+                // Render the pre-built component from generate
+                return <React.Fragment key={execution.toolCallId}>{execution.result}</React.Fragment>;
+              }
+              
+              // Fallback: render from data (execute approach)
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+              
+              const weatherData = execution.result as {
+                city: string;
+                country: string;
+                region?: string | null;
+                temperature: number;
+                unit: 'C' | 'F';
+                description: string;
+                humidity: number;
+                windSpeed: number;
+                forecast?: any[];
+              };
               
               return (
                 <WeatherCard
                   key={execution.toolCallId}
-                  weather={execution.result}
+                  weather={weatherData}
+                />
+              );
+            })}
+
+            {/* Weather history cards - without forecast */}
+            {weatherHistoryExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              const historyData = execution.result as {
+                city: string;
+                country: string;
+                region?: string | null;
+                date: string;
+                displayDate: string;
+                temperature: number;
+                unit: 'C' | 'F';
+                description: string;
+                icon: string;
+                humidity: number;
+                windSpeed: number;
+              };
+
+              return (
+                <WeatherCard
+                  key={execution.toolCallId}
+                  weather={{
+                    city: historyData.city,
+                    country: historyData.country,
+                    region: historyData.region,
+                    temperature: historyData.temperature,
+                    unit: historyData.unit,
+                    description: historyData.description,
+                    humidity: historyData.humidity,
+                    windSpeed: historyData.windSpeed,
+                  }}
+                  showForecast={false}
                 />
               );
             })}

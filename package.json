@@ -16,6 +16,7 @@
     "@ai-sdk/groq": "^2.0.24",
     "@ai-sdk/openai": "^2.0.52",
     "@ai-sdk/react": "^2.0.82",
+    "@ai-sdk/rsc": "^2.0.116",
     "@ai-sdk/xai": "^2.0.26",
     "@dodopayments/nextjs": "^0.3.3",
     "@exalabs/ai-sdk": "^1.0.5",
