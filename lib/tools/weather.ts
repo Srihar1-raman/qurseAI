@@ -16,6 +16,13 @@ interface WeatherData {
     wind_speed_10m: number;
     relative_humidity_2m: number;
   };
+  daily: {
+    time: string[];
+    weather_code: number[];
+    temperature_2m_max: number[];
+    temperature_2m_min: number[];
+    precipitation_probability_max: number[];
+  };
 }
 
 function weatherCodeToDescription(code: number): string {
@@ -52,8 +59,21 @@ function weatherCodeToDescription(code: number): string {
   return weatherCodes[code] || 'Unknown';
 }
 
+function getWeatherIcon(code: number): string {
+  if (code === 0) return 'sunny';
+  if (code === 1 || code === 2) return 'partly-cloudy';
+  if (code === 3) return 'cloudy';
+  if (code >= 45 && code <= 48) return 'foggy';
+  if (code >= 51 && code <= 67) return 'rainy';
+  if (code >= 71 && code <= 77) return 'snowy';
+  if (code >= 80 && code <= 82) return 'rainy';
+  if (code >= 85 && code <= 86) return 'snowy';
+  if (code >= 95) return 'stormy';
+  return 'cloudy';
+}
+
 export const weatherTool = tool({
-  description: 'Get current weather information for a city',
+  description: 'Get current weather and 7-day forecast for a city with charts',
   inputSchema: z.object({
     city: z.string().describe('The city to get weather for'),
     unit: z.enum(['C', 'F']).default('F').describe('Temperature unit: C for Celsius, F for Fahrenheit'),
@@ -78,7 +98,7 @@ export const weatherTool = tool({
       const tempUnit = unit === 'F' ? 'fahrenheit' : 'celsius';
 
       const weatherResponse = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&temperature_unit=${tempUnit}&wind_speed_unit=kmh`
+        `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,weather_code,wind_speed_10m,relative_humidity_2m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto&temperature_unit=${tempUnit}&wind_speed_unit=kmh&forecast_days=7`
       );
 
       if (!weatherResponse.ok) {
@@ -87,6 +107,17 @@ export const weatherTool = tool({
 
       const weatherData: WeatherData = await weatherResponse.json();
       const current = weatherData.current;
+      const daily = weatherData.daily;
+
+      const forecast = daily.time.slice(0, 7).map((date, i) => ({
+        date,
+        day: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
+        maxTemp: daily.temperature_2m_max[i],
+        minTemp: daily.temperature_2m_min[i],
+        description: weatherCodeToDescription(daily.weather_code[i]),
+        icon: getWeatherIcon(daily.weather_code[i]),
+        precipitation: daily.precipitation_probability_max[i] || 0,
+      }));
 
       return {
         city: location.name,
@@ -97,6 +128,7 @@ export const weatherTool = tool({
         description: weatherCodeToDescription(current.weather_code),
         humidity: current.relative_humidity_2m,
         windSpeed: current.wind_speed_10m,
+        forecast,
       };
     } catch (error) {
       return {
