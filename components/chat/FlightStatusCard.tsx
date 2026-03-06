@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Plane, Clock, MapPin, ArrowRight, AlertTriangle, Package, Activity, Timer, Navigation, Luggage } from 'lucide-react';
+import { Plane, Clock, MapPin, ArrowRight, AlertTriangle, Package, Activity, Timer, Navigation, Luggage, Info } from 'lucide-react';
 import { AirlineLogo } from '@/components/ui/airline-logo';
 import { getFlightStatusGradient, getAltitude, formatTime } from '@/lib/utils';
 
@@ -90,131 +90,120 @@ export function FlightStatusCard({ data }: FlightStatusCardProps) {
 
   return (
     <div className="flight-status-card">
-      <div className="flight-status-hero">
-        <div className="flight-status-hero-left">
-          <div className="flight-status-hero-airline">
-            <AirlineLogo url={data.airline.logoUrl} name={data.airline.name} className="w-14 h-14" />
-            <div className="flight-status-hero-info">
-              <span className="flight-status-hero-flight">{data.flightNumber}</span>
-              <span className="flight-status-hero-airline-name">{data.airline.name}</span>
+      <div className="flight-status-header">
+        <div className="flight-status-header-left">
+          <AirlineLogo url={data.airline.logoUrl} name={data.airline.name} className="w-12 h-12" />
+          <div className="flight-status-header-info">
+            <div className="flight-status-header-main">
+              <span className="flight-status-number">{data.flightNumber}</span>
+              <div className="flight-status-badge" style={{ background: statusGradient }}>
+                <StatusIcon className="flight-status-badge-icon" />
+                <span>{data.status.display}</span>
+              </div>
             </div>
-          </div>
-          <div className="flight-status-hero-badge" style={{ background: statusGradient }}>
-            <StatusIcon className="flight-status-hero-badge-icon" />
-            <span>{data.status.display}</span>
+            <span className="flight-status-airline">{data.airline.name}</span>
           </div>
         </div>
         
         {data.live?.isLive && (
-          <div className="flight-status-hero-live">
-            <div className="flight-status-live-dot" />
+          <div className="flight-status-live-pill">
+            <span className="flight-status-live-dot" />
             <span>LIVE</span>
-            {data.live.position?.speed && (
-              <span className="flight-status-hero-live-speed">{data.live.position.speed} km/h</span>
-            )}
-            {data.live.position?.alt && (
-              <span className="flight-status-hero-live-alt">{getAltitude(data.live.position.alt)}</span>
-            )}
           </div>
         )}
       </div>
 
-      <div className="flight-status-path">
-        <div className="flight-status-path-origin">
-          <span className="flight-status-path-code">{data.route.origin.code}</span>
-          <span className="flight-status-path-city">{data.route.origin.city}</span>
-          <span className="flight-status-path-time">
-            {formatTime(data.times.local?.departure || '--:--')}
-          </span>
-          <span className="flight-status-path-label">Departure</span>
+      <div className="flight-status-route-display">
+        <div className="flight-status-route-point">
+          <span className="flight-status-route-code">{data.route.origin.code}</span>
+          <span className="flight-status-route-city">{data.route.origin.city}</span>
+          <span className="flight-status-route-time">{formatTime(data.times.local?.departure || '--:--')}</span>
         </div>
         
-        <div className="flight-status-path-line">
-          <div className="flight-status-path-progress" style={{ width: `${progress}%` }} />
-          <div 
-            className="flight-status-path-plane" 
-            style={{ left: `${progress}%` }}
-          >
-            <Plane className="flight-status-path-plane-icon" />
+        <div className="flight-status-route-line">
+          <div className="flight-status-route-progress" style={{ width: `${progress}%` }} />
+          <div className="flight-status-route-plane-icon" style={{ left: `${progress}%` }}>
+            <Plane />
           </div>
         </div>
         
-        <div className="flight-status-path-destination">
-          <span className="flight-status-path-code">{data.route.destination.code}</span>
-          <span className="flight-status-path-city">{data.route.destination.city}</span>
-          <span className="flight-status-path-time">
-            {formatTime(data.times.local?.arrival || '--:--')}
-          </span>
-          <span className="flight-status-path-label">Arrival</span>
+        <div className="flight-status-route-point">
+          <span className="flight-status-route-code">{data.route.destination.code}</span>
+          <span className="flight-status-route-city">{data.route.destination.city}</span>
+          <span className="flight-status-route-time">{formatTime(data.times.local?.arrival || '--:--')}</span>
         </div>
       </div>
 
-      <div className="flight-status-quick-stats">
-        <div className="flight-status-quick-stat">
-          <Timer className="flight-status-quick-stat-icon" />
-          <div className="flight-status-quick-stat-content">
-            <span className="flight-status-quick-stat-label">Duration</span>
-            <span className="flight-status-quick-stat-value">{data.duration || '--'}</span>
+      <div className="flight-status-stats">
+        <div className="flight-status-stat">
+          <Timer className="flight-status-stat-icon" />
+          <div className="flight-status-stat-content">
+            <span className="flight-status-stat-label">Duration</span>
+            <span className="flight-status-stat-value">{data.duration || '--'}</span>
           </div>
         </div>
+        
+        <div className="flight-status-stat">
+          <Navigation className="flight-status-stat-icon" />
+          <div className="flight-status-stat-content">
+            <span className="flight-status-stat-label">Progress</span>
+            <span className="flight-status-stat-value">{progress}%</span>
+          </div>
+        </div>
+        
+        {data.live?.isLive && data.live.position?.speed && (
+          <div className="flight-status-stat">
+            <Activity className="flight-status-stat-icon" />
+            <div className="flight-status-stat-content">
+              <span className="flight-status-stat-label">Speed</span>
+              <span className="flight-status-stat-value">{data.live.position.speed} km/h</span>
+            </div>
+          </div>
+        )}
         
         {data.delay.minutes > 0 && (
-          <div className="flight-status-quick-stat delay">
-            <AlertTriangle className="flight-status-quick-stat-icon" />
-            <div className="flight-status-quick-stat-content">
-              <span className="flight-status-quick-stat-label">Delay</span>
-              <span className="flight-status-quick-stat-value">+{data.delay.minutes} min</span>
-            </div>
-          </div>
-        )}
-        
-        {data.live?.isLive && data.live.progress !== null && (
-          <div className="flight-status-quick-stat">
-            <Navigation className="flight-status-quick-stat-icon" />
-            <div className="flight-status-quick-stat-content">
-              <span className="flight-status-quick-stat-label">Progress</span>
-              <span className="flight-status-quick-stat-value">{progress}%</span>
+          <div className="flight-status-stat delay">
+            <AlertTriangle className="flight-status-stat-icon" />
+            <div className="flight-status-stat-content">
+              <span className="flight-status-stat-label">Delay</span>
+              <span className="flight-status-stat-value">+{data.delay.minutes}m</span>
             </div>
           </div>
         )}
       </div>
 
-      <div className="flight-status-details-row">
-        <div className="flight-status-detail-pill">
-          <MapPin className="flight-status-detail-pill-icon" />
-          <div className="flight-status-detail-pill-content">
-            <span className="flight-status-detail-pill-label">Gate</span>
-            <span className="flight-status-detail-pill-value">
-              {data.gate.departure || '--'} → {data.gate.arrival || '--'}
-            </span>
+      <div className="flight-status-details">
+        <div className="flight-status-detail">
+          <MapPin className="flight-status-detail-icon" />
+          <div className="flight-status-detail-content">
+            <span className="flight-status-detail-label">Gate</span>
+            <span className="flight-status-detail-value">{data.gate.departure || '--'} → {data.gate.arrival || '--'}</span>
           </div>
         </div>
         
-        <div className="flight-status-detail-pill">
-          <Package className="flight-status-detail-pill-icon" />
-          <div className="flight-status-detail-pill-content">
-            <span className="flight-status-detail-pill-label">Terminal</span>
-            <span className="flight-status-detail-pill-value">
-              {data.terminal.departure || '--'} → {data.terminal.arrival || '--'}
-            </span>
+        <div className="flight-status-detail">
+          <Package className="flight-status-detail-icon" />
+          <div className="flight-status-detail-content">
+            <span className="flight-status-detail-label">Terminal</span>
+            <span className="flight-status-detail-value">{data.terminal.departure || '--'} → {data.terminal.arrival || '--'}</span>
           </div>
         </div>
         
-        <div className="flight-status-detail-pill">
-          <Luggage className="flight-status-detail-pill-icon" />
-          <div className="flight-status-detail-pill-content">
-            <span className="flight-status-detail-pill-label">Baggage</span>
-            <span className="flight-status-detail-pill-value">{data.baggage.arrival}</span>
+        <div className="flight-status-detail">
+          <Luggage className="flight-status-detail-icon" />
+          <div className="flight-status-detail-content">
+            <span className="flight-status-detail-label">Baggage</span>
+            <span className="flight-status-detail-value">{data.baggage.arrival}</span>
           </div>
         </div>
       </div>
 
       {data.aircraft.type && (
-        <div className="flight-status-aircraft-row">
+        <div className="flight-status-aircraft">
           <Plane className="flight-status-aircraft-icon" />
           <span className="flight-status-aircraft-type">{data.aircraft.type}</span>
           {data.aircraft.manufacturer && (
-            <span className="flight-status-aircraft-manufacturer">{data.aircraft.manufacturer}</span>
+            <span className="flight-status-aircraft-info">{data.aircraft.manufacturer}</span>
           )}
           {data.aircraft.code && (
             <span className="flight-status-aircraft-reg">{data.aircraft.code}</span>
@@ -223,14 +212,14 @@ export function FlightStatusCard({ data }: FlightStatusCardProps) {
       )}
 
       {data.codeshare && (
-        <div className="flight-status-codeshare-row">
-          <span className="flight-status-codeshare-label">Codeshare:</span>
-          <span className="flight-status-codeshare-value">{data.codeshare.airline} {data.codeshare.flightIata}</span>
+        <div className="flight-status-codeshare">
+          <Info className="flight-status-codeshare-icon" />
+          <span className="flight-status-codeshare-text">Codeshare: {data.codeshare.airline} {data.codeshare.flightIata}</span>
         </div>
       )}
 
       <div className="flight-status-footer">
-        <span>Updated {new Date(data.lastUpdate).toLocaleString()}</span>
+        Updated {new Date(data.lastUpdate).toLocaleString()}
       </div>
     </div>
   );

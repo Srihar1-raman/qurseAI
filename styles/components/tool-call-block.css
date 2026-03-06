@@ -2656,15 +2656,13 @@
    =================================== */
 
 .flight-status-card {
-  background: linear-gradient(145deg, rgba(30, 27, 75, 0.9) 0%, rgba(49, 46, 129, 0.6) 100%);
-  border: 1px solid rgba(139, 92, 246, 0.3);
-  border-radius: 20px;
-  padding: 24px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(99, 102, 241, 0.05) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.2);
+  border-radius: 16px;
+  padding: 20px;
   margin-bottom: 12px;
   width: 100%;
   max-width: 100%;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.15);
 }
 
 .flight-status-loading {
@@ -2676,64 +2674,62 @@
   font-size: 14px;
 }
 
-.flight-status-hero {
+.flight-status-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
 }
 
-.flight-status-hero-left {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-}
-
-.flight-status-hero-airline {
+.flight-status-header-left {
   display: flex;
   align-items: center;
   gap: 14px;
 }
 
-.flight-status-hero-info {
+.flight-status-header-info {
   display: flex;
   flex-direction: column;
+  gap: 4px;
 }
 
-.flight-status-hero-flight {
-  font-size: 28px;
+.flight-status-header-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flight-status-number {
+  font-size: 26px;
   font-weight: 800;
   color: var(--color-text);
   letter-spacing: 1px;
 }
 
-.flight-status-hero-airline-name {
-  font-size: 13px;
-  color: var(--color-text-muted);
-  font-weight: 500;
-}
-
-.flight-status-hero-badge {
+.flight-status-badge {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 24px;
-  font-size: 14px;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
   font-weight: 700;
   color: white;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
-.flight-status-hero-badge-icon {
-  width: 18px;
-  height: 18px;
+.flight-status-badge-icon {
+  width: 14px;
+  height: 14px;
   color: white;
 }
 
-.flight-status-hero-live {
+.flight-status-airline {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.flight-status-live-pill {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2755,70 +2751,53 @@
   animation: pulse 2s ease-in-out infinite;
 }
 
-.flight-status-hero-live-speed,
-.flight-status-hero-live-alt {
-  color: var(--color-text-muted);
-  font-weight: 500;
-  letter-spacing: 0;
-}
-
-.flight-status-path {
+.flight-status-route-display {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
-  padding: 24px;
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 16px;
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  margin-bottom: 24px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 14px;
 }
 
-.flight-status-path-origin,
-.flight-status-path-destination {
+.flight-status-route-point {
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 80px;
+  min-width: 70px;
 }
 
-.flight-status-path-code {
-  font-size: 32px;
+.flight-status-route-code {
+  font-size: 28px;
   font-weight: 800;
   color: var(--color-text);
   letter-spacing: 2px;
 }
 
-.flight-status-path-city {
-  font-size: 13px;
+.flight-status-route-city {
+  font-size: 12px;
   color: var(--color-text-muted);
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
-.flight-status-path-time {
-  font-size: 20px;
+.flight-status-route-time {
+  font-size: 16px;
   font-weight: 700;
   color: #8b5cf6;
   margin-top: 8px;
 }
 
-.flight-status-path-label {
-  font-size: 10px;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-top: 4px;
-}
-
-.flight-status-path-line {
+.flight-status-route-line {
   flex: 1;
-  height: 6px;
+  height: 5px;
   background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
-  margin: 0 24px;
+  margin: 0 20px;
   position: relative;
 }
 
-.flight-status-path-progress {
+.flight-status-route-progress {
   position: absolute;
   left: 0;
   top: 0;
@@ -2828,84 +2807,29 @@
   transition: width 0.5s ease;
 }
 
-.flight-status-path-plane {
+.flight-status-route-plane-icon {
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   background: #8b5cf6;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
   transition: left 0.5s ease;
 }
 
-.flight-status-path-plane-icon {
-  width: 18px;
-  height: 18px;
+.flight-status-route-plane-icon svg {
+  width: 14px;
+  height: 14px;
   color: white;
   transform: rotate(90deg);
 }
 
-.flight-status-quick-stats {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 20px;
-  overflow-x: auto;
-  padding-bottom: 4px;
-}
-
-.flight-status-quick-stat {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(139, 92, 246, 0.15);
-  border-radius: 14px;
-  min-width: 140px;
-  flex-shrink: 0;
-}
-
-.flight-status-quick-stat.delay {
-  background: rgba(245, 158, 11, 0.1);
-  border-color: rgba(245, 158, 11, 0.2);
-}
-
-.flight-status-quick-stat-icon {
-  width: 22px;
-  height: 22px;
-  color: #8b5cf6;
-  flex-shrink: 0;
-}
-
-.flight-status-quick-stat.delay .flight-status-quick-stat-icon {
-  color: #f59e0b;
-}
-
-.flight-status-quick-stat-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.flight-status-quick-stat-label {
-  font-size: 11px;
-  color: var(--color-text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-}
-
-.flight-status-quick-stat-value {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.flight-status-details-row {
+.flight-status-stats {
   display: flex;
   gap: 10px;
   margin-bottom: 16px;
@@ -2913,7 +2837,62 @@
   padding-bottom: 4px;
 }
 
-.flight-status-detail-pill {
+.flight-status-stat {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(139, 92, 246, 0.12);
+  border-radius: 12px;
+  min-width: 130px;
+  flex-shrink: 0;
+}
+
+.flight-status-stat.delay {
+  background: rgba(245, 158, 11, 0.08);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+
+.flight-status-stat-icon {
+  width: 20px;
+  height: 20px;
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+.flight-status-stat.delay .flight-status-stat-icon {
+  color: #f59e0b;
+}
+
+.flight-status-stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.flight-status-stat-label {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.flight-status-stat-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.flight-status-details {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.flight-status-detail {
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2924,19 +2903,19 @@
   flex-shrink: 0;
 }
 
-.flight-status-detail-pill-icon {
+.flight-status-detail-icon {
   width: 18px;
   height: 18px;
   color: #8b5cf6;
   flex-shrink: 0;
 }
 
-.flight-status-detail-pill-content {
+.flight-status-detail-content {
   display: flex;
   flex-direction: column;
 }
 
-.flight-status-detail-pill-label {
+.flight-status-detail-label {
   font-size: 10px;
   color: var(--color-text-muted);
   text-transform: uppercase;
@@ -2944,27 +2923,27 @@
   font-weight: 600;
 }
 
-.flight-status-detail-pill-value {
+.flight-status-detail-value {
   font-size: 14px;
   font-weight: 600;
   color: var(--color-text);
 }
 
-.flight-status-aircraft-row {
+.flight-status-aircraft {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 14px 18px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(99, 102, 241, 0.08) 100%);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.12) 0%, rgba(99, 102, 241, 0.06) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.15);
   border-radius: 12px;
   margin-bottom: 16px;
   flex-wrap: wrap;
 }
 
 .flight-status-aircraft-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   color: #8b5cf6;
 }
 
@@ -2974,8 +2953,8 @@
   color: var(--color-text);
 }
 
-.flight-status-aircraft-manufacturer {
-  font-size: 13px;
+.flight-status-aircraft-info {
+  font-size: 12px;
   color: var(--color-text-muted);
   padding: 2px 8px;
   background: rgba(255, 255, 255, 0.05);
@@ -2983,12 +2962,12 @@
 }
 
 .flight-status-aircraft-reg {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--color-text-muted);
   font-family: monospace;
 }
 
-.flight-status-codeshare-row {
+.flight-status-codeshare {
   display: flex;
   align-items: center;
   gap: 8px;
@@ -2999,17 +2978,18 @@
   font-size: 13px;
 }
 
-.flight-status-codeshare-label {
+.flight-status-codeshare-icon {
+  width: 14px;
+  height: 14px;
   color: var(--color-text-muted);
 }
 
-.flight-status-codeshare-value {
+.flight-status-codeshare-text {
   color: var(--color-text-secondary);
-  font-weight: 600;
 }
 
 .flight-status-footer {
-  padding-top: 16px;
+  padding-top: 14px;
   border-top: 1px solid rgba(148, 163, 184, 0.1);
   font-size: 11px;
   color: var(--color-text-muted);
@@ -3017,12 +2997,8 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
 }
 
 /* Flight Radar Card - Leaflet Map Styles */
@@ -3505,29 +3481,42 @@
 }
 
 @media (max-width: 640px) {
-  .flight-status-times-grid {
-    grid-template-columns: 1fr;
+  .flight-status-route-display {
+    flex-direction: column;
+    gap: 16px;
   }
 
-  .flight-status-details-grid {
-    grid-template-columns: 1fr;
+  .flight-status-route-line {
+    width: 100%;
+    margin: 0;
   }
 
-  .flight-status {
-    padding: 16px;
+  .flight-status-stats {
+    flex-wrap: wrap;
   }
 
-  .flight-status-logo {
-    width: 40px;
-    height: 40px;
+  .flight-status-stat {
+    min-width: calc(50% - 8px);
+  }
+
+  .flight-status-details {
+    flex-wrap: wrap;
+  }
+
+  .flight-status-detail {
+    min-width: calc(50% - 8px);
   }
 
   .flight-status-number {
-    font-size: 20px;
+    font-size: 22px;
+  }
+
+  .flight-status-route-code {
+    font-size: 24px;
   }
 
   .airline-info-stats-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 
   .flight-radar-map {
