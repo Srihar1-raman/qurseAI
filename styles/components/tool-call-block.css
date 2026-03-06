@@ -600,6 +600,138 @@
   color: var(--color-text-muted);
 }
 
+.weather-forecast-section {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.weather-forecast-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.weather-forecast-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.weather-forecast-chart {
+  margin: 0 -8px 16px -8px;
+}
+
+.weather-forecast-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.weather-forecast-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 4px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.weather-forecast-day:hover {
+  background: var(--color-bg-hover);
+  transform: translateY(-2px);
+}
+
+.weather-forecast-day-name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.weather-forecast-day-icon {
+  width: 24px;
+  height: 24px;
+}
+
+.weather-forecast-day-temps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+}
+
+.weather-forecast-day-high {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.weather-forecast-day-low {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.weather-forecast-day-precip {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: #3b82f6;
+  margin-top: 2px;
+}
+
+.precip-icon {
+  width: 10px;
+  height: 10px;
+}
+
+.weather-unit-toggle {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 4px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.weather-unit-toggle:hover {
+  background: var(--color-bg-hover);
+}
+
+.weather-unit-toggle span {
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.weather-unit-toggle span.active {
+  background: var(--color-primary);
+  color: white;
+}
+
+@media (max-width: 480px) {
+  .weather-forecast-days {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .weather-forecast-day:nth-child(n+5) {
+    display: none;
+  }
+}
+
 /* ===================================
     STOCK CARD
     Stock quote card component
