@@ -38,7 +38,7 @@ interface FlightRadarCardProps {
 const createPlaneIcon = (isDark: boolean) => {
   const color = isDark ? '#ffffff' : '#10b981';
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="color: ${color}; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="color: #10b981; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));">
       <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
     </svg>
   `;

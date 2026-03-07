@@ -1,13 +1,9 @@
 'use client';
 
 import React from 'react';
-import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
 import { Plane, Clock, MapPin, ArrowRight, AlertTriangle, Package, Timer } from 'lucide-react';
 import { AirlineLogo } from '@/components/ui/airline-logo';
-import { useTheme } from '@/lib/theme-provider';
-import { getFlightStatusGradient, getAltitude, formatTime } from '@/lib/utils';
+import { getFlightStatusGradient, formatTime } from '@/lib/utils';
 
 interface FlightStatusData {
   flightNumber: string;
@@ -18,8 +14,8 @@ interface FlightStatusData {
     logoUrl: string | null;
   };
   route: {
-    origin: { code: string; icao: string; city: string; airport: string; country: string; lat?: number; lng?: number };
-    destination: { code: string; icao: string; city: string; airport: string; country: string; lat?: number; lng?: number };
+    origin: { code: string; icao: string; city: string; airport: string; country: string };
+    destination: { code: string; icao: string; city: string; airport: string; country: string };
   };
   status: { code: string; display: string; color: string; isLanded: boolean; isDelayed: boolean; isCancelled: boolean };
   times: {
@@ -58,37 +54,7 @@ interface FlightStatusCardProps {
   data: FlightStatusData;
 }
 
-const createOriginIcon = () => L.divIcon({
-  html: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10" fill="#ef4444" stroke="#ef4444"/><circle cx="12" cy="12" r="4" fill="white"/></svg>`,
-  className: 'origin-marker',
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-});
-
-const createDestIcon = () => L.divIcon({
-  html: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10" fill="#10b981" stroke="#10b981"/><circle cx="12" cy="12" r="4" fill="white"/></svg>`,
-  className: 'dest-marker',
-  iconSize: [16, 16],
-  iconAnchor: [8, 8],
-});
-
-function MapBounds({ origin, destination }: { origin: { lat?: number; lng?: number }; destination: { lat?: number; lng?: number } }) {
-  const map = useMap();
-  React.useEffect(() => {
-    if (origin.lat && origin.lng && destination.lat && destination.lng) {
-      const bounds = L.latLngBounds(
-        [[origin.lat, origin.lng], [destination.lat, destination.lng]]
-      );
-      map.fitBounds(bounds, { padding: [40, 40] });
-    }
-  }, [origin, destination, map]);
-  return null;
-}
-
 export function FlightStatusCard({ data }: FlightStatusCardProps) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === 'dark';
-  
   if (!data.times) {
     return (
       <div className="flight-status-simple">
@@ -107,16 +73,17 @@ export function FlightStatusCard({ data }: FlightStatusCardProps) {
   };
 
   const StatusIcon = getStatusIcon();
-  const tileUrl = isDark 
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-
-  const hasPosition = data.route.origin.lat && data.route.origin.lng && data.route.destination.lat && data.route.destination.lng;
 
   return (
     <div className="flight-status-simple">
       <div className="flight-status-simple-header">
-        <AirlineLogo url={data.airline.logoUrl} name={data.airline.name} className="w-14 h-14" />
+        <div className="flight-status-simple-logo">
+          {data.airline.logoUrl ? (
+            <img src={data.airline.logoUrl} alt={data.airline.name} className="flight-status-simple-logo-img" />
+          ) : (
+            <Plane className="flight-status-simple-logo-fallback" />
+          )}
+        </div>
         <div className="flight-status-simple-info">
           <div className="flight-status-simple-top">
             <span className="flight-status-simple-number">{data.flightNumber}</span>
@@ -147,35 +114,6 @@ export function FlightStatusCard({ data }: FlightStatusCardProps) {
           <span className="flight-status-simple-time">{formatTime(data.times.local?.arrival || '--:--')}</span>
         </div>
       </div>
-
-      {hasPosition && (
-        <div className="flight-status-simple-map">
-          <MapContainer
-            zoom={6}
-            className="flight-status-simple-map-container"
-            scrollWheelZoom={false}
-          >
-            <TileLayer url={tileUrl} />
-            <MapBounds origin={data.route.origin} destination={data.route.destination} />
-            <Polyline
-              positions={[
-                [data.route.origin.lat!, data.route.origin.lng!],
-                [data.route.destination.lat!, data.route.destination.lng!]
-              ]}
-              color="#8b5cf6"
-              weight={2}
-              opacity={0.6}
-              dashArray="8, 8"
-            />
-            <Marker position={[data.route.origin.lat!, data.route.origin.lng!]} icon={createOriginIcon()}>
-              <Popup>{data.route.origin.code}</Popup>
-            </Marker>
-            <Marker position={[data.route.destination.lat!, data.route.destination.lng!]} icon={createDestIcon()}>
-              <Popup>{data.route.destination.code}</Popup>
-            </Marker>
-          </MapContainer>
-        </div>
-      )}
 
       <div className="flight-status-simple-details">
         <div className="flight-status-simple-detail">

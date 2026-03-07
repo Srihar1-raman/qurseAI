@@ -2683,6 +2683,29 @@
   background: var(--color-bg);
 }
 
+.flight-status-simple-logo {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg-secondary);
+}
+
+.flight-status-simple-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.flight-status-simple-logo-fallback {
+  width: 24px;
+  height: 24px;
+  color: var(--color-text-muted);
+}
+
 .flight-status-simple-info {
   flex: 1;
 }
