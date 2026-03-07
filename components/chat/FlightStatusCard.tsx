@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Plane, Clock, MapPin, ArrowRight, AlertTriangle, Package, Timer } from 'lucide-react';
+import { Plane, MapPin, ArrowRight, AlertTriangle, Package, Timer } from 'lucide-react';
 import { AirlineLogo } from '@/components/ui/airline-logo';
-import { getFlightStatusGradient, formatTime } from '@/lib/utils';
+import { formatTime } from '@/lib/utils';
 
 const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
@@ -47,14 +47,6 @@ export function FlightStatusCard({ data }: FlightStatusCardProps) {
     return <div className="flight-status-card"><div className="flight-status-card-loading">Loading flight data...</div></div>;
   }
 
-  const statusGradient = getFlightStatusGradient(data.status.code);
-  const getStatusIcon = () => {
-    if (data.status.isCancelled) return AlertTriangle;
-    if (data.status.isDelayed) return Clock;
-    return Plane;
-  };
-  const StatusIcon = getStatusIcon();
-
   return (
     <div className="flight-status-card">
       <div className="flight-status-card-map">
@@ -70,13 +62,7 @@ export function FlightStatusCard({ data }: FlightStatusCardProps) {
         <div className="flight-status-card-header">
           <AirlineLogo url={data.airline.logoUrl} iataCode={data.airline.iataCode} name={data.airline.name} className="flight-status-card-logo" />
           <div className="flight-status-card-meta">
-            <div className="flight-status-card-top">
-              <span className="flight-status-card-number">{data.flightNumber}</span>
-              <div className="flight-status-card-badge" style={{ background: statusGradient }}>
-                <StatusIcon className="flight-status-card-badge-icon" />
-                <span>{data.status.display}</span>
-              </div>
-            </div>
+            <span className="flight-status-card-number">{data.flightNumber}</span>
             <span className="flight-status-card-airline">{data.airline.name}</span>
           </div>
         </div>
@@ -176,7 +162,6 @@ function FlightMap({ origin, destination, position, flightNumber }: {
       zoom={hasCoords ? 4 : 1} 
       className="flight-radar-mini-map" 
       scrollWheelZoom={false}
-      zoomControl={false}
       style={{ height: '100%', width: '100%' }}
     >
       <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" attribution='&copy; CARTO' />

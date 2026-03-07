@@ -1301,7 +1301,9 @@
 .tool-cards-container .stock-chart,
 .tool-cards-container .company-info-card,
 .tool-cards-container .crypto-card,
-.tool-cards-container .forex-card {
+.tool-cards-container .forex-card,
+.tool-cards-container .flight-status-card,
+.tool-cards-container .flight-radar-mini {
   width: 100%;
   max-width: 100%;
   margin-left: 0;
