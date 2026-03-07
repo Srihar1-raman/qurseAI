@@ -4,8 +4,9 @@ import React, { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Radar, Navigation, Plane, Gauge, ArrowUpDown } from 'lucide-react';
+import { Radar, Navigation, Plane, Gauge, ArrowRight } from 'lucide-react';
 import { AirlineLogo } from '@/components/ui/airline-logo';
+import { useTheme } from '@/lib/theme-provider';
 import { getAltitude, getDirection } from '@/lib/utils';
 
 interface FlightData {
@@ -36,32 +37,19 @@ interface FlightRadarCardProps {
 
 const createPlaneIcon = (direction: number) => {
   const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" style="transform: rotate(${direction - 90}deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));">
-      <circle cx="16" cy="16" r="14" fill="rgba(16, 185, 129, 0.9)" stroke="rgba(255,255,255,0.9)" stroke-width="2"/>
-      <path d="M16 6 L22 18 L16 15 L10 18 Z" fill="white"/>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(${direction - 45}deg); filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));">
+      <path d="M17.8 8.6L12 2.1 6.2 8.6c-.9.9-1.2 2.2-.8 3.4l1.6 4.6c.4 1.1 1.5 1.9 2.7 1.9h4.6c1.2 0 2.3-.8 2.7-1.9l1.6-4.6c.4-1.2.1-2.5-.8-3.4z"/>
+      <path d="M12 6.5v11"/>
+      <path d="M8.5 12.5l-2.5-2.5"/>
+      <path d="M15.5 12.5l2.5-2.5"/>
     </svg>
   `;
   return L.divIcon({
     html: svg,
     className: 'plane-marker-icon',
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -14],
-  });
-};
-
-const createAirportIcon = () => {
-  const svg = `
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
-      <circle cx="12" cy="12" r="10" fill="#ef4444" stroke="#ef4444"/>
-      <circle cx="12" cy="12" r="3" fill="white"/>
-    </svg>
-  `;
-  return L.divIcon({
-    html: svg,
-    className: 'airport-marker-icon',
-    iconSize: [20, 20],
-    iconAnchor: [10, 10],
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
   });
 };
 
@@ -78,6 +66,12 @@ function MapCenter({ flights }: { flights: FlightData[] }) {
 
 export function FlightRadarCard({ data }: FlightRadarCardProps) {
   const { flights, total, query, lastUpdate } = data;
+  const { resolvedTheme } = useTheme();
+  
+  const isDark = resolvedTheme === 'dark';
+  const tileUrl = isDark 
+    ? 'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png';
 
   if (!flights || flights.length === 0) {
     return (
@@ -103,20 +97,14 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
               <span className="flight-radar-hero-subtitle">Near {query.airport}</span>
             )}
             {query.bbox && (
-              <span className="flight-radar-hero-subtitle">Regional coverage</span>
+              <span className="flight-radar-hero-subtitle">Regional Coverage</span>
             )}
           </div>
         </div>
         
-        <div className="flight-radar-hero-right">
-          <div className="flight-radar-live-badge">
-            <span className="flight-radar-live-dot" />
-            <span>LIVE</span>
-          </div>
-          <div className="flight-radar-total">
-            <Plane className="flight-radar-total-icon" />
-            <span>{total}</span>
-          </div>
+        <div className="flight-radar-total">
+          <Plane className="flight-radar-total-icon" />
+          <span>{total} flights</span>
         </div>
       </div>
 
@@ -128,8 +116,8 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
           zoomControl={true}
         >
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url={tileUrl}
+            attribution='&copy; <a href="https://carto.com/">CARTO</a>'
           />
           <MapCenter flights={flights} />
           
@@ -141,28 +129,30 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
             >
               <Popup>
                 <div className="flight-radar-popup">
-                  <div className="flight-radar-popup-header">
-                    <AirlineLogo url={flight.airline.logoUrl} name={flight.airline.iataCode} className="w-8 h-8" />
-                    <div className="flight-radar-popup-info">
-                      <span className="flight-radar-popup-number">{flight.flightNumber}</span>
-                      <span className="flight-radar-popup-airline">{flight.airline.iataCode}</span>
-                    </div>
+                  <div className="flight-radar-popup-airline">
+                    <AirlineLogo url={flight.airline.logoUrl} name={flight.airline.iataCode} className="w-10 h-10" />
+                    <span className="flight-radar-popup-flightnum">{flight.flightNumber}</span>
                   </div>
                   
-                  <div className="flight-radar-popup-route">
-                    <span className="flight-radar-popup-origin">{flight.route.origin.code}</span>
-                    <ArrowUpDown className="flight-radar-popup-arrow" />
-                    <span className="flight-radar-popup-dest">{flight.route.destination.code}</span>
+                  <div className="flight-radar-popup-route-row">
+                    <span className="flight-radar-popup-code">{flight.route.origin.code}</span>
+                    <ArrowRight className="flight-radar-popup-arrow" />
+                    <span className="flight-radar-popup-code">{flight.route.destination.code}</span>
                   </div>
                   
-                  <div className="flight-radar-popup-stats">
-                    <div className="flight-radar-popup-stat">
-                      <Gauge className="flight-radar-popup-stat-icon" />
-                      <span>{flight.position.speed} km/h</span>
+                  <div className="flight-radar-popup-specs">
+                    <div className="flight-radar-popup-spec">
+                      <Gauge className="flight-radar-popup-spec-icon" />
+                      <span className="flight-radar-popup-spec-value">{flight.position.speed}</span>
+                      <span className="flight-radar-popup-spec-unit">km/h</span>
                     </div>
-                    <div className="flight-radar-popup-stat">
-                      <ArrowUpDown className="flight-radar-popup-stat-icon" />
-                      <span>{getAltitude(flight.position.altitude)}</span>
+                    <div className="flight-radar-popup-spec">
+                      <Plane className="flight-radar-popup-spec-icon" />
+                      <span className="flight-radar-popup-spec-value">{getAltitude(flight.position.altitude)}</span>
+                    </div>
+                    <div className="flight-radar-popup-spec">
+                      <span className="flight-radar-popup-spec-icon">↑</span>
+                      <span className="flight-radar-popup-spec-value">{getDirection(flight.position.direction)}</span>
                     </div>
                   </div>
                 </div>
