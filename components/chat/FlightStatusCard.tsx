@@ -73,14 +73,14 @@ function FlightMap({ origin, destination, position, flightNumber, progress, stat
   useEffect(() => {
     async function loadIcons() {
       const L = await import('leaflet');
-      const planeSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="color: ${statusColor}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>`;
-      const originSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><circle cx="12" cy="12" r="10" fill="#ef4444" stroke="white" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="8" font-weight="bold" fill="white">${origin.code}</text></svg>`;
-      const destSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><circle cx="12" cy="12" r="10" fill="#22c55e" stroke="white" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="8" font-weight="bold" fill="white">${destination.code}</text></svg>`;
+      const planeSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" style="color: ${statusColor}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));"><path fill="currentColor" d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></svg>`;
+      const originSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));"><circle cx="12" cy="12" r="10" fill="#ef4444" stroke="white" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="7" font-weight="bold" fill="white">${origin.code}</text></svg>`;
+      const destSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));"><circle cx="12" cy="12" r="10" fill="#22c55e" stroke="white" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="7" font-weight="bold" fill="white">${destination.code}</text></svg>`;
 
       setIcons({
-        planeIcon: L.divIcon({ html: planeSvg, className: 'plane-marker-icon', iconSize: [22, 22], iconAnchor: [11, 11], popupAnchor: [0, -11] }),
-        originIcon: L.divIcon({ html: originSvg, className: 'airport-marker-icon', iconSize: [28, 28], iconAnchor: [14, 14] }),
-        destIcon: L.divIcon({ html: destSvg, className: 'airport-marker-icon', iconSize: [28, 28], iconAnchor: [14, 14] }),
+        planeIcon: L.divIcon({ html: planeSvg, className: 'plane-marker-icon', iconSize: [28, 28], iconAnchor: [14, 14], popupAnchor: [0, -14] }),
+        originIcon: L.divIcon({ html: originSvg, className: 'airport-marker-icon', iconSize: [32, 32], iconAnchor: [16, 16] }),
+        destIcon: L.divIcon({ html: destSvg, className: 'airport-marker-icon', iconSize: [32, 32], iconAnchor: [16, 16] }),
       });
     }
     loadIcons();

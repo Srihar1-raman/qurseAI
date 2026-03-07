@@ -46,16 +46,16 @@ export function FlightRadarCard({ data, resolvedTheme = 'light' }: FlightRadarCa
     async function loadIcon() {
       const L = await import('leaflet');
       const svg = `
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="color: #10b981; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
-          <path d="M21 0v-2.5l-8-5.5V3.5c0-1.1-.9-2-2-2S10 2.67 10 3.5V9.5L2 14.5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" style="color: #10b981; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));">
+          <path fill="currentColor" d="M17.8 19.2L16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>
         </svg>
       `;
       setPlaneIcon(L.divIcon({
         html: svg,
         className: 'plane-marker-icon',
-        iconSize: [24, 24],
-        iconAnchor: [12, 12],
-        popupAnchor: [0, -12],
+        iconSize: [28, 28],
+        iconAnchor: [14, 14],
+        popupAnchor: [0, -14],
       }));
     }
     loadIcon();
