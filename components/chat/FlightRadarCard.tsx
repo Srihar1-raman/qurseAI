@@ -1,13 +1,18 @@
 'use client';
 
 import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import dynamic from 'next/dynamic';
 import { Plane } from 'lucide-react';
 import { AirlineLogo } from '@/components/ui/airline-logo';
-import { useTheme } from '@/lib/theme-provider';
 import { getAltitude } from '@/lib/utils';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapContainer), { ssr: false });
+const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
+const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
+const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
+const useMap = dynamic(() => import('react-leaflet').then(mod => mod.useMap), { ssr: false });
 
 interface FlightData {
   flightNumber: string;
@@ -35,8 +40,7 @@ interface FlightRadarCardProps {
   };
 }
 
-const createPlaneIcon = (isDark: boolean) => {
-  const color = isDark ? '#ffffff' : '#10b981';
+const createPlaneIcon = () => {
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="color: #10b981; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));">
       <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
@@ -63,13 +67,7 @@ function MapCenter({ flights }: { flights: FlightData[] }) {
 }
 
 export function FlightRadarCard({ data }: FlightRadarCardProps) {
-  const { flights, total, query, lastUpdate } = data;
-  const { resolvedTheme } = useTheme();
-  
-  const isDark = resolvedTheme === 'dark';
-  const tileUrl = isDark 
-    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
+  const { flights, total } = data;
 
   if (!flights || flights.length === 0) {
     return (
@@ -88,10 +86,10 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
         center={[centerLat, centerLng]} 
         zoom={5} 
         className="flight-radar-mini-map"
-        zoomControl={true}
+        scrollWheelZoom={false}
       >
         <TileLayer
-          url={tileUrl}
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; CARTO'
         />
         <MapCenter flights={flights} />
@@ -100,7 +98,7 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
           <Marker
             key={idx}
             position={[flight.position.lat, flight.position.lng]}
-            icon={createPlaneIcon(isDark)}
+            icon={createPlaneIcon()}
           >
             <Popup>
               <div className="flight-radar-mini-popup">
@@ -110,7 +108,7 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
                 </div>
                 <div className="flight-radar-mini-popup-stats">
                   <span>{flight.position.speed} km/h</span>
-                  <span>{getAltitude(flight.position.altitude)}</span>
+                  <span>{flight.position.altitude} ft</span>
                 </div>
               </div>
             </Popup>
