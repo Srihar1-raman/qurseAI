@@ -1,8 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 
 interface HistorySearchProps {
   searchQuery: string;
@@ -11,23 +10,22 @@ interface HistorySearchProps {
   onClearHistory: () => void;
 }
 
-export default function HistorySearch({ 
-  searchQuery, 
-  onSearchChange, 
-  conversationCount, 
-  onClearHistory 
+export default function HistorySearch({
+  searchQuery,
+  onSearchChange,
+  conversationCount,
+  onClearHistory
 }: HistorySearchProps) {
   const { resolvedTheme, mounted } = useTheme();
 
   return (
     <div className="history-search-container">
       <div className="history-search-input-wrapper">
-        <Image 
-          src={getIconPath("send", resolvedTheme, false, mounted)} 
-          alt="Search" 
-          width={14} 
-          height={14} 
-          className="history-search-icon" 
+        <Icon
+          name="send"
+          size={14}
+          aria-label="Search"
+          className="history-search-icon"
         />
         <input
           type="text"
@@ -37,18 +35,17 @@ export default function HistorySearch({
           className="history-search-input"
         />
       </div>
-      <button 
+      <button
         onClick={onClearHistory}
         className="clear-history-btn-search"
         disabled={conversationCount === 0}
         title="Clear all conversations"
       >
-        <Image 
-          src="/icon_light/clear_history.svg" 
-          alt="Clear" 
-          width={16} 
-          height={16} 
-          className="icon-sm" 
+        <Icon
+          name="clear_history"
+          size={16}
+          aria-label="Clear"
+          className="icon-sm"
         />
         Clear
       </button>

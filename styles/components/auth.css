@@ -169,7 +169,7 @@
   .form-content {
     position: relative !important;
     z-index: 1 !important;
-    background: rgba(255, 255, 255, 0.9) !important;
+    background: rgba(255,255,255, 0.9) !important;
     padding: 20px !important;
     border-radius: 12px !important;
     backdrop-filter: blur(10px) !important;
@@ -201,5 +201,3 @@
     font-size: 28px !important;
   }
 }
-
-

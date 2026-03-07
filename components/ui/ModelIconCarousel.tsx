@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useEffect, useState, useRef } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { PREMIUM_MODELS } from '@/components/rate-limit/constants';
 
 export interface ModelIconCarouselProps {
@@ -160,14 +159,12 @@ export function ModelIconCarousel({
                     height: `${iconContainerSize}px`,
                   }}
                 >
-                  <Image
-                    src={getIconPath(model.icon, resolvedTheme, false, mounted)}
-                    alt={model.name}
-                    width={iconSize}
-                    height={iconSize}
+                  <Icon
+                    name={model.icon as any}
+                    size={iconSize}
+                    aria-label={model.name}
                     style={{
                       opacity: 0.8,
-                      objectFit: 'contain',
                     }}
                   />
                 </div>

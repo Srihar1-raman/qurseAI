@@ -1,10 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
-import { useTheme } from '@/lib/theme-provider';
+import { Icon } from '@/components/icons';
 import { useToast } from '@/lib/contexts/ToastContext';
-import { getIconPath } from '@/lib/icon-utils';
 
 interface DiagramActionsProps {
   code: string;
@@ -15,7 +13,6 @@ export const DiagramActions: React.FC<DiagramActionsProps> = ({
   code,
   onDownload,
 }) => {
-  const { resolvedTheme, mounted } = useTheme();
   const toast = useToast();
   const [copied, setCopied] = useState(false);
 
@@ -40,18 +37,16 @@ export const DiagramActions: React.FC<DiagramActionsProps> = ({
         type="button"
       >
         {copied ? (
-          <Image
-            src={getIconPath('check', resolvedTheme, false, mounted)}
-            alt="Copied"
-            width={14}
-            height={14}
+          <Icon
+            name="check"
+            size={14}
+            aria-label="Copied"
           />
         ) : (
-          <Image
-            src={getIconPath('copy', resolvedTheme, false, mounted)}
-            alt="Copy"
-            width={14}
-            height={14}
+          <Icon
+            name="copy"
+            size={14}
+            aria-label="Copy"
           />
         )}
       </button>
@@ -62,11 +57,10 @@ export const DiagramActions: React.FC<DiagramActionsProps> = ({
           title="Download"
           type="button"
         >
-          <Image
-            src={getIconPath('download', resolvedTheme, false, mounted)}
-            alt="Download"
-            width={14}
-            height={14}
+          <Icon
+            name="download"
+            size={14}
+            aria-label="Download"
           />
         </button>
       )}

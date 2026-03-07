@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getSharedConversationByToken } from '@/lib/db/conversations.server';
 import { getSharedMessagesServerSide } from '@/lib/db/messages.server';
+import { getUserProfileByIdServerSide } from '@/lib/db/users.server';
 import { createScopedLogger } from '@/lib/utils/logger';
 import SharedConversationClient from './SharedConversationClient';
 import type { Conversation, QurseMessage } from '@/lib/types';

@@ -1,12 +1,8 @@
 'use client';
 
-import Image from 'next/image';
-import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 
 export default function DeepSearchButton() {
-  const { resolvedTheme, mounted } = useTheme();
-
   const handleClick = () => {
     console.log('Deep Search clicked');
     // TODO: Implement deep search functionality
@@ -31,14 +27,12 @@ export default function DeepSearchButton() {
       }}
       className="hover:bg-bg-hover hover:border-border-hover deep-search-mobile"
     >
-      <Image
-        src={getIconPath('deep_search', resolvedTheme, false, mounted)}
-        alt="Deep Search"
-        width={14}
-        height={14}
+      <Icon
+        name="deep_search"
+        size={16}
+        aria-label="Deep Search"
       />
       <span className="deep-search-text">Deep Search</span>
     </button>
   );
 }
-

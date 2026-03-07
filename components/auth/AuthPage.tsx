@@ -85,4 +85,3 @@ export default function AuthPage({ mode }: AuthPageProps) {
     </div>
   );
 }
-

@@ -115,7 +115,7 @@ export const chatRequestSchema = z.object({
     .array(messageSchema)
     .min(1, 'At least one message is required')
     .max(100, 'Maximum 100 messages per request'),
-  
+
   conversationId: z
     .string()
     .optional()
@@ -126,13 +126,15 @@ export const chatRequestSchema = z.object({
         return UUID_REGEX.test(id);
       },
       {
-        message: 'Conversation ID must be a valid UUID',
+        message: 'Conversation ID must be a valid UUID format',
       }
     ),
-  
+
   model: modelSchema.default('openai/gpt-oss-120b'),
-  
+
   chatMode: chatModeSchema.default('chat'),
+
+  userLocation: z.string().optional().describe('User location string for context-aware responses'),
 });
 
 /**

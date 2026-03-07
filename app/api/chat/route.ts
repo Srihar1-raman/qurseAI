@@ -64,6 +64,7 @@ export async function POST(req: Request) {
       conversationId,
       model,
       chatMode,
+      userLocation,
     } = validationResult.data!;
 
     // ============================================
@@ -216,6 +217,7 @@ export async function POST(req: Request) {
       modeConfig: {
         systemPrompt: modeConfig.systemPrompt,
         enabledTools: modeConfig.enabledTools,
+        userLocation: userLocation,
       },
       model,
       user: fullUserData,
@@ -229,8 +231,8 @@ export async function POST(req: Request) {
       conversationId,
       contextMetadata: trimResult.metadata,
       customPrompt: userPreferences?.custom_prompt,
-      memoryPrompt, // Add memory context to stream
-      userMessageText: messageData.userMessageText, // Add user message text for memory saving
+      memoryPrompt,
+      userMessageText: messageData.userMessageText,
       enableSupermemory: userPreferences?.enable_supermemory ?? true,
     });
 

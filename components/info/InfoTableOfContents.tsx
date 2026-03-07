@@ -1,9 +1,8 @@
 'use client';
 
 import { RefObject, useCallback } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { cn } from '@/lib/utils';
 import type { TableOfContentsItem } from '@/lib/types';
 
@@ -65,11 +64,10 @@ export function InfoTableOfContents({
               className="info-toc-close"
               aria-label="Close table of contents"
             >
-              <Image
-                src={getIconPath('cross', resolvedTheme, false, mounted)}
-                alt="Close"
-                width={16}
-                height={16}
+              <Icon
+                name="cross"
+                size={16}
+                aria-label="Close"
               />
             </button>
           </div>

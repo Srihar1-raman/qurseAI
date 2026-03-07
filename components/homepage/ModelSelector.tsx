@@ -1,13 +1,12 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { useRouter } from 'next/navigation';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { models, canUseModel, type ModelConfig, getModelConfig } from '@/ai/models';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -19,7 +18,11 @@ interface GroupedModels {
   models: ModelConfig[];
 }
 
-export default function ModelSelector() {
+interface ModelSelectorProps {
+  showChevron?: boolean;
+}
+
+export default function ModelSelector({ showChevron = true }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -89,12 +92,10 @@ export default function ModelSelector() {
     return (
       <Button variant="secondary" className="justify-between gap-2" disabled>
         <div className="flex items-center gap-2">
-          <Image
-            src={getIconPath('model', resolvedTheme, false, mounted)}
-            alt="Model"
-            width={16}
-            height={16}
-            className="icon-sm"
+          <Icon
+            name="model"
+            size={16}
+            aria-label="Model"
           />
           <span className="model-selector-text">Loading...</span>
         </div>
@@ -111,10 +112,10 @@ export default function ModelSelector() {
 
     // Use actual Pro status from auth context
     const accessCheck = canUseModel(modelValue, user, isProUser);
-    
+
     if (!accessCheck.canUse) {
       setModelClickCount(prev => prev + 1);
-      
+
       // Guest user clicking on Pro model - show sign in popup (they need to sign in first, then can upgrade)
       if (!user && model.requiresPro) {
         setSelectedModelForPopup(model);
@@ -123,7 +124,7 @@ export default function ModelSelector() {
         setSearchQuery('');
         return;
       }
-      
+
       // Guest user clicking on free model that requires auth - show sign in popup
       if (!user && model.requiresAuth) {
         setSelectedModelForPopup(model);
@@ -132,7 +133,7 @@ export default function ModelSelector() {
         setSearchQuery('');
         return;
       }
-      
+
       // Free user clicking on Pro model - show upgrade popup
       if (user && model.requiresPro && !isProUser) {
         setShowUpgradePopup(true);
@@ -140,7 +141,7 @@ export default function ModelSelector() {
         setSearchQuery('');
         return;
       }
-      
+
       // Fallback: show toast for other cases
       const errorMessage = accessCheck.reason || 'You do not have access to this model';
       showToastError(errorMessage);
@@ -165,22 +166,22 @@ export default function ModelSelector() {
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-2">
-          <Image
-            src={getIconPath('model', resolvedTheme, false, mounted)}
-            alt="Model"
-            width={16}
-            height={16}
+          <Icon
+            name="model"
+            size={16}
+            aria-label="Model"
           />
           <span className="model-selector-text">
             {selectedModelConfig?.label || selectedModel}
           </span>
-          <Image
-            src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-            alt="Dropdown"
-            width={12}
-            height={12}
-            className={cn("transition-transform", isOpen && "rotate-180")}
-          />
+          {showChevron && (
+            <Icon
+              name="dropdown-arrow"
+              size={12}
+              aria-label="Dropdown"
+              className={cn("transition-transform", isOpen && "icon-rotate-180")}
+            />
+          )}
         </div>
       </Button>
 
@@ -190,11 +191,10 @@ export default function ModelSelector() {
           {/* Search Input */}
           <div className="p-2 border-b border-border">
             <div className="relative">
-              <Image
-                src={getIconPath('search', resolvedTheme, false, mounted)}
-                alt="Search"
-                width={14}
-                height={14}
+              <Icon
+                name="search"
+                size={14}
+                aria-label="Search"
                 className="absolute left-2 top-1/2 -translate-y-1/2 opacity-50"
               />
               <input
@@ -218,7 +218,7 @@ export default function ModelSelector() {
               groupedModels.map((group) => (
                 <div key={group.category}>
                   {/* Category Header */}
-                  <div 
+                  <div
                     style={{
                       padding: '8px 12px 4px 12px',
                       fontSize: '11px',
@@ -257,7 +257,7 @@ export default function ModelSelector() {
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-1">
-                              <span 
+                              <span
                                 style={{
                                   fontSize: '13px',
                                   fontWeight: 600,
@@ -266,15 +266,15 @@ export default function ModelSelector() {
                               >
                                 {model.label}
                               </span>
-                              
+
                               {/* Tags */}
                               {model.tags?.slice(0, 2).map(tag => (
                                 <span
                                   key={tag}
                                   className={cn(
                                     "text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold",
-                                    isSelected 
-                                      ? "bg-white/20 text-white" 
+                                    isSelected
+                                      ? "bg-white/20 text-white"
                                       : "bg-[var(--color-bg-secondary)] text-[var(--color-text-secondary)] border border-[var(--color-border)]"
                                   )}
                                 >
@@ -282,8 +282,8 @@ export default function ModelSelector() {
                                 </span>
                               ))}
                             </div>
-                            
-                            <p 
+
+                            <p
                               style={{
                                 fontSize: '11px',
                                 color: isSelected ? 'rgba(255,255,255,0.8)' : 'var(--color-text-secondary)',
@@ -298,43 +298,46 @@ export default function ModelSelector() {
                           {/* Icons */}
                           <div className="flex items-center gap-1 flex-shrink-0">
                             {model.vision && (
-                              <div 
+                              <div
                                 className={cn(
-                                  "w-[18px] h-[18px] rounded flex items-center justify-center",
+                                  "w-[18px] h-[18px] rounded flex items-center justify-center overflow-hidden",
                                   isSelected
                                     ? "bg-white/10 border border-white/20"
-                                    : "bg-muted/50 border border-border/50"
+                                    : "bg-muted/20 border border-border/10"
                                 )}
                                 title="Vision support"
                               >
-                                <Image
-                                  src={getIconPath('image', resolvedTheme, isSelected, mounted)}
-                                  alt="Vision"
-                                  width={10}
-                                  height={10}
-                                />
-                              </div>
-                            )}
-                            
-                            {model.reasoning && (
-                              <div 
-                                className={cn(
-                                  "w-[18px] h-[18px] rounded flex items-center justify-center",
-                                  isSelected
-                                    ? "bg-white/10 border border-white/20"
-                                    : "bg-muted/50 border border-border/50"
-                                )}
-                                title="Reasoning model"
-                              >
-                                <Image
-                                  src={getIconPath('reason', resolvedTheme, isSelected, mounted)}
-                                  alt="Reasoning"
-                                  width={10}
-                                  height={10}
-                                />
+                                <div className="flex items-center justify-center w-full h-full">
+                                  <Icon
+                                    name="image"
+                                    size={10}
+                                    aria-label="Vision"
+                                    style={{ display: 'block' }}
+                                  />
+                                </div>
                               </div>
                             )}
 
+                            {model.reasoning && (
+                              <div
+                                className={cn(
+                                  "w-[18px] h-[18px] rounded flex items-center justify-center overflow-hidden",
+                                  isSelected
+                                    ? "bg-white/10 border border-white/20"
+                                    : "bg-muted/20 border border-border/10"
+                                )}
+                                title="Reasoning model"
+                              >
+                                <div className="flex items-center justify-center w-full h-full">
+                                  <Icon
+                                    name="reason"
+                                    size={10}
+                                    aria-label="Reasoning"
+                                    style={{ display: 'block' }}
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>

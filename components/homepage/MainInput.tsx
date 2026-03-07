@@ -1,9 +1,8 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { useConversation } from '@/lib/contexts/ConversationContext';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useSidebar } from '@/lib/contexts/SidebarContext';
@@ -203,12 +202,11 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
                   padding: '0',
                 }}
               >
-                <Image
-                  src={getIconPath('attach', resolvedTheme, false, mounted)}
-                  alt="Attach"
-                  width={16}
-                  height={16}
-                />
+                <Icon
+                name="attach"
+                size={16}
+                aria-label="Attach file"
+              />
               </button>
             )}
 
@@ -230,11 +228,11 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
               }}
             >
               <div style={{ opacity: 1 }}>
-                <Image
-                  src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                  alt="Send"
-                  width={16}
-                  height={16}
+                <Icon
+                  name="send"
+                  size={16}
+                  aria-label="Send"
+                  className={inputValue.trim() ? "icon-active" : ""}
                 />
               </div>
             </button>
@@ -261,11 +259,10 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
                     padding: '0',
                   }}
                 >
-                  <Image
-                    src={getIconPath('attach', resolvedTheme, false, mounted)}
-                    alt="Attach"
-                    width={16}
-                    height={16}
+                  <Icon
+                    name="attach"
+                    size={16}
+                    aria-label="Attach file"
                   />
                 </button>
               </div>
@@ -292,14 +289,14 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
                   cursor: inputValue.trim() ? 'pointer' : 'not-allowed',
                 }}
               >
-                <div style={{ opacity: 1 }}>
-                  <Image
-                    src={inputValue.trim() ? '/icon_light/send.svg' : getIconPath('send', resolvedTheme, false, mounted)}
-                    alt="Send"
-                    width={16}
-                    height={16}
-                  />
-                </div>
+                  <div style={{ opacity: 1 }}>
+                    <Icon
+                      name="send"
+                      size={16}
+                      aria-label="Send"
+                      className={inputValue.trim() ? "icon-active" : ""}
+                    />
+                  </div>
               </button>
             </div>
           </>

@@ -7,24 +7,24 @@
  * Mapping from chat mode ID to UI option name
  */
 const CHAT_MODE_TO_OPTION: Record<string, string> = {
+  'web': 'Web Search',
   'chat': 'Chat',
-  'web': 'Web Search (Exa)',
-  'arxiv': 'arXiv',
+  'finance': 'Finance',
 };
 
 /**
  * Mapping from UI option name to chat mode ID
  */
 const OPTION_TO_CHAT_MODE: Record<string, string> = {
+  'Web Search': 'web',
   'Chat': 'chat',
-  'Web Search (Exa)': 'web',
-  'arXiv': 'arxiv',
+  'Finance': 'finance',
 };
 
 /**
  * Convert chat mode ID to UI option name
- * @param chatMode - Chat mode ID (e.g., 'chat', 'web', 'arxiv')
- * @returns UI option name (e.g., 'Chat', 'Web Search (Exa)', 'arXiv')
+ * @param chatMode - Chat mode ID (e.g., 'chat')
+ * @returns UI option name (e.g., 'Chat')
  */
 export function getOptionFromChatMode(chatMode: string): string {
   return CHAT_MODE_TO_OPTION[chatMode] || 'Chat';
@@ -32,8 +32,8 @@ export function getOptionFromChatMode(chatMode: string): string {
 
 /**
  * Convert UI option name to chat mode ID
- * @param optionName - UI option name (e.g., 'Chat', 'Web Search (Exa)', 'arXiv')
- * @returns Chat mode ID (e.g., 'chat', 'web', 'arxiv')
+ * @param optionName - UI option name (e.g., 'Chat')
+ * @returns Chat mode ID (e.g., 'chat')
  */
 export function getChatModeFromOption(optionName: string): string {
   return OPTION_TO_CHAT_MODE[optionName] || 'chat';

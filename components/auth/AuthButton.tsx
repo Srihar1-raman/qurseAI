@@ -1,11 +1,10 @@
 'use client';
 
-import Image from 'next/image';
 import { useState, useMemo } from 'react';
 import { useQueryState } from 'nuqs';
 import { callbackUrlParser } from '@/lib/url-params/parsers';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { createClient } from '@/lib/supabase/client';
 
@@ -130,11 +129,10 @@ export default function AuthButton({ provider, onClick, callbackUrl: callbackUrl
         </>
       ) : (
         <>
-          <Image 
-            src={getIconPath(config.icon, resolvedTheme, false, mounted)}
-            alt={config.name} 
-            width={iconOnly ? 24 : 20} 
-            height={iconOnly ? 24 : 20} 
+          <Icon
+            name={config.icon as any}
+            size={iconOnly ? 24 : 20}
+            aria-label={config.name}
             style={{ opacity: 0.9 }}
           />
           {!iconOnly && config.name}

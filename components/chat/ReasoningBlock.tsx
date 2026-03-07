@@ -1,9 +1,8 @@
 'use client';
 
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import MarkdownRenderer from '@/components/markdown';
 import { createScopedLogger } from '@/lib/utils/logger';
 import '@/styles/components/reasoning.css';
@@ -13,9 +12,10 @@ const logger = createScopedLogger('components/chat/ReasoningBlock');
 interface ReasoningBlockProps {
   reasoning: string;
   isStreaming: boolean;
+  reasoningTime?: number;
 }
 
-export function ReasoningBlock({ reasoning, isStreaming }: ReasoningBlockProps) {
+export function ReasoningBlock({ reasoning, isStreaming, reasoningTime }: ReasoningBlockProps) {
   const { resolvedTheme, mounted } = useTheme();
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -42,13 +42,20 @@ export function ReasoningBlock({ reasoning, isStreaming }: ReasoningBlockProps) 
 
   // Calculate duration when streaming completes
   useEffect(() => {
-    if (startTime && !isStreaming && duration === null) {
+    // If reasoningTime is provided (from DB), use it
+    if (reasoningTime && !isStreaming && duration === null) {
+      const seconds = Math.floor(reasoningTime);
+      setDuration(`~${seconds}s`);
+      logger.debug('Using saved reasoning time', { duration: seconds });
+    }
+    // Otherwise, calculate from streaming (for fresh messages)
+    else if (startTime && !isStreaming && duration === null) {
       const elapsed = Date.now() - startTime;
       const seconds = Math.max(1, Math.round(elapsed / 1000));
       setDuration(`~${seconds}s`);
       logger.debug('Reasoning completed', { duration: seconds });
     }
-  }, [isStreaming, startTime, duration]);
+  }, [isStreaming, startTime, duration, reasoningTime]);
 
   // Auto-collapse when streaming completes (unless user manually expanded)
   useEffect(() => {
@@ -141,11 +148,10 @@ export function ReasoningBlock({ reasoning, isStreaming }: ReasoningBlockProps) 
             {headerText}
           </span>
           {!isStreaming && (
-            <Image
-              src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-              alt=""
-              width={16}
-              height={16}
+            <Icon
+              name="dropdown-arrow"
+              size={16}
+              aria-label=""
               className="reasoning-chevron"
             />
           )}
@@ -170,11 +176,10 @@ export function ReasoningBlock({ reasoning, isStreaming }: ReasoningBlockProps) 
             <span className="reasoning-header-text">
               {headerText}
             </span>
-            <Image
-              src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-              alt=""
-              width={16}
-              height={16}
+            <Icon
+              name="dropdown-arrow"
+              size={16}
+              aria-label=""
               className="reasoning-chevron expanded"
             />
           </div>

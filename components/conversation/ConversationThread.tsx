@@ -55,6 +55,7 @@ function ConversationThreadComponent({
             onShare={onShare}
             user={user}
             isStreaming={isStreaming && index === deduplicatedMessages.length - 1} // Only last message streams
+            reasoningTime={message.reasoning_time}
           />
         ))}
 

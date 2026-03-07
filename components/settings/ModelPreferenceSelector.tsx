@@ -1,12 +1,11 @@
 'use client';
 
 import { useState, useRef, useEffect, useMemo } from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useToast } from '@/lib/contexts/ToastContext';
 import { useRouter } from 'next/navigation';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { models, canUseModel, type ModelConfig } from '@/ai/models';
 import { cn } from '@/lib/utils';
 import { useClickOutside } from '@/hooks/use-click-outside';
@@ -162,12 +161,11 @@ export function ModelPreferenceSelector({
           <span className="truncate">
             {selectedModelConfig?.label || value}
           </span>
-          <Image
-            src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-            alt="Dropdown"
-            width={12}
-            height={12}
-            className={cn("transition-transform flex-shrink-0", isOpen && "rotate-180")}
+          <Icon
+            name="dropdown-arrow"
+            size={12}
+            aria-label="Dropdown"
+            className={cn("transition-transform flex-shrink-0", isOpen && "icon-rotate-180")}
           />
         </button>
 
@@ -180,11 +178,10 @@ export function ModelPreferenceSelector({
             {/* Search Input */}
             <div className="p-2 border-b border-border">
               <div className="relative">
-                <Image
-                  src={getIconPath('search', resolvedTheme, false, mounted)}
-                  alt="Search"
-                  width={14}
-                  height={14}
+                <Icon
+                  name="search"
+                  size={14}
+                  aria-label="Search"
                   className="absolute left-2 top-1/2 -translate-y-1/2 opacity-50"
                 />
                 <input
@@ -289,38 +286,44 @@ export function ModelPreferenceSelector({
                               {model.vision && (
                                 <div
                                   className={cn(
-                                    "w-[18px] h-[18px] rounded flex items-center justify-center",
+                                    "w-[16px] h-[16px] rounded flex items-center justify-center flex-shrink-0",
                                     isSelected
                                       ? "bg-white/10 border border-white/20"
-                                      : "bg-muted/50 border border-border/50"
+                                      : "bg-muted/50 border border-border/50 opacity-70"
                                   )}
                                   title="Vision support"
                                 >
-                                  <Image
-                                    src={getIconPath('image', resolvedTheme, isSelected, mounted)}
-                                    alt="Vision"
-                                    width={10}
-                                    height={10}
-                                  />
+                                  <div className="flex items-center justify-center w-full h-full">
+                                    <Icon
+                                      name="image"
+                                      size={9}
+                                      aria-label="Vision"
+                                      className={isSelected ? "icon-active" : ""}
+                                      style={{ display: 'block' }}
+                                    />
+                                  </div>
                                 </div>
                               )}
 
                               {model.reasoning && (
                                 <div
                                   className={cn(
-                                    "w-[18px] h-[18px] rounded flex items-center justify-center",
+                                    "w-[16px] h-[16px] rounded flex items-center justify-center flex-shrink-0",
                                     isSelected
                                       ? "bg-white/10 border border-white/20"
-                                      : "bg-muted/50 border border-border/50"
+                                      : "bg-muted/50 border border-border/50 opacity-70"
                                   )}
                                   title="Reasoning model"
                                 >
-                                  <Image
-                                    src={getIconPath('reason', resolvedTheme, isSelected, mounted)}
-                                    alt="Reasoning"
-                                    width={10}
-                                    height={10}
-                                  />
+                                  <div className="flex items-center justify-center w-full h-full">
+                                    <Icon
+                                      name="reason"
+                                      size={9}
+                                      aria-label="Reasoning"
+                                      className={isSelected ? "icon-active" : ""}
+                                      style={{ display: 'block' }}
+                                    />
+                                  </div>
                                 </div>
                               )}
                             </div>

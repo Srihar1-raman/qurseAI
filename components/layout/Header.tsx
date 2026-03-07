@@ -2,13 +2,12 @@
 
 import { useState, useRef, useEffect, useMemo, useCallback, memo } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { useQueryStates } from 'nuqs';
 import { useTheme } from '@/lib/theme-provider';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import { useOptimisticNavigation } from '@/hooks/use-optimistic-navigation';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { useClickOutside } from '@/hooks/use-click-outside';
 import type { HeaderProps } from '@/lib/types';
 import { AuthButtons } from './AuthButtons';
@@ -43,7 +42,7 @@ function Header({
       .filter(([_, value]) => value !== null)
       .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
       .join('&');
-    
+
     const currentUrl = pathname + (queryString ? `?${queryString}` : '');
     // Only add callbackUrl if not already on login/signup pages (avoid loops)
     if (currentUrl.startsWith('/login') || currentUrl.startsWith('/signup')) {
@@ -83,7 +82,7 @@ function Header({
   // Show loading skeleton while auth is initializing
   if (isLoading) {
     return (
-      <header 
+      <header
         style={{
           position: 'fixed',
           top: 0,
@@ -134,7 +133,7 @@ function Header({
   }
 
   return (
-    <header 
+    <header
       style={{
         position: 'fixed',
         top: 0,
@@ -189,15 +188,14 @@ function Header({
             }}
             title="New Chat"
           >
-            <Image 
-              src={getIconPath("plus", resolvedTheme, false, mounted)} 
-              alt="New Chat" 
-              width={16} 
-              height={16} 
+            <Icon
+              name="plus"
+              size={16}
+              aria-label="New Chat"
             />
           </button>
         )}
-        
+
         {/* History Button */}
         {showHistoryButton && (
           <button
@@ -216,11 +214,10 @@ function Header({
             }}
             title="Chat History"
           >
-            <Image 
-              src={getIconPath("history", resolvedTheme, false, mounted)} 
-              alt="History" 
-              width={16} 
-              height={16} 
+            <Icon
+              name="history"
+              size={16}
+              aria-label="History"
             />
           </button>
         )}
@@ -248,20 +245,11 @@ function Header({
 // Custom comparison function for React.memo()
 // Only re-render if user.id, showNewChatButton, showHistoryButton, or theme changes
 const areEqual = (prevProps: HeaderProps, nextProps: HeaderProps) => {
-  // Compare user by ID (most reliable identifier)
-  const prevUserId = prevProps.user?.id;
-  const nextUserId = nextProps.user?.id;
-  if (prevUserId !== nextUserId) return false;
-
-  // Compare boolean props
-  if (prevProps.showNewChatButton !== nextProps.showNewChatButton) return false;
-  if (prevProps.showHistoryButton !== nextProps.showHistoryButton) return false;
-
-  // Compare function references (if they change, we need to re-render)
-  if (prevProps.onNewChatClick !== nextProps.onNewChatClick) return false;
-  if (prevProps.onHistoryClick !== nextProps.onHistoryClick) return false;
-
-  return true;
+  return (
+    prevProps.user?.id === nextProps.user?.id &&
+    prevProps.showNewChatButton === nextProps.showNewChatButton &&
+    prevProps.showHistoryButton === nextProps.showHistoryButton
+  );
 };
 
 export default memo(Header, areEqual);

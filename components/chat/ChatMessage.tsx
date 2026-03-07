@@ -1,16 +1,28 @@
 'use client';
 
 import React from 'react';
+import dynamic from 'next/dynamic';
 import { useTheme } from '@/lib/theme-provider';
-import Image from 'next/image';
+import { Icon } from '@/components/icons';
 import MarkdownRenderer from '@/components/markdown';
-import { getIconPath } from '@/lib/icon-utils';
 import { ReasoningBlock } from './ReasoningBlock';
-import { ToolCallCard } from './ToolCallCard';
-import { WebSearchResult } from './WebSearchResult';
-import { AcademicSearchResult } from './AcademicSearchResult';
+import { ToolCallBlock } from './ToolCallBlock';
+import { WebSearchResults } from './WebSearchResults';
+import { WeatherCard } from './WeatherCard';
+import { StockCard } from './StockCard';
+import { StockChart } from './StockChart';
+import { CompanyInfoCard } from './CompanyInfoCard';
+import { FlightStatusCard } from './FlightStatusCard';
+import { FlightSearchCard } from './FlightSearchCard';
+import { AirportInfoCard } from './AirportInfoCard';
+import { AirlineInfoCard } from './AirlineInfoCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
+
+const FlightRadarCard = dynamic(() => import('./FlightRadarCard').then(mod => ({ default: mod.FlightRadarCard })), {
+  ssr: false,
+  loading: () => <div className="flight-radar-card"><div className="flight-radar-empty">Loading radar...</div></div>
+});
 
 interface ToolExecution {
   toolName: string;
@@ -18,31 +30,10 @@ interface ToolExecution {
   args?: Record<string, unknown>;
   result?: unknown;
   status: 'loading' | 'complete' | 'error';
-  state?: string; // AI SDK tool state: 'input-streaming', 'input-available', 'output-available'
+  state?: string;
 }
 
-// Helper function to check if result has search results
-function hasSearchResults(result: unknown): result is {
-  results: Array<{
-    index: number;
-    title: string;
-    url: string;
-    content: string;
-    publishedDate?: string;
-    author?: string;
-  }>;
-  provider: 'exa' | 'tavily';
-} {
-  return (
-    typeof result === 'object' &&
-    result !== null &&
-    'results' in result &&
-    Array.isArray((result as Record<string, unknown>).results) &&
-    'provider' in result
-  );
-}
-
-function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false }: ChatMessageProps) {
+function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false, reasoningTime }: ChatMessageProps) {
   const { resolvedTheme, mounted } = useTheme();
 
   // DEBUG: Log all parts to see what we're getting
@@ -66,26 +57,13 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
     .map(p => p.text)
     .join('\n\n') || null;
 
-  // Extract tool calls and results using AI SDK's isToolUIPart
+  // Extract tool executions using AI SDK's isToolUIPart
   const toolExecutions = React.useMemo(() => {
     const executions: ToolExecution[] = [];
-
-    // Use AI SDK's official type guard to find tool parts
     const toolParts = message.parts.filter(isToolUIPart);
 
-    // DEBUG: Log what we found
-    console.log('[ChatMessage] Tool parts found:', {
-      messageId: message.id,
-      toolPartsFound: toolParts.length,
-      toolPartTypes: toolParts.map(p => p.type),
-    });
-
-    // Each tool part contains both input and output (when available)
     for (const part of toolParts) {
-      // Extract tool name from type (e.g., 'tool-web_search' -> 'web_search')
       const toolName = (part as { type: string }).type.replace('tool-', '');
-
-      // Tool parts have toolCallId, state, input, and output
       const toolCallId = 'toolCallId' in part ? (part.toolCallId as string) : (part as { type: string }).type;
       const state = 'state' in part ? (part.state as string) : undefined;
       const input = 'input' in part ? (part.input as Record<string, unknown>) : {};
@@ -93,7 +71,6 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
 
       let status: 'loading' | 'complete' | 'error' = 'loading';
 
-      // Determine status from state
       if (state === 'output-available') {
         if (output && typeof output === 'object' && 'error' in output) {
           status = 'error';
@@ -109,13 +86,328 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
         toolCallId,
         args: input,
         result: output,
-        status: isStreaming && status === 'complete' ? 'loading' : status,
+        status, // Show tool result immediately when available, even while AI streams text
         state,
       });
     }
 
     return executions;
   }, [message.parts, isStreaming]);
+
+  // Separate web_search executions from other tools
+  const webSearchExecutions = React.useMemo(() => {
+    type ToolCallResultWithResults = { results: { title: string; url: string; text: string; publishedDate?: string | null; images: { url: string; alt?: string }[] }[] };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'web_search')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        query: e.args && typeof e.args.query === 'string' ? e.args.query : '',
+        status: e.status,
+        result: e.result as ToolCallResultWithResults | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Weather executions
+  const weatherExecutions = React.useMemo(() => {
+    type WeatherResult = {
+      city: string;
+      country: string;
+      region?: string | null;
+      temperature: number;
+      unit: 'C' | 'F';
+      description: string;
+      humidity: number;
+      windSpeed: number;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'weather')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        city: e.args && typeof e.args.city === 'string' ? e.args.city : '',
+        status: e.status,
+        result: e.result as WeatherResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Weather history executions
+  const weatherHistoryExecutions = React.useMemo(() => {
+    type WeatherHistoryResult = {
+      city: string;
+      country: string;
+      region?: string | null;
+      date: string;
+      displayDate: string;
+      temperature: number;
+      unit: 'C' | 'F';
+      description: string;
+      icon: string;
+      humidity: number;
+      windSpeed: number;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'weather_history')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        city: e.args && typeof e.args.city === 'string' ? e.args.city : '',
+        status: e.status,
+        result: e.result as WeatherHistoryResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Flight status executions
+  const flightStatusExecutions = React.useMemo(() => {
+    type FlightStatusResult = {
+      flightNumber: string;
+      airline: { name: string; iataCode: string; logoUrl: string | null };
+      route: { origin: { code: string; city: string; country: string };
+        destination: { code: string; city: string; country: string };
+      };
+      status: { code: string; display: string; color: string; isLanded: boolean; isDelayed: boolean; isCancelled: boolean };
+      times: { scheduled: { departure: string | undefined; arrival: string | undefined };
+        estimated: { departure: string | undefined; arrival: string | undefined } | null;
+        actual: { departure: string | undefined; arrival: string | undefined } | null;
+        local: { departure: string | undefined; arrival: string | undefined };
+        utc: { departure: string | null; arrival: string | null };
+      } | null;
+      duration: string | null;
+      aircraft: { type: string; code: string };
+      gate: { departure: string; arrival: string };
+      terminal: { departure: string; arrival: string };
+      isLive: boolean;
+      lastUpdate: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'flight_status')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        flightNumber: e.args && typeof e.args.flight === 'string' ? e.args.flight : '',
+        status: e.status,
+        result: e.result as FlightStatusResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Flight search executions
+  const flightSearchExecutions = React.useMemo(() => {
+    type FlightSearchResult = {
+      flights: any[];
+      total: number;
+      hasMore: boolean;
+      query: { origin?: string; destination?: string; airline?: string };
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'flight_search')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as FlightSearchResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Flight radar executions
+  const flightRadarExecutions = React.useMemo(() => {
+    type FlightRadarResult = {
+      flights: any[];
+      total: number;
+      query: { airport?: string; bbox?: string };
+      lastUpdate: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'flight_radar')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as FlightRadarResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Airport info executions
+  const airportInfoExecutions = React.useMemo(() => {
+    type AirportInfoResult = {
+      airport: { code: string; name: string };
+      flights: any[];
+      total: number;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'airport_info')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as AirportInfoResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Airline info executions
+  const airlineInfoExecutions = React.useMemo(() => {
+    type AirlineInfoResult = {
+      airline: { iataCode: string; icaoCode: string; name: string };
+      fleet: any[];
+      fleetStats: {
+        totalAircraft: number;
+        averageAge: number | null;
+        aircraftTypes: [string, number][];
+        manufacturers: [string, number][];
+      };
+      total: number;
+      hasMore: boolean;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'airline_info')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as AirlineInfoResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Stock executions
+  const stockQuoteExecutions = React.useMemo(() => {
+    type StockQuoteResult = {
+      symbol: string;
+      price: number;
+      open: number;
+      high: number;
+      low: number;
+      volume: number;
+      previousClose: number;
+      change: number;
+      changePercent: number;
+      latestTradingDay: string;
+      isPositive: boolean;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'stock_quote')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        symbol: e.args && typeof e.args.symbol === 'string' ? e.args.symbol : '',
+        status: e.status,
+        result: e.result as StockQuoteResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Stock history executions (for charts)
+  const stockHistoryExecutions = React.useMemo(() => {
+    type StockHistoryResult = {
+      symbol: string;
+      historicalData: Array<{
+        date: string;
+        open: number;
+        high: number;
+        low: number;
+        close: number;
+        volume: number;
+      }>;
+      latestPrice: number;
+      priceChange: number;
+      priceChangePercent: number;
+      period: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'stock_history')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        symbol: e.args && typeof e.args.symbol === 'string' ? e.args.symbol : '',
+        status: e.status,
+        result: e.result as StockHistoryResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Company info executions
+  const companyInfoExecutions = React.useMemo(() => {
+    type CompanyInfoResult = {
+      symbol: string;
+      name: string;
+      currency: string;
+      exchange: string;
+      exchangeShortName: string;
+      industry: string;
+      website: string;
+      description: string;
+      ceo: string;
+      sector: string;
+      country: string;
+      fullTimeEmployees: number;
+      address: string;
+      city: string;
+      state: string;
+      zip: string;
+      mktCap: number;
+      beta: number;
+      volAvg: number;
+      lastDiv: number;
+      price: number;
+      image: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'company_info')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        symbol: e.args && typeof e.args.symbol === 'string' ? e.args.symbol : '',
+        status: e.status,
+        result: e.result as CompanyInfoResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Crypto executions
+  const cryptoExecutions = React.useMemo(() => {
+    type CryptoResult = {
+      fromCurrency: string;
+      toCurrency: string;
+      exchangeRate: number;
+      lastRefreshed: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'crypto_price')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        fromCurrency: e.args && typeof e.args.fromCurrency === 'string' ? e.args.fromCurrency : '',
+        status: e.status,
+        result: e.result as CryptoResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Forex executions
+  const forexExecutions = React.useMemo(() => {
+    type ForexResult = {
+      fromCurrency: string;
+      toCurrency: string;
+      exchangeRate: number;
+      lastRefreshed: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'forex_rate')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        fromCurrency: e.args && typeof e.args.fromCurrency === 'string' ? e.args.fromCurrency : '',
+        toCurrency: e.args && typeof e.args.toCurrency === 'string' ? e.args.toCurrency : '',
+        status: e.status,
+        result: e.result as ForexResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  const otherToolExecutions = React.useMemo(() => {
+    return toolExecutions.filter(e => 
+      e.toolName !== 'web_search' && 
+      e.toolName !== 'weather' &&
+      e.toolName !== 'stock_quote' &&
+      e.toolName !== 'stock_history' &&
+      e.toolName !== 'company_info' &&
+      e.toolName !== 'crypto_price' &&
+      e.toolName !== 'forex_rate'
+    );
+  }, [toolExecutions]);
 
   // Check if message contains stop text and split it
   const stopTextPattern = '*User stopped this message here*';
@@ -143,47 +435,275 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
           <ReasoningBlock
             reasoning={reasoning}
             isStreaming={isStreaming}
+            reasoningTime={reasoningTime}
           />
         )}
 
-        {/* Tool execution UI (for assistant messages only) */}
-        {!isUser && toolExecutions.length > 0 && (
-          <div className="tool-executions">
-            {toolExecutions.map((execution) => (
-              <React.Fragment key={execution.toolCallId}>
-                <ToolCallCard
-                  toolName={execution.toolName}
-                  status={execution.status}
-                  resultCount={
-                    hasSearchResults(execution.result)
-                      ? execution.result.results.length
-                      : undefined
-                  }
-                  error={
-                    execution.result && typeof execution.result === 'object' && 'error' in execution.result
-                      ? String((execution.result as { error?: string }).error)
-                      : undefined
-                  }
+        {/* Web search results (unified box for all queries) */}
+        {!isUser && webSearchExecutions.length > 0 && (
+          <WebSearchResults
+            executions={webSearchExecutions}
+            isStreaming={isStreaming}
+          />
+        )}
+
+        {/* Tool result cards - centered */}
+        {!isUser && (
+          <div className="tool-cards-container">
+            {/* Weather card - render generated UI or data-based UI */}
+            {weatherExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              
+              // Check if result is a React element (from generate) or data object (from execute)
+              if (React.isValidElement(execution.result)) {
+                // Render the pre-built component from generate
+                return <React.Fragment key={execution.toolCallId}>{execution.result}</React.Fragment>;
+              }
+              
+              // Fallback: render from data (execute approach)
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+              
+              const weatherData = execution.result as {
+                city: string;
+                country: string;
+                region?: string | null;
+                temperature: number;
+                unit: 'C' | 'F';
+                description: string;
+                humidity: number;
+                windSpeed: number;
+                forecast?: any[];
+              };
+              
+              return (
+                <WeatherCard
+                  key={execution.toolCallId}
+                  weather={weatherData}
                 />
-                {execution.status === 'complete' && hasSearchResults(execution.result) && (
-                  <>
-                    {execution.toolName === 'web_search' && (
-                      <WebSearchResult
-                        query={execution.args?.query as string || ''}
-                        results={execution.result.results}
-                        provider={execution.result.provider}
-                      />
-                    )}
-                    {execution.toolName === 'academic_search' && (
-                      <AcademicSearchResult
-                        query={execution.args?.query as string || ''}
-                        results={execution.result.results}
-                        provider={execution.result.provider}
-                      />
-                    )}
-                  </>
-                )}
-              </React.Fragment>
+              );
+            })}
+
+            {/* Weather history cards - without forecast */}
+            {weatherHistoryExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              const historyData = execution.result as {
+                city: string;
+                country: string;
+                region?: string | null;
+                date: string;
+                displayDate: string;
+                temperature: number;
+                unit: 'C' | 'F';
+                description: string;
+                icon: string;
+                humidity: number;
+                windSpeed: number;
+              };
+
+              return (
+                <WeatherCard
+                  key={execution.toolCallId}
+                  weather={{
+                    city: historyData.city,
+                    country: historyData.country,
+                    region: historyData.region,
+                    temperature: historyData.temperature,
+                    unit: historyData.unit,
+                    description: historyData.description,
+                    humidity: historyData.humidity,
+                    windSpeed: historyData.windSpeed,
+                  }}
+                  showForecast={false}
+                />
+              );
+            })}
+
+            {/* Flight status cards */}
+            {flightStatusExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              const flightData = execution.result as any;
+
+              return (
+                <FlightStatusCard
+                  key={execution.toolCallId}
+                  data={flightData}
+                />
+              );
+            })}
+
+            {/* Flight search cards */}
+            {flightSearchExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              return (
+                <FlightSearchCard
+                  key={execution.toolCallId}
+                  data={execution.result as any}
+                />
+              );
+            })}
+
+            {/* Flight radar cards */}
+            {flightRadarExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              return (
+                <FlightRadarCard
+                  key={execution.toolCallId}
+                  data={execution.result as any}
+                />
+              );
+            })}
+
+            {/* Airport info cards */}
+            {airportInfoExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              return (
+                <AirportInfoCard
+                  key={execution.toolCallId}
+                  data={execution.result as any}
+                />
+              );
+            })}
+
+            {/* Airline info cards */}
+            {airlineInfoExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+
+              const result = execution.result as { error?: string } | undefined;
+              if (!result || 'error' in result) return null;
+
+              return (
+                <AirlineInfoCard
+                  key={execution.toolCallId}
+                  data={execution.result as any}
+                />
+              );
+            })}
+
+            {/* Stock quote cards */}
+            {stockQuoteExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+              
+              const companyInfo = companyInfoExecutions.find(c => c.symbol === execution.symbol);
+              const companyData = companyInfo?.result && !('error' in companyInfo.result) ? companyInfo.result : undefined;
+              
+              return (
+                <StockCard
+                  key={execution.toolCallId}
+                  quote={execution.result}
+                  company={companyData as any}
+                />
+              );
+            })}
+
+            {/* Stock charts */}
+            {stockHistoryExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+              
+              return (
+                <StockChart
+                  key={execution.toolCallId}
+                  symbol={execution.result.symbol}
+                  data={execution.result.historicalData}
+                  priceChange={execution.result.priceChange}
+                />
+              );
+            })}
+
+            {/* Company info cards */}
+            {companyInfoExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+              
+              return (
+                <CompanyInfoCard
+                  key={execution.toolCallId}
+                  company={execution.result}
+                />
+              );
+            })}
+
+            {/* Crypto price cards */}
+            {cryptoExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+              
+              return (
+                <div key={execution.toolCallId} className="crypto-card">
+                  <div className="crypto-card-header">
+                    <span className="crypto-card-symbol">{execution.result.fromCurrency}/{execution.result.toCurrency}</span>
+                  </div>
+                  <div className="crypto-card-price">
+                    ${execution.result.exchangeRate.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                  <div className="crypto-card-updated">
+                    Last updated: {execution.result.lastRefreshed}
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Forex rate cards */}
+            {forexExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if ('error' in execution.result) return null;
+              
+              return (
+                <div key={execution.toolCallId} className="forex-card">
+                  <div className="forex-card-header">
+                    <span className="forex-card-symbol">{execution.result.fromCurrency}/{execution.result.toCurrency}</span>
+                  </div>
+                  <div className="forex-card-rate">
+                    {execution.result.exchangeRate.toFixed(4)}
+                  </div>
+                  <div className="forex-card-updated">
+                    Last updated: {execution.result.lastRefreshed}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Other tool execution blocks (collapsible, shows results when clicked) */}
+        {!isUser && otherToolExecutions.length > 0 && (
+          <div className="tool-executions">
+            {otherToolExecutions.map((execution) => (
+              <ToolCallBlock
+                key={execution.toolCallId}
+                toolName={execution.toolName}
+                status={execution.status}
+                result={execution.result}
+                query={execution.args && typeof execution.args.query === 'string' ? execution.args.query : undefined}
+              />
             ))}
           </div>
         )}
@@ -205,40 +725,40 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
             </>
           )}
         </div>
-        
+
         {shouldShowActions && (
           <div className="message-actions">
             <button onClick={copyToClipboard} className="action-btn" title="Copy message">
-              <Image src={getIconPath('copy', resolvedTheme, false, mounted)} alt="Copy" width={16} height={16} className="icon" />
+              <Icon name="copy" size={16} aria-label="Copy" />
             </button>
             {onShare && (
-              <button 
+              <button
                 onClick={async () => {
                   try {
                     await onShare();
                   } catch {
                     // Silently handle error
                   }
-                }} 
-                className="action-btn" 
+                }}
+                className="action-btn"
                 title="Share conversation"
               >
-                <Image src={getIconPath('share', resolvedTheme, false, mounted)} alt="Share" width={16} height={16} className="icon" />
+                <Icon name="share" size={16} aria-label="Share" />
               </button>
             )}
             {onRedo && (
-              <button 
+              <button
                 onClick={async () => {
                   try {
                     await onRedo();
                   } catch {
                     // Silently handle error
                   }
-                }} 
-                className="action-btn" 
+                }}
+                className="action-btn"
                 title="Regenerate response"
               >
-                <Image src={getIconPath('redo', resolvedTheme, false, mounted)} alt="Redo" width={16} height={16} className="icon" />
+                <Icon name="redo" size={16} aria-label="Redo" />
               </button>
             )}
           </div>
@@ -255,17 +775,17 @@ export default React.memo(ChatMessageComponent, (prevProps, nextProps) => {
   if (prevProps.message.id !== nextProps.message.id) {
     return false;
   }
-  
+
   // Quick check: if isUser changed, re-render
   if (prevProps.isUser !== nextProps.isUser) {
     return false;
   }
-  
+
   // Quick check: if parts array length changed, content definitely changed
   if (prevProps.message.parts.length !== nextProps.message.parts.length) {
     return false;
   }
-  
+
   // Only re-render if message content actually changed
   const prevContent = prevProps.message.parts
     .filter((p): p is { type: 'text'; text: string } => p.type === 'text')
@@ -286,12 +806,8 @@ export default React.memo(ChatMessageComponent, (prevProps, nextProps) => {
     .join('');
 
   // Compare tool parts
-  const prevToolParts = prevProps.message.parts.filter(p =>
-    p.type === 'tool-call' || p.type === 'tool-result'
-  );
-  const nextToolParts = nextProps.message.parts.filter(p =>
-    p.type === 'tool-call' || p.type === 'tool-result'
-  );
+  const prevToolParts = prevProps.message.parts.filter(isToolUIPart);
+  const nextToolParts = nextProps.message.parts.filter(isToolUIPart);
 
   // Check if streaming status changed
   if (prevProps.isStreaming !== nextProps.isStreaming) {
@@ -305,4 +821,3 @@ export default React.memo(ChatMessageComponent, (prevProps, nextProps) => {
     prevToolParts.length === nextToolParts.length
   );
 });
-

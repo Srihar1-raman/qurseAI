@@ -1,8 +1,7 @@
 'use client';
 
-import Image from 'next/image';
+import { Icon } from '@/components/icons';
 import type { MetricType, TokenType, TimeRange, ResolvedTheme } from '@/components/settings/activity/types';
-import { getIconPath } from '@/lib/icon-utils';
 import { METRIC_OPTIONS, TOKEN_TYPE_OPTIONS, TIME_RANGE_OPTIONS } from './constants';
 
 interface ActivityControlsProps {
@@ -29,9 +28,9 @@ const dropdownStyle: React.CSSProperties = {
   fontWeight: 400,
   cursor: 'pointer',
   outline: 'none',
-  appearance: 'none' as any,
-  WebkitAppearance: 'none' as any,
-  MozAppearance: 'none' as any,
+  appearance: 'none',
+  WebkitAppearance: 'none',
+  MozAppearance: 'none',
   fontFamily: 'inherit',
   transition: 'all 0.2s',
 };
@@ -66,15 +65,11 @@ function SelectDropdown({
   options,
   onChange,
   minWidth,
-  resolvedTheme,
-  mounted,
 }: {
   value: string;
   options: readonly { value: string; label: string }[];
   onChange: (value: string) => void;
   minWidth: string;
-  resolvedTheme: ResolvedTheme;
-  mounted: boolean;
 }) {
   return (
     <div style={{ position: 'relative', display: 'inline-block' }}>
@@ -95,11 +90,9 @@ function SelectDropdown({
           </option>
         ))}
       </select>
-      <Image
-        src={getIconPath('dropdown-arrow', resolvedTheme, false, mounted)}
-        alt="▼"
-        width={10}
-        height={10}
+      <Icon
+        name="dropdown-arrow"
+        size={10}
         style={{
           position: 'absolute',
           right: '10px',
@@ -107,6 +100,7 @@ function SelectDropdown({
           transform: 'translateY(-50%)',
           pointerEvents: 'none',
         }}
+        aria-label="▼"
       />
     </div>
   );
@@ -142,8 +136,6 @@ export function ActivityControls({
           options={METRIC_OPTIONS}
           onChange={(value) => onMetricChange(value as MetricType)}
           minWidth="120px"
-          resolvedTheme={resolvedTheme}
-          mounted={mounted}
         />
       </div>
 
@@ -158,8 +150,6 @@ export function ActivityControls({
             ]}
             onChange={onModelChange}
             minWidth="140px"
-            resolvedTheme={resolvedTheme}
-            mounted={mounted}
           />
         </div>
       )}
@@ -172,8 +162,6 @@ export function ActivityControls({
             options={TOKEN_TYPE_OPTIONS}
             onChange={(value) => onTokenTypeChange(value as TokenType)}
             minWidth="100px"
-            resolvedTheme={resolvedTheme}
-            mounted={mounted}
           />
         </div>
       )}

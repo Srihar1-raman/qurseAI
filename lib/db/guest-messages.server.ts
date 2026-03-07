@@ -49,16 +49,17 @@ function extractMessageText(message: UIMessage): string {
 export async function getGuestMessagesServerSide(
   conversationId: string,
   options?: { limit?: number; offset?: number }
-): Promise<{ 
-  messages: Array<{ 
-    id: string; 
-    role: 'user' | 'assistant'; 
-    parts: MessageParts; 
-    model?: string; 
-    input_tokens?: number; 
-    output_tokens?: number; 
-    total_tokens?: number; 
+): Promise<{
+  messages: Array<{
+    id: string;
+    role: 'user' | 'assistant';
+    parts: MessageParts;
+    model?: string;
+    input_tokens?: number;
+    output_tokens?: number;
+    total_tokens?: number;
     completion_time?: number;
+    reasoning_time?: number;
   }>;
   hasMore: boolean;
   dbRowCount: number;
@@ -69,7 +70,7 @@ export async function getGuestMessagesServerSide(
 
   let query = supabase
     .from('guest_messages')
-    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time')
+    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time, reasoning_time')
     .eq('guest_conversation_id', conversationId)
     .order('created_at', { ascending: false });
   
@@ -104,13 +105,15 @@ export async function getGuestMessagesServerSide(
   
   const messages = reversed.map((msg) => {
     let parts: MessageParts = [];
-    
+
     if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
       parts = msg.parts as MessageParts;
     } else {
       parts = convertLegacyContentToParts(msg.content);
     }
-    
+
+    const msgWithReasoning = msg as typeof msg & { reasoning_time?: number | null };
+
     return {
       id: msg.id,
       role: msg.role as 'user' | 'assistant',
@@ -120,6 +123,7 @@ export async function getGuestMessagesServerSide(
       output_tokens: msg.output_tokens ?? undefined,
       total_tokens: msg.total_tokens ?? undefined,
       completion_time: msg.completion_time ?? undefined,
+      reasoning_time: msgWithReasoning.reasoning_time ?? undefined,
     };
   });
 
@@ -184,6 +188,7 @@ export async function saveGuestMessage(payload: GuestMessagePayload): Promise<vo
     output_tokens: outputTokens,
     total_tokens: totalTokens,
     completion_time: completionTime,
+    reasoning_time: completionTime,
   });
 
   if (error) {

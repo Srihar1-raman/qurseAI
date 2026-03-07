@@ -7,7 +7,7 @@ import ActivityGraph from '@/components/settings/ActivityGraph';
 import MainInput from '@/components/homepage/MainInput';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { useMobile } from '@/hooks/use-mobile';
 import type { InfoSection } from '@/lib/types';
 
@@ -34,6 +34,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
   const [demoInputValue, setDemoInputValue] = useState('');
   const { resolvedTheme, mounted } = useTheme();
   const isMobile = useMobile();
+  const [hoveredTech, setHoveredTech] = useState<{ name: string; x: number; y: number } | null>(null);
 
   const techIcons = [
     { name: 'Next.js', icon: 'nextjs' },
@@ -41,9 +42,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
     { name: 'Supabase', icon: 'supabase' },
     { name: 'Sentry', icon: 'sentry' },
     { name: 'Upstash', icon: 'upstash' },
-    { name: 'Exa', icon: 'exaAI' },
-    { name: 'Tavily', icon: 'tavily' },
-    { name: 'AI SDK', icon: 'aisdk.png' },
+    { name: 'AI SDK', icon: 'aisdk' },
   ];
 
   // Memoize the path to avoid unnecessary re-renders
@@ -77,6 +76,18 @@ export function InfoContent({ sectionId }: InfoContentProps) {
 
     loadContent();
   }, [sectionId, filePath]);
+
+  // Global mouse move listener for tooltip positioning
+  useEffect(() => {
+    if (!hoveredTech) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      setHoveredTech(prev => prev ? { ...prev, x: e.clientX, y: e.clientY } : null);
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, [hoveredTech]);
 
   if (isLoading) {
     return null;
@@ -156,7 +167,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             style={{
               position: 'relative',
               display: 'grid',
-              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
               gap: isMobile ? '16px' : '32px',
               marginTop: '24px',
               padding: isMobile ? '16px' : '32px',
@@ -169,6 +180,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
               maxWidth: '560px',
               width: '100%',
             }}
+            onMouseLeave={() => setHoveredTech(null)}
           >
             {/* Horizontal lines */}
             <div style={{
@@ -206,7 +218,7 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             {/* Vertical lines */}
             <div style={{
               position: 'absolute',
-              left: '50%',
+              left: isMobile ? '50%' : '33.33%',
               top: '0',
               bottom: '0',
               width: '1px',
@@ -214,37 +226,26 @@ export function InfoContent({ sectionId }: InfoContentProps) {
               transform: 'translateX(-50%)'
             }}></div>
             {!isMobile && (
-              <>
-                <div style={{
-                  position: 'absolute',
-                  left: '148px',
-                  top: '0',
-                  bottom: '0',
-                  width: '1px',
-                  backgroundColor: 'var(--color-border)',
-                }}></div>
-                <div style={{
-                  position: 'absolute',
-                  left: '280px',
-                  top: '0',
-                  bottom: '0',
-                  width: '1px',
-                  backgroundColor: 'var(--color-border)',
-                }}></div>
-                <div style={{
-                  position: 'absolute',
-                  left: '412px',
-                  top: '0',
-                  bottom: '0',
-                  width: '1px',
-                  backgroundColor: 'var(--color-border)',
-                }}></div>
-              </>
+              <div style={{
+                position: 'absolute',
+                left: '66.66%',
+                top: '0',
+                bottom: '0',
+                width: '1px',
+                backgroundColor: 'var(--color-border)',
+                transform: 'translateX(-50%)'
+              }}></div>
             )}
 
             {techIcons.map((tech) => (
               <div
                 key={tech.icon}
+                onMouseEnter={(e) => {
+                  setHoveredTech({ name: tech.name, x: e.clientX, y: e.clientY });
+                }}
+                onMouseLeave={() => {
+                  setHoveredTech(null);
+                }}
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
@@ -252,29 +253,52 @@ export function InfoContent({ sectionId }: InfoContentProps) {
                   justifyContent: 'center',
                   width: '100%',
                   height: '100px',
+                  cursor: 'pointer',
                 }}
               >
-                <Image
-                  src={tech.icon.endsWith('.png')
-                    ? `/${resolvedTheme === 'dark' ? 'icon_light' : 'icon'}/${tech.icon}`
-                    : getIconPath(tech.icon, resolvedTheme, false, mounted)}
-                  alt={tech.name}
-                  width={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 84 : 48}
-                  height={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk.png' ? 84 : 48}
+                <Icon
+                  name={tech.icon as any}
+                  size={tech.icon === 'vercel' ? 40 : tech.icon === 'sentry' ? 52 : tech.icon === 'aisdk' ? 84 : tech.icon === 'github' || tech.icon === 'x-twitter' || tech.icon === 'mail' ? 21 : 48}
+                  aria-label={tech.name}
                   style={{
-                    opacity: 0.8
+                    opacity: 0.8,
+                    transition: 'opacity 0.2s',
                   }}
                 />
               </div>
             ))}
           </div>
 
+          {/* Tooltip */}
+          {hoveredTech && (
+            <div
+              style={{
+                position: 'fixed',
+                left: `${hoveredTech.x + 12}px`,
+                top: `${hoveredTech.y + 12}px`,
+                pointerEvents: 'none',
+                zIndex: 10000,
+                fontSize: '13px',
+                color: 'var(--color-text-secondary)',
+                backgroundColor: 'var(--color-bg)',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                border: '1px solid var(--color-border)',
+                whiteSpace: 'nowrap',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+                transition: 'opacity 0.15s ease',
+              }}
+            >
+              {hoveredTech.name}
+            </div>
+          )}
+
           {/* Separator */}
           <div style={{ borderTop: '1px solid var(--color-border)', marginTop: '48px', marginBottom: '48px' }}></div>
 
           {/* Try Qurse Section */}
           <h3>Try Qurse</h3>
-          <p style={{ color: 'var(--color-text-secondary)' }}>Experience <span style={{ fontFamily: 'var(--font-reenie)', fontSize: '28px' }}>Qurse</span> now.</p>
+          <p style={{ color: 'var(--color-text-secondary)' }}>Experience <span style={{ fontFamily: 'var(--font-reenie)', fontSize: '28px' }}>Qurse</span></p>
 
           <div style={{ marginTop: '24px', paddingBottom: '32px' }}>
             <MainInput inputValue={demoInputValue} setInputValue={setDemoInputValue} showAttachButton={false} shouldNavigate={true} />
@@ -290,11 +314,10 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             >
               <UnifiedButton variant="secondary">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Image
-                    src={getIconPath('github', resolvedTheme, false, mounted)}
-                    alt="GitHub"
-                    width={21}
-                    height={21}
+                  <Icon
+                    name="github"
+                    size={21}
+                    aria-label="GitHub"
                   />
                   <span>GitHub</span>
                 </div>
@@ -309,11 +332,10 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             >
               <UnifiedButton variant="secondary">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Image
-                    src={getIconPath('x-twitter', resolvedTheme, false, mounted)}
-                    alt="X (Twitter)"
-                    width={16}
-                    height={16}
+                  <Icon
+                    name="x-twitter"
+                    size={16}
+                    aria-label="X (Twitter)"
                   />
                   <span>X(Twitter)</span>
                 </div>
@@ -326,11 +348,10 @@ export function InfoContent({ sectionId }: InfoContentProps) {
             >
               <UnifiedButton variant="secondary">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <Image
-                    src={getIconPath('mail', resolvedTheme, false, mounted)}
-                    alt="Email"
-                    width={21}
-                    height={21}
+                  <Icon
+                    name="mail"
+                    size={21}
+                    aria-label="Email"
                   />
                   <span>Email</span>
                 </div>

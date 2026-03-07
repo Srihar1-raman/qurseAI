@@ -1,9 +1,8 @@
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import { useAuth } from '@/lib/contexts/AuthContext';
 import type { AccountSectionProps } from '@/lib/types';
 import { UnifiedButton } from '@/components/ui/UnifiedButton';
@@ -85,19 +84,19 @@ export default function AccountSection({
         <label className="settings-label">Account Profile</label>
         <div className="account-info">
           <div className="account-avatar">
-            {user.avatar_url ? (
-              <Image
-                src={user.avatar_url}
-                alt={user.name || 'User'}
-                width={48}
-                height={48}
-                className="user-avatar-large rounded-full"
-              />
-            ) : (
-              <div className="user-avatar-placeholder">
-                {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
-              </div>
-            )}
+             {user.avatar_url ? (
+               <img
+                 src={user.avatar_url}
+                 alt={user.name || 'User'}
+                 width={48}
+                 height={48}
+                 className="user-avatar-large rounded-full"
+               />
+             ) : (
+               <div className="user-avatar-placeholder">
+                 {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
+               </div>
+             )}
           </div>
           <div className="account-details">
             <h4>{user.name || 'User'}</h4>
@@ -125,12 +124,11 @@ export default function AccountSection({
         ) : (
           <div className="linked-providers-list">
             <div className="provider-item">
-              <Image 
-                src={getIconPath('google', resolvedTheme, false, mounted)} 
-                alt="Google" 
-                width={20} 
-                height={20} 
-                className="provider-icon" 
+             <Icon
+                name="google"
+                size={20}
+                aria-label="Google"
+                className="provider-icon"
               />
               <span className="provider-name">Google</span>
               <span className={`provider-status ${isProviderConnected('google') ? 'connected' : 'not-connected'}`}>
@@ -138,12 +136,11 @@ export default function AccountSection({
               </span>
             </div>
             <div className="provider-item">
-              <Image 
-                src={getIconPath('github', resolvedTheme, false, mounted)} 
-                alt="GitHub" 
-                width={20} 
-                height={20} 
-                className="provider-icon" 
+              <Icon
+                name="github"
+                size={20}
+                aria-label="GitHub"
+                className="provider-icon"
               />
               <span className="provider-name">GitHub</span>
               <span className={`provider-status ${isProviderConnected('github') ? 'connected' : 'not-connected'}`}>
@@ -151,12 +148,11 @@ export default function AccountSection({
               </span>
             </div>
             <div className="provider-item">
-              <Image 
-                src={getIconPath('x-twitter', resolvedTheme, false, mounted)} 
-                alt="X (Twitter)" 
-                width={20} 
-                height={20} 
-                className="provider-icon" 
+              <Icon
+                name="x-twitter"
+                size={20}
+                aria-label="X (Twitter)"
+                className="provider-icon"
               />
               <span className="provider-name">X (Twitter)</span>
               <span className={`provider-status ${isProviderConnected('twitter') ? 'connected' : 'not-connected'}`}>

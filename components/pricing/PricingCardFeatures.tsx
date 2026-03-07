@@ -1,9 +1,8 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { useTheme } from '@/lib/theme-provider';
-import { getIconPath } from '@/lib/icon-utils';
+import { Icon } from '@/components/icons';
 import type { PricingFeature } from './types';
 
 interface PricingCardFeaturesProps {
@@ -31,11 +30,10 @@ export function PricingCardFeatures({ features, marginBottom = '32px' }: Pricing
             marginBottom: '20px',
           }}
         >
-          <Image
-            src={getIconPath(feature.icon, resolvedTheme, false, mounted)}
-            alt={feature.title}
-            width={20}
-            height={20}
+          <Icon
+            name={feature.icon as any}
+            size={20}
+            aria-label={feature.title}
             style={{
               minWidth: '20px',
               marginTop: '2px',
@@ -68,4 +66,3 @@ export function PricingCardFeatures({ features, marginBottom = '32px' }: Pricing
     </div>
   );
 }
-

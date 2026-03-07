@@ -1,13 +1,12 @@
 /**
  * Stream Config Service
- * Builds configuration for AI streaming responses
+ * Builds configuration for AI streaming responses with UI rendering
  */
 
 import type { UIMessage, UIMessageStreamWriter } from 'ai';
-import { streamText } from 'ai';
+import { streamText, stepCountIs, convertToModelMessages } from 'ai';
 import { qurse } from '@/ai/providers';
 import { getModelParameters, getProviderOptions, getModelConfig } from '@/ai/models';
-import { getToolsByIds } from '@/lib/tools';
 import { saveUserMessageServerSide } from '@/lib/db/messages.server';
 import { saveGuestMessage } from '@/lib/db/guest-messages.server';
 import { createScopedLogger } from '@/lib/utils/logger';
@@ -18,6 +17,22 @@ import { extractMessageText } from '@/lib/utils/memory-prompt';
 import type { StreamTextProviderOptions } from '@/lib/utils/message-adapters';
 import type { User } from '@/lib/types';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { webSearchTool } from '@/lib/tools/web-search';
+import { weatherTool } from '@/lib/tools/weather';
+import { weatherHistoryTool } from '@/lib/tools/weather-history';
+import { flightStatusTool } from '@/lib/tools/flight-status';
+import { flightSearchTool } from '@/lib/tools/flight-search';
+import { flightRadarTool } from '@/lib/tools/flight-radar';
+import { airportInfoTool } from '@/lib/tools/airport-info';
+import { airlineInfoTool } from '@/lib/tools/airline-info';
+import {
+  stockQuoteTool,
+  stockHistoryTool,
+  companyInfoTool,
+  cryptoPriceTool,
+  forexRateTool,
+  stockSearchTool,
+} from '@/lib/tools/finance';
 
 const logger = createScopedLogger('services/stream-config');
 
@@ -31,6 +46,7 @@ export interface StreamConfig {
   modeConfig: {
     systemPrompt?: string;
     enabledTools: string[];
+    userLocation?: string;  // User location string (e.g., "San Francisco, US" or "Unknown location")
   };
   /** Model identifier */
   model: string;
@@ -72,39 +88,57 @@ export interface StreamConfig {
 
 /**
  * Build stream configuration object
- * Creates the full configuration for createUIMessageStream
+ * Creates a full configuration for createUIMessageStream
  *
  * @param config - Stream configuration inputs
  * @returns Configuration object for createUIMessageStream
  */
 export function buildStreamConfig(config: StreamConfig) {
-  const {
-    uiMessages,
-    modeConfig,
-    model,
-    user,
-    resolvedConversationIdRef,
-    sessionHash,
-    supabaseClient,
-    fullUserData,
-    requestStartTime,
-    dbOperationsPromise,
-    abortController,
-    conversationId,
-    contextMetadata,
-    customPrompt,
-    memoryPrompt,
-    userMessageText,
-    enableSupermemory,
+   const {
+     uiMessages,
+     modeConfig,
+     model,
+     user,
+     resolvedConversationIdRef,
+     sessionHash,
+     supabaseClient,
+     fullUserData,
+     requestStartTime,
+     dbOperationsPromise,
+     abortController,
+     conversationId,
+     contextMetadata,
+     customPrompt,
+     memoryPrompt,
+     userMessageText,
+     enableSupermemory,
   } = config;
 
-  return {
+    return {
     execute: async ({ writer: dataStream }: { writer: UIMessageStreamWriter<UIMessage> }) => {
-      // Load tools synchronously (fast operation, no need for promise)
-      const tools = getToolsByIds(modeConfig.enabledTools);
-
       // Import convertToModelMessages for use in streamText
       const { convertToModelMessages } = await import('ai');
+
+      // Filter out tool messages and tool-call parts from uiMessages before converting to ModelMessages
+      const filteredUiMessages = uiMessages
+        .filter((msg: any) => msg.role !== 'tool')
+        .map(msg => ({
+          ...msg,
+          parts: msg.parts.filter((part: any) => !part.type?.startsWith('tool')),
+        }));
+
+      console.log('[DEBUG] Server - original uiMessages count:', uiMessages.length);
+      console.log('[DEBUG] Server - original uiMessages:', uiMessages.map((m: any) => ({
+        id: m.id,
+        role: m.role,
+        partTypes: m.parts?.map((p: any) => p.type) || [],
+      })));
+      console.log('[DEBUG] Server - filtered uiMessages count:', filteredUiMessages.length);
+      console.log('[DEBUG] Server - filtered uiMessages:', filteredUiMessages.map((m: any) => ({
+        id: m.id,
+        role: m.role,
+        partTypes: m.parts?.map((p: any) => p.type) || [],
+      })));
 
       // Await DB operations (user message must be saved before streaming)
       const dbResult = await dbOperationsPromise;
@@ -125,6 +159,25 @@ export function buildStreamConfig(config: StreamConfig) {
       // Merge prompts: Mode system prompt + Memory prompt + Custom prompt
       let finalSystemPrompt = modeConfig.systemPrompt || '';
 
+      // Inject current date/time if placeholders exist
+      const now = new Date();
+      const currentDate = now.toLocaleDateString('en-US', { 
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      const currentTime = now.toLocaleTimeString('en-US', { 
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+
+      finalSystemPrompt = finalSystemPrompt
+        .replace('{currentDate}', currentDate)
+        .replace('{currentTime}', currentTime)
+        .replace('{userLocation}', modeConfig.userLocation || 'Unknown location');
+
       // Add memory context first (before custom prompt)
       if (memoryPrompt) {
         finalSystemPrompt = `${finalSystemPrompt}\n\n${memoryPrompt}`;
@@ -135,41 +188,67 @@ export function buildStreamConfig(config: StreamConfig) {
         finalSystemPrompt = buildSystemPrompt(finalSystemPrompt, customPrompt);
       }
 
-      const result = streamText({
+      // Build tools based on mode configuration
+      const tools: Record<string, any> = {};
+      if (modeConfig.enabledTools.includes('web_search')) {
+        tools.web_search = webSearchTool;
+      }
+      if (modeConfig.enabledTools.includes('weather')) {
+        tools.weather = weatherTool;
+      }
+      if (modeConfig.enabledTools.includes('weather_history')) {
+        tools.weather_history = weatherHistoryTool;
+      }
+      if (modeConfig.enabledTools.includes('flight_status')) {
+        tools.flight_status = flightStatusTool;
+      }
+      if (modeConfig.enabledTools.includes('flight_search')) {
+        tools.flight_search = flightSearchTool;
+      }
+      if (modeConfig.enabledTools.includes('flight_radar')) {
+        tools.flight_radar = flightRadarTool;
+      }
+      if (modeConfig.enabledTools.includes('airport_info')) {
+        tools.airport_info = airportInfoTool;
+      }
+      if (modeConfig.enabledTools.includes('airline_info')) {
+        tools.airline_info = airlineInfoTool;
+      }
+      if (modeConfig.enabledTools.includes('stock_quote')) {
+        tools.stock_quote = stockQuoteTool;
+      }
+      if (modeConfig.enabledTools.includes('stock_history')) {
+        tools.stock_history = stockHistoryTool;
+      }
+      if (modeConfig.enabledTools.includes('company_info')) {
+        tools.company_info = companyInfoTool;
+      }
+      if (modeConfig.enabledTools.includes('crypto_price')) {
+        tools.crypto_price = cryptoPriceTool;
+      }
+      if (modeConfig.enabledTools.includes('forex_rate')) {
+        tools.forex_rate = forexRateTool;
+      }
+      if (modeConfig.enabledTools.includes('stock_search')) {
+        tools.stock_search = stockSearchTool;
+      }
+
+      const streamTextOptions: any = {
         model: qurse.languageModel(model),
-        messages: convertToModelMessages(uiMessages),
+        messages: convertToModelMessages(filteredUiMessages),
         system: finalSystemPrompt,
         maxRetries: 5,
         ...getModelParameters(model),
         providerOptions: getProviderOptions(model) as StreamTextProviderOptions,
-        tools: Object.keys(tools).length > 0 ? tools : undefined,
         abortSignal: abortController.signal,
-        onError: (err) => {
-          logger.error('Stream error', err.error, { model });
-          const errorMessage = err.error instanceof Error ? err.error.message : String(err.error);
-          if (errorMessage.includes('API key')) {
-            throw new ProviderError(
-              'Provider authentication failed',
-              model.split('/')[0] || 'unknown',
-              false
-            );
-          }
-        },
-        onAbort: ({ steps }) => {
-          logger.info('Stream aborted (streamText onAbort)', {
-            conversationId: resolvedConversationIdRef.current,
-            stepsCount: steps.length,
-            hasSteps: steps.length > 0,
-          });
-        },
-        onFinish: async ({ usage }) => {
-          const processingTime = (Date.now() - requestStartTime) / 1000;
-          logger.info('Stream completed', {
-            duration: `${processingTime.toFixed(2)}s`,
-            tokens: usage?.totalTokens || 0,
-          });
-        },
-      });
+      };
+
+      if (Object.keys(tools).length > 0) {
+        streamTextOptions.tools = tools;
+        streamTextOptions.stopWhen = stepCountIs(5);
+      }
+
+      const result = streamText(streamTextOptions);
 
       // Merge stream with conditional reasoning
       const modelConfig = getModelConfig(model);
@@ -178,8 +257,7 @@ export function buildStreamConfig(config: StreamConfig) {
       dataStream.merge(
         result.toUIMessageStream({
           sendReasoning: shouldSendReasoning,
-          // Note: Tool parts (tool-call, tool-result) are sent by default
-          messageMetadata: ({ part }) => {
+          messageMetadata: ({ part }: { part: any }) => {
             if (part.type === 'finish') {
               const processingTime = (Date.now() - requestStartTime) / 1000;
               return {
@@ -254,7 +332,7 @@ async function saveAssistantMessages(config: {
 
   const assistantMessage = messages[messages.length - 1];
 
-  // DEBUG: Log all parts in the assistant message
+  // DEBUG: Log all parts in assistant message
   if (assistantMessage?.parts) {
     logger.info('Assistant message parts', {
       messageId: assistantMessage.id,
@@ -326,6 +404,7 @@ async function saveAssistantMessages(config: {
         output_tokens: outputTokens,
         total_tokens: totalTokens,
         completion_time: completionTime,
+        reasoning_time: completionTime,
       });
 
       if (assistantMsgError) {

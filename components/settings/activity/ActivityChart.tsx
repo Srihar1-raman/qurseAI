@@ -17,8 +17,18 @@ interface ActivityChartProps {
   dataKey: string;
 }
 
+interface TooltipData {
+  value: number;
+}
+
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: TooltipData[];
+  label?: string | number;
+}
+
 // Custom tooltip to show only the relevant metric
-function CustomTooltip({ active, payload, label }: any) {
+function CustomTooltip({ active, payload, label }: CustomTooltipProps) {
   if (!active || !payload || !payload.length) {
     return null;
   }

@@ -49,7 +49,7 @@ export function DropdownItem({ children, active, className, ...props }: Dropdown
   return (
     <div
       className={cn(
-        "flex cursor-pointer items-center justify-between px-4 py-2.5 text-sm transition-colors",
+        "flex cursor-pointer items-center justify-between px-4 py-2.5 text-sm transition-colors last:rounded-b-lg",
         "hover:bg-muted",
         active && "bg-primary text-white hover:bg-primary/90",
         className

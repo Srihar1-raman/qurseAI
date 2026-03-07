@@ -9,7 +9,7 @@
 
 // Simple in-memory cache for processed webhooks
 const processedWebhooks = new Map<string, number>();
-const processingLocks = new Map<string, Promise<any>>();
+const processingLocks = new Map<string, Promise<unknown>>();
 
 // Clean up old entries every hour
 setInterval(() => {
@@ -24,10 +24,11 @@ setInterval(() => {
 /**
  * Generate unique webhook ID for idempotency
  */
-export const generateWebhookId = (payload: any): string => {
+export const generateWebhookId = (payload: { type?: string; data?: Record<string, unknown> }): string => {
   const type = payload.type || 'unknown';
-  const id = payload.data?.id || payload.data?.subscription_id || payload.data?.payment_id || 'no-id';
-  const timestamp = payload.data?.timestamp || payload.data?.created_at || Date.now();
+  const data = payload.data || {};
+  const id = data.id as string || data.subscription_id as string || data.payment_id as string || 'no-id';
+  const timestamp = (data.timestamp || data.created_at) as number || Date.now();
 
   return `${type}_${id}_${timestamp}`;
 };
@@ -49,7 +50,7 @@ export const markWebhookProcessed = (webhookId: string): void => {
 /**
  * Basic webhook payload validation
  */
-export const validateWebhookPayload = (payload: any): { isValid: boolean; error?: string } => {
+export const validateWebhookPayload = (payload: Record<string, unknown>): { isValid: boolean; error?: string } => {
   if (!payload) {
     return { isValid: false, error: 'Empty payload' };
   }
@@ -69,16 +70,21 @@ export const validateWebhookPayload = (payload: any): { isValid: boolean; error?
  * Extract user ID with validation
  * Tries multiple metadata paths to handle webhook structure variations
  */
-export const extractUserIdSafely = (payload: any): { userId: string | null; error?: string } => {
+export const extractUserIdSafely = (payload: { data?: Record<string, unknown> }): { userId: string | null; error?: string } => {
   if (!payload?.data) {
     return { userId: null, error: 'No data in payload' };
   }
 
+  const data = payload.data;
+  const metadata = data.metadata as Record<string, unknown> | undefined;
+  const customer = data.customer as Record<string, unknown> | undefined;
+  const customerMetadata = customer?.metadata as Record<string, unknown> | undefined;
+
   // Try all possible metadata paths (Dodo may change structure)
-  const userId = payload.data?.metadata?.user_id ||
-                 payload.data?.metadata?.userId ||
-                 payload.data?.customer?.metadata?.user_id ||
-                 payload.data?.customer?.metadata?.userId ||
+  const userId = (metadata?.user_id as string) ||
+                 (metadata?.userId as string) ||
+                 (customerMetadata?.user_id as string) ||
+                 (customerMetadata?.userId as string) ||
                  null;
 
   if (!userId) {
@@ -152,11 +158,11 @@ export const processWebhookSafely = async <T>(
 /**
  * Safe wrapper for webhook handlers
  */
-export const createSafeWebhookHandler = <T extends any[]>(
+export const createSafeWebhookHandler = <T extends unknown[]>(
   handlerName: string,
-  handler: (payload: any, ...args: T) => Promise<void>
+  handler: (payload: Record<string, unknown>, ...args: T) => Promise<void>
 ) => {
-  return async (payload: any, ...args: T): Promise<void> => {
+  return async (payload: Record<string, unknown>, ...args: T): Promise<void> => {
     try {
       // Basic validation
       const validation = validateWebhookPayload(payload);

@@ -2,6 +2,8 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { DiagramActions } from '@/components/markdown/DiagramActions';
+import type VegaEmbed from 'vega-embed';
+import type { View } from 'vega';
 
 interface VegaLiteEmbedProps {
   code: string;
@@ -12,8 +14,8 @@ export const VegaLiteEmbed: React.FC<VegaLiteEmbedProps> = React.memo(({ code, c
   const containerRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState<string>('');
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [vegaEmbed, setVegaEmbed] = useState<any>(null);
-  const [view, setView] = useState<any>(null);
+  const [vegaEmbed, setVegaEmbed] = useState<typeof VegaEmbed | null>(null);
+  const [view, setView] = useState<View | null>(null);
 
   // Dynamically import vega-embed only on client side
   useEffect(() => {
@@ -52,6 +54,12 @@ export const VegaLiteEmbed: React.FC<VegaLiteEmbedProps> = React.memo(({ code, c
 
       try {
         const spec = JSON.parse(code);
+
+        if (!vegaEmbed) {
+          setError('Chart renderer not loaded');
+          setIsLoading(false);
+          return;
+        }
 
         const result = await vegaEmbed(containerRef.current!, spec, {
           actions: false,

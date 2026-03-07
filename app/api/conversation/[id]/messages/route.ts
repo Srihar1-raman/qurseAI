@@ -43,7 +43,7 @@ export async function GET(
       conversationId,
       { limit, offset }
     );
-    
+
     return NextResponse.json({
       messages,
       hasMore,

@@ -1,0 +1,20 @@
+'use client';
+
+import { BaseIcon } from './BaseIcon';
+import type { BaseIconProps } from './BaseIcon';
+
+export function UnpinIcon({ className, size, style, theme, isActive, isInverted, ...props }: BaseIconProps) {
+  return (
+    <BaseIcon
+      className={className}
+      size={size}
+      style={style}
+      theme={theme}
+      isActive={isActive}
+      isInverted={isInverted}
+      {...props}
+    >
+      <path d="M4.80005 4.80002C4.80005 3.47627 5.8763 2.40002 7.20005 2.40002H16.8C18.1238 2.40002 19.2 3.47627 19.2 4.80002V20.4413C19.2 21.4013 18.1313 21.9713 17.3325 21.4388L12 17.88L6.66755 21.4388C5.8688 21.9713 4.80005 21.3975 4.80005 20.4413V4.80002ZM7.20005 4.20002C6.87005 4.20002 6.60005 4.47002 6.60005 4.80002V19.32L11.0025 16.3875C11.6063 15.9863 12.3938 15.9863 12.9975 16.3875L17.4 19.32V4.80002C17.4 4.47002 17.13 4.20002 16.8 4.20002H7.20005Z" fill="currentColor" stroke="none" />
+    </BaseIcon>
+  );
+}
