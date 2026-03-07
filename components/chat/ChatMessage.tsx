@@ -16,6 +16,7 @@ import { FlightStatusCard } from './FlightStatusCard';
 import { FlightSearchCard } from './FlightSearchCard';
 import { AirportInfoCard } from './AirportInfoCard';
 import { AirlineInfoCard } from './AirlineInfoCard';
+import { QRCodeCard } from './QRCodeCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -397,6 +398,16 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       }));
   }, [toolExecutions]);
 
+  const qrCodeExecutions = React.useMemo(() => {
+    return toolExecutions
+      .filter(e => e.toolName === 'qr_code')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result,
+      }));
+  }, [toolExecutions]);
+
   const otherToolExecutions = React.useMemo(() => {
     return toolExecutions.filter(e => 
       e.toolName !== 'web_search' && 
@@ -405,7 +416,8 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       e.toolName !== 'stock_history' &&
       e.toolName !== 'company_info' &&
       e.toolName !== 'crypto_price' &&
-      e.toolName !== 'forex_rate'
+      e.toolName !== 'forex_rate' &&
+      e.toolName !== 'qr_code'
     );
   }, [toolExecutions]);
 
@@ -690,6 +702,34 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                     Last updated: {execution.result.lastRefreshed}
                   </div>
                 </div>
+              );
+            })}
+
+            {/* QR Code cards */}
+            {qrCodeExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if (typeof execution.result === 'object' && 'error' in execution.result) return null;
+
+              const qrData = execution.result as {
+                data: string;
+                typeNumber: number;
+                errorCorrectionLevel: string;
+                moduleCount: number;
+                svg: string;
+                size: number;
+                options: {
+                  cellSize: number;
+                  margin: number;
+                  darkColor: string;
+                  lightColor: string;
+                };
+              };
+
+              return (
+                <QRCodeCard
+                  key={execution.toolCallId}
+                  qrData={qrData}
+                />
               );
             })}
           </div>

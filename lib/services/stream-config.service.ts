@@ -25,6 +25,7 @@ import { flightSearchTool } from '@/lib/tools/flight-search';
 import { flightRadarTool } from '@/lib/tools/flight-radar';
 import { airportInfoTool } from '@/lib/tools/airport-info';
 import { airlineInfoTool } from '@/lib/tools/airline-info';
+import { qrCodeTool } from '@/lib/tools/qr-code';
 import {
   stockQuoteTool,
   stockHistoryTool,
@@ -231,6 +232,9 @@ export function buildStreamConfig(config: StreamConfig) {
       }
       if (modeConfig.enabledTools.includes('stock_search')) {
         tools.stock_search = stockSearchTool;
+      }
+      if (modeConfig.enabledTools.includes('qr_code')) {
+        tools.qr_code = qrCodeTool;
       }
 
       const streamTextOptions: any = {

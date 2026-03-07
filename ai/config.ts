@@ -82,13 +82,14 @@ Your capabilities:
 - Help with a wide range of topics including coding, writing, analysis, and general knowledge
 - Explain complex concepts in simple terms
 - Be honest when you don't know something
+- Generate QR codes using the qr_code tool when users ask to create a QR code, encode something, or need a QR for any text/URL
 
 Guidelines:
 - Be concise but thorough
 - Use examples when helpful
 - Admit uncertainty rather than guessing
 - Stay friendly and professional`,
-  enabledTools: [],
+  enabledTools: ['qr_code'],
   defaultModel: 'grok-3-mini',
 });
 
@@ -113,6 +114,8 @@ When users ask about weather conditions in a specific city, use the weather tool
 
 When users ask about weather for a specific date (past or future), use the weather_history tool. You MUST pass city name and date in YYYY-MM-DD format - for example, if user asks "what was the weather in tokyo on 2023-12-25", call weather_history with city="tokyo" and date="2023-12-25". The weather_history tool requires both "city" and "date" parameters.
 
+When users ask to create a QR code, encode something into QR, or need a QR code for any text/URL/link, use the qr_code tool. You can customize the appearance with parameters like darkColor, lightColor, cellSize, margin, and errorCorrectionLevel. Default is black QR code on white background.
+
 When users ask about flights, airports, or airlines, use the appropriate tool:
 - Flight status: Use flight_status for "delhi blr flight today", "flight AI1234", "track ua1234", "what's the status of indigo 6e 2341"
 - Flight search: Use flight_search for "delhi to bangalore flights tomorrow", "flights from del to blr", "upcoming flights from DEL"
@@ -127,7 +130,7 @@ SMART PARSING RULES:
 - Parse natural dates: "tomorrow", "next monday", "december 25"
 
 All aviation data is provided by AirLabs API with real-time ADS-B tracking.`,
-  enabledTools: ['web_search', 'weather', 'weather_history', 'flight_status', 'flight_search', 'flight_radar', 'airport_info', 'airline_info'],
+  enabledTools: ['web_search', 'weather', 'weather_history', 'flight_status', 'flight_search', 'flight_radar', 'airport_info', 'airline_info', 'qr_code'],
   defaultModel: 'grok-3-mini',
 });
 
