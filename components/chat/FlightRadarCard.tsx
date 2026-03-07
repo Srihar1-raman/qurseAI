@@ -46,7 +46,7 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
       const L = await import('leaflet');
       const svg = `
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="color: #10b981; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));">
-          <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+          <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
         </svg>
       `;
       setPlaneIcon(L.divIcon({
@@ -68,8 +68,18 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
     );
   }
 
-  const centerLat = flights.reduce((sum, f) => sum + f.position.lat, 0) / flights.length;
-  const centerLng = flights.reduce((sum, f) => sum + f.position.lng, 0) / flights.length;
+  const validFlights = flights.filter(f => f.position && f.position.lat != null && f.position.lng != null);
+
+  if (validFlights.length === 0) {
+    return (
+      <div className="flight-radar-mini">
+        <span className="flight-radar-mini-empty">No live flights with valid positions</span>
+      </div>
+    );
+  }
+
+  const centerLat = validFlights.reduce((sum, f) => sum + f.position!.lat, 0) / validFlights.length;
+  const centerLng = validFlights.reduce((sum, f) => sum + f.position!.lng, 0) / validFlights.length;
 
   return (
     <div className="flight-radar-mini">
@@ -84,10 +94,10 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
           attribution='&copy; CARTO'
         />
         
-        {flights.map((flight, idx) => (
+        {validFlights.map((flight, idx) => (
           <Marker
             key={idx}
-            position={[flight.position.lat, flight.position.lng]}
+            position={[flight.position!.lat, flight.position!.lng]}
             icon={planeIcon as L.DivIcon}
           >
             <Popup>
@@ -105,7 +115,7 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
                   <span className="flight-radar-mini-popup-route">{flight.route.origin.code} → {flight.route.destination.code}</span>
                 </div>
                 <div className="flight-radar-mini-popup-stats">
-                  <span>{flight.position.speed} km/h</span>
+                  <span>{flight.position!.speed} km/h</span>
                   <span>{flight.position.altitude} ft</span>
                 </div>
               </div>
