@@ -3,6 +3,9 @@
    Main entry point for all styles
    =================================== */
 
+/* Leaflet CSS - loaded globally for map components */
+@import 'leaflet/dist/leaflet.css';
+
 /* Import modular styles - MUST come before @tailwind */
 @import '../styles/base.css';
 @import '../styles/layout.css';
