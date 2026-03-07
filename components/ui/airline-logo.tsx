@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plane } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,21 +17,25 @@ export function AirlineLogo({ url, iataCode, name, className = "w-8 h-8" }: Airl
   const kiwiUrl = iataCode ? `https://images.kiwi.com/airlines/64/${iataCode}.png` : null;
   const logoSrc = url || kiwiUrl;
 
+  useEffect(() => {
+    setError(false);
+  }, [logoSrc]);
+
   if (!logoSrc || error) {
     return (
-      <div className={cn("flex items-center justify-center bg-card rounded-sm p-1", className)}>
-        <Plane className="w-full h-full opacity-50" />
+      <div className={cn("flex items-center justify-center bg-zinc-100 dark:bg-zinc-800 rounded-sm", className)}>
+        <Plane className="w-1/2 h-1/2 opacity-50" />
       </div>
     );
   }
 
   return (
-    <img
-      src={logoSrc}
-      alt={name || 'Airline logo'}
-      className={cn("object-contain rounded-sm", className)}
+    <img 
+      src={logoSrc} 
+      alt={name || 'Airline logo'} 
+      className={cn("object-contain rounded-sm bg-white", className)}
+      referrerPolicy="no-referrer"
       onError={() => setError(true)}
-      crossOrigin="anonymous"
     />
   );
 }

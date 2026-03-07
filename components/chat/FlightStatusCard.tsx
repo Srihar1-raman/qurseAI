@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
-import { Plane, MapPin, ArrowRight, AlertTriangle, Package, Timer } from 'lucide-react';
+import { Plane, MapPin, ArrowRight, Package, Clock } from 'lucide-react';
 import { AirlineLogo } from '@/components/ui/airline-logo';
 import { formatTime } from '@/lib/utils';
 
@@ -42,10 +42,24 @@ interface FlightStatusCardProps {
   data: FlightStatusData;
 }
 
+function getStatusColor(code: string): string {
+  const colors: Record<string, string> = {
+    'active': '#22c55e',
+    'landed': '#22c55e',
+    'scheduled': '#3b82f6',
+    'cancelled': '#ef4444',
+    'incident': '#ef4444',
+    'diverted': '#f59e0b',
+  };
+  return colors[code] || '#3b82f6';
+}
+
 export function FlightStatusCard({ data }: FlightStatusCardProps) {
   if (!data.times) {
     return <div className="flight-status-card"><div className="flight-status-card-loading">Loading flight data...</div></div>;
   }
+
+  const statusColor = getStatusColor(data.status.code);
 
   return (
     <div className="flight-status-card">
@@ -55,67 +69,92 @@ export function FlightStatusCard({ data }: FlightStatusCardProps) {
           destination={data.route.destination} 
           position={data.live.position}
           flightNumber={data.flightNumber}
+          progress={data.live.progress}
+          statusColor={statusColor}
         />
       </div>
       
       <div className="flight-status-card-info">
         <div className="flight-status-card-header">
-          <AirlineLogo url={data.airline.logoUrl} iataCode={data.airline.iataCode} name={data.airline.name} className="flight-status-card-logo" />
-          <div className="flight-status-card-meta">
-            <span className="flight-status-card-number">{data.flightNumber}</span>
-            <span className="flight-status-card-airline">{data.airline.name}</span>
+          <div className="flight-status-card-header-left">
+            <div className="flight-status-card-title">
+              <span className="flight-status-card-airline">{data.airline.name}</span>
+              <span className="flight-status-card-number">{data.flightNumber}</span>
+            </div>
+            <span className="flight-status-card-aircraft">{data.aircraft.type}</span>
           </div>
+          <AirlineLogo url={data.airline.logoUrl} iataCode={data.airline.iataCode} name={data.airline.name} className="flight-status-card-logo" />
         </div>
 
         <div className="flight-status-card-route">
-          <div className="flight-status-card-point">
+          <div className="flight-status-card-point origin">
             <span className="flight-status-card-code">{data.route.origin.code}</span>
             <span className="flight-status-card-city">{data.route.origin.city}</span>
             <span className="flight-status-card-time">{formatTime(data.times.local?.departure || '--:--')}</span>
           </div>
           
-          <div className="flight-status-card-arrow">
-            <ArrowRight className="flight-status-card-arrow-icon" />
-            <span className="flight-status-card-duration">{data.duration || '--'}</span>
+          <div className="flight-status-card-path">
+            <div className="flight-status-card-path-line">
+              {data.live.progress && (
+                <div className="flight-status-card-path-progress" style={{ width: `${data.live.progress}%`, backgroundColor: statusColor }} />
+              )}
+            </div>
+            <Plane className="flight-status-card-path-plane" style={{ left: `${data.live.progress || 50}%`, color: statusColor, fill: statusColor }} />
           </div>
           
-          <div className="flight-status-card-point">
+          <div className="flight-status-card-point destination">
             <span className="flight-status-card-code">{data.route.destination.code}</span>
             <span className="flight-status-card-city">{data.route.destination.city}</span>
             <span className="flight-status-card-time">{formatTime(data.times.local?.arrival || '--:--')}</span>
           </div>
         </div>
 
+        <div className="flight-status-card-duration-label">{data.duration}</div>
+
         <div className="flight-status-card-details">
-          <div className="flight-status-card-detail">
-            <MapPin className="flight-status-card-detail-icon" />
-            <span>Gate {data.gate.departure || '--'}</span>
+          <div className="flight-status-card-detail-item">
+            <span className="flight-status-card-detail-label">
+              <MapPin className="flight-status-card-detail-icon" /> Terminal
+            </span>
+            <span className="flight-status-card-detail-value">
+              {data.terminal.departure || '-'} <ArrowRight className="flight-status-card-detail-arrow" /> {data.terminal.arrival || '-'}
+            </span>
           </div>
-          <div className="flight-status-card-detail">
-            <Package className="flight-status-card-detail-icon" />
-            <span>Terminal {data.terminal.departure || '--'}</span>
+          <div className="flight-status-card-detail-item">
+            <span className="flight-status-card-detail-label">
+              <MapPin className="flight-status-card-detail-icon" /> Gate
+            </span>
+            <span className="flight-status-card-detail-value">
+              {data.gate.departure || '-'} <ArrowRight className="flight-status-card-detail-arrow" /> {data.gate.arrival || '-'}
+            </span>
           </div>
-          <div className="flight-status-card-detail">
-            <Timer className="flight-status-card-detail-icon" />
-            <span>{data.aircraft.type || 'Aircraft'}</span>
+          <div className="flight-status-card-detail-item">
+            <span className="flight-status-card-detail-label">
+              <Package className="flight-status-card-detail-icon" /> Baggage
+            </span>
+            <span className="flight-status-card-detail-value">{data.baggage.arrival || '-'}</span>
           </div>
-          {data.delay.minutes > 0 && (
-            <div className="flight-status-card-detail delay">
-              <AlertTriangle className="flight-status-card-detail-icon" />
-              <span>+{data.delay.minutes}min</span>
-            </div>
-          )}
+          <div className="flight-status-card-detail-item">
+            <span className="flight-status-card-detail-label">
+              <Clock className="flight-status-card-detail-icon" /> Delay
+            </span>
+            <span className={`flight-status-card-detail-value ${data.delay.minutes > 0 ? 'delay' : ''}`}>
+              {data.delay.minutes > 0 ? `${data.delay.minutes}m` : 'On Time'}
+            </span>
+          </div>
         </div>
       </div>
     </div>
   );
 }
 
-function FlightMap({ origin, destination, position, flightNumber }: {
+function FlightMap({ origin, destination, position, flightNumber, progress, statusColor }: {
   origin: FlightStatusData['route']['origin'];
   destination: FlightStatusData['route']['destination'];
   position: FlightStatusData['live']['position'];
   flightNumber: string;
+  progress: number | null;
+  statusColor: string;
 }) {
   const [icons, setIcons] = useState<{planeIcon?: L.DivIcon; originIcon?: L.DivIcon; destIcon?: L.DivIcon}>({});
 
@@ -126,20 +165,19 @@ function FlightMap({ origin, destination, position, flightNumber }: {
   useEffect(() => {
     async function loadIcons() {
       const L = await import('leaflet');
-      const planeSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="color: #10b981; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>`;
-      const originSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><circle cx="12" cy="12" r="10" fill="#ef4444" stroke="white" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="7" font-weight="bold" fill="white">${origin.code}</text></svg>`;
-      const destSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><circle cx="12" cy="12" r="10" fill="#22c55e" stroke="white" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="7" font-weight="bold" fill="white">${destination.code}</text></svg>`;
+      const planeSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="22" height="22" style="color: ${statusColor}; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>`;
+      const originSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><circle cx="12" cy="12" r="10" fill="#ef4444" stroke="white" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="8" font-weight="bold" fill="white">${origin.code}</text></svg>`;
+      const destSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="28" height="28" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><circle cx="12" cy="12" r="10" fill="#22c55e" stroke="white" stroke-width="2"/><text x="12" y="16" text-anchor="middle" font-size="8" font-weight="bold" fill="white">${destination.code}</text></svg>`;
 
       setIcons({
         planeIcon: L.divIcon({ html: planeSvg, className: 'plane-marker-icon', iconSize: [22, 22], iconAnchor: [11, 11], popupAnchor: [0, -11] }),
-        originIcon: L.divIcon({ html: originSvg, className: 'airport-marker-icon', iconSize: [24, 24], iconAnchor: [12, 12] }),
-        destIcon: L.divIcon({ html: destSvg, className: 'airport-marker-icon', iconSize: [24, 24], iconAnchor: [12, 12] }),
+        originIcon: L.divIcon({ html: originSvg, className: 'airport-marker-icon', iconSize: [28, 28], iconAnchor: [14, 14] }),
+        destIcon: L.divIcon({ html: destSvg, className: 'airport-marker-icon', iconSize: [28, 28], iconAnchor: [14, 14] }),
       });
     }
     loadIcons();
-  }, [origin.code, destination.code]);
+  }, [origin.code, destination.code, statusColor]);
 
-  // Default center - show world view if no coords
   let center: [number, number] = [20, 0];
   const hasCoords = hasOriginCoords || hasDestCoords;
   
@@ -185,7 +223,7 @@ function FlightMap({ origin, destination, position, flightNumber }: {
       )}
 
       {routePositions.length >= 2 && (
-        <Polyline positions={routePositions} pathOptions={{ color: '#6366f1', weight: 3, opacity: 0.8 }} />
+        <Polyline positions={routePositions} pathOptions={{ color: statusColor, weight: 3, opacity: 0.8 }} />
       )}
     </MapContainer>
   );
