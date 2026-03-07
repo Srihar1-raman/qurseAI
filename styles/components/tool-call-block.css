@@ -1797,11 +1797,11 @@
 }
 
 .flight-radar-mini-popup {
-  min-width: 140px;
-  padding: 2px;
+  min-width: 120px;
+  padding: 0;
 }
 
-.flight-radar-mini-popup-header {
+.flight-radar-mini-popup-main {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -1809,23 +1809,22 @@
 }
 
 .flight-radar-mini-popup-flight {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--color-text);
 }
 
 .flight-radar-mini-popup-route {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
-  color: var(--color-text);
-  margin-bottom: 4px;
+  color: var(--color-text-secondary);
 }
 
 .flight-radar-mini-popup-stats {
   display: flex;
-  gap: 8px;
-  font-size: 11px;
-  color: var(--color-text-secondary);
+  gap: 10px;
+  font-size: 10px;
+  color: var(--color-text-muted);
 }
 
 .flight-radar-mini-popup-header {
