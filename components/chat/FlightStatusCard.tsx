@@ -1,8 +1,12 @@
 'use client';
 
 import React from 'react';
-import { Plane, Clock, MapPin, ArrowRight, AlertTriangle, Package, Activity, Timer, Navigation, Luggage, Info } from 'lucide-react';
+import { MapContainer, TileLayer, Polyline, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { Plane, Clock, MapPin, ArrowRight, AlertTriangle, Package, Timer } from 'lucide-react';
 import { AirlineLogo } from '@/components/ui/airline-logo';
+import { useTheme } from '@/lib/theme-provider';
 import { getFlightStatusGradient, getAltitude, formatTime } from '@/lib/utils';
 
 interface FlightStatusData {
@@ -14,8 +18,8 @@ interface FlightStatusData {
     logoUrl: string | null;
   };
   route: {
-    origin: { code: string; icao: string; city: string; airport: string; country: string };
-    destination: { code: string; icao: string; city: string; airport: string; country: string };
+    origin: { code: string; icao: string; city: string; airport: string; country: string; lat?: number; lng?: number };
+    destination: { code: string; icao: string; city: string; airport: string; country: string; lat?: number; lng?: number };
   };
   status: { code: string; display: string; color: string; isLanded: boolean; isDelayed: boolean; isCancelled: boolean };
   times: {
@@ -54,11 +58,41 @@ interface FlightStatusCardProps {
   data: FlightStatusData;
 }
 
+const createOriginIcon = () => L.divIcon({
+  html: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10" fill="#ef4444" stroke="#ef4444"/><circle cx="12" cy="12" r="4" fill="white"/></svg>`,
+  className: 'origin-marker',
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+const createDestIcon = () => L.divIcon({
+  html: `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10" fill="#10b981" stroke="#10b981"/><circle cx="12" cy="12" r="4" fill="white"/></svg>`,
+  className: 'dest-marker',
+  iconSize: [16, 16],
+  iconAnchor: [8, 8],
+});
+
+function MapBounds({ origin, destination }: { origin: { lat?: number; lng?: number }; destination: { lat?: number; lng?: number } }) {
+  const map = useMap();
+  React.useEffect(() => {
+    if (origin.lat && origin.lng && destination.lat && destination.lng) {
+      const bounds = L.latLngBounds(
+        [[origin.lat, origin.lng], [destination.lat, destination.lng]]
+      );
+      map.fitBounds(bounds, { padding: [40, 40] });
+    }
+  }, [origin, destination, map]);
+  return null;
+}
+
 export function FlightStatusCard({ data }: FlightStatusCardProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === 'dark';
+  
   if (!data.times) {
     return (
-      <div className="flight-status-card">
-        <div className="flight-status-loading">Loading flight data...</div>
+      <div className="flight-status-simple">
+        <div className="flight-status-simple-loading">Loading flight data...</div>
       </div>
     );
   }
@@ -69,152 +103,99 @@ export function FlightStatusCard({ data }: FlightStatusCardProps) {
     if (data.status.isCancelled) return AlertTriangle;
     if (data.status.isDelayed) return Clock;
     if (data.status.isLanded) return Plane;
-    return Activity;
+    return Plane;
   };
 
   const StatusIcon = getStatusIcon();
+  const tileUrl = isDark 
+    ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+    : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
 
-  const getProgressPercent = () => {
-    if (data.live?.progress !== null && data.live.progress !== undefined) {
-      return Math.round(data.live.progress);
-    }
-    return 0;
-  };
-
-  const progress = getProgressPercent();
+  const hasPosition = data.route.origin.lat && data.route.origin.lng && data.route.destination.lat && data.route.destination.lng;
 
   return (
-    <div className="flight-status-card">
-      <div className="flight-status-header">
-        <div className="flight-status-header-left">
-          <AirlineLogo url={data.airline.logoUrl} name={data.airline.name} className="w-12 h-12" />
-          <div className="flight-status-header-info">
-            <div className="flight-status-header-main">
-              <span className="flight-status-number">{data.flightNumber}</span>
-              <div className="flight-status-badge" style={{ background: statusGradient }}>
-                <StatusIcon className="flight-status-badge-icon" />
-                <span>{data.status.display}</span>
-              </div>
+    <div className="flight-status-simple">
+      <div className="flight-status-simple-header">
+        <AirlineLogo url={data.airline.logoUrl} name={data.airline.name} className="w-14 h-14" />
+        <div className="flight-status-simple-info">
+          <div className="flight-status-simple-top">
+            <span className="flight-status-simple-number">{data.flightNumber}</span>
+            <div className="flight-status-simple-badge" style={{ background: statusGradient }}>
+              <StatusIcon className="flight-status-simple-badge-icon" />
+              <span>{data.status.display}</span>
             </div>
-            <span className="flight-status-airline">{data.airline.name}</span>
           </div>
-        </div>
-        
-        {data.live?.isLive && (
-          <div className="flight-status-live-pill">
-            <span className="flight-status-live-dot" />
-            <span>LIVE</span>
-          </div>
-        )}
-      </div>
-
-      <div className="flight-status-route-display">
-        <div className="flight-status-route-point">
-          <span className="flight-status-route-code">{data.route.origin.code}</span>
-          <span className="flight-status-route-city">{data.route.origin.city}</span>
-          <span className="flight-status-route-time">{formatTime(data.times.local?.departure || '--:--')}</span>
-        </div>
-        
-        <div className="flight-status-route-line">
-          <div className="flight-status-route-progress" style={{ width: `${progress}%` }} />
-          <div className="flight-status-route-plane-icon" style={{ left: `${progress}%` }}>
-            <Plane />
-          </div>
-        </div>
-        
-        <div className="flight-status-route-point">
-          <span className="flight-status-route-code">{data.route.destination.code}</span>
-          <span className="flight-status-route-city">{data.route.destination.city}</span>
-          <span className="flight-status-route-time">{formatTime(data.times.local?.arrival || '--:--')}</span>
+          <span className="flight-status-simple-airline">{data.airline.name}</span>
         </div>
       </div>
 
-      <div className="flight-status-stats">
-        <div className="flight-status-stat">
-          <Timer className="flight-status-stat-icon" />
-          <div className="flight-status-stat-content">
-            <span className="flight-status-stat-label">Duration</span>
-            <span className="flight-status-stat-value">{data.duration || '--'}</span>
-          </div>
+      <div className="flight-status-simple-route">
+        <div className="flight-status-simple-point">
+          <span className="flight-status-simple-code">{data.route.origin.code}</span>
+          <span className="flight-status-simple-city">{data.route.origin.city}</span>
+          <span className="flight-status-simple-time">{formatTime(data.times.local?.departure || '--:--')}</span>
         </div>
         
-        <div className="flight-status-stat">
-          <Navigation className="flight-status-stat-icon" />
-          <div className="flight-status-stat-content">
-            <span className="flight-status-stat-label">Progress</span>
-            <span className="flight-status-stat-value">{progress}%</span>
-          </div>
+        <div className="flight-status-simple-arrow">
+          <ArrowRight className="flight-status-simple-arrow-icon" />
+          <span className="flight-status-simple-duration">{data.duration || '--'}</span>
         </div>
         
-        {data.live?.isLive && data.live.position?.speed && (
-          <div className="flight-status-stat">
-            <Activity className="flight-status-stat-icon" />
-            <div className="flight-status-stat-content">
-              <span className="flight-status-stat-label">Speed</span>
-              <span className="flight-status-stat-value">{data.live.position.speed} km/h</span>
-            </div>
-          </div>
-        )}
-        
+        <div className="flight-status-simple-point">
+          <span className="flight-status-simple-code">{data.route.destination.code}</span>
+          <span className="flight-status-simple-city">{data.route.destination.city}</span>
+          <span className="flight-status-simple-time">{formatTime(data.times.local?.arrival || '--:--')}</span>
+        </div>
+      </div>
+
+      {hasPosition && (
+        <div className="flight-status-simple-map">
+          <MapContainer
+            zoom={6}
+            className="flight-status-simple-map-container"
+            scrollWheelZoom={false}
+          >
+            <TileLayer url={tileUrl} />
+            <MapBounds origin={data.route.origin} destination={data.route.destination} />
+            <Polyline
+              positions={[
+                [data.route.origin.lat!, data.route.origin.lng!],
+                [data.route.destination.lat!, data.route.destination.lng!]
+              ]}
+              color="#8b5cf6"
+              weight={2}
+              opacity={0.6}
+              dashArray="8, 8"
+            />
+            <Marker position={[data.route.origin.lat!, data.route.origin.lng!]} icon={createOriginIcon()}>
+              <Popup>{data.route.origin.code}</Popup>
+            </Marker>
+            <Marker position={[data.route.destination.lat!, data.route.destination.lng!]} icon={createDestIcon()}>
+              <Popup>{data.route.destination.code}</Popup>
+            </Marker>
+          </MapContainer>
+        </div>
+      )}
+
+      <div className="flight-status-simple-details">
+        <div className="flight-status-simple-detail">
+          <MapPin className="flight-status-simple-detail-icon" />
+          <span>Gate {data.gate.departure || '--'}</span>
+        </div>
+        <div className="flight-status-simple-detail">
+          <Package className="flight-status-simple-detail-icon" />
+          <span>Terminal {data.terminal.departure || '--'}</span>
+        </div>
+        <div className="flight-status-simple-detail">
+          <Timer className="flight-status-simple-detail-icon" />
+          <span>{data.aircraft.type || 'Aircraft'}</span>
+        </div>
         {data.delay.minutes > 0 && (
-          <div className="flight-status-stat delay">
-            <AlertTriangle className="flight-status-stat-icon" />
-            <div className="flight-status-stat-content">
-              <span className="flight-status-stat-label">Delay</span>
-              <span className="flight-status-stat-value">+{data.delay.minutes}m</span>
-            </div>
+          <div className="flight-status-simple-detail delay">
+            <AlertTriangle className="flight-status-simple-detail-icon" />
+            <span>+{data.delay.minutes}min</span>
           </div>
         )}
-      </div>
-
-      <div className="flight-status-details">
-        <div className="flight-status-detail">
-          <MapPin className="flight-status-detail-icon" />
-          <div className="flight-status-detail-content">
-            <span className="flight-status-detail-label">Gate</span>
-            <span className="flight-status-detail-value">{data.gate.departure || '--'} → {data.gate.arrival || '--'}</span>
-          </div>
-        </div>
-        
-        <div className="flight-status-detail">
-          <Package className="flight-status-detail-icon" />
-          <div className="flight-status-detail-content">
-            <span className="flight-status-detail-label">Terminal</span>
-            <span className="flight-status-detail-value">{data.terminal.departure || '--'} → {data.terminal.arrival || '--'}</span>
-          </div>
-        </div>
-        
-        <div className="flight-status-detail">
-          <Luggage className="flight-status-detail-icon" />
-          <div className="flight-status-detail-content">
-            <span className="flight-status-detail-label">Baggage</span>
-            <span className="flight-status-detail-value">{data.baggage.arrival}</span>
-          </div>
-        </div>
-      </div>
-
-      {data.aircraft.type && (
-        <div className="flight-status-aircraft">
-          <Plane className="flight-status-aircraft-icon" />
-          <span className="flight-status-aircraft-type">{data.aircraft.type}</span>
-          {data.aircraft.manufacturer && (
-            <span className="flight-status-aircraft-info">{data.aircraft.manufacturer}</span>
-          )}
-          {data.aircraft.code && (
-            <span className="flight-status-aircraft-reg">{data.aircraft.code}</span>
-          )}
-        </div>
-      )}
-
-      {data.codeshare && (
-        <div className="flight-status-codeshare">
-          <Info className="flight-status-codeshare-icon" />
-          <span className="flight-status-codeshare-text">Codeshare: {data.codeshare.airline} {data.codeshare.flightIata}</span>
-        </div>
-      )}
-
-      <div className="flight-status-footer">
-        Updated {new Date(data.lastUpdate).toLocaleString()}
       </div>
     </div>
   );
