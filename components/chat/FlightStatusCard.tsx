@@ -78,12 +78,7 @@ export function FlightStatusCard({ data }: FlightStatusCardProps) {
     if (data.live?.progress !== null && data.live.progress !== undefined) {
       return Math.round(data.live.progress);
     }
-    if (!data.times?.actual?.departure || !data.times?.actual?.arrival) return 0;
-    const depTime = new Date(data.times.actual.departure!);
-    const arrTime = new Date(data.times.actual.arrival!);
-    const total = arrTime.getTime() - depTime.getTime();
-    const elapsed = Date.now() - depTime.getTime();
-    return Math.min(100, Math.max(0, Math.round((elapsed / total) * 100)));
+    return 0;
   };
 
   const progress = getProgressPercent();
