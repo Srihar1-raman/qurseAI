@@ -3450,6 +3450,16 @@
   min-width: 180px;
 }
 
+.flight-radar-popup.dark-mode {
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.flight-radar-popup.light-mode {
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
 .flight-radar-popup-header {
   display: flex;
   align-items: center;
@@ -3488,9 +3498,23 @@
   border: none !important;
 }
 
-/* Leaflet map overrides for dark theme */
-.leaflet-container {
-  background: var(--color-bg-secondary);
+/* FlightRadar map theme styles */
+.flight-radar-mini-map.light-theme {
+  background: #f3f4f6;
+}
+
+.flight-radar-mini-map.dark-theme {
+  background: #1a1a2a;
+}
+
+/* Leaflet popup text color override for dark mode */
+.leaflet-popup-content-wrapper {
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+.leaflet-popup-content {
+  color: var(--color-text);
 }
 
 .leaflet-popup-content-wrapper {

@@ -538,6 +538,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                 <FlightStatusCard
                   key={execution.toolCallId}
                   data={flightData}
+                  resolvedTheme={resolvedTheme}
                 />
               );
             })}
@@ -570,6 +571,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                 <FlightRadarCard
                   key={execution.toolCallId}
                   data={execution.result as any}
+                  resolvedTheme={resolvedTheme}
                 />
               );
             })}

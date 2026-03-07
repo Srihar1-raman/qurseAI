@@ -809,3 +809,291 @@ form.conversation-input-container:focus-within {
   line-height: 1.4;
 }
 
+/* ===================================
+   FLIGHT RADAR & STATUS CARD STYLES
+   =================================== */
+
+.flight-radar-mini {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.flight-radar-mini-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.flight-radar-mini-map {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.flight-radar-mini-map .leaflet-container {
+  background: var(--color-bg);
+}
+
+.flight-radar-mini-map.dark-theme .leaflet-container {
+  background: #1a1a1a;
+}
+
+.flight-radar-popup {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--color-text);
+  padding: 8px;
+  min-width: 120px;
+}
+
+.flight-radar-popup-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.flight-radar-mini-popup-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.flight-radar-mini-popup-flight {
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.flight-radar-popup-number {
+  font-size: 14px;
+}
+
+.flight-radar-popup-route {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  margin-bottom: 4px;
+}
+
+.flight-radar-popup-main {
+  margin-bottom: 4px;
+}
+
+.flight-radar-mini-popup-route {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.flight-radar-popup-stats {
+  display: flex;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+
+.flight-radar-popup-stats span {
+  background: var(--color-bg-secondary);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.flight-status-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.flight-status-card-loading {
+  padding: 40px;
+  text-align: center;
+  color: var(--color-text-secondary);
+}
+
+.flight-status-card-map {
+  height: 200px;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.flight-status-card-info {
+  padding: 16px;
+}
+
+.flight-status-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+
+.flight-status-card-header-left {
+  flex: 1;
+}
+
+.flight-status-card-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.flight-status-card-airline {
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--color-text);
+}
+
+.flight-status-card-number {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+}
+
+.flight-status-card-aircraft {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.flight-status-card-logo {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+}
+
+.flight-status-card-route {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+}
+
+.flight-status-card-point {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.flight-status-card-point.origin {
+  align-items: flex-start;
+}
+
+.flight-status-card-point.destination {
+  align-items: flex-end;
+}
+
+.flight-status-card-code {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.flight-status-card-city {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.flight-status-card-time {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.flight-status-card-arrow {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-text-muted);
+}
+
+.flight-status-card-arrow-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.flight-status-card-duration {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.flight-status-card-duration-label {
+  text-align: center;
+  font-size: 12px;
+  color: var(--color-text-muted);
+  margin-bottom: 12px;
+}
+
+.flight-status-card-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.flight-status-card-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  background: var(--color-bg-secondary);
+  border-radius: 6px;
+}
+
+.flight-status-card-detail-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+.flight-status-card-detail-icon {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-muted);
+}
+
+.flight-status-card-detail-value {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.flight-status-card-detail-value.delay {
+  color: #ef4444;
+}
+
+.flight-status-card-detail-arrow {
+  width: 14px;
+  height: 14px;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 768px) {
+  .flight-status-card-details {
+    grid-template-columns: 1fr;
+  }
+
+  .flight-status-card-route {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .flight-status-card-point {
+    align-items: center !important;
+    width: 100%;
+  }
+
+  .flight-status-card-arrow {
+    transform: rotate(90deg);
+  }
+}
+
