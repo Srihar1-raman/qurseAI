@@ -36,12 +36,17 @@ interface FlightRadarCardProps {
 }
 
 const createPlaneIcon = () => {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="24" height="24" style="color: #10b981; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));">
+      <path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/>
+    </svg>
+  `;
   return L.divIcon({
-    html: `<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(45deg); filter: drop-shadow(0 2px 4px rgba(0,0,0,0.4));"><path d="M17.8 8.6L12 2.1 6.2 8.6c-.9.9-1.2 2.2-.8 3.4l1.6 4.6c.4 1.1 1.5 1.9 2.7 1.9h4.6c1.2 0 2.3-.8 2.7-1.9l1.6-4.6c.4-1.2.1-2.5-.8-3.4z"/><path d="M12 6.5v11"/></svg>`,
+    html: svg,
     className: 'plane-marker-icon',
-    iconSize: [28, 28],
-    iconAnchor: [14, 14],
-    popupAnchor: [0, -14],
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
   });
 };
 
