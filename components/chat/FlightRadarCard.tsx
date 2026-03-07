@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import dynamic from 'next/dynamic';
 import { Plane } from 'lucide-react';
 import { AirlineLogo } from '@/components/ui/airline-logo';
@@ -12,7 +12,6 @@ const MapContainer = dynamic(() => import('react-leaflet').then(mod => mod.MapCo
 const TileLayer = dynamic(() => import('react-leaflet').then(mod => mod.TileLayer), { ssr: false });
 const Marker = dynamic(() => import('react-leaflet').then(mod => mod.Marker), { ssr: false });
 const Popup = dynamic(() => import('react-leaflet').then(mod => mod.Popup), { ssr: false });
-const useMap = dynamic(() => import('react-leaflet').then(mod => mod.useMap), { ssr: false });
 
 interface FlightData {
   flightNumber: string;
@@ -55,17 +54,6 @@ const createPlaneIcon = () => {
   });
 };
 
-function MapCenter({ flights }: { flights: FlightData[] }) {
-  const map = useMap();
-  useEffect(() => {
-    if (flights.length > 0) {
-      const bounds = L.latLngBounds(flights.map(f => [f.position.lat, f.position.lng]));
-      map.fitBounds(bounds, { padding: [40, 40] });
-    }
-  }, [flights, map]);
-  return null;
-}
-
 export function FlightRadarCard({ data }: FlightRadarCardProps) {
   const { flights, total } = data;
 
@@ -92,7 +80,6 @@ export function FlightRadarCard({ data }: FlightRadarCardProps) {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; CARTO'
         />
-        <MapCenter flights={flights} />
         
         {flights.map((flight, idx) => (
           <Marker
