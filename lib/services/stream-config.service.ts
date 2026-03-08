@@ -27,6 +27,7 @@ import { airportInfoTool } from '@/lib/tools/airport-info';
 import { airlineInfoTool } from '@/lib/tools/airline-info';
 import { qrCodeTool } from '@/lib/tools/qr-code';
 import { movieInfoTool } from '@/lib/tools/movie';
+import { desmosTool } from '@/lib/tools/desmos';
 import {
   stockQuoteTool,
   stockHistoryTool,
@@ -239,6 +240,9 @@ export function buildStreamConfig(config: StreamConfig) {
       }
       if (modeConfig.enabledTools.includes('movie_info')) {
         tools.movie_info = movieInfoTool;
+      }
+      if (modeConfig.enabledTools.includes('desmos')) {
+        tools.desmos = desmosTool;
       }
 
       const streamTextOptions: any = {

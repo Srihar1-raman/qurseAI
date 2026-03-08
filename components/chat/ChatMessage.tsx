@@ -18,6 +18,7 @@ import { AirportInfoCard } from './AirportInfoCard';
 import { AirlineInfoCard } from './AirlineInfoCard';
 import { QRCodeCard } from './QRCodeCard';
 import { MovieCard } from './MovieCard';
+import { DesmosCard } from './DesmosCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -454,6 +455,23 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       }));
   }, [toolExecutions]);
 
+  // Desmos calculator executions
+  const desmosExecutions = React.useMemo(() => {
+    type DesmosResult = {
+      calculatorType: 'graphing' | 'scientific' | 'fourFunction' | 'geometry' | '3d';
+      initialExpressions: Array<{ id: string; latex: string; color?: string }>;
+      viewport?: { xmin: number; xmax: number; ymin: number; ymax: number };
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'desmos')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as DesmosResult | undefined,
+      }));
+  }, [toolExecutions]);
+
   const otherToolExecutions = React.useMemo(() => {
     return toolExecutions.filter(e => 
       e.toolName !== 'web_search' && 
@@ -464,7 +482,8 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       e.toolName !== 'crypto_price' &&
       e.toolName !== 'forex_rate' &&
       e.toolName !== 'qr_code' &&
-      e.toolName !== 'movie_info'
+      e.toolName !== 'movie_info' &&
+      e.toolName !== 'desmos'
     );
   }, [toolExecutions]);
 
@@ -823,6 +842,27 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                 <MovieCard
                   key={execution.toolCallId}
                   movie={movieData}
+                />
+              );
+            })}
+
+            {/* Desmos calculator cards */}
+            {desmosExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if (typeof execution.result === 'object' && 'error' in execution.result) return null;
+
+              const desmosData = execution.result as {
+                calculatorType: 'graphing' | 'scientific' | 'fourFunction' | 'geometry' | '3d';
+                initialExpressions: Array<{ id: string; latex: string; color?: string }>;
+                viewport?: { xmin: number; xmax: number; ymin: number; ymax: number };
+              };
+
+              return (
+                <DesmosCard
+                  key={execution.toolCallId}
+                  calculatorType={desmosData.calculatorType}
+                  initialExpressions={desmosData.initialExpressions || []}
+                  viewport={desmosData.viewport}
                 />
               );
             })}
