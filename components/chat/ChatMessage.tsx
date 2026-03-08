@@ -19,6 +19,7 @@ import { AirlineInfoCard } from './AirlineInfoCard';
 import { QRCodeCard } from './QRCodeCard';
 import { MovieCard } from './MovieCard';
 import { DesmosCard } from './DesmosCard';
+import { WolframCard } from './WolframCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -472,6 +473,22 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       }));
   }, [toolExecutions]);
 
+  // Wolfram Alpha executions
+  const wolframExecutions = React.useMemo(() => {
+    type WolframResult = {
+      query: string;
+      pods: Array<{ title: string; plaintext?: string; image?: string }>;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'wolfram')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as WolframResult | undefined,
+      }));
+  }, [toolExecutions]);
+
   const otherToolExecutions = React.useMemo(() => {
     return toolExecutions.filter(e => 
       e.toolName !== 'web_search' && 
@@ -483,7 +500,8 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       e.toolName !== 'forex_rate' &&
       e.toolName !== 'qr_code' &&
       e.toolName !== 'movie_info' &&
-      e.toolName !== 'desmos'
+      e.toolName !== 'desmos' &&
+      e.toolName !== 'wolfram'
     );
   }, [toolExecutions]);
 
@@ -863,6 +881,25 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                   calculatorType={desmosData.calculatorType}
                   initialExpressions={desmosData.initialExpressions || []}
                   viewport={desmosData.viewport}
+                />
+              );
+            })}
+
+            {/* Wolfram Alpha cards */}
+            {wolframExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if (typeof execution.result === 'object' && 'error' in execution.result) return null;
+
+              const wolframData = execution.result as {
+                query: string;
+                pods: Array<{ title: string; plaintext?: string; image?: string }>;
+              };
+
+              return (
+                <WolframCard
+                  key={execution.toolCallId}
+                  query={wolframData.query}
+                  pods={wolframData.pods}
                 />
               );
             })}

@@ -3,14 +3,16 @@ import { z } from 'zod';
 
 const WOLFRAM_APP_ID = process.env.WOLFRAM_ALPHA_APP_ID;
 
+interface WolframSubpod {
+  title: string;
+  plaintext: string;
+  img?: string;
+}
+
 interface WolframPod {
   id: string;
   title: string;
-  subpods: Array<{
-    title: string;
-    plaintext: string;
-    img?: string;
-  }>;
+  subpods: WolframSubpod[];
 }
 
 interface WolframResult {
@@ -22,8 +24,14 @@ interface WolframResult {
   };
 }
 
+interface PodResult {
+  title: string;
+  plaintext?: string;
+  image?: string;
+}
+
 export const wolframTool = tool({
-  description: 'Get computational knowledge, scientific calculations, and answers to factual questions using Wolfram Alpha. Use this for: mathematical calculations (evaluations, derivatives, integrals, equations), science (physics, chemistry, biology, astronomy), geography, history, demographics, nutrition, and any factual queries. Returns plain text results.',
+  description: 'Get computational knowledge, scientific calculations, and answers to factual questions using Wolfram Alpha. Use this for: mathematical calculations (evaluations, derivatives, integrals, equations), science (physics, chemistry, biology, astronomy), geography, history, demographics, nutrition, and any factual queries. Returns plain text results and images.',
   inputSchema: z.object({
     query: z.string().describe('The question or calculation to ask Wolfram Alpha. Examples: "solve x^2+2x-1=0", "derivative of sin(x)", "atomic mass of gold", "population of Japan", "distance from Earth to Mars", "weather in Tokyo"'),
   }),
@@ -49,28 +57,27 @@ export const wolframTool = tool({
       }
 
       const pods = data.queryresult.pods;
-      const results: string[] = [];
+      const podResults: PodResult[] = [];
       
-      // Get the main result pods
       for (const pod of pods) {
-        // Skip input interpretation pods
-        if (pod.id === 'Input' || pod.id === 'Interpretation') continue;
-        
         for (const subpod of pod.subpods) {
-          if (subpod.plaintext && subpod.plaintext.trim()) {
-            results.push(subpod.plaintext.trim());
+          if (subpod.plaintext?.trim() || subpod.img) {
+            podResults.push({
+              title: pod.title,
+              plaintext: subpod.plaintext?.trim(),
+              image: subpod.img,
+            });
           }
         }
       }
 
-      if (results.length === 0) {
+      if (podResults.length === 0) {
         return { error: 'No results found for this query' };
       }
 
       return {
         query,
-        answer: results.join('\n\n'),
-        hasVisual: pods.some(p => p.subpods.some(s => s.img)),
+        pods: podResults,
       };
     } catch (error) {
       return {
