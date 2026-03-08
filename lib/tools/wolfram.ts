@@ -3,10 +3,15 @@ import { z } from 'zod';
 
 const WOLFRAM_APP_ID = process.env.WOLFRAM_ALPHA_APP_ID;
 
+interface WolframImage {
+  src: string;
+  alt?: string;
+}
+
 interface WolframSubpod {
   title: string;
   plaintext: string;
-  img?: string;
+  img?: WolframImage;
 }
 
 interface WolframPod {
@@ -42,7 +47,7 @@ export const wolframTool = tool({
 
     try {
       const encodedQuery = encodeURIComponent(query);
-      const url = `https://api.wolframalpha.com/v2/query?input=${encodedQuery}&appid=${WOLFRAM_APP_ID}&format=plaintext&output=JSON`;
+      const url = `https://api.wolframalpha.com/v2/query?input=${encodedQuery}&appid=${WOLFRAM_APP_ID}&format=plaintext,image&output=JSON`;
       
       const response = await fetch(url);
       
@@ -61,11 +66,11 @@ export const wolframTool = tool({
       
       for (const pod of pods) {
         for (const subpod of pod.subpods) {
-          if (subpod.plaintext?.trim() || subpod.img) {
+          if (subpod.plaintext?.trim() || subpod.img?.src) {
             podResults.push({
               title: pod.title,
               plaintext: subpod.plaintext?.trim(),
-              image: subpod.img,
+              image: subpod.img?.src,
             });
           }
         }
