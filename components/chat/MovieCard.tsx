@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Star, Clock, Film, Tv, Loader2, X } from 'lucide-react';
+import { Star, Clock, Film, Tv, Loader2 } from 'lucide-react';
 
 interface SimilarMovie {
   tmdbId: number;
@@ -39,29 +39,46 @@ interface MovieData {
   similarMovies?: SimilarMovie[];
 }
 
-interface MovieCardContentProps {
+interface MovieCardProps {
   movie: MovieData;
-  onSimilarClick: (similar: SimilarMovie) => void;
-  loadingMovie: string | null;
 }
 
-function MovieCardContent({ movie, onSimilarClick, loadingMovie }: MovieCardContentProps) {
+export function MovieCard({ movie }: MovieCardProps) {
   const [imageError, setImageError] = useState(false);
   const [showFullPlot, setShowFullPlot] = useState(false);
+  const [currentMovie, setCurrentMovie] = useState<MovieData>(movie);
+  const [loadingMovie, setLoadingMovie] = useState<string | null>(null);
 
-  const posterUrl = movie.tmdbPosterPath 
-    ? `https://image.tmdb.org/t/p/w500${movie.tmdbPosterPath}`
-    : movie.poster;
+  const posterUrl = currentMovie.tmdbPosterPath 
+    ? `https://image.tmdb.org/t/p/w500${currentMovie.tmdbPosterPath}`
+    : currentMovie.poster;
 
   const displayPoster = imageError || !posterUrl 
     ? null 
     : posterUrl;
 
-  const rtRatingVal = movie.ratings?.find(r => r.Source === 'Rotten Tomatoes');
-  const metaScore = movie.metascore;
+  const rtRatingVal = currentMovie.ratings?.find(r => r.Source === 'Rotten Tomatoes');
+  const metaScore = currentMovie.metascore;
 
-  const isSeries = movie.type === 'series';
+  const isSeries = currentMovie.type === 'series';
   const typeIcon = isSeries ? Tv : Film;
+
+  const handleSimilarClick = async (similar: SimilarMovie) => {
+    setLoadingMovie(similar.tmdbId.toString());
+    try {
+      const res = await fetch(`/api/movie?title=${encodeURIComponent(similar.title)}&year=${similar.year}`);
+      const data = await res.json();
+      if (data.error) {
+        console.error('Error fetching movie:', data.error);
+        setLoadingMovie(null);
+        return;
+      }
+      setCurrentMovie(data);
+    } catch (error) {
+      console.error('Error fetching movie:', error);
+      setLoadingMovie(null);
+    }
+  };
 
   return (
     <div className="movie-card">
@@ -72,32 +89,32 @@ function MovieCardContent({ movie, onSimilarClick, loadingMovie }: MovieCardCont
               {React.createElement(typeIcon, { size: 14 })}
               <span>{isSeries ? 'TV Series' : 'Movie'}</span>
             </div>
-            <h2 className="movie-card-title">{movie.title}</h2>
+            <h2 className="movie-card-title">{currentMovie.title}</h2>
             <div className="movie-card-meta">
-              {movie.year && <span>{movie.year}</span>}
-              {movie.rated && <span className="movie-card-rated">{movie.rated}</span>}
-              {movie.runtime && (
+              {currentMovie.year && <span>{currentMovie.year}</span>}
+              {currentMovie.rated && <span className="movie-card-rated">{currentMovie.rated}</span>}
+              {currentMovie.runtime && (
                 <span className="movie-card-runtime">
                   <Clock size={12} />
-                  {movie.runtime}
+                  {currentMovie.runtime}
                 </span>
               )}
             </div>
           </div>
 
-          {movie.genre && movie.genre.length > 0 && (
+          {currentMovie.genre && currentMovie.genre.length > 0 && (
             <div className="movie-card-genres">
-              {movie.genre.slice(0, 4).map((g, i) => (
+              {currentMovie.genre.slice(0, 4).map((g, i) => (
                 <span key={i} className="movie-card-genre">{g}</span>
               ))}
             </div>
           )}
 
           <div className="movie-card-ratings">
-            {movie.imdbRating && (
+            {currentMovie.imdbRating && (
               <div className="movie-card-rating">
                 <Star size={14} fill="currentColor" className="star-icon" />
-                <span className="rating-value">{movie.imdbRating}</span>
+                <span className="rating-value">{currentMovie.imdbRating}</span>
                 <span className="rating-max">/10</span>
               </div>
             )}
@@ -115,12 +132,12 @@ function MovieCardContent({ movie, onSimilarClick, loadingMovie }: MovieCardCont
             )}
           </div>
 
-          {movie.plot && (
+          {currentMovie.plot && (
             <div className="movie-card-plot">
               <p className={showFullPlot ? '' : 'truncated'}>
-                {movie.plot}
+                {currentMovie.plot}
               </p>
-              {movie.plot.length > 200 && (
+              {currentMovie.plot.length > 200 && (
                 <button 
                   className="movie-card-plot-toggle"
                   onClick={() => setShowFullPlot(!showFullPlot)}
@@ -131,24 +148,24 @@ function MovieCardContent({ movie, onSimilarClick, loadingMovie }: MovieCardCont
             </div>
           )}
 
-          {movie.director && (
+          {currentMovie.director && (
             <div className="movie-card-detail">
               <span className="detail-label">Director</span>
-              <span className="detail-value">{movie.director}</span>
+              <span className="detail-value">{currentMovie.director}</span>
             </div>
           )}
 
-          {movie.actors && movie.actors.length > 0 && (
+          {currentMovie.actors && currentMovie.actors.length > 0 && (
             <div className="movie-card-detail">
               <span className="detail-label">Cast</span>
-              <span className="detail-value">{movie.actors.slice(0, 4).join(', ')}</span>
+              <span className="detail-value">{currentMovie.actors.slice(0, 4).join(', ')}</span>
             </div>
           )}
 
-          {movie.boxOffice && (
+          {currentMovie.boxOffice && (
             <div className="movie-card-detail">
               <span className="detail-label">Box Office</span>
-              <span className="detail-value">{movie.boxOffice}</span>
+              <span className="detail-value">{currentMovie.boxOffice}</span>
             </div>
           )}
         </div>
@@ -157,24 +174,24 @@ function MovieCardContent({ movie, onSimilarClick, loadingMovie }: MovieCardCont
           <div className="movie-card-poster">
             <img 
               src={displayPoster} 
-              alt={movie.title}
+              alt={currentMovie.title}
               onError={() => setImageError(true)}
             />
           </div>
         )}
       </div>
 
-      {movie.similarMovies && movie.similarMovies.length > 0 && (
+      {currentMovie.similarMovies && currentMovie.similarMovies.length > 0 && (
         <div className="movie-card-similar">
           <div className="similar-header">
             <span className="similar-title">Similar Movies</span>
           </div>
           <div className="similar-scroll">
-            {movie.similarMovies.map((similar) => (
+            {currentMovie.similarMovies.map((similar) => (
               <div 
                 key={similar.tmdbId} 
                 className="similar-item"
-                onClick={() => onSimilarClick(similar)}
+                onClick={() => handleSimilarClick(similar)}
               >
                 {similar.poster ? (
                   <img src={similar.poster} alt={similar.title} />
@@ -200,48 +217,3 @@ function MovieCardContent({ movie, onSimilarClick, loadingMovie }: MovieCardCont
     </div>
   );
 }
-
-interface MovieCardProps {
-  movie: MovieData;
-}
-
-export function MovieCard({ movie }: MovieCardProps) {
-  const [expandedMovie, setExpandedMovie] = useState<MovieData | null>(null);
-  const [loadingMovie, setLoadingMovie] = useState<string | null>(null);
-
-  const handleSimilarClick = async (similar: SimilarMovie) => {
-    setLoadingMovie(similar.tmdbId.toString());
-    try {
-      const res = await fetch(`/api/movie?title=${encodeURIComponent(similar.title)}&year=${similar.year}`);
-      const data = await res.json();
-      if (data.error) {
-        console.error('Error fetching movie:', data.error);
-        setLoadingMovie(null);
-        return;
-      }
-      setExpandedMovie(data);
-    } catch (error) {
-      console.error('Error fetching movie:', error);
-      setLoadingMovie(null);
-    }
-  };
-
-  return (
-    <>
-      <MovieCardContent movie={movie} onSimilarClick={handleSimilarClick} loadingMovie={loadingMovie} />
-      
-      {expandedMovie && (
-        <div className="movie-card-expanded">
-          <button 
-            className="movie-card-close"
-            onClick={() => setExpandedMovie(null)}
-          >
-            <X size={18} />
-          </button>
-          <MovieCardContent movie={expandedMovie} onSimilarClick={() => {}} loadingMovie={null} />
-        </div>
-      )}
-    </>
-  );
-}
-
