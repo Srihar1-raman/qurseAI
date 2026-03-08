@@ -4575,9 +4575,13 @@
   border-radius: 8px;
 }
 
+[data-theme='dark'] .wolfram-card-image {
+  filter: invert(0.9) hue-rotate(180deg);
+}
+
 @media (prefers-color-scheme: dark) {
-  .wolfram-card-image {
-    filter: invert(1) hue-rotate(180deg);
+  [data-theme='auto'] .wolfram-card-image {
+    filter: invert(0.9) hue-rotate(180deg);
   }
 }
 
