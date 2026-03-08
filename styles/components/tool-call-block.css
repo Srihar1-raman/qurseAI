@@ -4575,6 +4575,12 @@
   border-radius: 8px;
 }
 
+@media (prefers-color-scheme: dark) {
+  .wolfram-card-image {
+    filter: invert(1) hue-rotate(180deg);
+  }
+}
+
 .wolfram-card-plaintext {
   font-size: 14px;
   line-height: 1.6;
