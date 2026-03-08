@@ -164,3 +164,14 @@
     opacity: 1;
   }
 }
+
+/* Web search streaming - show full content, no height limit */
+.web-search-preview .reasoning-content.streaming {
+  max-height: none;
+  overflow: visible;
+}
+
+/* Remove fade gradient for web search streaming */
+.web-search-preview .reasoning-content.streaming::after {
+  display: none;
+}

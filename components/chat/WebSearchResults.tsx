@@ -173,7 +173,7 @@ export function WebSearchResults({ executions, isStreaming }: WebSearchResultsPr
 
   useEffect(() => {
     if (!isStreaming && allComplete && !isExpanded && !isCollapsedByUser) {
-      setIsExpanded(false);
+      setIsExpanded(true);
     }
   }, [isStreaming, allComplete, isExpanded, isCollapsedByUser]);
 
@@ -190,22 +190,20 @@ export function WebSearchResults({ executions, isStreaming }: WebSearchResultsPr
   }, [executions]);
 
   const headerText = useMemo(() => {
-    if (isStreaming) return 'Searching the web...';
     if (isExpanded) return 'Web Research';
     return 'Web Result';
-  }, [isStreaming, isExpanded]);
+  }, [isExpanded]);
 
   const headerSubtext = useMemo(() => {
-    if (isStreaming) return null;
     if (isExpanded && totalResults > 0) {
       return `${totalResults} result${totalResults !== 1 ? 's' : ''}`;
     }
     return null;
-  }, [isStreaming, isExpanded, totalResults]);
+  }, [isExpanded, totalResults]);
 
-  const showStreamingBox = isStreaming && !isCollapsedByUser;
-  const showCollapsed = isCollapsedByUser || (!isStreaming && !isExpanded);
-  const showExpanded = !isStreaming && isExpanded;
+  const showStreamingBox = false;
+  const showCollapsed = false;
+  const showExpanded = allResults.length > 0;
 
   return (
     <div className="web-search-results-block">
@@ -230,11 +228,20 @@ export function WebSearchResults({ executions, isStreaming }: WebSearchResultsPr
           <div className="reasoning-content streaming">
             <div className="web-search-preview">
               {executions.map((exec, i) => (
-                <div key={exec.toolCallId} className="web-search-preview-item">
-                  <span className="web-search-preview-query">&ldquo;{exec.query}&rdquo;</span>
-                  <span className={`web-search-preview-status ${exec.status}`}>
-                    {exec.status === 'loading' ? 'searching...' : exec.status === 'complete' ? 'found' : 'failed'}
-                  </span>
+                <div key={exec.toolCallId}>
+                  <div className="web-search-preview-item">
+                    <span className="web-search-preview-query">&ldquo;{exec.query}&rdquo;</span>
+                    <span className={`web-search-preview-status ${exec.status}`}>
+                      {exec.status === 'loading' ? 'searching...' : exec.status === 'complete' ? 'found' : 'failed'}
+                    </span>
+                  </div>
+                  {exec.status === 'complete' && exec.result?.results && (
+                    <div className="search-results-scroll">
+                      {exec.result.results.map((searchResult, index) => (
+                        <SearchResultCard key={index} result={searchResult} />
+                      ))}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
