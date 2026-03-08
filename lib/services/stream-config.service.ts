@@ -28,6 +28,7 @@ import { airlineInfoTool } from '@/lib/tools/airline-info';
 import { qrCodeTool } from '@/lib/tools/qr-code';
 import { movieInfoTool } from '@/lib/tools/movie';
 import { desmosTool } from '@/lib/tools/desmos';
+import { wolframTool } from '@/lib/tools/wolfram';
 import {
   stockQuoteTool,
   stockHistoryTool,
@@ -243,6 +244,9 @@ export function buildStreamConfig(config: StreamConfig) {
       }
       if (modeConfig.enabledTools.includes('desmos')) {
         tools.desmos = desmosTool;
+      }
+      if (modeConfig.enabledTools.includes('wolfram')) {
+        tools.wolfram = wolframTool;
       }
 
       const streamTextOptions: any = {
