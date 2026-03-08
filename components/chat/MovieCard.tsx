@@ -1,7 +1,17 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Star, Clock, Film, Tv } from 'lucide-react';
+import { Star, Clock, Film, Tv, Loader2, X } from 'lucide-react';
+
+interface SimilarMovie {
+  tmdbId: number;
+  title: string;
+  year: string;
+  poster: string | null;
+  overview: string;
+  voteAverage: number;
+  genres: string;
+}
 
 interface MovieData {
   title: string;
@@ -26,22 +36,16 @@ interface MovieData {
   type: string;
   boxOffice: string | null;
   tmdbPosterPath?: string;
-  similarMovies?: Array<{
-    tmdbId: number;
-    title: string;
-    year: string;
-    poster: string | null;
-    overview: string;
-    voteAverage: number;
-    genres: string;
-  }>;
+  similarMovies?: SimilarMovie[];
 }
 
-interface MovieCardProps {
+interface MovieCardContentProps {
   movie: MovieData;
+  onSimilarClick: (similar: SimilarMovie) => void;
+  loadingMovie: string | null;
 }
 
-export function MovieCard({ movie }: MovieCardProps) {
+function MovieCardContent({ movie, onSimilarClick, loadingMovie }: MovieCardContentProps) {
   const [imageError, setImageError] = useState(false);
   const [showFullPlot, setShowFullPlot] = useState(false);
 
@@ -167,7 +171,11 @@ export function MovieCard({ movie }: MovieCardProps) {
           </div>
           <div className="similar-scroll">
             {movie.similarMovies.map((similar) => (
-              <div key={similar.tmdbId} className="similar-item">
+              <div 
+                key={similar.tmdbId} 
+                className="similar-item"
+                onClick={() => onSimilarClick(similar)}
+              >
                 {similar.poster ? (
                   <img src={similar.poster} alt={similar.title} />
                 ) : (
@@ -179,6 +187,11 @@ export function MovieCard({ movie }: MovieCardProps) {
                   <span className="similar-item-title">{similar.title}</span>
                   <span className="similar-item-year">{similar.year}</span>
                 </div>
+                {loadingMovie === similar.tmdbId.toString() && (
+                  <div className="similar-loader">
+                    <Loader2 size={16} className="animate-spin" />
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -187,3 +200,48 @@ export function MovieCard({ movie }: MovieCardProps) {
     </div>
   );
 }
+
+interface MovieCardProps {
+  movie: MovieData;
+}
+
+export function MovieCard({ movie }: MovieCardProps) {
+  const [expandedMovie, setExpandedMovie] = useState<MovieData | null>(null);
+  const [loadingMovie, setLoadingMovie] = useState<string | null>(null);
+
+  const handleSimilarClick = async (similar: SimilarMovie) => {
+    setLoadingMovie(similar.tmdbId.toString());
+    try {
+      const res = await fetch(`/api/movie?title=${encodeURIComponent(similar.title)}&year=${similar.year}`);
+      const data = await res.json();
+      if (data.error) {
+        console.error('Error fetching movie:', data.error);
+        setLoadingMovie(null);
+        return;
+      }
+      setExpandedMovie(data);
+    } catch (error) {
+      console.error('Error fetching movie:', error);
+      setLoadingMovie(null);
+    }
+  };
+
+  return (
+    <>
+      <MovieCardContent movie={movie} onSimilarClick={handleSimilarClick} loadingMovie={loadingMovie} />
+      
+      {expandedMovie && (
+        <div className="movie-card-expanded">
+          <button 
+            className="movie-card-close"
+            onClick={() => setExpandedMovie(null)}
+          >
+            <X size={18} />
+          </button>
+          <MovieCardContent movie={expandedMovie} onSimilarClick={() => {}} loadingMovie={null} />
+        </div>
+      )}
+    </>
+  );
+}
+
