@@ -4118,9 +4118,8 @@
 }
 
 .movie-card-content {
-  display: flex !important;
+  display: flex;
   gap: 20px;
-  flex-direction: row-reverse !important;
 }
 
 .movie-card-poster {
@@ -4389,7 +4388,7 @@
 
 @media (max-width: 640px) {
   .movie-card-content {
-    flex-direction: row-reverse !important;
+    flex-direction: row;
   }
 
   .movie-card-poster {
