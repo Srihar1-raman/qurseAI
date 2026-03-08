@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { Calculator } from 'lucide-react';
 
 interface PodResult {
   title: string;
@@ -18,19 +17,13 @@ export function WolframCard({ query, pods }: WolframCardProps) {
   return (
     <div className="wolfram-card">
       <div className="wolfram-card-header">
-        <Calculator className="wolfram-card-icon" />
         <span className="wolfram-card-title">Wolfram Alpha</span>
       </div>
       
-      <div className="wolfram-card-query">
-        <span className="wolfram-card-query-label">Query:</span>
-        <span className="wolfram-card-query-text">{query}</span>
-      </div>
-
       <div className="wolfram-card-results">
         {pods.map((pod, index) => (
           <div key={index} className="wolfram-card-pod">
-            {pod.title && pod.title !== 'Input' && (
+            {pod.title && pod.title !== 'Input' && pod.title !== 'Input interpretation' && (
               <div className="wolfram-card-pod-title">{pod.title}</div>
             )}
             
@@ -41,12 +34,6 @@ export function WolframCard({ query, pods }: WolframCardProps) {
                   alt={pod.title} 
                   className="wolfram-card-image"
                 />
-              </div>
-            )}
-            
-            {pod.plaintext && (
-              <div className="wolfram-card-plaintext">
-                {pod.plaintext}
               </div>
             )}
           </div>

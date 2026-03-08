@@ -4532,54 +4532,22 @@
 }
 
 .wolfram-card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 18px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--color-border);
-  background: linear-gradient(135deg, rgba(249, 115, 22, 0.08) 0%, rgba(234, 88, 12, 0.04) 100%);
-}
-
-.wolfram-card-icon {
-  width: 20px;
-  height: 20px;
-  color: #ea580c;
 }
 
 .wolfram-card-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--color-text);
-}
-
-.wolfram-card-query {
-  padding: 12px 18px;
-  background: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-.wolfram-card-query-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
-  color: var(--color-text-muted);
-  flex-shrink: 0;
-}
-
-.wolfram-card-query-text {
-  font-size: 14px;
-  color: var(--color-text);
-  word-break: break-word;
+  color: var(--color-text-secondary);
 }
 
 .wolfram-card-results {
-  padding: 16px 18px;
+  padding: 12px 16px;
 }
 
 .wolfram-card-pod {
-  margin-bottom: 16px;
+  margin-bottom: 14px;
 }
 
 .wolfram-card-pod:last-child {
@@ -4588,24 +4556,23 @@
 
 .wolfram-card-pod-title {
   font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-bottom: 6px;
 }
 
 .wolfram-card-image-container {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   border-radius: 8px;
   overflow: hidden;
-  background: var(--color-bg-secondary);
+  display: inline-block;
 }
 
 .wolfram-card-image {
   max-width: 100%;
   height: auto;
   display: block;
+  border-radius: 8px;
 }
 
 .wolfram-card-plaintext {
@@ -4615,7 +4582,7 @@
   white-space: pre-wrap;
   word-break: break-word;
   background: var(--color-bg-secondary);
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-radius: 8px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
