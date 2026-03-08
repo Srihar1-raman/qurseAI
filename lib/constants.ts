@@ -5,7 +5,8 @@ import type { SearchOption } from './types';
 export const WEB_SEARCH_OPTIONS: SearchOption[] = [
   { name: 'Chat', enabled: true, icon: 'chat' },
   { name: 'Web Search', enabled: true, icon: 'search' },
-  { name: 'Finance', enabled: true, icon: 'trending-up' }
+  { name: 'Finance', enabled: true, icon: 'trending-up' },
+  { name: 'Science & Math', enabled: true, icon: 'science-math' }
 ];
 
 // Export short names for convenience

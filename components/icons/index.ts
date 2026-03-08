@@ -53,6 +53,7 @@ export { RedoIcon } from './RedoIcon';
 export { RenameIcon } from './RenameIcon';
 export { RightArrowsIcon } from './RightArrowsIcon';
 export { SearchIcon } from './SearchIcon';
+export { ScienceMathIcon } from './ScienceMathIcon';
 export { SendIcon } from './SendIcon';
 export { SentryIcon } from './SentryIcon';
 export { SettingsIcon } from './SettingsIcon';

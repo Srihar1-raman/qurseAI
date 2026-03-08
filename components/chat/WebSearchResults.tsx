@@ -106,12 +106,6 @@ function WebSearchQuerySection({ execution }: { execution: WebSearchExecution })
 
   return (
     <div className="web-search-query-section">
-      <div className="web-search-query-header">
-        <span className="web-search-query-label">Query:</span>
-        <span className="web-search-query-text">&ldquo;{execution.query}&rdquo;</span>
-        {execution.status === 'error' && <span className="web-search-error">failed</span>}
-      </div>
-
       {execution.status === 'error' && (
         <div className="web-search-error-message">
           {execution.result && typeof execution.result === 'object' && 'error' in execution.result

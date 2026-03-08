@@ -57,6 +57,7 @@ import { RightArrowsIcon } from './RightArrowsIcon';
 import { SearchIcon } from './SearchIcon';
 import { SendIcon } from './SendIcon';
 import { SentryIcon } from './SentryIcon';
+import { ScienceMathIcon } from './ScienceMathIcon';
 import { SettingsIcon } from './SettingsIcon';
 import { ShareIcon } from './ShareIcon';
 import { SignoutIcon } from './SignoutIcon';
@@ -131,6 +132,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'rename': RenameIcon,
   'right-arrows': RightArrowsIcon,
   'search': SearchIcon,
+  'science-math': ScienceMathIcon,
   'send': SendIcon,
   'sentry': SentryIcon,
   'settings': SettingsIcon,

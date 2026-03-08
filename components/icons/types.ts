@@ -16,7 +16,7 @@ export type IconName =
   | 'model' | 'moonshot' | 'more' | 'nextjs' | 'OpenAI'
   | 'payment' | 'pin' | 'plus' | 'privacy' | 'pro' | 'profile'
   | 'qwen' | 'reason' | 'redo' | 'rename' | 'right-arrows'
-  | 'search' | 'send' | 'sentry' | 'settings' | 'share'
+  | 'science-math' | 'search' | 'send' | 'sentry' | 'settings' | 'share'
   | 'signout' | 'stop' | 'supabase' | 'system' | 'tavily'
   | 'terms' | 'theme' | 'theme-auto' | 'theme-light' | 'theme-dark'
   | 'thumbs-down' | 'thumbs-up' | 'trending-up' | 'unpin' | 'upstash'

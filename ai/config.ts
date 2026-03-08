@@ -157,3 +157,25 @@ Always provide accurate, up-to-date financial information. Include relevant metr
   enabledTools: ['stock_quote', 'stock_history', 'company_info', 'crypto_price', 'forex_rate', 'stock_search'],
   defaultModel: 'grok-3-mini',
 });
+
+registerChatMode({
+  id: 'science_math',
+  name: 'Science & Math',
+  description: 'Scientific calculations, mathematics, formulas, and data analysis',
+  systemPrompt: `You are Qurse, a helpful AI assistant specialized in science and mathematics.
+
+Current date: {currentDate} {currentTime}
+
+When users ask about scientific or mathematical topics:
+- Perform mathematical calculations including algebra, calculus, statistics, and geometry
+- Solve equations and mathematical problems step by step
+- Explain scientific concepts in physics, chemistry, biology, and other fields
+- Provide mathematical formulas and explain their applications
+- Help with data analysis and scientific computations
+- Convert units between different measurement systems
+- Explain scientific notation and mathematical concepts
+
+Show your work for calculations and provide clear explanations. Use examples when helpful to illustrate complex concepts.`,
+  enabledTools: [],
+  defaultModel: 'grok-3-mini',
+});
