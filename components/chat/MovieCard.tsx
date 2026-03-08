@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Star, Clock, Film, Tv, Loader2 } from 'lucide-react';
+import { Star, Clock, Film, Tv } from 'lucide-react';
 
 interface SimilarMovie {
   tmdbId: number;
@@ -47,7 +47,6 @@ export function MovieCard({ movie }: MovieCardProps) {
   const [imageError, setImageError] = useState(false);
   const [showFullPlot, setShowFullPlot] = useState(false);
   const [currentMovie, setCurrentMovie] = useState<MovieData>(movie);
-  const [loadingMovie, setLoadingMovie] = useState<string | null>(null);
   const [displayedSimilarMovies, setDisplayedSimilarMovies] = useState<SimilarMovie[]>(movie.similarMovies || []);
 
   const posterUrl = currentMovie.tmdbPosterPath 
@@ -65,19 +64,16 @@ export function MovieCard({ movie }: MovieCardProps) {
   const typeIcon = isSeries ? Tv : Film;
 
   const handleSimilarClick = async (similar: SimilarMovie) => {
-    setLoadingMovie(similar.tmdbId.toString());
     try {
       const res = await fetch(`/api/movie?title=${encodeURIComponent(similar.title)}&year=${similar.year}`);
       const data = await res.json();
       if (data.error) {
         console.error('Error fetching movie:', data.error);
-        setLoadingMovie(null);
         return;
       }
       setCurrentMovie(data);
     } catch (error) {
       console.error('Error fetching movie:', error);
-      setLoadingMovie(null);
     }
   };
 
@@ -205,11 +201,6 @@ export function MovieCard({ movie }: MovieCardProps) {
                   <span className="similar-item-title">{similar.title}</span>
                   <span className="similar-item-year">{similar.year}</span>
                 </div>
-                {loadingMovie === similar.tmdbId.toString() && (
-                  <div className="similar-loader">
-                    <Loader2 size={16} className="animate-spin" />
-                  </div>
-                )}
               </div>
             ))}
           </div>
