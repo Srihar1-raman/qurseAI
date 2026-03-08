@@ -48,6 +48,7 @@ export function MovieCard({ movie }: MovieCardProps) {
   const [showFullPlot, setShowFullPlot] = useState(false);
   const [currentMovie, setCurrentMovie] = useState<MovieData>(movie);
   const [loadingMovie, setLoadingMovie] = useState<string | null>(null);
+  const [displayedSimilarMovies, setDisplayedSimilarMovies] = useState<SimilarMovie[]>(movie.similarMovies || []);
 
   const posterUrl = currentMovie.tmdbPosterPath 
     ? `https://image.tmdb.org/t/p/w500${currentMovie.tmdbPosterPath}`
@@ -181,13 +182,13 @@ export function MovieCard({ movie }: MovieCardProps) {
         )}
       </div>
 
-      {currentMovie.similarMovies && currentMovie.similarMovies.length > 0 && (
+      {displayedSimilarMovies && displayedSimilarMovies.length > 0 && (
         <div className="movie-card-similar">
           <div className="similar-header">
             <span className="similar-title">Similar Movies</span>
           </div>
           <div className="similar-scroll">
-            {currentMovie.similarMovies.map((similar) => (
+            {displayedSimilarMovies.map((similar) => (
               <div 
                 key={similar.tmdbId} 
                 className="similar-item"

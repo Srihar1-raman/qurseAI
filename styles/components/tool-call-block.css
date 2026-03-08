@@ -4397,21 +4397,6 @@
   }
 }
 
-  .movie-card-poster {
-    width: 100px;
-    flex-shrink: 0;
-  }
-
-  .movie-card-title {
-    font-size: 18px;
-  }
-
-  .movie-card-ratings {
-    flex-wrap: wrap;
-    gap: 12px;
-  }
-}
-
 .movie-card-expanded {
   margin-top: 12px;
   position: relative;
