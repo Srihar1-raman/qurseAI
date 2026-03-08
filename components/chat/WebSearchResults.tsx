@@ -136,6 +136,7 @@ export function WebSearchResults({ executions, isStreaming }: WebSearchResultsPr
 
   const [isExpanded, setIsExpanded] = useState(false);
   const [isCollapsedByUser, setIsCollapsedByUser] = useState(false);
+  const [hasAutoCollapsed, setHasAutoCollapsed] = useState(false);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [duration, setDuration] = useState<string | null>(null);
 
@@ -172,10 +173,17 @@ export function WebSearchResults({ executions, isStreaming }: WebSearchResultsPr
   }, [allComplete, startTime, duration]);
 
   useEffect(() => {
-    if (!isStreaming && allComplete && !isExpanded && !isCollapsedByUser) {
+    if (!isStreaming && allComplete && isExpanded && !hasAutoCollapsed) {
+      setIsExpanded(false);
+      setHasAutoCollapsed(true);
+    }
+  }, [isStreaming, allComplete, isExpanded, hasAutoCollapsed]);
+
+  useEffect(() => {
+    if (isStreaming && allResults.length > 0 && !isExpanded) {
       setIsExpanded(true);
     }
-  }, [isStreaming, allComplete, isExpanded, isCollapsedByUser]);
+  }, [isStreaming, allResults.length, isExpanded]);
 
   const toggleExpanded = useCallback(() => {
     if (isStreaming) {
@@ -202,8 +210,8 @@ export function WebSearchResults({ executions, isStreaming }: WebSearchResultsPr
   }, [isExpanded, totalResults]);
 
   const showStreamingBox = false;
-  const showCollapsed = false;
-  const showExpanded = allResults.length > 0;
+  const showCollapsed = allResults.length > 0 && !isExpanded;
+  const showExpanded = allResults.length > 0 && isExpanded;
 
   return (
     <div className="web-search-results-block">
