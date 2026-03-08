@@ -235,10 +235,12 @@ export const movieInfoTool = tool({
         boxOffice: omdbData.BoxOffice !== 'N/A' ? omdbData.BoxOffice : null,
       };
 
-      if (TMDB_API_KEY && imdbId) {
+      const movieImdbId = imdbId || omdbData.imdbID;
+      
+      if (TMDB_API_KEY && movieImdbId) {
         try {
           const tmdbSearchResponse = await fetch(
-            `https://api.themoviedb.org/3/find/${imdbId}?external_source=imdb_id&api_key=${TMDB_API_KEY}`
+            `https://api.themoviedb.org/3/find/${movieImdbId}?external_source=imdb_id&api_key=${TMDB_API_KEY}`
           );
           const tmdbSearchData = await tmdbSearchResponse.json();
           
@@ -248,7 +250,7 @@ export const movieInfoTool = tool({
             result.tmdbPosterPath = tmdbMovie.poster_path;
             result.tmdbBackdropPath = tmdbMovie.backdrop_path;
             
-            if (type === 'movie') {
+            if (type === 'movie' || type === '') {
               const similarResponse = await fetch(
                 `https://api.themoviedb.org/3/movie/${tmdbMovie.id}/similar?api_key=${TMDB_API_KEY}&language=en-US&page=1`
               );

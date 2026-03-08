@@ -62,16 +62,6 @@ export function MovieCard({ movie }: MovieCardProps) {
   return (
     <div className="movie-card">
       <div className="movie-card-content">
-        {displayPoster && (
-          <div className="movie-card-poster">
-            <img 
-              src={displayPoster} 
-              alt={movie.title}
-              onError={() => setImageError(true)}
-            />
-          </div>
-        )}
-
         <div className="movie-card-info">
           <div className="movie-card-header">
             <div className="movie-card-type">
@@ -158,6 +148,16 @@ export function MovieCard({ movie }: MovieCardProps) {
             </div>
           )}
         </div>
+
+        {displayPoster && (
+          <div className="movie-card-poster">
+            <img 
+              src={displayPoster} 
+              alt={movie.title}
+              onError={() => setImageError(true)}
+            />
+          </div>
+        )}
       </div>
 
       {movie.similarMovies && movie.similarMovies.length > 0 && (
