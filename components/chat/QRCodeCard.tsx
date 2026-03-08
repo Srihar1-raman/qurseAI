@@ -9,11 +9,6 @@ interface QRCodeData {
   typeNumber: number;
   errorCorrectionLevel: string;
   moduleCount: number;
-  svg: string;
-  dataURL?: string;
-  html?: string;
-  ascii?: string;
-  size: number;
   options: {
     cellSize: number;
     margin: number;
@@ -48,16 +43,17 @@ export function QRCodeCard({ qrData }: QRCodeCardProps) {
   const [darkColor, setDarkColor] = useState(qrData.options.darkColor);
   const [lightColor, setLightColor] = useState(qrData.options.lightColor);
   const [cellSize, setCellSize] = useState(qrData.options.cellSize);
-  const [margin, setMargin] = useState(4);
+  const [margin, setMargin] = useState(qrData.options.margin ?? 4);
   const [errorLevel, setErrorLevel] = useState<'L' | 'M' | 'Q' | 'H'>('M');
   const [copied, setCopied] = useState(false);
-  const [previewSvg, setPreviewSvg] = useState(qrData.svg);
+  const [previewSvg, setPreviewSvg] = useState('');
 
   useEffect(() => {
     setDarkColor(qrData.options.darkColor);
     setLightColor(qrData.options.lightColor);
     setCellSize(qrData.options.cellSize);
-  }, [qrData.options.darkColor, qrData.options.lightColor, qrData.options.cellSize]);
+    setMargin(qrData.options.margin ?? 4);
+  }, [qrData.options.darkColor, qrData.options.lightColor, qrData.options.cellSize, qrData.options.margin]);
 
   const generateNewQR = useCallback(() => {
     const typeNumber = 0;
@@ -88,7 +84,7 @@ export function QRCodeCard({ qrData }: QRCodeCardProps) {
 
   useEffect(() => {
     generateNewQR();
-  }, [darkColor, lightColor, cellSize, errorLevel, generateNewQR]);
+  }, [qrData.data, darkColor, lightColor, cellSize, margin, errorLevel, generateNewQR]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(previewSvg).then(() => {

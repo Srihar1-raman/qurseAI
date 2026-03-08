@@ -28,24 +28,12 @@ function generateQRCode(options: QRCodeOptions) {
   qr.make();
 
   const moduleCount = qr.getModuleCount();
-  const totalCellSize = cellSize + (cellSize > 2 ? 1 : 0);
-  const size = moduleCount * totalCellSize + margin * 2;
-
-  const svg = generateSVG(qr, moduleCount, cellSize, margin, darkColor, lightColor);
-  const dataURL = generateDataURL(qr, moduleCount, cellSize, margin, darkColor, lightColor);
-  const html = generateHTML(qr, moduleCount, cellSize, margin, darkColor, lightColor);
-  const ascii = generateASCII(qr, moduleCount, margin);
 
   return {
     data,
     typeNumber: typeNumber,
     errorCorrectionLevel,
     moduleCount,
-    svg,
-    dataURL,
-    html,
-    ascii,
-    size,
     options: {
       cellSize,
       margin,
@@ -53,124 +41,6 @@ function generateQRCode(options: QRCodeOptions) {
       lightColor,
     },
   };
-}
-
-function generateSVG(
-  qr: ReturnType<typeof qrcodeGenerator>,
-  moduleCount: number,
-  cellSize: number,
-  margin: number,
-  darkColor: string,
-  lightColor: string
-): string {
-  const totalCellSize = cellSize + (cellSize > 2 ? 1 : 0);
-  const size = moduleCount * totalCellSize + margin * 2;
-
-  let svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" width="${size}" height="${size}">`;
-  svg += `<rect width="${size}" height="${size}" fill="${lightColor}"/>`;
-
-  for (let row = 0; row < moduleCount; row++) {
-    for (let col = 0; col < moduleCount; col++) {
-      if (qr.isDark(row, col)) {
-        const x = col * totalCellSize + margin;
-        const y = row * totalCellSize + margin;
-        svg += `<rect x="${x}" y="${y}" width="${totalCellSize}" height="${totalCellSize}" fill="${darkColor}"/>`;
-      }
-    }
-  }
-
-  svg += '</svg>';
-  return svg;
-}
-
-function generateDataURL(
-  qr: ReturnType<typeof qrcodeGenerator>,
-  moduleCount: number,
-  cellSize: number,
-  margin: number,
-  darkColor: string,
-  lightColor: string
-): string {
-  const totalCellSize = cellSize + (cellSize > 2 ? 1 : 0);
-  const size = moduleCount * totalCellSize + margin * 2;
-
-  const canvas = `
-    <canvas width="${size}" height="${size}" style="display:none"></canvas>
-  `;
-
-  const script = `
-    <script>
-      (function() {
-        const canvas = document.createElement('canvas');
-        canvas.width = ${size};
-        canvas.height = ${size};
-        const ctx = canvas.getContext('2d');
-        
-        ctx.fillStyle = '${lightColor}';
-        ctx.fillRect(0, 0, ${size}, ${size});
-        
-        ctx.fillStyle = '${darkColor}';
-        for (let row = 0; row < ${moduleCount}; row++) {
-          for (let col = 0; col < ${moduleCount}; col++) {
-            if (${qr.isDark.toString()}(row, col)) {
-              const x = col * ${totalCellSize} + ${margin};
-              const y = row * ${totalCellSize} + ${margin};
-              ctx.fillRect(x, y, ${totalCellSize}, ${totalCellSize});
-            }
-          }
-        }
-        
-        window.qrCodeDataURL = canvas.toDataURL('image/png');
-      })();
-    </script>
-  `;
-
-  return `data:text/html;base64,${btoa(canvas + script)}`;
-}
-
-function generateHTML(
-  qr: ReturnType<typeof qrcodeGenerator>,
-  moduleCount: number,
-  cellSize: number,
-  margin: number,
-  darkColor: string,
-  lightColor: string
-): string {
-  const totalCellSize = cellSize + (cellSize > 2 ? 1 : 0);
-  const size = moduleCount * totalCellSize + margin * 2;
-
-  let html = `<div style="width:${size}px;height:${size}px;background:${lightColor};display:inline-block;">`;
-
-  for (let row = 0; row < moduleCount; row++) {
-    for (let col = 0; col < moduleCount; col++) {
-      if (qr.isDark(row, col)) {
-        const x = col * totalCellSize + margin;
-        const y = row * totalCellSize + margin;
-        html += `<div style="position:absolute;left:${x}px;top:${y}px;width:${totalCellSize}px;height:${totalCellSize}px;background:${darkColor};"></div>`;
-      }
-    }
-  }
-
-  html += '</div>';
-  return html;
-}
-
-function generateASCII(qr: ReturnType<typeof qrcodeGenerator>, moduleCount: number, margin: number): string {
-  let ascii = '';
-
-  for (let row = -margin; row < moduleCount + margin; row++) {
-    let line = '';
-    for (let col = -margin; col < moduleCount + margin; col++) {
-      if (row < 0 || col < 0 || row >= moduleCount || col >= moduleCount) {
-        line += '░';
-      } else {
-        line += qr.isDark(row, col) ? '█' : '░';
-      }
-    }
-    ascii += line + '\n';
-  }
-
-  return ascii;
 }
 
 export const qrCodeTool = tool({
