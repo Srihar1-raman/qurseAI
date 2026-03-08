@@ -23,40 +23,29 @@ export interface DesmosResult {
 }
 
 export const desmosTool = tool({
-  description: 'Create an interactive math calculator (graphing, scientific, four-function, geometry, or 3D) with the Desmos API. Use this tool whenever users want to visualize math, plot functions, do calculations, or work with any mathematical content that would benefit from an interactive calculator.',
+  description: 'Create an interactive math calculator with the Desmos API. Use this tool whenever users want to visualize math, plot functions, or work with any mathematical content. Note: Only the graphing calculator supports pre-filling expressions. Other calculators (scientific, four-function, geometry, 3D) will show an empty calculator for the user to interact with.',
   inputSchema: z.object({
     calculatorType: z.enum(['graphing', 'scientific', 'fourFunction', 'geometry', '3d'])
       .default('graphing')
-      .describe('Type of calculator: graphing (full-featured 2D graphing), scientific (scientific calculator), fourFunction (basic calculator), geometry (interactive geometry), 3D (3D graphing)'),
+      .describe('Type of calculator: graphing (full-featured 2D graphing - supports pre-filling expressions), scientific (scientific calculator), fourFunction (basic calculator), geometry (interactive geometry), 3D (3D graphing)'),
     expressions: z.array(z.object({
       id: z.string(),
       latex: z.string(),
       color: z.string().optional(),
     })).optional()
-      .describe('Initial expressions to plot or calculate. For graphing: equations like y=x^2. For scientific/fourFunction: calculations like 2+2 or sin(pi/2). For geometry: expressions like (0,0),(1,1) for points. For 3D: 3D equations like x^2+y^2+z^2=1'),
-    expression: z.string().optional()
-      .describe('Simple expression string (alternative to expressions array). For scientific/fourFunction: calculation to pre-fill like "2+2" or "sqrt(16)".'),
+      .describe('Initial expressions to plot. Only works with graphing calculator. Examples: y=x^2, y=sin(x), x^2+y^2=25'),
     viewport: z.object({
       xmin: z.number(),
       xmax: z.number(),
       ymin: z.number(),
       ymax: z.number(),
     }).optional()
-      .describe('Initial viewport bounds (for graphing calculator)'),
+      .describe('Initial viewport bounds (for graphing calculator only)'),
   }),
-  execute: async ({ calculatorType, expressions, expression, viewport }) => {
-    let finalExpressions = expressions || [];
-    
-    if (expression && finalExpressions.length === 0) {
-      finalExpressions = [{
-        id: '1',
-        latex: expression,
-      }];
-    }
-    
+  execute: async ({ calculatorType, expressions, viewport }) => {
     return {
       calculatorType,
-      initialExpressions: finalExpressions,
+      initialExpressions: expressions || [],
       viewport,
     };
   },

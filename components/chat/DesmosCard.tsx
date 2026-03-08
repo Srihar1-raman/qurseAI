@@ -103,24 +103,24 @@ export function DesmosCard({ calculatorType, initialExpressions, viewport }: Des
             calculator = window.Desmos.GraphingCalculator(container, options);
             break;
           case 'scientific':
-            calculator = window.Desmos.ScientificCalculator(container, {
+            calculator = window.Desmos.ScientificCalculator ? window.Desmos.ScientificCalculator(container, {
               ...options,
               expressions: false,
               graphpaper: false,
-            });
+            }) : window.Desmos.GraphingCalculator(container, options);
             break;
           case 'fourFunction':
-            calculator = window.Desmos.FourFunctionCalculator(container, {
+            calculator = window.Desmos.FourFunctionCalculator ? window.Desmos.FourFunctionCalculator(container, {
               ...options,
               expressions: false,
               graphpaper: false,
-            });
+            }) : window.Desmos.GraphingCalculator(container, options);
             break;
           case 'geometry':
-            calculator = window.Desmos.Geometry(container, options);
+            calculator = window.Desmos.Geometry ? window.Desmos.Geometry(container, options) : window.Desmos.GraphingCalculator(container, options);
             break;
           case '3d':
-            calculator = window.Desmos.Graphing3D(container, options);
+            calculator = window.Desmos.Graphing3D ? window.Desmos.Graphing3D(container, options) : window.Desmos.GraphingCalculator(container, options);
             break;
           default:
             calculator = window.Desmos.GraphingCalculator(container, options);
@@ -133,7 +133,7 @@ export function DesmosCard({ calculatorType, initialExpressions, viewport }: Des
 
         calculatorRef.current = calculator;
 
-        // Set viewport for graphing calculator
+        // Set viewport for graphing calculator only
         if (calculatorType === 'graphing' && viewport) {
           calculator.setMathBounds({
             left: viewport.xmin,
@@ -143,8 +143,9 @@ export function DesmosCard({ calculatorType, initialExpressions, viewport }: Des
           });
         }
 
-        // Set initial expressions for all calculator types
-        if (initialExpressions.length > 0) {
+        // Set initial expressions for graphing calculator only
+        // (Scientific, FourFunction, Geometry, 3D don't support setExpression)
+        if (calculatorType === 'graphing' && initialExpressions.length > 0) {
           initialExpressions.forEach((expr) => {
             calculator.setExpression({
               id: expr.id,
