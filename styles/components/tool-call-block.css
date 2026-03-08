@@ -4118,9 +4118,9 @@
 }
 
 .movie-card-content {
-  display: flex;
+  display: flex !important;
   gap: 20px;
-  flex-direction: row-reverse;
+  flex-direction: row-reverse !important;
 }
 
 .movie-card-poster {
@@ -4129,11 +4129,14 @@
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  align-self: flex-start;
 }
 
 .movie-card-poster img {
   width: 100%;
   height: auto;
+  aspect-ratio: 2/3;
+  object-fit: cover;
   display: block;
 }
 
@@ -4386,12 +4389,12 @@
 
 @media (max-width: 640px) {
   .movie-card-content {
-    flex-direction: column;
+    flex-direction: row-reverse !important;
   }
 
   .movie-card-poster {
-    width: 120px;
-    align-self: flex-start;
+    width: 100px;
+    flex-shrink: 0;
   }
 
   .movie-card-title {
