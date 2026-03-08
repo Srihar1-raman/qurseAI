@@ -17,6 +17,7 @@ import { FlightSearchCard } from './FlightSearchCard';
 import { AirportInfoCard } from './AirportInfoCard';
 import { AirlineInfoCard } from './AirlineInfoCard';
 import { QRCodeCard } from './QRCodeCard';
+import { MovieCard } from './MovieCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -408,6 +409,51 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       }));
   }, [toolExecutions]);
 
+  // Movie info executions
+  const movieInfoExecutions = React.useMemo(() => {
+    type MovieInfoResult = {
+      title: string;
+      year: string;
+      rated: string | null;
+      released: string | null;
+      runtime: string | null;
+      genre: string[];
+      director: string | null;
+      writer: string | null;
+      actors: string[];
+      plot: string | null;
+      language: string | null;
+      country: string | null;
+      awards: string | null;
+      poster: string | null;
+      ratings: Array<{ Source: string; Value: string }>;
+      metascore: number | null;
+      imdbRating: number | null;
+      imdbVotes: string | null;
+      imdbId: string;
+      type: string;
+      boxOffice: string | null;
+      tmdbPosterPath?: string;
+      similarMovies?: Array<{
+        tmdbId: number;
+        title: string;
+        year: string;
+        poster: string | null;
+        overview: string;
+        voteAverage: number;
+        genres: string;
+      }>;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'movie_info')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as MovieInfoResult | undefined,
+      }));
+  }, [toolExecutions]);
+
   const otherToolExecutions = React.useMemo(() => {
     return toolExecutions.filter(e => 
       e.toolName !== 'web_search' && 
@@ -417,7 +463,8 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       e.toolName !== 'company_info' &&
       e.toolName !== 'crypto_price' &&
       e.toolName !== 'forex_rate' &&
-      e.toolName !== 'qr_code'
+      e.toolName !== 'qr_code' &&
+      e.toolName !== 'movie_info'
     );
   }, [toolExecutions]);
 
@@ -729,6 +776,53 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                 <QRCodeCard
                   key={execution.toolCallId}
                   qrData={qrData}
+                />
+              );
+            })}
+
+            {/* Movie info cards */}
+            {movieInfoExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if (typeof execution.result === 'object' && 'error' in execution.result) return null;
+
+              const movieData = execution.result as {
+                title: string;
+                year: string;
+                rated: string | null;
+                released: string | null;
+                runtime: string | null;
+                genre: string[];
+                director: string | null;
+                writer: string | null;
+                actors: string[];
+                plot: string | null;
+                language: string | null;
+                country: string | null;
+                awards: string | null;
+                poster: string | null;
+                ratings: Array<{ Source: string; Value: string }>;
+                metascore: number | null;
+                imdbRating: number | null;
+                imdbVotes: string | null;
+                imdbId: string;
+                type: string;
+                boxOffice: string | null;
+                tmdbPosterPath?: string;
+                similarMovies?: Array<{
+                  tmdbId: number;
+                  title: string;
+                  year: string;
+                  poster: string | null;
+                  overview: string;
+                  voteAverage: number;
+                  genres: string;
+                }>;
+              };
+
+              return (
+                <MovieCard
+                  key={execution.toolCallId}
+                  movie={movieData}
                 />
               );
             })}

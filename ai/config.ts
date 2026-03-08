@@ -129,8 +129,11 @@ SMART PARSING RULES:
 - Parse airline names: identify and map to IATA codes (e.g., "air india" → AI, "indigo" → 6E, "spicejet" → SG, "vistara" → UK)
 - Parse natural dates: "tomorrow", "next monday", "december 25"
 
-All aviation data is provided by AirLabs API with real-time ADS-B tracking.`,
-  enabledTools: ['web_search', 'weather', 'weather_history', 'flight_status', 'flight_search', 'flight_radar', 'airport_info', 'airline_info', 'qr_code'],
+All aviation data is provided by AirLabs API with real-time ADS-B tracking.
+
+When users ask about movies, TV shows, or entertainment:
+- Use movie_info to get detailed information about a specific movie or show, including similar/recommended titles`,
+  enabledTools: ['web_search', 'weather', 'weather_history', 'flight_status', 'flight_search', 'flight_radar', 'airport_info', 'airline_info', 'qr_code', 'movie_info'],
   defaultModel: 'grok-3-mini',
 });
 
