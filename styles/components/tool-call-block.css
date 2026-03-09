@@ -4428,6 +4428,521 @@
 }
 
 /* ===================================
+    ARXIV CARD
+    arXiv paper search and detail cards
+    =================================== */
+
+.arxiv-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.arxiv-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.arxiv-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #b61c2c 0%, #d42536 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.arxiv-card-icon-detail {
+  background: linear-gradient(135deg, #b61c2c 0%, #d42536 100%);
+}
+
+.arxiv-card-title-section {
+  flex: 1;
+}
+
+.arxiv-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.arxiv-card-subtitle {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  margin: 4px 0 0;
+}
+
+/* Search Results */
+
+.arxiv-search-results {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.arxiv-paper-item {
+  padding: 16px;
+  background: var(--color-bg-secondary);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.arxiv-paper-item:hover {
+  border-color: var(--color-border-hover);
+}
+
+.arxiv-paper-header {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.arxiv-paper-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: var(--color-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.arxiv-paper-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.arxiv-paper-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+  text-decoration: none;
+  line-height: 1.4;
+  display: block;
+}
+
+.arxiv-paper-title:hover {
+  color: #d42536;
+  text-decoration: underline;
+}
+
+.arxiv-paper-authors {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.arxiv-paper-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: 10px 0;
+}
+
+.arxiv-paper-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.arxiv-category {
+  padding: 2px 8px;
+  background: #b61c2c15;
+  color: #b61c2c;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.arxiv-id {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.arxiv-paper-abstract {
+  margin: 12px 0;
+}
+
+.arxiv-paper-abstract p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.arxiv-paper-abstract p.truncated {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.arxiv-abstract-toggle {
+  background: none;
+  border: none;
+  color: #b61c2c;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 6px;
+}
+
+.arxiv-abstract-toggle:hover {
+  text-decoration: underline;
+}
+
+.arxiv-paper-links {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.arxiv-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.arxiv-link-pdf {
+  background: #b61c2c;
+  color: white;
+}
+
+.arxiv-link-pdf:hover {
+  background: #9e1826;
+}
+
+.arxiv-link-abs {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.arxiv-link-abs:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-hover);
+}
+
+.arxiv-link-html {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.arxiv-link-html:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-hover);
+}
+
+.arxiv-link-large {
+  padding: 12px 20px;
+  font-size: 14px;
+}
+
+/* Preview Button (Search Results) */
+
+.arxiv-preview-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.arxiv-preview-btn:hover {
+  background: var(--color-bg-secondary);
+  color: #b61c2c;
+  border-color: #b61c2c;
+}
+
+/* Preview Modal */
+
+.arxiv-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--color-bg-overlay, rgba(0, 0, 0, 0.8));
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+}
+
+.arxiv-preview-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--color-bg);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.arxiv-preview-modal-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  overflow: hidden;
+}
+
+.arxiv-preview-modal-title span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: calc(100vw - 80px);
+}
+
+.arxiv-preview-modal-close {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  background: var(--color-bg-secondary);
+  border: none;
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.arxiv-preview-modal-close:hover {
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+.arxiv-preview-iframe {
+  flex: 1;
+  width: 100%;
+  border: none;
+  background: var(--color-bg);
+}
+
+/* Reader iframe (Paper Detail) */
+
+.arxiv-reader {
+  width: 100%;
+  height: 600px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-top: 16px;
+}
+
+.arxiv-reader-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.arxiv-paper-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.arxiv-category-tag {
+  padding: 3px 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+/* Paper Detail Card */
+
+.arxiv-card-detail .arxiv-paper-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.arxiv-detail-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.arxiv-detail-authors {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--color-text-muted);
+}
+
+.arxiv-author-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.arxiv-author {
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.arxiv-author-affiliation {
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.arxiv-detail-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.arxiv-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.arxiv-meta-updated {
+  color: var(--color-text-muted);
+}
+
+.arxiv-category-primary {
+  padding: 3px 10px;
+  background: #b61c2c15;
+  color: #b61c2c;
+  border-radius: 4px;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.arxiv-detail-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.arxiv-detail-abstract {
+  background: var(--color-bg-secondary);
+  padding: 16px;
+  border-radius: 10px;
+}
+
+.arxiv-detail-abstract h4 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.arxiv-detail-abstract p {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.arxiv-detail-abstract p.truncated {
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.arxiv-detail-comment,
+.arxiv-detail-journal,
+.arxiv-detail-doi {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.arxiv-detail-label {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  margin-right: 6px;
+}
+
+.arxiv-detail-doi a {
+  color: #b61c2c;
+  text-decoration: none;
+}
+
+.arxiv-detail-doi a:hover {
+  text-decoration: underline;
+}
+
+.arxiv-detail-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .arxiv-card {
+    padding: 14px;
+  }
+
+  .arxiv-paper-item {
+    padding: 12px;
+  }
+
+  .arxiv-paper-links {
+    flex-direction: column;
+  }
+
+  .arxiv-detail-links {
+    flex-direction: column;
+  }
+
+  .arxiv-reader {
+    height: 500px;
+  }
+}
+
+/* ===================================
     DESMOS CALCULATOR CARD
     Interactive math calculator component
     =================================== */

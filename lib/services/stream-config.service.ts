@@ -29,6 +29,7 @@ import { qrCodeTool } from '@/lib/tools/qr-code';
 import { movieInfoTool } from '@/lib/tools/movie';
 import { desmosTool } from '@/lib/tools/desmos';
 import { wolframTool } from '@/lib/tools/wolfram';
+import { arxivSearchTool, arxivPaperTool } from '@/lib/tools/arxiv';
 import {
   stockQuoteTool,
   stockHistoryTool,
@@ -247,6 +248,12 @@ export function buildStreamConfig(config: StreamConfig) {
       }
       if (modeConfig.enabledTools.includes('wolfram')) {
         tools.wolfram = wolframTool;
+      }
+      if (modeConfig.enabledTools.includes('arxiv_search')) {
+        tools.arxiv_search = arxivSearchTool;
+      }
+      if (modeConfig.enabledTools.includes('arxiv_paper')) {
+        tools.arxiv_paper = arxivPaperTool;
       }
 
       const streamTextOptions: any = {

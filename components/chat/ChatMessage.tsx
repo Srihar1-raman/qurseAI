@@ -20,6 +20,7 @@ import { QRCodeCard } from './QRCodeCard';
 import { MovieCard } from './MovieCard';
 import { DesmosCard } from './DesmosCard';
 import { WolframCard } from './WolframCard';
+import { ArxivSearchCard, ArxivPaperCard } from './ArxivCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -489,6 +490,66 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       }));
   }, [toolExecutions]);
 
+  // arXiv search executions
+  const arxivSearchExecutions = React.useMemo(() => {
+    type ArxivSearchResult = {
+      query: string;
+      totalResults: number;
+      startIndex: number;
+      itemsPerPage: number;
+      entries: Array<{
+        id: string;
+        title: string;
+        summary: string;
+        authors: string[];
+        published: string;
+        updated: string;
+        primaryCategory: string;
+        categories: string[];
+        pdfLink?: string;
+        absLink: string;
+        htmlLink?: string;
+      }>;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'arxiv_search')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as ArxivSearchResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // arXiv paper executions
+  const arxivPaperExecutions = React.useMemo(() => {
+    type ArxivPaperResult = {
+      id: string;
+      title: string;
+      summary: string;
+      authors: { name: string; affiliation?: string }[];
+      published: string;
+      updated: string;
+      primaryCategory: string;
+      categories: string[];
+      comment?: string;
+      journalRef?: string;
+      doi?: string;
+      pdfLink?: string;
+      absLink: string;
+      htmlLink?: string;
+      version: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'arxiv_paper')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as ArxivPaperResult | undefined,
+      }));
+  }, [toolExecutions]);
+
   const otherToolExecutions = React.useMemo(() => {
     return toolExecutions.filter(e => 
       e.toolName !== 'web_search' && 
@@ -501,7 +562,9 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       e.toolName !== 'qr_code' &&
       e.toolName !== 'movie_info' &&
       e.toolName !== 'desmos' &&
-      e.toolName !== 'wolfram'
+      e.toolName !== 'wolfram' &&
+      e.toolName !== 'arxiv_search' &&
+      e.toolName !== 'arxiv_paper'
     );
   }, [toolExecutions]);
 
@@ -900,6 +963,70 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                   key={execution.toolCallId}
                   query={wolframData.query}
                   pods={wolframData.pods}
+                />
+              );
+            })}
+
+            {/* arXiv search cards */}
+            {arxivSearchExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if (typeof execution.result === 'object' && 'error' in execution.result) return null;
+
+              const searchData = execution.result as {
+                query: string;
+                totalResults: number;
+                startIndex: number;
+                itemsPerPage: number;
+                entries: Array<{
+                  id: string;
+                  title: string;
+                  summary: string;
+                  authors: string[];
+                  published: string;
+                  updated: string;
+                  primaryCategory: string;
+                  categories: string[];
+                  pdfLink?: string;
+                  absLink: string;
+                  htmlLink?: string;
+                }>;
+              };
+
+              return (
+                <ArxivSearchCard
+                  key={execution.toolCallId}
+                  result={searchData}
+                />
+              );
+            })}
+
+            {/* arXiv paper cards */}
+            {arxivPaperExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if (typeof execution.result === 'object' && 'error' in execution.result) return null;
+
+              const paperData = execution.result as {
+                id: string;
+                title: string;
+                summary: string;
+                authors: { name: string; affiliation?: string }[];
+                published: string;
+                updated: string;
+                primaryCategory: string;
+                categories: string[];
+                comment?: string;
+                journalRef?: string;
+                doi?: string;
+                pdfLink?: string;
+                absLink: string;
+                htmlLink?: string;
+                version: string;
+              };
+
+              return (
+                <ArxivPaperCard
+                  key={execution.toolCallId}
+                  paper={paperData}
                 />
               );
             })}
