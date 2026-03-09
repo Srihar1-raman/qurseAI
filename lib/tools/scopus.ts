@@ -39,7 +39,7 @@ interface ScopusEntry {
   'affiliation'?: ScopusAffiliation[];
 }
 
-interface ScopusSearchResponse {
+interface ScopusSearchResults {
   'opensearch:totalResults': string;
   'opensearch:startIndex': string;
   'opensearch:itemsPerPage': string;
@@ -47,10 +47,23 @@ interface ScopusSearchResponse {
   'entry': ScopusEntry[];
 }
 
+interface ScopusSearchResponse {
+  'search-results': ScopusSearchResults;
+}
+
+interface ScopusServiceError {
+  'service-error': {
+    status: {
+      statusCode: string;
+      statusText: string;
+    };
+  };
+}
+
 export const scopusSearchTool = tool({
-  description: 'Search for scientific papers from Scopus, the largest abstract and citation database covering 50M+ papers from all publishers. Use TITLE-ABS-KEY for broad searches, or specify fields with TITLE(), ABS(), or AUTH(). Filter by date with date=YYYY-YYYY or date=YYYY-MM-YYYY. Sort by -citedby-count for most cited, or -coverDate for newest. Filter by subject area with SUBJAREA(COMP) for Computer Science, SUBJAREA(MATH) for Mathematics, etc.',
+  description: 'Search for scientific papers from Scopus, the largest abstract and citation database covering 50M+ papers from all publishers. Filter by date with date=YYYY-YYYY or date=YYYY-MM-YYYY. Sort by citedby-count for most cited, or coverDate for newest. Filter by subject area with subjectArea="COMP" for Computer Science, subjectArea="MATH" for Mathematics, etc.',
   inputSchema: z.object({
-    query: z.string().describe('Search query. Examples: "machine learning", "TITLE(neural networks)", "AUTH(Smith)", "ABS(climate change)", "quantum AND cryptography". Use TITLE-ABS-KEY for searching all fields.'),
+    query: z.string().describe('Search query. Examples: "machine learning", "neural networks", "climate change", "quantum cryptography", "protein expression"'),
     date: z.string().optional().describe('Date range in format YYYY-YYYY or YYYY-MM-YYYY. Example: "2020-2024" for years, or "2023-01-01" for specific date'),
     maxResults: z.number().min(1).max(100).default(10).describe('Number of results to return (10, 25, 50, or 100)'),
     sort: z.enum(['relevancy', 'citedby-count', 'coverDate', 'pubyear', 'creator', 'publicationName']).default('relevancy').describe('Sort field'),
@@ -96,9 +109,19 @@ export const scopusSearchTool = tool({
         return { error: `Scopus API error: ${response.status} - ${errorText}` };
       }
 
-      const data: ScopusSearchResponse = await response.json();
+      const json = await response.json();
 
-      if (!data.entry || data.entry.length === 0) {
+      if ('service-error' in json) {
+        const errorResponse = json as ScopusServiceError;
+        return {
+          error: errorResponse['service-error'].status.statusText,
+        };
+      }
+
+      const data: ScopusSearchResponse = json;
+      const searchResults = data['search-results'];
+
+      if (!searchResults.entry || searchResults.entry.length === 0) {
         return {
           query,
           totalResults: 0,
@@ -107,7 +130,7 @@ export const scopusSearchTool = tool({
         };
       }
 
-      const entries = data.entry.map((entry) => {
+      const entries = searchResults.entry.map((entry: ScopusEntry) => {
         const scopusLink = entry.link?.find((link) => link['@ref'] === 'scopus');
         const scopusUrl = scopusLink?.['@href'] || '';
 
@@ -138,9 +161,9 @@ export const scopusSearchTool = tool({
 
       return {
         query,
-        totalResults: parseInt(data['opensearch:totalResults'], 10),
-        startIndex: parseInt(data['opensearch:startIndex'], 10),
-        itemsPerPage: parseInt(data['opensearch:itemsPerPage'], 10),
+        totalResults: parseInt(searchResults['opensearch:totalResults'], 10),
+        startIndex: parseInt(searchResults['opensearch:startIndex'], 10),
+        itemsPerPage: parseInt(searchResults['opensearch:itemsPerPage'], 10),
         entries,
       };
     } catch (error) {

@@ -345,11 +345,9 @@ Use this when user wants to find papers on a topic, by author, publication, or k
 Parameters:
 - query: Search query string. Examples:
   - "machine learning" - basic search
-  - "TITLE(neural networks)" - search in title
-  - "AUTH(Smith)" - search by author
-  - "ABS(climate change)" - search in abstract
-  - "quantum AND cryptography" - boolean AND
-  - "TITLE(AI) AND AUTH(Smith)" - combine fields
+  - "neural networks" - topic search
+  - "quantum cryptography" - combined keywords
+  - "protein expression" - specific topic
 - date: Date range in format YYYY-YYYY or YYYY-MM-YYYY. Example: "2020-2024" for years 2020-2024
 - maxResults: Number of results (10, 25, 50, or 100, default 10)
 - sort: Sort field options:
