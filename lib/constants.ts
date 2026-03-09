@@ -7,7 +7,8 @@ export const WEB_SEARCH_OPTIONS: SearchOption[] = [
   { name: 'Web Search', enabled: true, icon: 'search' },
   { name: 'Finance', enabled: true, icon: 'trending-up' },
   { name: 'Science & Math', enabled: true, icon: 'science-math' },
-  { name: 'arXiv', enabled: true, icon: 'arxiv-logo' }
+  { name: 'arXiv', enabled: true, icon: 'arxiv-logo' },
+  { name: 'Scopus', enabled: true, icon: 'database' }
 ];
 
 // Export short names for convenience

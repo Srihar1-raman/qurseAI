@@ -5310,3 +5310,344 @@
   border-radius: 8px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
+
+/* ===================================
+    SCOPUS CARD
+    Scopus search results component
+    =================================== */
+
+.scopus-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+}
+
+.scopus-logo-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: linear-gradient(135deg, rgba(238, 27, 81, 0.1) 0%, rgba(255, 69, 58, 0.05) 100%);
+  border: 1px solid rgba(255, 69, 58, 0.2);
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ff453a;
+}
+
+.scopus-message {
+  padding: 12px;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  border-left: 3px solid #ff453a;
+}
+
+.scopus-message p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-secondary);
+}
+
+.scopus-paper-item {
+  border-color: rgba(255, 69, 58, 0.1);
+}
+
+.scopus-paper-item:hover {
+  border-color: rgba(255, 69, 58, 0.2);
+}
+
+.scopus-journal {
+  color: #ff453a;
+  font-weight: 500;
+}
+
+.scopus-citations {
+  color: #ff453a;
+  font-weight: 600;
+}
+
+.scopus-openaccess {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.scopus-paper-details-compact {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.scopus-detail-badge {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--color-bg-secondary);
+  color: var(--color-text-muted);
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.scopus-type-badge {
+  background: rgba(59, 130, 246, 0.1);
+  color: #3b82f6;
+}
+
+.scopus-link-main {
+  background: #ff453a;
+  color: white;
+  border: none;
+}
+
+.scopus-link-main:hover {
+  background: #e03a30;
+}
+
+.scopus-link-doi {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.scopus-link-doi:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-hover);
+}
+
+.scopus-issn {
+  font-size: 10px;
+  color: var(--color-text-muted);
+  margin-left: auto;
+}
+
+.scopus-preview-toggle {
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.2s;
+}
+
+.scopus-preview-toggle:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-border-hover);
+}
+
+.scopus-paper-iframe-container {
+  margin-top: 12px;
+  position: relative;
+}
+
+.scopus-iframe-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.scopus-iframe-close:hover {
+  background: rgba(0, 0, 0, 0.9);
+  transform: scale(1.1);
+}
+
+.scopus-iframe-note {
+  padding: 8px 12px;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 6px;
+  margin-bottom: 8px;
+}
+
+.scopus-iframe-note p {
+  margin: 0;
+  font-size: 12px;
+  color: #f59e0b;
+  line-height: 1.4;
+}
+
+.scopus-paper-iframe {
+  width: 100%;
+  height: 500px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg);
+}
+
+.scopus-paging-info {
+  margin-top: 16px;
+  padding: 12px;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.scopus-paging-info p {
+  margin: 4px 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.scopus-paging-note {
+  font-style: italic;
+  color: var(--color-text-muted);
+}
+
+/* Detail Card Styles */
+
+.scopus-card-detail {
+  border-color: rgba(255, 69, 58, 0.15);
+}
+
+.scopus-author {
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.scopus-citations-detail {
+  color: #ff453a;
+}
+
+.scopus-openaccess-detail {
+  color: #10b981;
+}
+
+.scopus-detail-publication-info {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+}
+
+.scopus-pub-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.scopus-detail-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  margin-right: 4px;
+}
+
+.scopus-detail-value {
+  font-size: 12px;
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.scopus-issn-detail {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-family: monospace;
+}
+
+.scopus-doi-detail {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.scopus-doi-detail a {
+  color: #3b82f6;
+  text-decoration: none;
+  font-size: 12px;
+  font-family: monospace;
+}
+
+.scopus-doi-detail a:hover {
+  text-decoration: underline;
+}
+
+.scopus-type-detail {
+  margin-bottom: 8px;
+}
+
+.scopus-detail-reader-toggle {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-border);
+}
+
+.scopus-reader-button {
+  align-self: flex-start;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #ff453a 0%, #ff6b5b 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s;
+}
+
+.scopus-reader-button:hover {
+  background: linear-gradient(135deg, #e03a30 0%, #ff453a 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 69, 58, 0.3);
+}
+
+.scopus-reader-note {
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.scopus-paper-reader {
+  margin-top: 12px;
+}
+
+.scopus-paper-reader-iframe {
+  width: 100%;
+  height: 600px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg);
+}
+
+@media (max-width: 640px) {
+  .scopus-paper-iframe,
+  .scopus-paper-reader-iframe {
+    height: 400px;
+  }
+
+  .scopus-pub-details {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

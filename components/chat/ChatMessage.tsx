@@ -21,6 +21,7 @@ import { MovieCard } from './MovieCard';
 import { DesmosCard } from './DesmosCard';
 import { WolframCard } from './WolframCard';
 import { ArxivSearchCard, ArxivPaperCard } from './ArxivCard';
+import { ScopusSearchCard } from './ScopusCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -550,9 +551,46 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       }));
   }, [toolExecutions]);
 
+  // Scopus search executions
+  const scopusSearchExecutions = React.useMemo(() => {
+    type ScopusSearchResult = {
+      query: string;
+      totalResults: number;
+      startIndex: number;
+      itemsPerPage: number;
+      entries: Array<{
+        eid: string;
+        title: string;
+        author: string;
+        publicationName: string;
+        coverDate: string;
+        year: string;
+        volume: string;
+        issue: string;
+        pages: string;
+        citedByCount: number;
+        doi: string;
+        doiUrl: string;
+        scopusUrl: string;
+        issn: string;
+        openAccess: boolean;
+        type: string;
+      }>;
+      message?: string;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'scopus_search')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as ScopusSearchResult | undefined,
+      }));
+  }, [toolExecutions]);
+
   const otherToolExecutions = React.useMemo(() => {
-    return toolExecutions.filter(e => 
-      e.toolName !== 'web_search' && 
+    return toolExecutions.filter(e =>
+      e.toolName !== 'web_search' &&
       e.toolName !== 'weather' &&
       e.toolName !== 'stock_quote' &&
       e.toolName !== 'stock_history' &&
@@ -564,7 +602,8 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       e.toolName !== 'desmos' &&
       e.toolName !== 'wolfram' &&
       e.toolName !== 'arxiv_search' &&
-      e.toolName !== 'arxiv_paper'
+      e.toolName !== 'arxiv_paper' &&
+      e.toolName !== 'scopus_search'
     );
   }, [toolExecutions]);
 
@@ -1028,6 +1067,46 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                 <ArxivPaperCard
                   key={execution.toolCallId}
                   paper={paperData}
+                />
+              );
+            })}
+
+            {/* Scopus search cards */}
+            {scopusSearchExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if (typeof execution.result === 'object' && 'error' in execution.result) return null;
+
+              const searchData = execution.result as {
+                query: string;
+                totalResults: number;
+                startIndex: number;
+                itemsPerPage: number;
+                entries: Array<{
+                  eid: string;
+                  title: string;
+                  author: string;
+                  publicationName: string;
+                  coverDate: string;
+                  year: string;
+                  volume: string;
+                  issue: string;
+                  pages: string;
+                  citedByCount: number;
+                  doi: string;
+                  doiUrl: string;
+                  scopusUrl: string;
+                  issn: string;
+                  openAccess: boolean;
+                  type: string;
+                }>;
+                message?: string;
+              };
+
+              return (
+                <ScopusSearchCard
+                  key={execution.toolCallId}
+                  result={searchData}
+                  onSetInput={onSetInput}
                 />
               );
             })}

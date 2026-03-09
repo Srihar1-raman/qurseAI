@@ -9,7 +9,7 @@ export interface IconProps {
 export type IconName =
   | 'aisdk' | 'about' | 'accounts' | 'Anthropic' | 'arrow-up' | 'arxiv-logo'
   | 'attach' | 'chat' | 'check' | 'clear_history' | 'collapse' | 'convo_branch'
-  | 'copy' | 'cross' | 'deep_search' | 'deepseek' | 'delete'
+  | 'copy' | 'cross' | 'database' | 'deep_search' | 'deepseek' | 'delete'
   | 'download' | 'dropdown-arrow' | 'exa' | 'exaAI' | 'expand'
   | 'gemini' | 'general' | 'github' | 'google' | 'grok' | 'groq'
   | 'history' | 'image' | 'info' | 'internet' | 'link' | 'mail'
