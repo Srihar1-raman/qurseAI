@@ -166,59 +166,86 @@ function ArxivPaperCardComponent({ paper }: ArxivPaperCardProps) {
   return (
     <div className="arxiv-card arxiv-card-detail">
       <div className="arxiv-card-header">
-        <div className="arxiv-card-icon arxiv-card-icon-detail">
-          <FileText size={20} />
-        </div>
         <div className="arxiv-card-title-section">
           <h3 className="arxiv-card-title">arXiv Paper</h3>
           <p className="arxiv-card-subtitle">{paper.id} (v{paper.version})</p>
         </div>
+        <div className="arxiv-detail-links">
+          {paper.pdfLink && (
+            <a
+              href={paper.pdfLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="arxiv-link arxiv-link-pdf"
+            >
+              <FileText size={13} />
+              <span>PDF</span>
+            </a>
+          )}
+          {paper.htmlLink && (
+            <a
+              href={paper.htmlLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="arxiv-link arxiv-link-html"
+            >
+              <BookOpen size={13} />
+              <span>HTML</span>
+            </a>
+          )}
+          <a
+            href={paper.absLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="arxiv-link arxiv-link-abs"
+          >
+            <ExternalLink size={13} />
+            <span>arXiv</span>
+          </a>
+        </div>
       </div>
 
       <div className="arxiv-paper-detail-content">
-        <h2 className="arxiv-detail-title">{paper.title}</h2>
+        <h1 className="arxiv-detail-title">{paper.title}</h1>
 
-        <div className="arxiv-detail-authors">
-          <User size={14} />
-          <div className="arxiv-author-list">
-            {paper.authors.map((author, index) => (
-              <span key={index} className="arxiv-author">
-                {author.name}
-                {author.affiliation && <span className="arxiv-author-affiliation"> ({author.affiliation})</span>}
-              </span>
-            ))}
+        <div className="arxiv-paper-meta-info">
+          <div className="arxiv-detail-authors">
+            <User size={12} />
+            <div className="arxiv-author-list">
+              {paper.authors.slice(0, 5).map((author, index) => (
+                <span key={index} className="arxiv-author">
+                  {author.name}
+                  {author.affiliation && <span className="arxiv-author-affiliation"> ({author.affiliation})</span>}
+                  {index < Math.min(4, paper.authors.length - 1) && <span className="arxiv-author-sep"> · </span>}
+                </span>
+              ))}
+              {paper.authors.length > 5 && <span className="arxiv-author-more"> +{paper.authors.length - 5} more</span>}
+            </div>
+          </div>
+
+          <div className="arxiv-detail-meta">
+            <div className="arxiv-meta-item">
+              <Calendar size={12} />
+              <span>{paper.published.split('T')[0]}</span>
+              {paper.updated !== paper.published && (
+                <span className="arxiv-meta-updated"> (updated {paper.updated.split('T')[0]})</span>
+              )}
+            </div>
+            <div className="arxiv-detail-categories">
+              <span className="arxiv-category-tag arxiv-category-primary">{paper.primaryCategory}</span>
+              {paper.categories.filter(cat => cat !== paper.primaryCategory).map((cat) => (
+                <span key={cat} className="arxiv-category-tag">{cat}</span>
+              ))}
+            </div>
           </div>
         </div>
-
-        <div className="arxiv-detail-meta">
-          <div className="arxiv-meta-item">
-            <Calendar size={14} />
-            <span>Submitted {paper.published.split('T')[0]}</span>
-            {paper.updated !== paper.published && (
-              <span className="arxiv-meta-updated"> (updated {paper.updated.split('T')[0]})</span>
-            )}
-          </div>
-          <div className="arxiv-meta-item">
-            <Tag size={14} />
-            <span className="arxiv-category-primary">{paper.primaryCategory}</span>
-          </div>
-        </div>
-
-        {paper.categories.length > 1 && (
-          <div className="arxiv-detail-categories">
-            {paper.categories.map((cat) => (
-              <span key={cat} className="arxiv-category-tag">{cat}</span>
-            ))}
-          </div>
-        )}
 
         <div className="arxiv-detail-abstract">
-          <h4>Abstract</h4>
           <p className={showFullAbstract ? '' : 'truncated'}>
             {paper.summary}
           </p>
           {paper.summary.length > 400 && (
-            <button 
+            <button
               className="arxiv-abstract-toggle"
               onClick={() => setShowFullAbstract(!showFullAbstract)}
             >
@@ -227,70 +254,38 @@ function ArxivPaperCardComponent({ paper }: ArxivPaperCardProps) {
           )}
         </div>
 
-        {paper.comment && (
-          <div className="arxiv-detail-comment">
-            <span className="arxiv-detail-label">Comments:</span>
-            <span>{paper.comment}</span>
-          </div>
-        )}
-
-        {paper.journalRef && (
-          <div className="arxiv-detail-journal">
-            <span className="arxiv-detail-label">Journal Reference:</span>
-            <span>{paper.journalRef}</span>
-          </div>
-        )}
-
-        {paper.doi && (
-          <div className="arxiv-detail-doi">
-            <span className="arxiv-detail-label">DOI:</span>
-            <a 
-              href={`https://doi.org/${paper.doi}`} 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              {paper.doi}
-            </a>
-          </div>
-        )}
-
-        <div className="arxiv-detail-links">
-          {paper.pdfLink && (
-            <a 
-              href={paper.pdfLink} 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="arxiv-link arxiv-link-pdf arxiv-link-large"
-            >
-              <FileText size={18} />
-              <span>View PDF</span>
-            </a>
+        <div className="arxiv-detail-info">
+          {paper.comment && (
+            <div className="arxiv-detail-comment">
+              <span className="arxiv-detail-label">Comments:</span>
+              <span>{paper.comment}</span>
+            </div>
           )}
-          {paper.htmlLink && (
-            <a 
-              href={paper.htmlLink}
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="arxiv-link arxiv-link-html arxiv-link-large"
-            >
-              <BookOpen size={18} />
-              <span>Read Online</span>
-            </a>
+
+          {paper.journalRef && (
+            <div className="arxiv-detail-journal">
+              <span className="arxiv-detail-label">Journal Reference:</span>
+              <span>{paper.journalRef}</span>
+            </div>
           )}
-          <a 
-            href={paper.absLink} 
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="arxiv-link arxiv-link-abs arxiv-link-large"
-          >
-            <ExternalLink size={18} />
-            <span>arXiv Page</span>
-          </a>
+
+          {paper.doi && (
+            <div className="arxiv-detail-doi">
+              <span className="arxiv-detail-label">DOI:</span>
+              <a
+                href={`https://doi.org/${paper.doi}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {paper.doi}
+              </a>
+            </div>
+          )}
         </div>
 
         {paper.pdfLink && (
           <div className="arxiv-detail-reader">
-            <iframe 
+            <iframe
               src={paper.pdfLink}
               title={`PDF: ${paper.title}`}
               className="arxiv-detail-reader-iframe"

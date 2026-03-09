@@ -4444,15 +4444,38 @@
 
 .arxiv-card-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: space-between;
   gap: 12px;
   margin-bottom: 16px;
   padding-bottom: 12px;
   border-bottom: 1px solid var(--color-border);
 }
 
+.arxiv-card-detail .arxiv-card-header {
+  align-items: center;
+}
+
+.arxiv-card-detail .arxiv-detail-links {
+  gap: 6px;
+}
+
+.arxiv-card-detail .arxiv-link {
+  padding: 5px 10px;
+  font-size: 11px;
+}
+
+.arxiv-card-detail .arxiv-link svg {
+  width: 13px;
+  height: 13px;
+}
+
 .arxiv-header-compact {
   display: block;
+}
+
+.arxiv-card-detail .arxiv-card-header {
+  align-items: center;
 }
 
 .arxiv-card-icon {
@@ -4690,10 +4713,10 @@
 .arxiv-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-size: 13px;
+  gap: 5px;
+  padding: 6px 11px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 500;
   text-decoration: none;
   transition: all 0.2s;
@@ -4731,16 +4754,8 @@
 }
 
 .arxiv-link-large {
-  padding: 12px 20px;
-  font-size: 14px;
-}
-
-/* Paper Detail Card */
-
-.arxiv-card-detail .arxiv-paper-detail-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  padding: 6px 12px;
+  font-size: 12px;
 }
 
 /* Responsive */
@@ -4778,6 +4793,16 @@
 
   .arxiv-paper-item {
     flex-direction: column;
+  }
+
+  .arxiv-card-detail .arxiv-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .arxiv-detail-links {
+    width: 100%;
   }
 }
 
@@ -4905,12 +4930,6 @@
 
 /* Paper Detail Card */
 
-.arxiv-card-detail .arxiv-paper-detail-content {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
 .arxiv-detail-title {
   font-size: 18px;
   font-weight: 600;
@@ -4919,22 +4938,38 @@
   margin: 0;
 }
 
+.arxiv-paper-meta-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .arxiv-detail-authors {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  color: var(--color-text-muted);
+  align-items: center;
+  gap: 6px;
+  color: var(--color-text);
 }
 
 .arxiv-author-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: 2px;
 }
 
 .arxiv-author {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--color-text);
+}
+
+.arxiv-author-more {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.arxiv-author-sep {
+  color: var(--color-border-hover);
 }
 
 .arxiv-author-affiliation {
@@ -4945,14 +4980,14 @@
 .arxiv-detail-meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 12px;
 }
 
 .arxiv-meta-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
+  gap: 5px;
+  font-size: 12px;
   color: var(--color-text-muted);
 }
 
@@ -4961,12 +4996,12 @@
 }
 
 .arxiv-category-primary {
-  padding: 3px 10px;
+  padding: 3px 8px;
   background: #b61c2c15;
   color: #b61c2c;
+  border: 1px solid var(--color-border);
   border-radius: 4px;
-  font-weight: 600;
-  font-size: 12px;
+  font-size: 11px;
 }
 
 .arxiv-detail-categories {
@@ -4977,22 +5012,13 @@
 
 .arxiv-detail-abstract {
   background: var(--color-bg-secondary);
-  padding: 16px;
-  border-radius: 10px;
-}
-
-.arxiv-detail-abstract h4 {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  margin: 0 0 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  padding: 12px 14px;
+  border-radius: 8px;
 }
 
 .arxiv-detail-abstract p {
-  font-size: 14px;
-  line-height: 1.7;
+  font-size: 13px;
+  line-height: 1.6;
   color: var(--color-text);
   margin: 0;
 }
@@ -5004,11 +5030,20 @@
   overflow: hidden;
 }
 
+.arxiv-detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 0;
+}
+
 .arxiv-detail-comment,
 .arxiv-detail-journal,
 .arxiv-detail-doi {
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.5;
+  display: flex;
+  gap: 6px;
 }
 
 .arxiv-detail-label {
@@ -5034,7 +5069,7 @@
 
 .arxiv-detail-reader {
   width: 100%;
-  margin-top: 20px;
+  margin-top: 16px;
   border: 1px solid var(--color-border);
   border-radius: 10px;
   overflow: hidden;
@@ -5043,7 +5078,7 @@
 
 .arxiv-detail-reader-iframe {
   width: 100%;
-  height: 700px;
+  height: 650px;
   border: none;
   display: block;
 }
@@ -5052,6 +5087,22 @@
 @media (max-width: 640px) {
   .arxiv-card {
     padding: 14px;
+  }
+
+  .arxiv-detail-title {
+    font-size: 16px;
+  }
+
+  .arxiv-card-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .arxiv-detail-links {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
   }
 
   .arxiv-paper-item {
@@ -5072,35 +5123,8 @@
     flex-direction: column;
   }
 
-  .arxiv-detail-links {
-    flex-direction: column;
-  }
-
   .arxiv-detail-reader-iframe {
     height: 400px;
-  }
-}
-
-/* Responsive */
-@media (max-width: 640px) {
-  .arxiv-card {
-    padding: 14px;
-  }
-
-  .arxiv-paper-item {
-    padding: 12px;
-  }
-
-  .arxiv-paper-links {
-    flex-direction: column;
-  }
-
-  .arxiv-detail-links {
-    flex-direction: column;
-  }
-
-  .arxiv-reader {
-    height: 500px;
   }
 }
 
