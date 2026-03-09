@@ -36,8 +36,31 @@ interface ScopusSearchCardProps {
   onSetInput?: (text: string) => void;
 }
 
+interface ScopusPaperDetail {
+  eid: string;
+  scopusId: string;
+  title: string;
+  author: string;
+  publicationName: string;
+  publicationDate: string;
+  volume: string;
+  issue: string;
+  pages: string;
+  doi: string;
+  doiUrl: string;
+  scopusUrl: string;
+  issn: string;
+  eIssn: string;
+  citedByCount: number;
+  openAccess: boolean;
+  type: string;
+  affiliation?: string;
+  subtype?: string;
+  aggregationType?: string;
+}
+
 interface ScopusPaperCardProps {
-  paper: ScopusPaperEntry;
+  paper: ScopusPaperDetail;
 }
 
 function ScopusSearchCardComponent({ result, onSetInput }: ScopusSearchCardProps) {
@@ -47,7 +70,7 @@ function ScopusSearchCardComponent({ result, onSetInput }: ScopusSearchCardProps
         <div className="arxiv-card-title-section">
           <h3 className="arxiv-card-title">Scopus</h3>
           <p className="arxiv-card-subtitle">
-            {result.entries.length} papers for "{result.query}" ({result.totalResults.toLocaleString()} total)
+            {result.entries.length} papers for &quot;{result.query}&quot; ({result.totalResults.toLocaleString()} total)
           </p>
         </div>
       </div>
@@ -161,7 +184,7 @@ function ScopusPaperCardComponent({ paper }: ScopusPaperCardProps) {
       <div className="arxiv-card-header">
         <div className="arxiv-card-title-section">
           <h3 className="arxiv-card-title">Scopus Paper</h3>
-          <p className="arxiv-card-subtitle">{paper.eid}</p>
+          <p className="arxiv-card-subtitle">{paper.scopusId}</p>
         </div>
       </div>
       <div className="arxiv-paper-detail-content">
@@ -180,7 +203,7 @@ function ScopusPaperCardComponent({ paper }: ScopusPaperCardProps) {
             </div>
             <div className="arxiv-meta-item">
               <Calendar size={12} />
-              <span>{paper.coverDate}</span>
+              <span>{paper.publicationDate}</span>
             </div>
             {paper.citedByCount > 0 && (
               <div className="arxiv-meta-item scopus-citations-detail">
