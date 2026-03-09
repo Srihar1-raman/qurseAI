@@ -76,8 +76,6 @@ function parseAtomResponse(xmlText: string): ArxivSearchResponse {
       const rel = linkMatch[2];
       if (rel === 'related' && href.includes('/pdf/')) {
         pdfLink = href;
-      } else if (rel === 'alternate') {
-        absLink = href;
       }
     }
     
@@ -161,7 +159,7 @@ export const arxivSearchTool = tool({
           categories: entry.categories,
           pdfLink: entry.pdfLink,
           absLink: entry.absLink,
-          htmlLink: `https://arxiv.org/html/${entry.id}`,
+          htmlLink: `https://ar5iv.org/html/${entry.id}`,
         })),
       };
     } catch (error) {
