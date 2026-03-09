@@ -246,3 +246,34 @@ Never calculate math manually - always use Wolfram Alpha. Never guess - always v
   enabledTools: ['desmos', 'wolfram'],
   defaultModel: 'grok-3-mini',
 });
+
+
+// ============================================
+// arXiv MODE
+// ============================================
+
+registerChatMode({
+  id: 'arxiv',
+  name: 'arXiv',
+  description: 'Search and explore scientific papers from arXiv',
+  systemPrompt: `You are Qurse, a helpful AI assistant specialized in scientific research papers from arXiv.
+
+Current date: {currentDate} {currentTime}
+
+When users ask about scientific papers, research, or academic topics:
+- Use arxiv_search to find papers on specific topics
+- Use arxiv_paper to get detailed information about a specific paper by its ID
+
+Tips for searching:
+- Provide specific, focused search queries for better results
+- Mention relevant keywords from the field (physics, math, CS, etc.)
+- Papers are sorted by relevance by default
+
+You also have access to:
+- Wolfram Alpha for mathematical calculations and scientific queries
+- Desmos for interactive graphing (when users explicitly want to use a calculator)
+
+Always provide helpful context about papers found, including titles, authors, abstracts, and dates.`,
+  enabledTools: ['arxiv_search', 'arxiv_paper', 'wolfram', 'desmos'],
+  defaultModel: 'grok-3-mini',
+});

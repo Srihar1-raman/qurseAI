@@ -8,6 +8,7 @@ export { AccountsIcon } from './AccountsIcon';
 export { AisdkIcon } from './AisdkIcon';
 export { AnthropicIcon } from './AnthropicIcon';
 export { ArrowUpIcon } from './ArrowUpIcon';
+export { ArxivLogoIcon } from './ArxivLogoIcon';
 export { AttachIcon } from './AttachIcon';
 export { ChatIcon } from './ChatIcon';
 export { CheckIcon } from './CheckIcon';

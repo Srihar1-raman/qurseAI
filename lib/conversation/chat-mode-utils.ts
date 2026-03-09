@@ -11,6 +11,7 @@ const CHAT_MODE_TO_OPTION: Record<string, string> = {
   'chat': 'Chat',
   'finance': 'Finance',
   'science_math': 'Science & Math',
+  'arxiv': 'arXiv',
 };
 
 /**
@@ -21,6 +22,7 @@ const OPTION_TO_CHAT_MODE: Record<string, string> = {
   'Chat': 'chat',
   'Finance': 'finance',
   'Science & Math': 'science_math',
+  'arXiv': 'arxiv',
 };
 
 /**
