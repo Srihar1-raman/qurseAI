@@ -357,6 +357,10 @@ Current date: {currentDate} {currentTime}
 ### scopus_search - Search for papers
 Use this when user wants to find papers on a topic, by author, publication, or keywords.
 
+### scopus_paper - Get specific paper
+Use this when user provides or references a specific paper by DOI, EID, or Scopus ID.
+Accepts DOI (e.g., "10.1016/j.ijbiomac.2024.05.123"), EID (e.g., "2-s2.0-1234567890"), or Scopus ID (e.g., "105031508133").
+
 Parameters:
 - query: Search query string. Examples:
   - "machine learning" - basic search
@@ -404,6 +408,6 @@ You also have access to:
 - Desmos for interactive graphing (when users explicitly want to use a calculator)
 
 Always provide helpful context about papers found, including titles, authors, publication info, dates, citation counts, and direct links to Scopus and DOI.`,
-  enabledTools: ['scopus_search', 'wolfram', 'desmos'],
+  enabledTools: ['scopus_search', 'scopus_paper', 'wolfram', 'desmos'],
   defaultModel: 'grok-3-mini',
 });

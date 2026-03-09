@@ -5408,14 +5408,32 @@
   height: 10px;
 }
 
-.scopus-card-compact .scopus-paper-details-compact {
+.scopus-paper-details-compact {
+  display: flex;
+  flex-wrap: wrap;
   gap: 4px;
   margin-top: 4px;
 }
 
-.scopus-card-compact .scopus-detail-badge {
+.scopus-detail-badge {
   font-size: 9px;
-  padding: 2px 5px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--color-border);
+}
+
+.scopus-detail-badge.scopus-issn-compact {
+  font-size: 8px;
+  margin-left: auto;
+}
+
+.scopus-detail-badge.scopus-type-badge {
+  color: var(--color-accent-primary);
+  border-color: rgba(59, 130, 246, 0.2);
+  background: rgba(59, 130, 246, 0.05);
 }
 
 .scopus-card-compact .arxiv-paper-links-compact {
@@ -5536,6 +5554,33 @@
 
 .scopus-card-detail {
   border-color: var(--color-border);
+}
+
+.scopus-tool-result-info {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--color-bg-secondary);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.scopus-tool-result-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+}
+
+.scopus-tool-result-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.scopus-tool-result-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text);
 }
 
 .scopus-author {

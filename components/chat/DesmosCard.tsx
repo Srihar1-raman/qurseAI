@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useEffect, useRef, useState } from 'react';
-import { Calculator } from 'lucide-react';
 
 type CalculatorType = 'graphing' | 'scientific' | 'fourFunction' | 'geometry' | '3d';
 
@@ -177,7 +176,6 @@ export function DesmosCard({ calculatorType, initialExpressions, viewport }: Des
   return (
     <div className="desmos-card">
       <div className="desmos-card-header">
-        <Calculator className="desmos-card-icon" />
         <span className="desmos-card-title">{getCalculatorName(calculatorType)}</span>
       </div>
       

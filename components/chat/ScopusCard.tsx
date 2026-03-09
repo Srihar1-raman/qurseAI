@@ -73,7 +73,7 @@ function ScopusSearchCardComponent({ result, onSetInput }: ScopusSearchCardProps
               <div className="arxiv-paper-meta-compact">
                 <div className="arxiv-paper-meta-item">
                   <User size={10} />
-                  <span>{entry.author}</span>
+                  <span>{typeof entry.author === 'string' ? entry.author : 'Unknown author'}</span>
                 </div>
                 <div className="arxiv-paper-meta-item">
                   <Book size={10} />
@@ -137,7 +137,9 @@ function ScopusSearchCardComponent({ result, onSetInput }: ScopusSearchCardProps
                   <button
                     className="arxiv-link-compact arxiv-link-ask"
                     onClick={() => {
-                      const msg = "Tell me about the paper " + entry.title + " by " + entry.author + " from " + entry.publicationName;
+                      let msg = "Tell me about the paper " + entry.title;
+                      if (entry.doi) msg += " (DOI: " + entry.doi + ")";
+                      if (entry.eid) msg += " (EID: " + entry.eid + ")";
                       onSetInput?.(msg);
                     }}
                   >
@@ -168,7 +170,7 @@ function ScopusPaperCardComponent({ paper }: ScopusPaperCardProps) {
         <div className="arxiv-paper-meta-info">
           <div className="arxiv-detail-authors">
             <User size={12} />
-            <span>{paper.author}</span>
+            <span>{typeof paper.author === 'string' ? paper.author : 'Unknown author'}</span>
           </div>
 
           <div className="arxiv-detail-meta">

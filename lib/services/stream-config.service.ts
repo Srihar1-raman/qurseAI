@@ -30,7 +30,7 @@ import { movieInfoTool } from '@/lib/tools/movie';
 import { desmosTool } from '@/lib/tools/desmos';
 import { wolframTool } from '@/lib/tools/wolfram';
 import { arxivSearchTool, arxivPaperTool } from '@/lib/tools/arxiv';
-import { scopusSearchTool } from '@/lib/tools/scopus';
+import { scopusSearchTool, scopusPaperTool } from '@/lib/tools/scopus';
 import {
   stockQuoteTool,
   stockHistoryTool,
@@ -258,6 +258,9 @@ export function buildStreamConfig(config: StreamConfig) {
       }
       if (modeConfig.enabledTools.includes('scopus_search')) {
         tools.scopus_search = scopusSearchTool;
+      }
+      if (modeConfig.enabledTools.includes('scopus_paper')) {
+        tools.scopus_paper = scopusPaperTool;
       }
 
       const streamTextOptions: any = {

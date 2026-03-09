@@ -2,6 +2,7 @@ import { tool } from 'ai';
 import { z } from 'zod';
 
 const SCOPUS_API_URL = 'https://api.elsevier.com/content/search/scopus';
+const SCOPUS_ABSTRACT_API_URL = 'https://api.elsevier.com/content/abstract';
 const API_KEY = process.env.ELSEVIER_API_KEY || '';
 
 interface ScopusAffiliation {
@@ -58,6 +59,58 @@ interface ScopusServiceError {
       statusText: string;
     };
   };
+}
+
+interface ScopusAbstractResponse {
+  'abstracts-retrieval-response': {
+    coredata?: {
+      'dc:title'?: string;
+      'dc:creator'?: string;
+      'dc:description'?: string;
+      'prism:publicationName'?: string;
+      'prism:coverDate'?: string;
+      'prism:coverDisplayDate'?: string;
+      'prism:aggregationType'?: string;
+      'prism:volume'?: string;
+      'prism:issueIdentifier'?: string;
+      'prism:pageRange'?: string;
+      'prism:doi'?: string;
+      'prism:eIssn'?: string;
+      'prism:issn'?: string;
+      'citedby-count'?: string;
+      'eid'?: string;
+      'dc:identifier'?: string;
+      'openaccess'?: string;
+      'openaccessFlag'?: boolean;
+      'subtype'?: string;
+      'subtypeDescription'?: string;
+      'affiliation': any[];
+      'link'?: any[];
+    };
+  };
+}
+
+interface ScopusPaper {
+  eid: string;
+  scopusId: string;
+  title: string;
+  author: string;
+  publicationName: string;
+  publicationDate: string;
+  volume: string;
+  issue: string;
+  pages: string;
+  doi: string;
+  doiUrl: string;
+  scopusUrl: string;
+  issn: string;
+  eIssn: string;
+  citedByCount: number;
+  openAccess: boolean;
+  type: string;
+  affiliation?: string;
+  subtype?: string;
+  aggregationType?: string;
 }
 
 export const scopusSearchTool = tool({
@@ -173,3 +226,103 @@ export const scopusSearchTool = tool({
     }
   },
 });
+
+export const scopusPaperTool = tool({
+  description: 'Get detailed information about a specific Scopus paper by DOI, EID, or Scopus ID. Use this when user provides or references a specific paper.',
+  inputSchema: z.object({
+    id: z.string().describe('Paper identifier - can be DOI (e.g., "10.1016/j.ijbiomac.2024.05.123"), EID (e.g., "2-s2.0-1234567890"), or Scopus ID (e.g., "105031508133")'),
+  }),
+  execute: async ({ id }) => {
+    try {
+      if (!API_KEY) {
+        return { error: 'Scopus API key not configured' };
+      }
+
+      const isDoi = id.startsWith('10.') || id.includes('doi.org');
+      const isEid = id.startsWith('2-s2.0-');
+      const isScopusId = /^\d+$/.test(id);
+
+      let apiUrl = '';
+      let idParam = '';
+
+      if (isDoi) {
+        const cleanDoi = id.replace('https://doi.org/', '').replace(/^10\.\d{4,9}\//, '');
+        apiUrl = `${SCOPUS_ABSTRACT_API_URL}/doi/${encodeURIComponent(cleanDoi)}`;
+      } else if (isEid) {
+        apiUrl = `${SCOPUS_ABSTRACT_API_URL}/eid/${encodeURIComponent(id)}`;
+      } else {
+        apiUrl = `${SCOPUS_ABSTRACT_API_URL}/scopus_id/${encodeURIComponent(id)}`;
+      }
+
+      const params = new URLSearchParams({
+        apiKey: API_KEY,
+        httpAccept: 'application/json',
+        view: 'META',
+      });
+
+      const response = await fetch(`${apiUrl}?${params.toString()}`);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          return { error: 'Paper not found' };
+        } else if (response.status === 401) {
+          return { error: 'Authentication failed. Check API key.' };
+        }
+        const errorText = await response.text();
+        return { error: `Scopus API error: ${response.status} - ${errorText}` };
+      }
+
+      const json = await response.json();
+
+      if ('service-error' in json) {
+        const errorResponse = json as ScopusServiceError;
+        return {
+          error: errorResponse['service-error'].status.statusText,
+        };
+      }
+
+      const data: ScopusAbstractResponse = json;
+      const coreData = data['abstracts-retrieval-response']?.coredata;
+
+      if (!coreData) {
+        return { error: 'Paper not found or abstract not available' };
+      }
+
+      const scopusLink = coreData.link?.find((link: any) => link['@ref'] === 'self')?.['@href'] || '';
+      const eid = coreData['dc:identifier'] || coreData['eid'] || '';
+      const rawCreator = coreData['dc:creator'] as any;
+      const creator = typeof rawCreator === 'string' ? rawCreator : (typeof rawCreator?.author === 'string' ? rawCreator.author : 'Unknown author');
+
+      const paper: ScopusPaper = {
+        eid: eid,
+        scopusId: eid,
+        title: coreData['dc:title'] || 'No title available',
+        author: creator,
+        publicationName: coreData['prism:publicationName'] || 'Unknown publication',
+        publicationDate: coreData['prism:coverDisplayDate'] || 'Unknown date',
+        volume: coreData['prism:volume'] || '',
+        issue: coreData['prism:issueIdentifier'] || '',
+        pages: coreData['prism:pageRange'] || '',
+        doi: coreData['prism:doi'] || '',
+        doiUrl: coreData['prism:doi'] ? `https://doi.org/${coreData['prism:doi']}` : '',
+        scopusUrl: scopusLink,
+        issn: coreData['prism:eIssn'] || coreData['prism:issn'] || '',
+        eIssn: coreData['prism:eIssn'] || '',
+        citedByCount: parseInt(coreData['citedby-count'] || '0', 10),
+        openAccess: coreData['openaccessFlag'] === true,
+        type: coreData['subtypeDescription'] || 'Article',
+        subtype: coreData['subtype'] || '',
+        aggregationType: coreData['prism:aggregationType'] || '',
+        affiliation: coreData['affiliation']?.[0]?.['affilname'] || '',
+      };
+
+      return paper;
+    } catch (error) {
+      return {
+        error: error instanceof Error ? error.message : 'Failed to fetch Scopus paper',
+      };
+    }
+  },
+});
+
+export type { ScopusPaper };
