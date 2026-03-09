@@ -4500,8 +4500,38 @@
   border: 1px solid var(--color-border);
 }
 
+.arxiv-paper-preview {
+  flex-shrink: 0;
+  width: 200px;
+  height: 280px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.arxiv-paper-preview-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
 .arxiv-paper-item:hover {
   border-color: var(--color-border-hover);
+}
+
+.arxiv-paper-item {
+  display: flex;
+  gap: 16px;
+}
+
+.arxiv-paper-item-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .arxiv-paper-header {
@@ -4668,6 +4698,14 @@
   font-size: 14px;
 }
 
+/* Paper Detail Card */
+
+.arxiv-card-detail .arxiv-paper-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 /* Responsive */
 @media (max-width: 640px) {
   .arxiv-card {
@@ -4675,7 +4713,12 @@
   }
 
   .arxiv-paper-item {
+    flex-direction: column;
     padding: 12px;
+  }
+
+  .arxiv-paper-preview {
+    display: none;
   }
 
   .arxiv-paper-links {
@@ -4684,6 +4727,10 @@
 
   .arxiv-detail-links {
     flex-direction: column;
+  }
+
+  .arxiv-detail-reader-iframe {
+    height: 500px;
   }
 }
 
@@ -4936,6 +4983,55 @@
   display: flex;
   gap: 12px;
   margin-top: 8px;
+}
+
+.arxiv-detail-reader {
+  width: 100%;
+  margin-top: 20px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--color-bg);
+}
+
+.arxiv-detail-reader-iframe {
+  width: 100%;
+  height: 700px;
+  border: none;
+  display: block;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .arxiv-card {
+    padding: 14px;
+  }
+
+  .arxiv-paper-item {
+    flex-direction: column;
+    padding: 12px;
+  }
+
+  .arxiv-paper-preview {
+    width: 100%;
+  }
+
+  .arxiv-paper-preview-iframe {
+    width: 100%;
+    height: 300px;
+  }
+
+  .arxiv-paper-links {
+    flex-direction: column;
+  }
+
+  .arxiv-detail-links {
+    flex-direction: column;
+  }
+
+  .arxiv-detail-reader-iframe {
+    height: 400px;
+  }
 }
 
 /* Responsive */

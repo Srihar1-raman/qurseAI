@@ -71,91 +71,104 @@ function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
       <div className="arxiv-search-results">
         {result.entries.map((entry, index) => (
           <div key={entry.id} className="arxiv-paper-item">
-            <div className="arxiv-paper-header">
-              <span className="arxiv-paper-number">{index + 1}</span>
-              <div className="arxiv-paper-main">
+            <div className="arxiv-paper-item-content">
+              <div className="arxiv-paper-header">
+                <span className="arxiv-paper-number">{index + 1}</span>
+                <div className="arxiv-paper-main">
+                  <a 
+                    href={entry.absLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="arxiv-paper-title"
+                  >
+                    {entry.title}
+                  </a>
+                  <div className="arxiv-paper-authors">
+                    <User size={12} />
+                    <span>{entry.authors.slice(0, 3).join(', ')}{entry.authors.length > 3 ? ` +${entry.authors.length - 3} more` : ''}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="arxiv-paper-meta">
+                <div className="arxiv-paper-meta-item">
+                  <Calendar size={12} />
+                  <span>{entry.published}</span>
+                </div>
+                <div className="arxiv-paper-meta-item">
+                  <Tag size={12} />
+                  <span className="arxiv-category">{entry.primaryCategory}</span>
+                </div>
+                <div className="arxiv-paper-meta-item">
+                  <span className="arxiv-id">{entry.id}</span>
+                </div>
+              </div>
+
+              <div className="arxiv-paper-abstract">
+                <p className={expandedId === entry.id ? '' : 'truncated'}>
+                  {entry.summary}
+                </p>
+                {entry.summary.length > 200 && (
+                  <button 
+                    className="arxiv-abstract-toggle"
+                    onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
+                  >
+                    {expandedId === entry.id ? 'Show less' : 'Read more'}
+                  </button>
+                )}
+              </div>
+
+              <div className="arxiv-paper-links">
+                {entry.pdfLink && (
+                  <a 
+                    href={entry.pdfLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="arxiv-link arxiv-link-pdf"
+                  >
+                    <FileText size={14} />
+                    <span>PDF</span>
+                  </a>
+                )}
+                {entry.htmlLink && (
+                  <a 
+                    href={entry.htmlLink}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="arxiv-link arxiv-link-html"
+                  >
+                    <BookOpen size={14} />
+                    <span>HTML</span>
+                  </a>
+                )}
                 <a 
                   href={entry.absLink} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="arxiv-paper-title"
+                  className="arxiv-link arxiv-link-abs"
                 >
-                  {entry.title}
+                  <ExternalLink size={14} />
+                  <span>arXiv</span>
                 </a>
-                <div className="arxiv-paper-authors">
-                  <User size={12} />
-                  <span>{entry.authors.slice(0, 3).join(', ')}{entry.authors.length > 3 ? ` +${entry.authors.length - 3} more` : ''}</span>
+              </div>
+
+              {entry.categories.length > 1 && (
+                <div className="arxiv-paper-categories">
+                  {entry.categories.slice(1).map((cat) => (
+                    <span key={cat} className="arxiv-category-tag">{cat}</span>
+                  ))}
                 </div>
-              </div>
-            </div>
-
-            <div className="arxiv-paper-meta">
-              <div className="arxiv-paper-meta-item">
-                <Calendar size={12} />
-                <span>{entry.published}</span>
-              </div>
-              <div className="arxiv-paper-meta-item">
-                <Tag size={12} />
-                <span className="arxiv-category">{entry.primaryCategory}</span>
-              </div>
-              <div className="arxiv-paper-meta-item">
-                <span className="arxiv-id">{entry.id}</span>
-              </div>
-            </div>
-
-            <div className="arxiv-paper-abstract">
-              <p className={expandedId === entry.id ? '' : 'truncated'}>
-                {entry.summary}
-              </p>
-              {entry.summary.length > 200 && (
-                <button 
-                  className="arxiv-abstract-toggle"
-                  onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
-                >
-                  {expandedId === entry.id ? 'Show less' : 'Read more'}
-                </button>
               )}
             </div>
 
-            <div className="arxiv-paper-links">
-              {entry.pdfLink && (
-                <a 
-                  href={entry.pdfLink} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="arxiv-link arxiv-link-pdf"
-                >
-                  <FileText size={14} />
-                  <span>PDF</span>
-                </a>
-              )}
-              {entry.htmlLink && (
-                <a 
-                  href={entry.htmlLink}
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="arxiv-link arxiv-link-html"
-                >
-                  <BookOpen size={14} />
-                  <span>HTML</span>
-                </a>
-              )}
-              <a 
-                href={entry.absLink} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="arxiv-link arxiv-link-abs"
-              >
-                <ExternalLink size={14} />
-                <span>arXiv</span>
-              </a>
-            </div>
-
-            {entry.categories.length > 1 && (
-              <div className="arxiv-paper-categories">
-                {entry.categories.slice(1).map((cat) => (
-                  <span key={cat} className="arxiv-category-tag">{cat}</span>
-                ))}
+            {entry.pdfLink && (
+              <div className="arxiv-paper-preview">
+                <iframe 
+                  src={entry.pdfLink}
+                  title={`PDF Preview: ${entry.title}`}
+                  className="arxiv-paper-preview-iframe"
+                  loading="lazy"
+                />
               </div>
             )}
           </div>
@@ -292,6 +305,17 @@ function ArxivPaperCardComponent({ paper }: ArxivPaperCardProps) {
             <span>arXiv Page</span>
           </a>
         </div>
+
+        {paper.pdfLink && (
+          <div className="arxiv-detail-reader">
+            <iframe 
+              src={paper.pdfLink}
+              title={`PDF: ${paper.title}`}
+              className="arxiv-detail-reader-iframe"
+              loading="lazy"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
