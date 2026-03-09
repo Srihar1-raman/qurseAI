@@ -21,6 +21,7 @@ function ConversationThreadComponent({
   conversationContainerRef,
   conversationThreadRef,
   onShare,
+  onSetInput,
   user,
   isStreaming = false,
 }: ConversationThreadProps) {
@@ -53,6 +54,7 @@ function ConversationThreadComponent({
             isUser={message.role === 'user'}
             model={selectedModel}
             onShare={onShare}
+            onSetInput={onSetInput}
             user={user}
             isStreaming={isStreaming && index === deduplicatedMessages.length - 1} // Only last message streams
             reasoningTime={message.reasoning_time}

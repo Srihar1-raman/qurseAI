@@ -235,6 +235,7 @@ export interface ChatMessageProps {
   model?: string;
   onRedo?: () => void | Promise<void>;
   onShare?: () => void | Promise<void>;
+  onSetInput?: (text: string) => void;
   user?: { id: string } | null;
   isStreaming?: boolean; // Indicates if content is actively streaming
   reasoningTime?: number;

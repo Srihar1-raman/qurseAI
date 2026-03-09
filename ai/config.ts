@@ -273,14 +273,15 @@ Parameters:
   - abs: - search in abstract
   - all: - search all fields (default)
   - Use AND, OR, ANDNOT for boolean logic
-  - Use quotes for phrases: "machine learning"
-  - Examples:
+   - Use quotes for phrases: "machine learning"
+   - For date filtering with submittedDate, use quotes and format: submittedDate:"YYYYMMDDTTTT TO YYYYMMDDTTTT" (NOT brackets)
+   - Examples:
     - "all:quantum computing" - any field
     - "ti:neural networks AND cat:cs.LG" - title + category
     - "au:Stephen Hawking AND cat:gr-qc" - author + category
     - "cat:stat.ML AND NOT ti:survey" - exclude word in title
-    - "ti:'deep learning' AND submittedDate:[202301010000+TO+202312312359]" - with date filter
-- maxResults: Number of results (default 10, max 2000)
+    - "ti:'deep learning' AND submittedDate:\"202301010000 TO 202312312359\"" - with date filter (note: use quotes, not brackets)
+    - maxResults: Number of results (default 10, max 2000)
 - sortBy: "relevance" | "lastUpdatedDate" | "submittedDate" (default: relevance)
 - sortOrder: "ascending" | "descending" (default: descending)
 - start: For paging (default 0)

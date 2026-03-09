@@ -70,12 +70,15 @@ function parseAtomResponse(xmlText: string): ArxivSearchResponse {
     
     const linkMatches = entryXml.matchAll(/<link[^>]*href="([^"]+)"[^>]*rel="([^"]+)"[^>]*>/g);
     let pdfLink: string | undefined;
-    let absLink = '';
+    let absLink = idMatch ? idMatch[1].trim() : '';
     for (const linkMatch of linkMatches) {
       const href = linkMatch[1];
       const rel = linkMatch[2];
       if (rel === 'related' && href.includes('/pdf/')) {
         pdfLink = href;
+      }
+      if (rel === 'alternate') {
+        absLink = href;
       }
     }
     
@@ -109,9 +112,9 @@ function parseAtomResponse(xmlText: string): ArxivSearchResponse {
 }
 
 export const arxivSearchTool = tool({
-  description: 'Search for scientific papers on arXiv by topic, author, category, or keywords',
+  description: 'Search for scientific papers on arXiv by topic, author, category, or keywords. Use field prefixes like ti: (title), au: (author), cat: (category), abs: (abstract), or all: for all fields. Example: "ti:quantum AND cat:cs.LG". For date filtering use submittedDate with double quotes and range format: submittedDate:"YYYYMMDDTTTT TO YYYYMMDDTTTT". Example: submittedDate:"202303010000 TO 202303312359"',
   inputSchema: z.object({
-    query: z.string().describe('Search query - can use field prefixes like ti: (title), au: (author), cat: (category), abs: (abstract), or all: for all fields. Example: "ti:quantum AND cat:cs.LG"'),
+    query: z.string().describe('Search query - can use field prefixes like ti: (title), au: (author), cat: (category), abs: (abstract), or all: for all fields. Example: "ti:quantum AND cat:cs.LG". For date ranges, use submittedDate:"YYYYMMDDTTTT TO YYYYMMDDTTTT"'),
     maxResults: z.number().min(1).max(2000).default(10).describe('Maximum number of results to return (1-2000)'),
     sortBy: z.enum(['relevance', 'lastUpdatedDate', 'submittedDate']).default('relevance').describe('How to sort results'),
     sortOrder: z.enum(['ascending', 'descending']).default('descending').describe('Sort order'),

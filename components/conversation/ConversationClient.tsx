@@ -445,6 +445,7 @@ export function ConversationClient({
           conversationContainerRef={conversationContainerRef}
           conversationThreadRef={conversationThreadRef}
           onShare={handleShare}
+          onSetInput={setInput}
           user={user?.id ? { id: user.id } : null}
         />
 

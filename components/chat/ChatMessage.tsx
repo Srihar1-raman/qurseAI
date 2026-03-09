@@ -38,7 +38,7 @@ interface ToolExecution {
   state?: string;
 }
 
-function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false, reasoningTime }: ChatMessageProps) {
+function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false, reasoningTime, onSetInput }: ChatMessageProps) {
   const { resolvedTheme, mounted } = useTheme();
 
   // DEBUG: Log all parts to see what we're getting
@@ -996,6 +996,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                 <ArxivSearchCard
                   key={execution.toolCallId}
                   result={searchData}
+                  onSetInput={onSetInput}
                 />
               );
             })}

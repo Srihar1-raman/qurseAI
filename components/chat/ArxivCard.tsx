@@ -45,13 +45,14 @@ interface ArxivPaperDetail {
 
 interface ArxivSearchCardProps {
   result: ArxivSearchResult;
+  onSetInput?: (text: string) => void;
 }
 
 interface ArxivPaperCardProps {
   paper: ArxivPaperDetail;
 }
 
-function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
+function ArxivSearchCardComponent({ result, onSetInput }: ArxivSearchCardProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   return (
@@ -109,6 +110,15 @@ function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
               </div>
 
               <div className="arxiv-paper-links-compact">
+                <a 
+                  href={entry.absLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="arxiv-link-compact arxiv-link-abs"
+                >
+                  <ExternalLink size={12} />
+                  arXiv
+                </a>
                 {entry.pdfLink && (
                   <a 
                     href={entry.pdfLink} 
@@ -131,15 +141,12 @@ function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
                     HTML
                   </a>
                 )}
-                <a 
-                  href={entry.absLink} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="arxiv-link-compact arxiv-link-abs"
+                <button 
+                  className="arxiv-link-compact arxiv-link-ask"
+                  onClick={() => onSetInput?.(`fetch this paper ${entry.id}`)}
                 >
-                  <ExternalLink size={12} />
-                  arXiv
-                </a>
+                  Ask Qurse
+                </button>
               </div>
             </div>
 
@@ -171,6 +178,15 @@ function ArxivPaperCardComponent({ paper }: ArxivPaperCardProps) {
           <p className="arxiv-card-subtitle">{paper.id} (v{paper.version})</p>
         </div>
         <div className="arxiv-detail-links">
+          <a
+            href={paper.absLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="arxiv-link arxiv-link-abs"
+          >
+            <ExternalLink size={13} />
+            <span>arXiv</span>
+          </a>
           {paper.pdfLink && (
             <a
               href={paper.pdfLink}
@@ -193,15 +209,6 @@ function ArxivPaperCardComponent({ paper }: ArxivPaperCardProps) {
               <span>HTML</span>
             </a>
           )}
-          <a
-            href={paper.absLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="arxiv-link arxiv-link-abs"
-          >
-            <ExternalLink size={13} />
-            <span>arXiv</span>
-          </a>
         </div>
       </div>
 
@@ -298,8 +305,8 @@ function ArxivPaperCardComponent({ paper }: ArxivPaperCardProps) {
   );
 }
 
-export function ArxivSearchCard({ result }: ArxivSearchCardProps) {
-  return <ArxivSearchCardComponent result={result} />;
+export function ArxivSearchCard({ result, onSetInput }: ArxivSearchCardProps) {
+  return <ArxivSearchCardComponent result={result} onSetInput={onSetInput} />;
 }
 
 export function ArxivPaperCard({ paper }: ArxivPaperCardProps) {
