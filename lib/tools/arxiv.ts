@@ -161,7 +161,7 @@ export const arxivSearchTool = tool({
           categories: entry.categories,
           pdfLink: entry.pdfLink,
           absLink: entry.absLink,
-          htmlLink: `https://ar5iv.org/html/${entry.id}`,
+          htmlLink: `https://arxiv.org/html/${entry.id}`,
         })),
       };
     } catch (error) {
@@ -218,7 +218,7 @@ export const arxivPaperTool = tool({
         doi: entry.doi,
         pdfLink: entry.pdfLink,
         absLink: entry.absLink,
-        htmlLink: `https://ar5iv.org/html/${entry.id}`,
+        htmlLink: `https://arxiv.org/html/${entry.id}`,
         version: entry.id.includes('v') ? entry.id.split('v')[1] : '1',
       };
     } catch (error) {

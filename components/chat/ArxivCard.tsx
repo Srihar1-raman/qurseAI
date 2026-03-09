@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { FileText, User, Calendar, Tag, ExternalLink, BookOpen, Eye, X, Maximize2 } from 'lucide-react';
+import { FileText, User, Calendar, Tag, ExternalLink, BookOpen } from 'lucide-react';
 
 interface ArxivPaperEntry {
   id: string;
@@ -53,7 +53,6 @@ interface ArxivPaperCardProps {
 
 function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [previewPaper, setPreviewPaper] = useState<{ id: string; title: string; htmlLink: string } | null>(null);
 
   return (
     <div className="arxiv-card">
@@ -88,15 +87,6 @@ function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
                   <span>{entry.authors.slice(0, 3).join(', ')}{entry.authors.length > 3 ? ` +${entry.authors.length - 3} more` : ''}</span>
                 </div>
               </div>
-              {entry.htmlLink && (
-                <button 
-                  className="arxiv-preview-btn"
-                  onClick={() => setPreviewPaper({ id: entry.id, title: entry.title, htmlLink: entry.htmlLink! })}
-                  title="Preview Paper"
-                >
-                  <Eye size={16} />
-                </button>
-              )}
             </div>
 
             <div className="arxiv-paper-meta">
@@ -146,7 +136,7 @@ function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
                   rel="noopener noreferrer"
                   className="arxiv-link arxiv-link-html"
                 >
-                  <ExternalLink size={14} />
+                  <BookOpen size={14} />
                   <span>HTML</span>
                 </a>
               )}
@@ -171,35 +161,12 @@ function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
           </div>
         ))}
       </div>
-
-      {previewPaper && (
-        <div className="arxiv-preview-modal">
-          <div className="arxiv-preview-modal-header">
-            <div className="arxiv-preview-modal-title">
-              <Maximize2 size={16} />
-              <span>{previewPaper.title}</span>
-            </div>
-            <button 
-              className="arxiv-preview-modal-close"
-              onClick={() => setPreviewPaper(null)}
-            >
-              <X size={20} />
-            </button>
-          </div>
-          <iframe 
-            src={previewPaper.htmlLink}
-            title={previewPaper.title}
-            className="arxiv-preview-iframe"
-          />
-        </div>
-      )}
     </div>
   );
 }
 
 function ArxivPaperCardComponent({ paper }: ArxivPaperCardProps) {
   const [showFullAbstract, setShowFullAbstract] = useState(false);
-  const [showReader, setShowReader] = useState(false);
 
   return (
     <div className="arxiv-card arxiv-card-detail">
@@ -305,13 +272,15 @@ function ArxivPaperCardComponent({ paper }: ArxivPaperCardProps) {
             </a>
           )}
           {paper.htmlLink && (
-            <button 
+            <a 
+              href={paper.htmlLink}
+              target="_blank" 
+              rel="noopener noreferrer"
               className="arxiv-link arxiv-link-html arxiv-link-large"
-              onClick={() => setShowReader(!showReader)}
             >
-              <ExternalLink size={18} />
-              <span>{showReader ? 'Close Reader' : 'Read Online'}</span>
-            </button>
+              <BookOpen size={18} />
+              <span>Read Online</span>
+            </a>
           )}
           <a 
             href={paper.absLink} 
@@ -323,16 +292,6 @@ function ArxivPaperCardComponent({ paper }: ArxivPaperCardProps) {
             <span>arXiv Page</span>
           </a>
         </div>
-
-        {showReader && paper.htmlLink && (
-          <div className="arxiv-reader">
-            <iframe 
-              src={paper.htmlLink}
-              title={`Read ${paper.title}`}
-              className="arxiv-reader-iframe"
-            />
-          </div>
-        )}
       </div>
     </div>
   );

@@ -4668,6 +4668,25 @@
   font-size: 14px;
 }
 
+/* Responsive */
+@media (max-width: 640px) {
+  .arxiv-card {
+    padding: 14px;
+  }
+
+  .arxiv-paper-item {
+    padding: 12px;
+  }
+
+  .arxiv-paper-links {
+    flex-direction: column;
+  }
+
+  .arxiv-detail-links {
+    flex-direction: column;
+  }
+}
+
 /* Preview Button (Search Results) */
 
 .arxiv-preview-btn {
