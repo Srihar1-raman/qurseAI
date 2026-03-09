@@ -42,12 +42,12 @@ interface ScopusPaperCardProps {
 
 function ScopusSearchCardComponent({ result, onSetInput }: ScopusSearchCardProps) {
   return (
-    <div className="scopus-card">
+    <div className="scopus-card scopus-card-compact">
       <div className="arxiv-card-header arxiv-header-compact">
         <div className="arxiv-card-title-section">
-          <h3 className="arxiv-card-title">Scopus Search Results</h3>
+          <h3 className="arxiv-card-title">Scopus</h3>
           <p className="arxiv-card-subtitle">
-            {result.entries.length} papers found for "{result.query}" ({result.totalResults.toLocaleString()} total)
+            {result.entries.length} papers for "{result.query}" ({result.totalResults.toLocaleString()} total)
           </p>
         </div>
       </div>
@@ -58,89 +58,93 @@ function ScopusSearchCardComponent({ result, onSetInput }: ScopusSearchCardProps
         </div>
       )}
 
-      <div className="arxiv-search-results">
+      <div className="scopus-horizontal-scroll">
         {result.entries.map((entry, index) => (
-          <div key={entry.eid} className="arxiv-paper-item scopus-paper-item">
-            <div className="arxiv-paper-item-content">
-              <div className="arxiv-paper-main">
-                <a
-                  href={entry.scopusUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="arxiv-paper-title"
-                >
-                  {index + 1}. {entry.title}
-                </a>
-                <div className="arxiv-paper-meta-compact">
-                  <div className="arxiv-paper-meta-item">
-                    <User size={11} />
-                    <span>{entry.author}</span>
+          <div key={entry.eid} className="scopus-paper-card-compact">
+            <div className="arxiv-paper-main">
+              <a
+                href={entry.scopusUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="arxiv-paper-title"
+              >
+                {index + 1}. {entry.title}
+              </a>
+              <div className="arxiv-paper-meta-compact">
+                <div className="arxiv-paper-meta-item">
+                  <User size={10} />
+                  <span>{entry.author}</span>
+                </div>
+                <div className="arxiv-paper-meta-item">
+                  <Book size={10} />
+                  <span>{entry.publicationName}</span>
+                </div>
+                <div className="arxiv-paper-meta-item">
+                  <Calendar size={10} />
+                  <span>{entry.coverDate}</span>
+                </div>
+                {entry.citedByCount > 0 && (
+                  <div className="arxiv-paper-meta-item scopus-citations">
+                    <Quote size={10} />
+                    <span>{entry.citedByCount.toLocaleString()}</span>
                   </div>
+                )}
+                {entry.issn && (
                   <div className="arxiv-paper-meta-item">
-                    <Book size={11} />
-                    <span>{entry.publicationName}</span>
+                    <span className="arxiv-issn-compact">ISSN: {entry.issn}</span>
                   </div>
-                  <div className="arxiv-paper-meta-item">
-                    <Calendar size={11} />
-                    <span>{entry.coverDate}</span>
+                )}
+                {entry.openAccess && (
+                  <div className="arxiv-paper-meta-item scopus-openaccess">
+                    <Eye size={10} />
+                    <span>OA</span>
                   </div>
-                  {entry.citedByCount > 0 && (
-                    <div className="arxiv-paper-meta-item scopus-citations">
-                      <Quote size={11} />
-                      <span>{entry.citedByCount.toLocaleString()} citations</span>
-                      {entry.issn && (
-                        <span className="arxiv-issn-compact"> · ISSN: {entry.issn}</span>
-                      )}
-                    </div>
-                  )}
-                  {entry.issn && !entry.citedByCount && (
-                    <div className="arxiv-paper-meta-item">
-                      <span className="arxiv-issn-compact">ISSN: {entry.issn}</span>
-                    </div>
-                  )}
-                  {entry.openAccess && (
-                    <div className="arxiv-paper-meta-item scopus-openaccess">
-                      <Eye size={11} />
-                      <span>Open Access</span>
-                    </div>
+                )}
+              </div>
+              {(entry.volume || entry.issue || entry.pages || entry.type) && (
+                <div className="scopus-paper-details-compact">
+                  {entry.volume && <span className="scopus-detail-badge">v{entry.volume}</span>}
+                  {entry.issue && <span className="scopus-detail-badge">i{entry.issue}</span>}
+                  {entry.pages && <span className="scopus-detail-badge">{entry.pages}</span>}
+                  {entry.type && entry.type !== 'Article' && (
+                    <span className="scopus-detail-badge scopus-type-badge">{entry.type}</span>
                   )}
                 </div>
-                {(entry.volume || entry.issue || entry.pages) && (
-                  <div className="scopus-paper-details-compact">
-                    {entry.volume && <span className="scopus-detail-badge">Vol. {entry.volume}</span>}
-                    {entry.issue && <span className="scopus-detail-badge">Issue {entry.issue}</span>}
-                    {entry.pages && <span className="scopus-detail-badge">pp. {entry.pages}</span>}
-                    {entry.type && entry.type !== 'Article' && (
-                      <span className="scopus-detail-badge scopus-type-badge">{entry.type}</span>
-                    )}
-                  </div>
-                )}
-              </div>
+              )}
+            </div>
 
-              <div className="arxiv-paper-links-compact">
-                {entry.doiUrl && (
-                  <>
-                    <a
-                      href={entry.doiUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="arxiv-link-text"
-                    >
-                      <Globe size={12} />
-                      DOI
-                    </a>
-                    <button
-                      className="arxiv-link-compact arxiv-link-ask"
-                      onClick={() => {
-                        const msg = "Tell me about the paper " + entry.title + " by " + entry.author + " from " + entry.publicationName;
-                        onSetInput?.(msg);
-                      }}
-                    >
-                      Ask Qurse
-                    </button>
-                  </>
-                )}
-              </div>
+            <div className="arxiv-paper-links-compact">
+              <a
+                href={entry.scopusUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="arxiv-link-text"
+              >
+                <ExternalLink size={10} />
+                Scopus
+              </a>
+              {entry.doiUrl && (
+                <>
+                  <a
+                    href={entry.doiUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="arxiv-link-text"
+                  >
+                    <Globe size={10} />
+                    DOI
+                  </a>
+                  <button
+                    className="arxiv-link-compact arxiv-link-ask"
+                    onClick={() => {
+                      const msg = "Tell me about the paper " + entry.title + " by " + entry.author + " from " + entry.publicationName;
+                      onSetInput?.(msg);
+                    }}
+                  >
+                    Ask
+                  </button>
+                </>
+              )}
             </div>
           </div>
         ))}

@@ -65,7 +65,7 @@ export const scopusSearchTool = tool({
   inputSchema: z.object({
     query: z.string().describe('Search query. Examples: "machine learning", "neural networks", "climate change", "quantum cryptography", "protein expression"'),
     date: z.string().optional().describe('Date range in format YYYY-YYYY or YYYY-MM-YYYY. Example: "2020-2024" for years, or "2023-01-01" for specific date'),
-    maxResults: z.number().min(1).max(100).default(10).describe('Number of results to return (10, 25, 50, or 100)'),
+    maxResults: z.number().min(1).max(100).default(25).describe('Number of results to return (10, 25, 50, or 100)'),
     sort: z.enum(['relevancy', 'citedby-count', 'coverDate', 'pubyear', 'creator', 'publicationName']).default('relevancy').describe('Sort field'),
     sortOrder: z.enum(['ascending', 'descending']).default('descending').describe('Sort order: descending (default) or ascending'),
     subjectArea: z.string().optional().describe('Filter by subject area code: AGRI, ARTS, BIOC, BUSI, CENG, CHEM, COMP, DECI, DENT, EART, ECON, ENER, ENGI, ENVI, HEAL, IMMU, MATE, MATH, MEDI, NEUR, NURS, PHAR, PHYS, PSYC, SOCI, VETE, MULT'),
