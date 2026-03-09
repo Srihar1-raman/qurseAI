@@ -18,7 +18,6 @@ import { CollapseIcon } from './CollapseIcon';
 import { Convo_branchIcon } from './Convo_branchIcon';
 import { CopyIcon } from './CopyIcon';
 import { CrossIcon } from './CrossIcon';
-import { DatabaseIcon } from './DatabaseIcon';
 import { Deep_searchIcon } from './Deep_searchIcon';
 import { DeepSeekIcon } from './DeepSeekIcon';
 import { DeleteIcon } from './DeleteIcon';
@@ -56,6 +55,7 @@ import { RedoIcon } from './RedoIcon';
 import { RenameIcon } from './RenameIcon';
 import { RightArrowsIcon } from './RightArrowsIcon';
 import { SearchIcon } from './SearchIcon';
+import { ScopusIcon } from './ScopusIcon';
 import { SendIcon } from './SendIcon';
 import { SentryIcon } from './SentryIcon';
 import { ScienceMathIcon } from './ScienceMathIcon';
@@ -96,7 +96,6 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'convo_branch': Convo_branchIcon,
   'copy': CopyIcon,
   'cross': CrossIcon,
-  'database': DatabaseIcon,
   'deep_search': Deep_searchIcon,
   'deepseek': DeepSeekIcon,
   'delete': DeleteIcon,
@@ -134,6 +133,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'rename': RenameIcon,
   'right-arrows': RightArrowsIcon,
   'search': SearchIcon,
+  'scopus': ScopusIcon,
   'science-math': ScienceMathIcon,
   'send': SendIcon,
   'sentry': SentryIcon,

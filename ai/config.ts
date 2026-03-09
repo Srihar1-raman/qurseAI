@@ -263,47 +263,63 @@ Current date: {currentDate} {currentTime}
 ## arXiv Tools
 
 ### arxiv_search - Search for papers
-Use this when user wants to find papers on a topic, by author, or in a category.
+Use this when user wants to find papers on a topic, by author, by ID, or with filters.
 
 Parameters:
-- query: Search query string. Supports field prefixes:
-  - ti: - search in title (e.g., "ti:quantum")
-  - au: - search by author (e.g., "au:Einstein")
-  - cat: - search by category (e.g., "cat:cs.LG", "cat:physics.gen-ph")
-  - abs: - search in abstract
-  - all: - search all fields (default)
+- query: Search query string. Examples:
+  - "machine learning" - basic search
+  - "all:quantum computing" - search all fields
+  - "ti:neural networks" - search title
+  - "au:Hinton" - search author
+  - "cat:cs.LG" - search category
+  - "abs:attention mechanism" - search abstract
   - Use AND, OR, ANDNOT for boolean logic
-   - Use quotes for phrases: "machine learning"
-   - For date filtering with submittedDate, use quotes and format: submittedDate:"YYYYMMDDTTTT TO YYYYMMDDTTTT" (NOT brackets)
-   - Examples:
-    - "all:quantum computing" - any field
-    - "ti:neural networks AND cat:cs.LG" - title + category
-    - "au:Stephen Hawking AND cat:gr-qc" - author + category
-    - "cat:stat.ML AND NOT ti:survey" - exclude word in title
-    - "ti:'deep learning' AND submittedDate:\"202301010000 TO 202312312359\"" - with date filter (note: use quotes, not brackets)
-    - maxResults: Number of results (default 10, max 2000)
-- sortBy: "relevance" | "lastUpdatedDate" | "submittedDate" (default: relevance)
-- sortOrder: "ascending" | "descending" (default: descending)
+  - "cat:cs.AI AND ti:transformer" - combine conditions
+- category: Limit to specific arXiv category. Examples:
+  - cs.AI - Artificial Intelligence
+  - cs.LG - Machine Learning
+  - cs.CV - Computer Vision
+  - math.OC - Optimization and Control
+  - hep-th - High Energy Physics
+  - q-bio - Quantitative Biology
+  - For full list: https://arxiv.org/category_taxonomy
+- sortBy: "relevance" (default), "lastUpdatedDate", "submittedDate"
+- sortOrder: "ascending" or "descending" (default)
+- maxResults: Number of results (default 10, max 2000)
 - start: For paging (default 0)
 
+Search field prefixes:
+- ti: - title
+- au: - author
+- abs: - abstract
+- cat: - category
+- all: - search all fields (default)
+- Use quotes for phrases: "machine learning"
+- For date filtering with submittedDate, use quotes and format: submittedDate:"YYYYMMDDTTTT TO YYYYMMDDTTTT" (NOT brackets)
+- Examples:
+  - "all:quantum computing" - any field
+  - "ti:neural networks AND cat:cs.LG" - title + category
+  - "au:Stephen Hawking AND cat:gr-qc" - author + category
+  - "cat:stat.ML AND NOT ti:survey" - exclude word in title
+  - "ti:'deep learning' AND submittedDate:\"202301010000 TO 202312312359\"" - with date filter (note: use quotes, not brackets)
+  - "ti:'attention mechanism' AND cat:cs.AI" - with date filter
+
+Tips for searching:
+- Provide specific, focused search queries for better results
+- Mention relevant keywords from the field (physics, math, CS, etc.)
+- For foundational papers in a field, sort by relevance
+
 ### arxiv_paper - Get paper details
-Use this when user provides an arXiv ID or wants detailed info on a specific paper.
+Use this to get complete information about a specific arXiv paper when user provides or references an arXiv ID (e.g., "2301.12345").
 
 Parameters:
-- arxivId: The arXiv ID (e.g., "2301.12345" or "cond-mat/0207270"). Can include version like "2301.12345v2"
-
-## Tips
-- For multiple papers, summarize key findings from top 3-5 results
-- Always include arXiv ID and PDF link in responses
-- Use categories to help users find related papers
-- For very recent papers, sort by submittedDate descending
-- For foundational papers in a field, sort by relevance
+- id: arXiv ID (e.g., "2301.12345" or "cs.AI/2301.12345")
 
 You also have access to:
 - Wolfram Alpha for mathematical calculations and scientific queries
 - Desmos for interactive graphing (when users explicitly want to use a calculator)
 
-Always provide helpful context about papers found, including titles, authors, abstracts, dates, and direct links to PDF.`,
+Always provide helpful context about papers found, including titles, authors, abstracts, and dates.`,
   enabledTools: ['arxiv_search', 'arxiv_paper', 'wolfram', 'desmos'],
   defaultModel: 'grok-3-mini',
 });
