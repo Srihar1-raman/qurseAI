@@ -56,51 +56,41 @@ function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
 
   return (
     <div className="arxiv-card">
-      <div className="arxiv-card-header">
-        <div className="arxiv-card-icon">
-          <BookOpen size={18} />
-        </div>
+      <div className="arxiv-card-header arxiv-header-compact">
         <div className="arxiv-card-title-section">
           <h3 className="arxiv-card-title">arXiv Search Results</h3>
           <p className="arxiv-card-subtitle">
-            {result.totalResults} papers found for &quot;{result.query}&quot;
+            {result.entries.length} papers found for &quot;{result.query}&quot;
           </p>
         </div>
       </div>
 
       <div className="arxiv-search-results">
-        {result.entries.map((entry, index) => (
+        {result.entries.map((entry) => (
           <div key={entry.id} className="arxiv-paper-item">
             <div className="arxiv-paper-item-content">
-              <div className="arxiv-paper-header">
-                <span className="arxiv-paper-number">{index + 1}</span>
-                <div className="arxiv-paper-main">
-                  <a 
-                    href={entry.absLink} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="arxiv-paper-title"
-                  >
-                    {entry.title}
-                  </a>
-                  <div className="arxiv-paper-authors">
-                    <User size={12} />
-                    <span>{entry.authors.slice(0, 3).join(', ')}{entry.authors.length > 3 ? ` +${entry.authors.length - 3} more` : ''}</span>
+              <div className="arxiv-paper-main">
+                <a 
+                  href={entry.absLink} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="arxiv-paper-title"
+                >
+                  {entry.title}
+                </a>
+                <div className="arxiv-paper-meta-compact">
+                  <div className="arxiv-paper-meta-item">
+                    <Calendar size={11} />
+                    <span>{entry.published}</span>
                   </div>
-                </div>
-              </div>
-
-              <div className="arxiv-paper-meta">
-                <div className="arxiv-paper-meta-item">
-                  <Calendar size={12} />
-                  <span>{entry.published}</span>
-                </div>
-                <div className="arxiv-paper-meta-item">
-                  <Tag size={12} />
-                  <span className="arxiv-category">{entry.primaryCategory}</span>
-                </div>
-                <div className="arxiv-paper-meta-item">
-                  <span className="arxiv-id">{entry.id}</span>
+                  <div className="arxiv-paper-meta-item">
+                    <Tag size={11} />
+                    <span className="arxiv-category">{entry.primaryCategory}</span>
+                  </div>
+                  <div className="arxiv-paper-authors">
+                    <User size={11} />
+                    <span>{entry.authors.slice(0, 3).join(', ')}{entry.authors.length > 3 ? ` +${entry.authors.length - 3}` : ''}</span>
+                  </div>
                 </div>
               </div>
 
@@ -113,21 +103,21 @@ function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
                     className="arxiv-abstract-toggle"
                     onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
                   >
-                    {expandedId === entry.id ? 'Show less' : 'Read more'}
+                    {expandedId === entry.id ? 'Show less' : 'More'}
                   </button>
                 )}
               </div>
 
-              <div className="arxiv-paper-links">
+              <div className="arxiv-paper-links-compact">
                 {entry.pdfLink && (
                   <a 
                     href={entry.pdfLink} 
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="arxiv-link arxiv-link-pdf"
+                    className="arxiv-link-compact arxiv-link-pdf"
                   >
-                    <FileText size={14} />
-                    <span>PDF</span>
+                    <FileText size={12} />
+                    PDF
                   </a>
                 )}
                 {entry.htmlLink && (
@@ -135,30 +125,22 @@ function ArxivSearchCardComponent({ result }: ArxivSearchCardProps) {
                     href={entry.htmlLink}
                     target="_blank" 
                     rel="noopener noreferrer"
-                    className="arxiv-link arxiv-link-html"
+                    className="arxiv-link-compact arxiv-link-html"
                   >
-                    <BookOpen size={14} />
-                    <span>HTML</span>
+                    <BookOpen size={12} />
+                    HTML
                   </a>
                 )}
                 <a 
                   href={entry.absLink} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="arxiv-link arxiv-link-abs"
+                  className="arxiv-link-compact arxiv-link-abs"
                 >
-                  <ExternalLink size={14} />
-                  <span>arXiv</span>
+                  <ExternalLink size={12} />
+                  arXiv
                 </a>
               </div>
-
-              {entry.categories.length > 1 && (
-                <div className="arxiv-paper-categories">
-                  {entry.categories.slice(1).map((cat) => (
-                    <span key={cat} className="arxiv-category-tag">{cat}</span>
-                  ))}
-                </div>
-              )}
             </div>
 
             {entry.pdfLink && (

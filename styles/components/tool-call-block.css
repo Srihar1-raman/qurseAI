@@ -4451,6 +4451,10 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.arxiv-header-compact {
+  display: block;
+}
+
 .arxiv-card-icon {
   width: 40px;
   height: 40px;
@@ -4490,20 +4494,13 @@
 .arxiv-search-results {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.arxiv-paper-item {
-  padding: 16px;
-  background: var(--color-bg-secondary);
-  border-radius: 12px;
-  border: 1px solid var(--color-border);
+  gap: 10px;
 }
 
 .arxiv-paper-preview {
   flex-shrink: 0;
-  width: 200px;
-  height: 280px;
+  width: 180px;
+  height: 252px;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--color-border);
@@ -4517,13 +4514,17 @@
   display: block;
 }
 
-.arxiv-paper-item:hover {
-  border-color: var(--color-border-hover);
+.arxiv-paper-item {
+  padding: 14px;
+  background: var(--color-bg-secondary);
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  display: flex;
+  gap: 12px;
 }
 
-.arxiv-paper-item {
-  display: flex;
-  gap: 16px;
+.arxiv-paper-item:hover {
+  border-color: var(--color-border-hover);
 }
 
 .arxiv-paper-item-content {
@@ -4531,27 +4532,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.arxiv-paper-header {
-  display: flex;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.arxiv-paper-number {
-  width: 24px;
-  height: 24px;
-  border-radius: 6px;
-  background: var(--color-bg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  flex-shrink: 0;
+  gap: 8px;
 }
 
 .arxiv-paper-main {
@@ -4560,7 +4541,7 @@
 }
 
 .arxiv-paper-title {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--color-text);
   text-decoration: none;
@@ -4573,12 +4554,19 @@
   text-decoration: underline;
 }
 
+.arxiv-paper-meta-compact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
 .arxiv-paper-authors {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-  font-size: 13px;
+  gap: 4px;
+  font-size: 12px;
   color: var(--color-text-muted);
 }
 
@@ -4612,19 +4600,19 @@
 }
 
 .arxiv-paper-abstract {
-  margin: 12px 0;
+  margin: 6px 0;
 }
 
 .arxiv-paper-abstract p {
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 12px;
+  line-height: 1.5;
   color: var(--color-text);
   margin: 0;
 }
 
 .arxiv-paper-abstract p.truncated {
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -4633,15 +4621,64 @@
   background: none;
   border: none;
   color: #b61c2c;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 500;
   cursor: pointer;
   padding: 0;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .arxiv-abstract-toggle:hover {
   text-decoration: underline;
+}
+
+.arxiv-paper-links-compact {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.arxiv-link-compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.arxiv-link-compact.arxiv-link-pdf {
+  background: #b61c2c;
+  color: white;
+}
+
+.arxiv-link-compact.arxiv-link-pdf:hover {
+  background: #9e1826;
+}
+
+.arxiv-link-compact.arxiv-link-abs {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.arxiv-link-compact.arxiv-link-abs:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-hover);
+}
+
+.arxiv-link-compact.arxiv-link-html {
+  background: var(--color-bg);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+}
+
+.arxiv-link-compact.arxiv-link-html:hover {
+  background: var(--color-bg-secondary);
+  border-color: var(--color-border-hover);
 }
 
 .arxiv-paper-links {
@@ -4731,6 +4768,16 @@
 
   .arxiv-detail-reader-iframe {
     height: 500px;
+  }
+}
+
+@media (max-width: 768px) {
+  .arxiv-paper-preview {
+    display: none;
+  }
+
+  .arxiv-paper-item {
+    flex-direction: column;
   }
 }
 
