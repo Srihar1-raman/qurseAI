@@ -9,6 +9,7 @@ export const WEB_SEARCH_OPTIONS: SearchOption[] = [
   { name: 'Science & Math', enabled: true, icon: 'science-math' },
   { name: 'arXiv', enabled: true, icon: 'arxiv-logo' },
   { name: 'Scopus', enabled: true, icon: 'scopus' },
+  { name: 'Code', enabled: true, icon: 'code' },
   { name: 'GitHub', enabled: true, icon: 'github' }
 ];
 

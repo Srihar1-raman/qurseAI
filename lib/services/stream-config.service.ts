@@ -41,6 +41,7 @@ import {
   forexRateTool,
   stockSearchTool,
 } from '@/lib/tools/finance';
+import { daytonaCodeTool } from '@/lib/tools/daytona-code';
 
 const logger = createScopedLogger('services/stream-config');
 
@@ -269,6 +270,9 @@ export function buildStreamConfig(config: StreamConfig) {
       }
       if (modeConfig.enabledTools.includes('academic_pdf_search')) {
         tools.academic_pdf_search = academicPdfSearchTool;
+      }
+      if (modeConfig.enabledTools.includes('daytona_code')) {
+        tools.daytona_code = daytonaCodeTool;
       }
 
       const streamTextOptions: any = {

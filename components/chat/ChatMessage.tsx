@@ -24,6 +24,7 @@ import { ArxivSearchCard, ArxivPaperCard } from './ArxivCard';
 import { ScopusSearchCard, ScopusPaperCard } from './ScopusCard';
 import { GitHubSearchCard } from './GitHubCard';
 import { AcademicPdfSearchCard } from './AcademicPdfCard';
+import { DaytonaCard } from './DaytonaCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -672,7 +673,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
         url?: string;
       }>;
     } | { error: string };
-
+ 
     return toolExecutions
       .filter(e => e.toolName === 'academic_pdf_search')
       .map(e => ({
@@ -681,7 +682,19 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
         result: e.result as AcademicPdfSearchResult | undefined,
       }));
   }, [toolExecutions]);
-
+ 
+  const daytonaCodeExecutions = React.useMemo(() => {
+    return toolExecutions
+      .filter(e => e.toolName === 'daytona_code')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: (e.result as { exitCode: number; result: string; sandboxId?: string; error?: string; }) || { exitCode: -1, result: 'No result', error: 'No result' },
+        code: e.args && typeof e.args.code === 'string' ? e.args.code : undefined,
+        language: e.args && typeof e.args.language === 'string' ? e.args.language : undefined,
+      }));
+  }, [toolExecutions]);
+ 
   const otherToolExecutions = React.useMemo(() => {
     return toolExecutions.filter(e =>
       e.toolName !== 'web_search' &&
@@ -700,7 +713,8 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       e.toolName !== 'scopus_search' &&
       e.toolName !== 'scopus_paper' &&
       e.toolName !== 'github_search' &&
-      e.toolName !== 'academic_pdf_search'
+      e.toolName !== 'academic_pdf_search' &&
+      e.toolName !== 'daytona_code'
     );
   }, [toolExecutions]);
 
@@ -1271,7 +1285,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
             {academicPdfSearchExecutions.map((execution) => {
               if (execution.status !== 'complete' || !execution.result) return null;
               if (typeof execution.result === 'object' && 'error' in execution.result) return null;
-
+ 
               const academicData = execution.result as {
                 source: 'arxiv' | 'research' | 'pdf';
                 results: Array<{
@@ -1297,12 +1311,25 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                   url?: string;
                 }>;
               };
-
+ 
               return (
                 <AcademicPdfSearchCard
                   key={execution.toolCallId}
                   result={academicData}
                   onSetInput={onSetInput}
+                />
+              );
+            })}
+ 
+            {/* Daytona code execution cards */}
+            {daytonaCodeExecutions.map((execution) => {
+              return (
+                <DaytonaCard
+                  key={execution.toolCallId}
+                  result={execution.result}
+                  status={execution.status}
+                  code={execution.code}
+                  language={execution.language}
                 />
               );
             })}

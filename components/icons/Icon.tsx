@@ -16,6 +16,7 @@ import { CheckIcon } from './CheckIcon';
 import { Clear_historyIcon } from './Clear_historyIcon';
 import { CollapseIcon } from './CollapseIcon';
 import { Convo_branchIcon } from './Convo_branchIcon';
+import { CodeIcon } from './CodeIcon';
 import { CopyIcon } from './CopyIcon';
 import { CrossIcon } from './CrossIcon';
 import { Deep_searchIcon } from './Deep_searchIcon';
@@ -94,6 +95,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'clear_history': Clear_historyIcon,
   'collapse': CollapseIcon,
   'convo_branch': Convo_branchIcon,
+  'code': CodeIcon,
   'copy': CopyIcon,
   'cross': CrossIcon,
   'deep_search': Deep_searchIcon,

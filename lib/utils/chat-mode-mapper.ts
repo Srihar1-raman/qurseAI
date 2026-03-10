@@ -22,6 +22,7 @@ export function mapDisplayNameToModeId(displayName: string): string {
     'arXiv': 'arxiv',
     'Scopus': 'scopus',
     'GitHub': 'github',
+    'Code': 'code',
   };
 
   return mappings[displayName] || 'chat'; // Default to 'chat'
@@ -32,7 +33,7 @@ export function mapDisplayNameToModeId(displayName: string): string {
  * @returns Array of mode IDs
  */
 export function getAvailableChatModes(): string[] {
-  return ['chat', 'web', 'finance', 'science_math', 'arxiv', 'scopus', 'github'];
+  return ['chat', 'web', 'finance', 'science_math', 'arxiv', 'scopus', 'github', 'code'];
 }
 
 /**
@@ -58,6 +59,7 @@ export function mapModeIdToDisplayName(modeId: string): string {
     'arxiv': 'arXiv',
     'scopus': 'Scopus',
     'github': 'GitHub',
+    'code': 'Code',
   };
 
   return mappings[modeId] || 'Chat';
