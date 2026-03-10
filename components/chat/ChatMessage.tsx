@@ -22,6 +22,8 @@ import { DesmosCard } from './DesmosCard';
 import { WolframCard } from './WolframCard';
 import { ArxivSearchCard, ArxivPaperCard } from './ArxivCard';
 import { ScopusSearchCard, ScopusPaperCard } from './ScopusCard';
+import { GitHubSearchCard } from './GitHubCard';
+import { AcademicPdfSearchCard } from './AcademicPdfCard';
 import { isToolUIPart } from 'ai';
 import type { ChatMessageProps } from '@/lib/types';
 
@@ -622,6 +624,64 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       }));
   }, [toolExecutions]);
 
+  // GitHub search executions
+  const githubSearchExecutions = React.useMemo(() => {
+    type GitHubSearchResult = {
+      results: Array<{
+        url: string;
+        title: string;
+        description: string;
+        position: number;
+        category: string;
+      }>;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'github_search')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as GitHubSearchResult | undefined,
+      }));
+  }, [toolExecutions]);
+
+  // Academic PDF search executions
+  const academicPdfSearchExecutions = React.useMemo(() => {
+    type AcademicPdfSearchResult = {
+      source: 'arxiv' | 'research' | 'pdf';
+      results: Array<{
+        id?: string;
+        eid?: string;
+        title: string;
+        authors?: string[];
+        author?: string;
+        summary?: string;
+        description?: string;
+        published?: string;
+        publicationDate?: string;
+        coverDate?: string;
+        year?: string;
+        primaryCategory?: string;
+        publicationName?: string;
+        citedByCount?: number;
+        doi?: string;
+        doiUrl?: string;
+        scopusUrl?: string;
+        pdfUrl?: string;
+        absUrl?: string;
+        url?: string;
+      }>;
+    } | { error: string };
+
+    return toolExecutions
+      .filter(e => e.toolName === 'academic_pdf_search')
+      .map(e => ({
+        toolCallId: e.toolCallId,
+        status: e.status,
+        result: e.result as AcademicPdfSearchResult | undefined,
+      }));
+  }, [toolExecutions]);
+
   const otherToolExecutions = React.useMemo(() => {
     return toolExecutions.filter(e =>
       e.toolName !== 'web_search' &&
@@ -638,7 +698,9 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
       e.toolName !== 'arxiv_search' &&
       e.toolName !== 'arxiv_paper' &&
       e.toolName !== 'scopus_search' &&
-      e.toolName !== 'scopus_paper'
+      e.toolName !== 'scopus_paper' &&
+      e.toolName !== 'github_search' &&
+      e.toolName !== 'academic_pdf_search'
     );
   }, [toolExecutions]);
 
@@ -1178,6 +1240,68 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                 <ScopusPaperCard
                   key={execution.toolCallId}
                   paper={paperData}
+                />
+              );
+            })}
+
+            {/* GitHub search cards */}
+            {githubSearchExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if (typeof execution.result === 'object' && 'error' in execution.result) return null;
+
+              const gitHubData = execution.result as {
+                results: Array<{
+                  url: string;
+                  title: string;
+                  description: string;
+                  position: number;
+                  category: string;
+                }>;
+              };
+
+              return (
+                <GitHubSearchCard
+                  key={execution.toolCallId}
+                  result={gitHubData}
+                />
+              );
+            })}
+
+            {/* Academic PDF search cards */}
+            {academicPdfSearchExecutions.map((execution) => {
+              if (execution.status !== 'complete' || !execution.result) return null;
+              if (typeof execution.result === 'object' && 'error' in execution.result) return null;
+
+              const academicData = execution.result as {
+                source: 'arxiv' | 'research' | 'pdf';
+                results: Array<{
+                  id?: string;
+                  eid?: string;
+                  title: string;
+                  authors?: string[];
+                  author?: string;
+                  summary?: string;
+                  description?: string;
+                  published?: string;
+                  publicationDate?: string;
+                  coverDate?: string;
+                  year?: string;
+                  primaryCategory?: string;
+                  publicationName?: string;
+                  citedByCount?: number;
+                  doi?: string;
+                  doiUrl?: string;
+                  scopusUrl?: string;
+                  pdfUrl?: string;
+                  absUrl?: string;
+                  url?: string;
+                }>;
+              };
+
+              return (
+                <AcademicPdfSearchCard
+                  key={execution.toolCallId}
+                  result={academicData}
                 />
               );
             })}

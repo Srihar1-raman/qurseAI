@@ -31,6 +31,8 @@ import { desmosTool } from '@/lib/tools/desmos';
 import { wolframTool } from '@/lib/tools/wolfram';
 import { arxivSearchTool, arxivPaperTool } from '@/lib/tools/arxiv';
 import { scopusSearchTool, scopusPaperTool } from '@/lib/tools/scopus';
+import { githubSearchTool } from '@/lib/tools/github-search';
+import { academicPdfSearchTool } from '@/lib/tools/academic-pdf-search';
 import {
   stockQuoteTool,
   stockHistoryTool,
@@ -261,6 +263,12 @@ export function buildStreamConfig(config: StreamConfig) {
       }
       if (modeConfig.enabledTools.includes('scopus_paper')) {
         tools.scopus_paper = scopusPaperTool;
+      }
+      if (modeConfig.enabledTools.includes('github_search')) {
+        tools.github_search = githubSearchTool;
+      }
+      if (modeConfig.enabledTools.includes('academic_pdf_search')) {
+        tools.academic_pdf_search = academicPdfSearchTool;
       }
 
       const streamTextOptions: any = {

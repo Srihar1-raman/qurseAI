@@ -1303,7 +1303,8 @@
 .tool-cards-container .crypto-card,
 .tool-cards-container .forex-card,
 .tool-cards-container .flight-status-card,
-.tool-cards-container .flight-radar-mini {
+.tool-cards-container .flight-radar-mini,
+.tool-cards-container .github-card {
   width: 100%;
   max-width: 100%;
   margin-left: 0;
@@ -1311,7 +1312,8 @@
 }
 .tool-cards-container .company-info-card,
 .tool-cards-container .crypto-card,
-.tool-cards-container .forex-card {
+.tool-cards-container .forex-card,
+.tool-cards-container .github-card {
   margin-left: auto;
   margin-right: auto;
 }
@@ -5680,5 +5682,430 @@
   .scopus-pub-details {
     flex-direction: column;
     gap: 8px;
+  }
+}
+
+/* ===================================
+     GITHUB SEARCH CARD
+     GitHub repository search results
+     =================================== */
+
+.github-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+  backdrop-filter: blur(8px);
+}
+
+.github-card-compact {
+  padding: 16px;
+}
+
+.github-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.github-header-compact {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+}
+
+.github-card-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.github-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.github-card-subtitle {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.github-horizontal-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 0 12px 0;
+  margin: 0 -4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.github-horizontal-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.github-horizontal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.github-horizontal-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.github-horizontal-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+.github-repo-card {
+  flex: 0 0 300px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  gap: 12px;
+}
+
+.github-repo-card:hover {
+  background: var(--color-bg-hover);
+  border-color: rgba(136, 138, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(136, 138, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.github-repo-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.github-repo-icon {
+  color: #8b5cf6;
+  flex-shrink: 0;
+}
+
+.github-repo-names {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+
+.github-repo-owner {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.github-repo-separator {
+  font-size: 13px;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.github-repo-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #8b5cf6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.github-repo-description {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+.github-repo-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+.github-repo-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-weight: 500;
+}
+
+.github-repo-meta-item svg {
+  flex-shrink: 0;
+}
+
+.github-repo-link-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+@media (max-width: 640px) {
+  .github-card,
+  .github-card-compact {
+    padding: 12px;
+  }
+
+  .github-repo-card {
+    flex: 0 0 260px;
+    padding: 12px;
+  }
+
+  .github-repo-description {
+    font-size: 11px;
+    -webkit-line-clamp: 2;
+  }
+
+  .github-card-title {
+    font-size: 16px;
+  }
+}
+
+/* ===================================
+     ACADEMIC PDF SEARCH CARD
+     Academic papers and PDF search results
+     =================================== */
+
+.academic-card {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
+  backdrop-filter: blur(8px);
+}
+
+.academic-card-compact {
+  padding: 16px;
+}
+
+.academic-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.academic-header-compact {
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+}
+
+.academic-card-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.academic-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.academic-card-subtitle {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0;
+  padding-left: 0;
+}
+
+.academic-horizontal-scroll {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 4px 0 12px 0;
+  margin: 0 -4px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.academic-horizontal-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.academic-horizontal-scroll::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.academic-horizontal-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 3px;
+}
+
+.academic-horizontal-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+.academic-paper-card {
+  flex: 0 0 300px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  gap: 10px;
+  position: relative;
+}
+
+.academic-paper-card:hover {
+  background: var(--color-bg-hover);
+  border-color: var(--color-primary);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.academic-paper-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.academic-paper-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.academic-paper-icon.pdf {
+  color: #ef4444;
+}
+
+.academic-paper-citations {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+  font-weight: 600;
+  padding: 4px 8px;
+  background: var(--color-bg);
+  border-radius: 12px;
+}
+
+.academic-paper-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+.academic-paper-authors,
+.academic-paper-publication,
+.academic-paper-date {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  line-height: 1.3;
+}
+
+.academic-paper-meta-icon {
+  flex-shrink: 0;
+  color: var(--color-text-muted);
+}
+
+.academic-paper-abstract {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  margin: 0;
+}
+
+.academic-paper-pdf-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #ef4444;
+  font-weight: 600;
+  padding: 6px 10px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 6px;
+  text-decoration: none;
+  align-self: flex-start;
+  transition: all 0.2s ease;
+}
+
+.academic-paper-pdf-link:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.academic-paper-link-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+  margin-top: auto;
+}
+
+@media (max-width: 640px) {
+  .academic-card,
+  .academic-card-compact {
+    padding: 12px;
+  }
+
+  .academic-paper-card {
+    flex: 0 0 260px;
+    padding: 12px;
+  }
+
+  .academic-paper-title {
+    font-size: 13px;
+  }
+
+  .academic-card-title {
+    font-size: 16px;
   }
 }
