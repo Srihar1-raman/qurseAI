@@ -1302,6 +1302,7 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
                 <AcademicPdfSearchCard
                   key={execution.toolCallId}
                   result={academicData}
+                  onSetInput={onSetInput}
                 />
               );
             })}

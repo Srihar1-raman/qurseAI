@@ -5980,17 +5980,13 @@
   display: flex;
   flex-direction: column;
   padding: 16px;
-  background: var(--color-bg-secondary);
   border: 1px solid var(--color-border);
   border-radius: 12px;
-  text-decoration: none;
   transition: all 0.2s ease;
   gap: 10px;
-  position: relative;
 }
 
 .academic-paper-card:hover {
-  background: var(--color-bg-hover);
   border-color: var(--color-primary);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transform: translateY(-2px);
@@ -6075,8 +6071,8 @@
   border: 1px solid rgba(239, 68, 68, 0.2);
   border-radius: 6px;
   text-decoration: none;
-  align-self: flex-start;
   transition: all 0.2s ease;
+  align-self: flex-start;
 }
 
 .academic-paper-pdf-link:hover {
@@ -6084,10 +6080,12 @@
   border-color: rgba(239, 68, 68, 0.3);
 }
 
-.academic-paper-link-icon {
-  color: var(--color-primary);
-  flex-shrink: 0;
-  margin-top: auto;
+.academic-paper-title-link {
+  text-decoration: none;
+}
+
+.academic-paper-title-link:hover {
+  text-decoration: underline;
 }
 
 @media (max-width: 640px) {

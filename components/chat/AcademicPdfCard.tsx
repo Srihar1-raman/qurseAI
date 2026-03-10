@@ -33,6 +33,7 @@ interface AcademicPdfSearchResult {
 
 interface AcademicPdfSearchCardProps {
   result: AcademicPdfSearchResult;
+  onSetInput?: (text: string) => void;
 }
 
 function getSourceIcon(source: string) {
@@ -61,7 +62,7 @@ function getSourceName(source: string): string {
   }
 }
 
-export function AcademicPdfSearchCard({ result }: AcademicPdfSearchCardProps) {
+export function AcademicPdfSearchCard({ result, onSetInput }: AcademicPdfSearchCardProps) {
   if (!result.results || result.results.length === 0) {
     return null;
   }
@@ -87,13 +88,7 @@ export function AcademicPdfSearchCard({ result }: AcademicPdfSearchCardProps) {
           const publication = paper.publicationName || paper.primaryCategory;
 
           return (
-            <a
-              key={paperId}
-              href={displayUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="academic-paper-card"
-            >
+            <div key={paperId} className="academic-paper-card">
               <div className="academic-paper-card-header">
                 {getSourceIcon(result.source)}
                 {paper.citedByCount !== undefined && (
@@ -104,7 +99,14 @@ export function AcademicPdfSearchCard({ result }: AcademicPdfSearchCardProps) {
                 )}
               </div>
 
-              <h4 className="academic-paper-title">{paper.title}</h4>
+              <a
+                href={displayUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="academic-paper-title-link"
+              >
+                <h4 className="academic-paper-title">{paper.title}</h4>
+              </a>
 
               {displayAuthors.length > 0 && (
                 <div className="academic-paper-authors">
@@ -134,7 +136,7 @@ export function AcademicPdfSearchCard({ result }: AcademicPdfSearchCardProps) {
                           month: 'short',
                           day: 'numeric'
                         })
-                    }
+                      }
                   </span>
                 </div>
               )}
@@ -161,8 +163,30 @@ export function AcademicPdfSearchCard({ result }: AcademicPdfSearchCardProps) {
                 </a>
               )}
 
-              <ExternalLink size={12} className="academic-paper-link-icon" />
-            </a>
+              <div className="arxiv-paper-links-compact">
+                <a
+                  href={displayUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="arxiv-link-compact arxiv-link-abs"
+                >
+                  <ExternalLink size={12} />
+                  {getSourceName(result.source)}
+                </a>
+                <button
+                  className="arxiv-link-compact arxiv-link-ask"
+                  onClick={() => {
+                    let msg = "Tell me about the paper " + paper.title;
+                    if (paper.doi) msg += " (DOI: " + paper.doi + ")";
+                    if (paper.id) msg += " (arXiv: " + paper.id + ")";
+                    if (paper.eid) msg += " (EID: " + paper.eid + ")";
+                    onSetInput?.(msg);
+                  }}
+                >
+                  Ask Qurse
+                </button>
+              </div>
+            </div>
           );
         })}
       </div>
