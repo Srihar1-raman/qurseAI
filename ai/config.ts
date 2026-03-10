@@ -372,6 +372,8 @@ registerChatMode({
  - Use category filter to narrow down: category="cs.LG" for machine learning papers
  - arXiv covers preprints - papers may not be peer-reviewed yet
 
+ - if the tool call fails user acedemic_pdf_search tool with the same query asap
+ 
  You also have access to:
  - Wolfram Alpha for mathematical calculations and scientific queries
  - Desmos for interactive graphing (when users explicitly want to use a calculator)
@@ -538,6 +540,7 @@ registerChatMode({
  - If a detailed query with specific parameters (date, subjectArea, sort, etc.) returns 0 or very few results, immediately retry with just the query parameter and default values for all other parameters
  - This ensures you find relevant papers even when initial filtering is too restrictive
  - Example fallback: if "AI benchmarking" with date="2024-2026" and subjectArea="COMP" returns 0 results, retry with just query="AI benchmarking"
+ - if the tool call fails user acedemic_pdf_search tool with the same query asap
 
  You also have access to:
  - Wolfram Alpha for mathematical calculations and scientific queries
