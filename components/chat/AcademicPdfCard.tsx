@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { FileText, ExternalLink, Calendar, User, Quote, BookOpen, Globe } from 'lucide-react';
+import { FileText, ExternalLink, Calendar, User, Quote } from 'lucide-react';
 
 interface AcademicPaper {
   id?: string;
@@ -34,19 +34,6 @@ interface AcademicPdfSearchResult {
 interface AcademicPdfSearchCardProps {
   result: AcademicPdfSearchResult;
   onSetInput?: (text: string) => void;
-}
-
-function getSourceIcon(source: string) {
-  switch (source) {
-    case 'arxiv':
-      return <BookOpen size={16} className="academic-paper-icon" />;
-    case 'research':
-      return <Globe size={16} className="academic-paper-icon" />;
-    case 'pdf':
-      return <FileText size={16} className="academic-paper-icon" />;
-    default:
-      return <FileText size={16} className="academic-paper-icon" />;
-  }
 }
 
 function getSourceName(source: string): string {
@@ -90,7 +77,6 @@ export function AcademicPdfSearchCard({ result, onSetInput }: AcademicPdfSearchC
           return (
             <div key={paperId} className="academic-paper-card">
               <div className="academic-paper-card-header">
-                {getSourceIcon(result.source)}
                 {paper.citedByCount !== undefined && (
                   <div className="academic-paper-citations">
                     <Quote size={10} />
@@ -120,7 +106,6 @@ export function AcademicPdfSearchCard({ result, onSetInput }: AcademicPdfSearchC
 
               {publication && (
                 <div className="academic-paper-publication">
-                  <BookOpen size={12} className="academic-paper-meta-icon" />
                   <span>{publication}</span>
                 </div>
               )}
