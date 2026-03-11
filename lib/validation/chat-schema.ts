@@ -196,6 +196,7 @@ export const urlSearchParamsSchema = z.object({
     .optional(),
   model: modelSchema.optional(),
   mode: chatModeSchema.optional(),
+  attachments: z.string().optional(),
 });
 
 /**

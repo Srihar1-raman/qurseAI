@@ -31,6 +31,7 @@ interface ConversationPageClientProps {
   initialDbRowCount: number;
   hasInitialMessageParam: boolean;
   initialMode?: string;
+  initialAttachments?: any[];
   user: User | null;
 }
 
@@ -43,6 +44,7 @@ export default function ConversationPageClient({
   initialDbRowCount,
   hasInitialMessageParam,
   initialMode,
+  initialAttachments,
   user: userProp,
 }: ConversationPageClientProps) {
   const router = useRouter();
@@ -113,6 +115,7 @@ export default function ConversationPageClient({
         initialHasMore={initialHasMore}
         initialDbRowCount={initialDbRowCount}
         hasInitialMessageParam={hasInitialMessageParam}
+        initialAttachments={initialAttachments}
       />
       
       {/* History Sidebar */}

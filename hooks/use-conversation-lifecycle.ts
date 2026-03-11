@@ -15,7 +15,7 @@ interface UseConversationLifecycleProps {
   user: { id?: string } | null;
   isAuthLoading: boolean;
   hasInitialMessageParam: boolean;
-  sendMessage: (message: { role: 'user'; parts: UIMessagePart<any, any>[] }) => void;
+  sendMessage: (message: { role: 'user'; parts: UIMessagePart<any, any>[]; attachments?: any[] }) => void;
   initialMessageSentRef: React.MutableRefObject<boolean>;
 }
 
@@ -66,29 +66,41 @@ export function useConversationLifecycle({
 
     const params = new URLSearchParams(window.location.search);
     const messageParam = params.get('message');
+    const attachmentsParam = params.get('attachments');
 
-    if (!messageParam) return;
+    if (!messageParam && !attachmentsParam) return;
 
     initialMessageSentRef.current = true;
     setHasInteracted(true);
 
     let messageText: string;
     try {
-      messageText = decodeURIComponent(messageParam);
+      messageText = messageParam ? decodeURIComponent(messageParam) : '';
     } catch {
-      messageText = messageParam;
+      messageText = messageParam || '';
     }
 
-    if (messageText && messageText.trim()) {
+    let attachments: any[] = [];
+    if (attachmentsParam) {
+      try {
+        attachments = JSON.parse(decodeURIComponent(attachmentsParam));
+      } catch {
+        console.error('Failed to parse attachments param');
+      }
+    }
+
+    if (messageText.trim() || attachments.length > 0) {
       params.delete('message');
       params.delete('model');
       params.delete('mode');
+      params.delete('attachments');
       const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
       window.history.replaceState({}, '', newUrl);
 
       sendMessage({
         role: 'user',
-        parts: [{ type: 'text', text: messageText }] as UIMessagePart<any, any>[],
+        parts: messageText.trim() ? [{ type: 'text', text: messageText }] as UIMessagePart<any, any>[] : [],
+        attachments: attachments.length > 0 ? attachments : undefined,
       });
     }
   }, [hasInitialMessageParam, sendMessage, conversationId, initialMessageSentRef]);

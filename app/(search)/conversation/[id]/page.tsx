@@ -241,6 +241,7 @@ export default async function ConversationPage({ params, searchParams }: PagePro
       initialDbRowCount={initialDbRowCount}
       hasInitialMessageParam={!!validatedParams.message}
       initialMode={validatedParams.mode}
+      initialAttachments={validatedParams.attachments ? JSON.parse(validatedParams.attachments) : undefined}
         user={user}
     />
     </ErrorBoundary>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useTheme } from '@/lib/theme-provider';
 import { Icon } from '@/components/icons';
 import { useConversation } from '@/lib/contexts/ConversationContext';
@@ -14,6 +14,8 @@ import { useMobile } from '@/hooks/use-mobile';
 import { useAutoFocus } from '@/hooks/use-auto-focus';
 import { useTextareaAutoResize } from '@/hooks/use-textarea-auto-resize';
 import type { Conversation } from '@/lib/types';
+import type { Attachment } from '@/lib/types';
+import { validateFile, formatFileSize, isImage } from '@/lib/services/attachment.service';
 
 interface MainInputProps {
   inputValue: string;
@@ -24,6 +26,7 @@ interface MainInputProps {
 
 export default function MainInput({ inputValue, setInputValue, showAttachButton = true, shouldNavigate = false }: MainInputProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { resolvedTheme, mounted } = useTheme();
   const { selectedModel, chatMode } = useConversation();
   const { user } = useAuth();
@@ -34,6 +37,63 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
   
   // Track send attempts while rate limited to show popup again
   const [sendAttemptCount, setSendAttemptCount] = useState(0);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (attachments.length + files.length > 5) {
+      showToastError('Maximum 5 files allowed per message');
+      return;
+    }
+
+    setUploading(true);
+
+    for (const file of Array.from(files)) {
+      const validation = validateFile(file);
+      if (!validation.valid) {
+        showToastError(validation.error || 'Invalid file');
+        continue;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/attachments/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.attachment) {
+          setAttachments((prev) => [...prev, result.attachment]);
+        } else {
+          showToastError(result.error || 'Upload failed');
+        }
+      } catch (err) {
+        console.error('[MainInput] Upload error:', err);
+        showToastError('Failed to upload file');
+      }
+    }
+
+    setUploading(false);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [attachments.length, showToastError]);
+
+  const handleAttachClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleRemoveAttachment = useCallback((id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  }, []);
 
   // Use hooks for mobile detection, auto-focus, and textarea auto-resize
   const isMobile = useMobile();
@@ -45,7 +105,7 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
 
   const handleSend = () => {
     const messageText = inputValue.trim();
-    if (!messageText) return;
+    if (!messageText && attachments.length === 0) return;
     
     // Check rate limit state (client-side check - instant, zero latency)
     // This state is set by pre-flight check on app load or by error handler
@@ -62,16 +122,19 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
     const truncatedTitle = messageText.slice(0, 50) + (messageText.length > 50 ? '...' : '');
     const optimisticConversation: Conversation = {
       id: chatId,
-      title: truncatedTitle,
+      title: truncatedTitle || 'New Chat',
       updated_at: new Date().toISOString(),
       created_at: new Date().toISOString(),
       message_count: 0,
     };
     addConversationOptimistically(optimisticConversation);
     
+    // Encode attachments as JSON in URL params
+    const attachmentsParam = attachments.length > 0 ? encodeURIComponent(JSON.stringify(attachments)) : '';
+    
     // Construct URL with message params
     // Same URL format for both auth and guest users
-    const url = `/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}`;
+    const url = `/conversation/${chatId}?message=${encodeURIComponent(messageText)}&model=${encodeURIComponent(selectedModel)}&mode=${encodeURIComponent(chatMode)}${attachmentsParam ? `&attachments=${attachmentsParam}` : ''}`;
 
     // Navigate to conversation page
     if (shouldNavigate) {
@@ -81,8 +144,9 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
       window.history.replaceState({}, '', url);
     }
 
-    // Clear input
+    // Clear input and attachments
     setInputValue('');
+    setAttachments([]);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -133,7 +197,41 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
       `}</style>
       
       <div className="homepage-input-container">
-        {/* Opaque background bar for multiline mode to hide scrolled text */}
+        {/* Hidden file input */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          onChange={handleFileSelect}
+          accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.md,.xlsx,.xls,.csv,.json,.xml,.html"
+          style={{ display: 'none' }}
+        />
+
+        {/* Attachment preview */}
+        {attachments.length > 0 && (
+          <div className="flex flex-wrap gap-2 absolute left-4 bottom-14 z-10">
+            {attachments.map((attachment) => (
+              <div
+                key={attachment.id}
+                className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-xs"
+              >
+                {isImage(attachment.contentType) ? (
+                  <img src={attachment.url} alt={attachment.originalName} className="w-6 h-6 object-cover rounded" />
+                ) : (
+                  <Icon name="attach" size={14} />
+                )}
+                <span className="max-w-[100px] truncate">{attachment.originalName}</span>
+                <button
+                  type="button"
+                  onClick={() => handleRemoveAttachment(attachment.id)}
+                  className="ml-1 hover:text-red-500"
+                >
+                  <Icon name="cross" size={12} />
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
         {(isMultiline || isMobile) && (
           <div 
             className="homepage-buttons-background show"
@@ -191,6 +289,8 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
             {showAttachButton && (
               <button
                 type="button"
+                onClick={handleAttachClick}
+                disabled={uploading}
                 className="flex items-center justify-center transition-all"
                 aria-label="Attach file"
                 style={{
@@ -200,13 +300,18 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
                   background: 'var(--color-bg-secondary)',
                   border: '1px solid var(--color-border)',
                   padding: '0',
+                  opacity: uploading ? 0.5 : 1,
                 }}
               >
-                <Icon
-                name="attach"
-                size={16}
-                aria-label="Attach file"
-              />
+                {uploading ? (
+                  <span className="w-4 h-4 border-2 border-[var(--color-border)] border-t-[var(--color-primary)] rounded-full animate-spin" />
+                ) : (
+                  <Icon
+                    name="attach"
+                    size={16}
+                    aria-label="Attach file"
+                  />
+                )}
               </button>
             )}
 
@@ -248,6 +353,8 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
                 {/* Attach Button */}
                 <button
                   type="button"
+                  onClick={handleAttachClick}
+                  disabled={uploading}
                   className="flex items-center justify-center transition-all"
                   aria-label="Attach file"
                   style={{
@@ -257,13 +364,18 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
                     background: 'var(--color-bg-secondary)',
                     border: '1px solid var(--color-border)',
                     padding: '0',
+                    opacity: uploading ? 0.5 : 1,
                   }}
                 >
-                  <Icon
-                    name="attach"
-                    size={16}
-                    aria-label="Attach file"
-                  />
+                  {uploading ? (
+                    <span className="w-4 h-4 border-2 border-[var(--color-border)] border-t-[var(--color-primary)] rounded-full animate-spin" />
+                  ) : (
+                    <Icon
+                      name="attach"
+                      size={16}
+                      aria-label="Attach file"
+                    />
+                  )}
                 </button>
               </div>
             )}

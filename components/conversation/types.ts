@@ -17,6 +17,7 @@ export interface ConversationClientProps {
   initialHasMore?: boolean;
   initialDbRowCount?: number;
   hasInitialMessageParam: boolean;
+  initialAttachments?: any[];
 }
 
 export interface ConversationThreadProps {
