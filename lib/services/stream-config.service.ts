@@ -155,7 +155,7 @@ export interface StreamConfig {
                 } else {
                   parts.push({
                     type: 'text',
-                    text: `[File: ${attachment.originalName}]`,
+                    text: `[File: ${attachment.originalName} - transcription coming soon]`,
                   } as any);
                 }
               }

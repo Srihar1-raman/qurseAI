@@ -17,6 +17,8 @@ export async function transcribeDocument(
   const contentType = attachment.contentType.toLowerCase();
 
   try {
+    const fileContent = await fetchFileContent(attachment.url);
+
     // TXT, MD, JSON, HTML, XML, etc.
     if (
       contentType === 'text/plain' ||
@@ -25,19 +27,27 @@ export async function transcribeDocument(
       contentType === 'text/html' ||
       contentType === 'application/xml'
     ) {
-      const content = await fetchTextFile(attachment.url);
-      return { success: true, text: content };
+      return { success: true, text: fileContent };
     }
 
-    // Images (return placeholder)
-    if (contentType.startsWith('image/')) {
-      return { success: true, text: '[Image: File attached but text not extracted]' };
+    // PDF
+    if (contentType === 'application/pdf') {
+      return await transcribePDF(fileContent);
     }
 
-    // Other formats - for now return unsupported
+    // DOCX
+    if (contentType.includes('wordprocessingml.document')) {
+      return await transcribeDOCX(attachment.url);
+    }
+
+    // Excel
+    if (contentType.includes('spreadsheetml.sheet') || contentType === 'application/vnd.ms-excel' || contentType === 'text/csv') {
+      return await transcribeExcel(attachment.url);
+    }
+
     return {
       success: false,
-      error: `File type ${contentType} transcription not yet implemented`,
+      error: `Unsupported file type: ${contentType}`,
     };
   } catch (error) {
     return {
@@ -47,10 +57,88 @@ export async function transcribeDocument(
   }
 }
 
-async function fetchTextFile(url: string): Promise<string> {
+async function fetchFileContent(url: string): Promise<string> {
   const response = await fetch(url);
-  return response.text();
+  const text = await response.text();
+  return text;
 }
 
-// Note: PDF, DOCX, Excel transcription requires additional setup
-// These can be added by installing and configuring the appropriate packages
+async function transcribePDF(text: string): Promise<TranscriptionResult> {
+  try {
+    const pdfParse: any = await import('pdf-parse');
+    const data = await pdfParse.default(text);
+
+    let content = '';
+
+    if (data.text) {
+      content = data.text;
+    } else if (data.pages && data.pages.length > 0) {
+      for (const page of data.pages) {
+        content += page.text + '\n\n';
+      }
+    }
+
+    return {
+      success: true,
+      text: content.trim(),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to transcribe PDF: ${error}`,
+    };
+  }
+}
+
+async function transcribeDOCX(url: string): Promise<TranscriptionResult> {
+  try {
+    const mammoth: any = await import('mammoth');
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+
+    const result = await mammoth.extractRawText({ arrayBuffer });
+
+    return {
+      success: true,
+      text: result.value,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to transcribe DOCX: ${error}`,
+    };
+  }
+}
+
+async function transcribeExcel(url: string): Promise<TranscriptionResult> {
+  try {
+    const xlsx: any = await import('xlsx');
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+
+    const workbook = xlsx.read(arrayBuffer);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+
+    let text = '';
+    const rows = xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+
+    for (const row of rows as any[]) {
+      const rowText = Object.values(row).filter((v: any) => v !== undefined && v !== null).map((v: any) => String(v)).join('\t');
+
+      if (rowText.length > 0) {
+        text += rowText + '\n';
+      }
+    }
+
+    return {
+      success: true,
+      text: text.trim(),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: `Failed to transcribe Excel: ${error}`,
+    };
+  }
+}
