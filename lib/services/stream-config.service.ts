@@ -126,26 +126,60 @@ export interface StreamConfig {
       attachments,
     } = config;
 
+    // Process attachments based on model capabilities
+    const messagesWithAttachments = uiMessages.map((msg: any) => {
+      if (msg.role !== 'user' || !attachments || attachments.length === 0) return msg;
+
+      const existingAttachments = msg.attachments || [];
+      const allAttachments = [...existingAttachments, ...attachments];
+
+      return {
+        ...msg,
+        attachments: allAttachments,
+      };
+    });
+
     return {
       execute: async ({ writer: dataStream }: { writer: UIMessageStreamWriter<UIMessage> }) => {
         // Import convertToModelMessages for use in streamText
         const { convertToModelMessages } = await import('ai');
+        const { hasVisionSupport, hasPdfSupport } = await import('@/ai/models');
 
         // Filter out tool messages and tool-call parts from uiMessages before converting to ModelMessages
-        // Process attachments into user messages
-        const filteredUiMessages = uiMessages.map((msg: any) => {
-          if (msg.role === 'user' && attachments && attachments.length > 0) {
+        const filteredUiMessages = messagesWithAttachments
+          .filter((msg: any) => msg.role !== 'tool')
+          .map((msg: any) => {
+            // Convert attachments to appropriate parts based on model capabilities
+            const parts = msg.parts ? [...msg.parts] : [];
+            const attachmentArray = msg.attachments || [];
+
+            if (attachmentArray.length > 0 && hasVisionSupport(model)) {
+              for (const attachment of attachmentArray) {
+                if (attachment.contentType.startsWith('image/')) {
+                  parts.push({
+                    type: 'image',
+                    image: new URL(attachment.url),
+                  } as any);
+                } else if (attachment.contentType === 'application/pdf' && hasPdfSupport(model)) {
+                  parts.push({
+                    type: 'file',
+                    data: attachment.url,
+                    mimeType: attachment.contentType,
+                  } as any);
+                } else {
+                  parts.push({
+                    type: 'text',
+                    text: `[File: ${attachment.originalName}]`,
+                  } as any);
+                }
+              }
+            }
+
             return {
               ...msg,
-              attachments: attachments,
+              parts: parts,
             };
-          }
-          return msg;
-        }).filter((msg: any) => msg.role !== 'tool')
-          .map((msg: any) => ({
-            ...msg,
-            parts: msg.parts ? msg.parts.filter((part: any) => !part.type?.startsWith('tool')) : [],
-          }));
+          });
 
        console.log('[DEBUG] Server - original uiMessages count:', uiMessages.length);
        console.log('[DEBUG] Server - original uiMessages:', uiMessages.map((m: any) => ({
