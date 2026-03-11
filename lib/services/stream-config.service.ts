@@ -93,61 +93,75 @@ export interface StreamConfig {
   userMessageText?: string;
   /** Whether Supermemory is enabled for this user */
   enableSupermemory?: boolean;
+  /** User-uploaded attachments */
+  attachments?: any[];
 }
 
-/**
- * Build stream configuration object
- * Creates a full configuration for createUIMessageStream
- *
- * @param config - Stream configuration inputs
- * @returns Configuration object for createUIMessageStream
- */
-export function buildStreamConfig(config: StreamConfig) {
-   const {
-     uiMessages,
-     modeConfig,
-     model,
-     user,
-     resolvedConversationIdRef,
-     sessionHash,
-     supabaseClient,
-     fullUserData,
-     requestStartTime,
-     dbOperationsPromise,
-     abortController,
-     conversationId,
-     contextMetadata,
-     customPrompt,
-     memoryPrompt,
-     userMessageText,
-     enableSupermemory,
-  } = config;
+  /**
+   * Build stream configuration object
+   * Creates a full configuration for createUIMessageStream
+   *
+   * @param config - Stream configuration inputs
+   * @returns Configuration object for createUIMessageStream
+   */
+  export function buildStreamConfig(config: StreamConfig) {
+    const {
+      uiMessages,
+      modeConfig,
+      model,
+      user,
+      resolvedConversationIdRef,
+      sessionHash,
+      supabaseClient,
+      fullUserData,
+      requestStartTime,
+      dbOperationsPromise,
+      abortController,
+      conversationId,
+      contextMetadata,
+      customPrompt,
+      memoryPrompt,
+      userMessageText,
+      enableSupermemory,
+      attachments,
+    } = config;
 
     return {
-    execute: async ({ writer: dataStream }: { writer: UIMessageStreamWriter<UIMessage> }) => {
-      // Import convertToModelMessages for use in streamText
-      const { convertToModelMessages } = await import('ai');
+      execute: async ({ writer: dataStream }: { writer: UIMessageStreamWriter<UIMessage> }) => {
+        // Import convertToModelMessages for use in streamText
+        const { convertToModelMessages } = await import('ai');
 
-      // Filter out tool messages and tool-call parts from uiMessages before converting to ModelMessages
-      const filteredUiMessages = uiMessages
-        .filter((msg: any) => msg.role !== 'tool')
-        .map(msg => ({
-          ...msg,
-          parts: msg.parts.filter((part: any) => !part.type?.startsWith('tool')),
-        }));
+        // Filter out tool messages and tool-call parts from uiMessages before converting to ModelMessages
+        // Process attachments into user messages
+        const filteredUiMessages = uiMessages.map((msg: any) => {
+          if (msg.role === 'user' && attachments && attachments.length > 0) {
+            return {
+              ...msg,
+              attachments: attachments,
+            };
+          }
+          return msg;
+        }).filter((msg: any) => msg.role !== 'tool')
+          .map((msg: any) => ({
+            ...msg,
+            parts: msg.parts ? msg.parts.filter((part: any) => !part.type?.startsWith('tool')) : [],
+          }));
 
-      console.log('[DEBUG] Server - original uiMessages count:', uiMessages.length);
-      console.log('[DEBUG] Server - original uiMessages:', uiMessages.map((m: any) => ({
+       console.log('[DEBUG] Server - original uiMessages count:', uiMessages.length);
+       console.log('[DEBUG] Server - original uiMessages:', uiMessages.map((m: any) => ({
         id: m.id,
         role: m.role,
         partTypes: m.parts?.map((p: any) => p.type) || [],
+        attachments: (m as any).attachments,
       })));
-      console.log('[DEBUG] Server - filtered uiMessages count:', filteredUiMessages.length);
-      console.log('[DEBUG] Server - filtered uiMessages:', filteredUiMessages.map((m: any) => ({
+       console.log('[DEBUG] Server - filtered uiMessages count:', filteredUiMessages.length);
+       console.log('[DEBUG] Server - filtered uiMessages:', filteredUiMessages.map((m: any) => ({
         id: m.id,
         role: m.role,
         partTypes: m.parts?.map((p: any) => p.type) || [],
+        attachments: (m as any).attachments,
       })));
+       console.log('[DEBUG] Server - attachments config:', { hasAttachments: !!attachments && attachments.length > 0, attachmentsCount: attachments?.length || 0 });
 
       // Await DB operations (user message must be saved before streaming)
       const dbResult = await dbOperationsPromise;

@@ -250,6 +250,7 @@ export async function POST(req: Request) {
       memoryPrompt,
       userMessageText: messageData.userMessageText,
       enableSupermemory: userPreferences?.enable_supermemory ?? true,
+      attachments,
     });
 
     // ============================================
