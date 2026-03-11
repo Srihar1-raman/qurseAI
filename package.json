@@ -41,12 +41,14 @@
     "katex": "^0.16.23",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.525.0",
+    "mammoth": "^1.11.0",
     "marked-react": "^3.0.1",
     "mdx": "^0.3.1",
     "mermaid": "^10.9.3",
     "next": "15.5.9",
     "next-mdx-remote": "^6.0.0",
     "nuqs": "^2.8.5",
+    "pdf-parse": "^2.4.5",
     "pdfjs-dist": "^5.4.449",
     "plantuml-encoder": "^1.4.0",
     "qrcode-generator": "^2.0.4",
@@ -67,6 +69,7 @@
     "vega-canvas": "^2.0.0",
     "vega-embed": "^7.1.0",
     "vega-lite": "^6.4.1",
+    "xlsx": "^0.18.5",
     "zod": "^4.1.12"
   },
   "devDependencies": {
