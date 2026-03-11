@@ -1095,6 +1095,7 @@ input[type="file"].hidden {
 .attachment-preview-container {
   border: none;
   background: transparent;
+  margin-bottom: 12px;
 }
 
 .attachment-preview-list {
