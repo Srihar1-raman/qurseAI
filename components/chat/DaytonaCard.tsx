@@ -19,54 +19,31 @@ interface DaytonaCardProps {
 }
 
 const LANGUAGE_OPTIONS = [
-  { value: 'python', label: 'Python', ext: '.py', run: 'python3' },
-  { value: 'javascript', label: 'JavaScript', ext: '.js', run: 'node' },
-  { value: 'typescript', label: 'TypeScript', ext: '.ts', run: 'npx ts-node' },
-  { value: 'go', label: 'Go', ext: '.go', run: 'go run' },
-  { value: 'ruby', label: 'Ruby', ext: '.rb', run: 'ruby' },
-  { value: 'java', label: 'Java', ext: '.java', run: 'java' },
-  { value: 'cpp', label: 'C++', ext: '.cpp', run: 'g++ -o main && ./main' },
-  { value: 'c', label: 'C', ext: '.c', run: 'gcc -o main && ./main' },
-  { value: 'rust', label: 'Rust', ext: '.rs', run: 'rustc && ./main' },
-  { value: 'php', label: 'PHP', ext: '.php', run: 'php' },
-  { value: 'bash', label: 'Bash', ext: '.sh', run: 'bash' },
+  { value: 'python', label: 'Python' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'typescript', label: 'TypeScript' },
+  { value: 'c', label: 'C' },
+  { value: 'cpp', label: 'C++' },
+  { value: 'bash', label: 'Bash' },
 ];
 
 const DEFAULT_CODE: Record<string, string> = {
   python: `print("Hello, World!")`,
   javascript: `console.log("Hello, World!");`,
   typescript: `console.log("Hello, World!");`,
-  go: `package main
-import "fmt"
-func main() {
-    fmt.Println("Hello, World!")
-}`,
-  ruby: `puts "Hello, World!"`,
-  java: `public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello, World!");
-    }
+  c: `#include <stdio.h>
+int main() {
+    printf("Hello, World!\\n");
+    return 0;
 }`,
   cpp: `#include <iostream>
 int main() {
     std::cout << "Hello, World!" << std::endl;
     return 0;
 }`,
-  c: `#include <stdio.h>
-int main() {
-    printf("Hello, World!\\n");
-    return 0;
-}`,
-  rust: `fn main() {
-    println!("Hello, World!");
-}`,
-  php: `<?php
-echo "Hello, World!";
-?>` ,
   bash: `#!/bin/bash
 echo "Hello, World!"`,
 };
-
 export function DaytonaCard({ result, status, code, language: initialLanguage = 'python' }: DaytonaCardProps) {
   const [codeState, setCodeState] = useState(code || DEFAULT_CODE[initialLanguage] || '');
   const [language, setLanguage] = useState(initialLanguage);

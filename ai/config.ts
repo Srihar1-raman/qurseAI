@@ -588,7 +588,7 @@ Use this IMMEDIATELY when user wants to run, test, or execute any code, algorith
 
 Parameters:
 - code: The code to execute (required)
-- language: Programming language (default: python). Options: python, javascript, typescript, go, ruby, java, c, cpp, rust, php, bash
+- language: Programming language (default: python). Options: python, javascript, typescript, c, cpp, bash
 
 ## Sandbox Information
 - Each code execution creates a fresh, isolated sandbox environment
