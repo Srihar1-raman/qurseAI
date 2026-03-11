@@ -5,7 +5,8 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { getUserData } from '@/lib/supabase/auth-utils';
-import { uploadAttachment, validateFile } from '@/lib/services/attachment.service';
+import { createClient } from '@/lib/supabase/server';
+import { uploadAttachmentServer, validateFile } from '@/lib/services/attachment.service';
 import { createScopedLogger } from '@/lib/utils/logger';
 import { ATTACHMENT_LIMITS } from '@/lib/types';
 
@@ -40,7 +41,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await uploadAttachment(file, lightweightUser.userId);
+    const supabaseClient = await createClient();
+    const result = await uploadAttachmentServer(file, lightweightUser.userId, supabaseClient);
 
     if (!result.success) {
       return NextResponse.json(

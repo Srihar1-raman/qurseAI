@@ -4,8 +4,10 @@
  */
 
 import { createClient as createBrowserClient } from '@/lib/supabase/client';
-import type { Attachment, ALLOWED_EXTENSIONS } from '@/lib/types';
-import { ATTACHMENT_LIMITS, ALLOWED_EXTENSIONS as ALLOWED_EXT } from '@/lib/types';
+import { createClient as createServerClient } from '@/lib/supabase/server';
+import type { Attachment } from '@/lib/types';
+import { ATTACHMENT_LIMITS, ALLOWED_EXTENSIONS } from '@/lib/types';
+import type { SupabaseClient } from '@supabase/supabase-js';
 
 const BUCKET_NAME = 'user-attachments';
 
@@ -23,34 +25,14 @@ export interface AttachmentValidationResult {
 
 function getContentType(filename: string): string {
   const ext = filename.split('.').pop()?.toLowerCase() || '';
-  return ALLOWED_EXT[ext] || 'application/octet-stream';
+  return ALLOWED_EXTENSIONS[ext] || 'application/octet-stream';
 }
 
 export function validateFile(file: File): AttachmentValidationResult {
   const contentType = file.type || getContentType(file.name);
 
-  const allowedTypes = [
-    ...Object.values(ATTACHMENT_LIMITS).reduce<string[]>((acc, val) => acc, []),
-    'image/jpeg',
-    'image/png', 
-    'image/gif',
-    'image/webp',
-    'image/svg+xml',
-    'application/pdf',
-    'application/msword',
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'text/plain',
-    'text/markdown',
-    'application/json',
-    'text/html',
-    'application/xml',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-excel',
-    'text/csv',
-  ];
-
   const ext = file.name.split('.').pop()?.toLowerCase() || '';
-  const allowedExt = Object.keys(ALLOWED_EXT);
+  const allowedExt = Object.keys(ALLOWED_EXTENSIONS);
 
   if (!allowedExt.includes(ext)) {
     return {
@@ -88,7 +70,7 @@ export async function uploadAttachment(
   const filename = `${fileId}.${ext}`;
   const storagePath = `${userId}/${filename}`;
 
-  const { data, error } = await supabase.storage
+  const { error } = await supabase.storage
     .from(BUCKET_NAME)
     .upload(storagePath, file, {
       cacheControl: '3600',
@@ -102,6 +84,51 @@ export async function uploadAttachment(
   }
 
   const { data: urlData } = supabase.storage
+    .from(BUCKET_NAME)
+    .getPublicUrl(storagePath);
+
+  const attachment: Attachment = {
+    id: fileId,
+    filename,
+    originalName: file.name,
+    contentType: validation.contentType || file.type,
+    size: file.size,
+    url: urlData.publicUrl,
+    uploadedAt: new Date().toISOString(),
+  };
+
+  return { success: true, attachment };
+}
+
+export async function uploadAttachmentServer(
+  file: File,
+  userId: string,
+  supabaseClient: SupabaseClient
+): Promise<UploadResult> {
+  const validation = validateFile(file);
+  if (!validation.valid) {
+    return { success: false, error: validation.error };
+  }
+
+  const fileId = crypto.randomUUID();
+  const ext = file.name.split('.').pop() || 'bin';
+  const filename = `${fileId}.${ext}`;
+  const storagePath = `${userId}/${filename}`;
+
+  const { error } = await supabaseClient.storage
+    .from(BUCKET_NAME)
+    .upload(storagePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+      contentType: validation.contentType,
+    });
+
+  if (error) {
+    console.error('[Attachment Service] Upload error:', error);
+    return { success: false, error: error.message };
+  }
+
+  const { data: urlData } = supabaseClient.storage
     .from(BUCKET_NAME)
     .getPublicUrl(storagePath);
 
