@@ -68,18 +68,20 @@ async function transcribePDF(url: string): Promise<TranscriptionResult> {
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
-    
-    // pdf-parse exports as default, but the import returns the module
-    // We need to call it as a function
-    const pdfParse = (pdfParseModule as any).default || pdfParseModule;
-    const data = await pdfParse(buffer);
+
+    // pdf-parse v2 API: create parser with data option, then call getText()
+    const { PDFParse } = pdfParseModule as any;
+
+    const parser = new PDFParse({ data: buffer });
+    const result = await parser.getText();
+    await parser.destroy();
 
     let content = '';
 
-    if (data.text) {
-      content = data.text;
-    } else if (data.pages && data.pages.length > 0) {
-      for (const page of data.pages) {
+    if (result.text) {
+      content = result.text;
+    } else if (result.pages && result.pages.length > 0) {
+      for (const page of result.pages) {
         content += page.text + '\n\n';
       }
     }
@@ -98,11 +100,14 @@ async function transcribePDF(url: string): Promise<TranscriptionResult> {
 
 async function transcribeDOCX(url: string): Promise<TranscriptionResult> {
   try {
-    const mammoth: any = await import('mammoth');
+    const mammothModule = await import('mammoth');
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-    const result = await mammoth.extractRawText({ arrayBuffer });
+    // mammoth exports named functions, not default
+    const mammoth = mammothModule as any;
+    const result = await mammoth.extractRawText({ buffer });
 
     return {
       success: true,
@@ -118,11 +123,14 @@ async function transcribeDOCX(url: string): Promise<TranscriptionResult> {
 
 async function transcribeExcel(url: string): Promise<TranscriptionResult> {
   try {
-    const xlsx: any = await import('xlsx');
+    const xlsxModule = await import('xlsx');
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-    const workbook = xlsx.read(arrayBuffer);
+    // xlsx exports named functions
+    const xlsx = xlsxModule as any;
+    const workbook = xlsx.read(buffer);
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
 
