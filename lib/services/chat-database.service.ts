@@ -35,6 +35,8 @@ export interface DatabaseOperationsConfig {
   supabaseClient: SupabaseClient;
   /** User preferences (for auto-save logic) */
   userPreferences?: UserPreferences | null;
+  /** User-uploaded attachments */
+  attachments?: any[];
 }
 
 /**
@@ -68,6 +70,7 @@ export async function handleChatDatabaseOperations(
     userMessageText,
     supabaseClient,
     userPreferences,
+    attachments,
   } = config;
 
   // Check if auto-save is disabled (for authenticated users)
@@ -93,6 +96,7 @@ export async function handleChatDatabaseOperations(
       title,
       userMessageText,
       supabaseClient,
+      attachments,
     });
   }
 
@@ -104,6 +108,7 @@ export async function handleChatDatabaseOperations(
       lastUserMessage,
       title,
       userMessageText,
+      attachments,
     });
   }
 
@@ -125,8 +130,9 @@ async function handleAuthenticatedDatabaseOperations(config: {
   title: string;
   userMessageText: string;
   supabaseClient: SupabaseClient;
+  attachments?: any[];
 }): Promise<DatabaseOperationsResult> {
-  const { conversationId, user, lastUserMessage, title, userMessageText, supabaseClient } = config;
+  const { conversationId, user, lastUserMessage, title, userMessageText, supabaseClient, attachments } = config;
 
   // Check if conversation exists before creating/validating
   if (!user.id) {
@@ -160,7 +166,7 @@ async function handleAuthenticatedDatabaseOperations(config: {
   });
 
   // Save user message
-  const saveSuccess = await saveUserMessageServerSide(conversationId, lastUserMessage, supabaseClient);
+  const saveSuccess = await saveUserMessageServerSide(conversationId, lastUserMessage, supabaseClient, attachments);
 
   if (!saveSuccess) {
     logger.error('Failed to save user message', undefined, { conversationId });
@@ -181,8 +187,9 @@ async function handleGuestDatabaseOperations(config: {
   lastUserMessage: UIMessage;
   title: string;
   userMessageText: string;
+  attachments?: any[];
 }): Promise<DatabaseOperationsResult> {
-  const { conversationId, sessionHash, lastUserMessage, title, userMessageText } = config;
+  const { conversationId, sessionHash, lastUserMessage, title, userMessageText, attachments } = config;
 
   // Ensure guest conversation exists
   const guestConversationId = await ensureGuestConversation(sessionHash, title, conversationId);
@@ -197,6 +204,7 @@ async function handleGuestDatabaseOperations(config: {
     message: lastUserMessage,
     role: 'user',
     sessionHash,
+    attachments,
   });
 
   // Generate title for first guest message if needed

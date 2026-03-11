@@ -28,12 +28,14 @@ const serviceSupabase = createServiceClient(supabaseUrl, serviceKey);
  * @param conversationId - Conversation ID
  * @param userMessage - User message with parts array
  * @param supabaseClient - Supabase client (required)
+ * @param attachments - User-uploaded attachments
  * @returns true if saved, false if skipped
  */
 export async function saveUserMessageServerSide(
   conversationId: string,
   userMessage: UIMessage,
-  supabaseClient: Awaited<ReturnType<typeof createClient>>
+  supabaseClient: Awaited<ReturnType<typeof createClient>>,
+  attachments?: any[]
 ): Promise<boolean> {
   if (!conversationId || !userMessage) {
     return false;
@@ -45,11 +47,11 @@ export async function saveUserMessageServerSide(
     .map((p) => p.text)
     .join('') || '';
 
-  if (!messageText.trim()) {
+  if (!messageText.trim() && (!attachments || attachments.length === 0)) {
     return false;
   }
 
-  // Save with parts array (new format) and content (backward compatibility)
+  // Save with parts array (new format), content (backward compatibility), and attachments
   const { error: msgError } = await supabaseClient
     .from('messages')
     .insert({
@@ -57,6 +59,7 @@ export async function saveUserMessageServerSide(
       role: 'user',
       parts: userMessage.parts || [{ type: 'text', text: messageText.trim() }],
       content: messageText.trim(), // Keep for backward compatibility
+      attachments: attachments || [],
     });
 
   if (msgError) {
@@ -80,7 +83,7 @@ export async function getMessagesServerSide(
   conversationId: string,
   options?: { limit?: number; offset?: number }
 ): Promise<{
-  messages: Array<{ id: string; role: 'user' | 'assistant'; parts: MessageParts; model?: string; input_tokens?: number; output_tokens?: number; total_tokens?: number; completion_time?: number; reasoning_time?: number }>;
+  messages: Array<{ id: string; role: 'user' | 'assistant'; parts: MessageParts; attachments?: any[]; model?: string; input_tokens?: number; output_tokens?: number; total_tokens?: number; completion_time?: number; reasoning_time?: number }>;
   hasMore: boolean;
   dbRowCount: number; // Actual rows queried from DB (for accurate offset calculation)
 }> {
@@ -92,7 +95,7 @@ export async function getMessagesServerSide(
   // Query newest first (DESC), then reverse array to maintain ascending order
   let query = supabase
     .from('messages')
-    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time, reasoning_time')
+    .select('id, role, content, parts, attachments, created_at, model, input_tokens, output_tokens, total_tokens, completion_time, reasoning_time')
     .eq('conversation_id', conversationId)
     .order('created_at', { ascending: false });
   
@@ -149,6 +152,7 @@ export async function getMessagesServerSide(
       id: msg.id,
       role: msg.role as 'user' | 'assistant',
       parts: parts,
+      attachments: msg.attachments ?? undefined,
       model: msg.model ?? undefined,
       input_tokens: msg.input_tokens ?? undefined,
       output_tokens: msg.output_tokens ?? undefined,

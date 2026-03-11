@@ -466,3 +466,74 @@ export interface ScrollProgress {
   activeSection: string | null;
 }
 
+// ============================================
+// Attachment Types
+// ============================================
+
+/**
+ * User-uploaded attachment metadata
+ * Stored in messages.attachments JSONB column
+ */
+export interface Attachment {
+  id: string;
+  filename: string;
+  originalName: string;
+  contentType: string;
+  size: number;
+  url: string;
+  uploadedAt: string;
+}
+
+/**
+ * File type categories for validation
+ */
+export const ATTACHMENT_TYPES = {
+  IMAGE: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
+  DOCUMENT: [
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'text/plain',
+    'text/markdown',
+    'application/json',
+    'text/html',
+    'application/xml',
+  ],
+  SPREADSHEET: [
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel',
+    'text/csv',
+  ],
+} as const;
+
+/**
+ * File type limits
+ */
+export const ATTACHMENT_LIMITS = {
+  MAX_FILE_SIZE: 10 * 1024 * 1024, // 10MB
+  MAX_FILES_PER_MESSAGE: 5,
+} as const;
+
+/**
+ * Allowed file extensions map
+ */
+export const ALLOWED_EXTENSIONS: Record<string, string> = {
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg',
+  png: 'image/png',
+  gif: 'image/gif',
+  webp: 'image/webp',
+  svg: 'image/svg+xml',
+  pdf: 'application/pdf',
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  txt: 'text/plain',
+  md: 'text/markdown',
+  json: 'application/json',
+  html: 'text/html',
+  xml: 'application/xml',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  xls: 'application/vnd.ms-excel',
+  csv: 'text/csv',
+};
+

@@ -3,19 +3,24 @@
  * Handles message input, model selection, and web search mode
  */
 
-import React from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { useTheme } from '@/lib/theme-provider';
 import { Icon } from '@/components/icons';
 import ModelSelector from '@/components/homepage/ModelSelector';
 import WebSearchSelector from '@/components/homepage/WebSearchSelector';
 import { getOptionFromChatMode, getChatModeFromOption } from '@/lib/conversation/chat-mode-utils';
 import { ContextIndicator } from './ContextIndicator';
+import { AttachmentPreview } from './AttachmentPreview';
+import { useToast } from '@/lib/contexts/ToastContext';
 import type { ContextUsage } from './types';
+import type { Attachment } from '@/lib/types';
+import { ATTACHMENT_LIMITS } from '@/lib/types';
+import { validateFile } from '@/lib/services/attachment.service';
 
 interface ConversationInputProps {
   input: string;
   onInputChange: (value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (e: React.FormEvent, attachments?: Attachment[]) => void;
   onKeyPress: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
   isLoading: boolean;
@@ -46,11 +51,93 @@ export function ConversationInput({
   showSelectors = true,
 }: ConversationInputProps) {
   const { resolvedTheme, mounted } = useTheme();
+  const { error: showToastError } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [uploading, setUploading] = useState(false);
+
+  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    if (attachments.length + files.length > ATTACHMENT_LIMITS.MAX_FILES_PER_MESSAGE) {
+      showToastError(`Maximum ${ATTACHMENT_LIMITS.MAX_FILES_PER_MESSAGE} files allowed per message`);
+      return;
+    }
+
+    setUploading(true);
+
+    for (const file of Array.from(files)) {
+      const validation = validateFile(file);
+      if (!validation.valid) {
+        showToastError(validation.error || 'Invalid file');
+        continue;
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('/api/attachments/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.attachment) {
+          setAttachments((prev) => [...prev, result.attachment]);
+        } else {
+          showToastError(result.error || 'Upload failed');
+        }
+      } catch (err) {
+        console.error('[ConversationInput] Upload error:', err);
+        showToastError('Failed to upload file');
+      }
+    }
+
+    setUploading(false);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  }, [attachments.length, showToastError]);
+
+  const handleAttachClick = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+
+  const handleRemoveAttachment = useCallback((id: string) => {
+    setAttachments((prev) => prev.filter((a) => a.id !== id));
+  }, []);
+
+  const handleFormSubmit = useCallback((e: React.FormEvent) => {
+    onSubmit(e, attachments.length > 0 ? attachments : undefined);
+    setAttachments([]);
+  }, [onSubmit, attachments]);
+
+  const canSend = input.trim() || attachments.length > 0;
 
   return (
     <div className="input-section">
       <div className="input-section-content">
-        <form onSubmit={onSubmit} className="input-container conversation-input-container">
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          onChange={handleFileSelect}
+          className="hidden"
+          accept={Object.values(ATTACHMENT_LIMITS).reduce((acc, val) => acc, '')}
+          style={{ display: 'none' }}
+        />
+
+        <AttachmentPreview
+          attachments={attachments}
+          onRemove={handleRemoveAttachment}
+          uploading={uploading}
+        />
+
+        <form onSubmit={handleFormSubmit} className="input-container conversation-input-container">
           <div
             onClick={(e) => {
               if (disabled && onDisabledClick) {
@@ -144,11 +231,10 @@ export function ConversationInput({
 
             <button
               type="button"
-              onClick={() => {
-                // TODO: Implement attach file functionality
-              }}
+              onClick={handleAttachClick}
               className="attach-btn"
               title="Attach file"
+              disabled={isLoading || disabled || uploading}
             >
               <Icon
                 name="attach"
@@ -184,16 +270,16 @@ export function ConversationInput({
             ) : (
               <button
                 type="submit"
-                className={`send-btn ${input.trim() ? 'active' : ''}`}
+                className={`send-btn ${canSend ? 'active' : ''}`}
                 title="Send message"
-                disabled={!input.trim() || isLoading}
+                disabled={!canSend || isLoading}
               >
                 <div style={{ opacity: 1 }}>
                   <Icon
                     name="send"
                     size={16}
                     aria-label="Send"
-                    className={input.trim() ? "icon-active" : ""}
+                    className={canSend ? "icon-active" : ""}
                   />
                 </div>
               </button>

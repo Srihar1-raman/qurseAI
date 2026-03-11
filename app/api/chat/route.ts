@@ -65,10 +65,25 @@ export async function POST(req: Request) {
       model,
       chatMode,
       userLocation,
+      attachments,
     } = validationResult.data!;
 
     // ============================================
-    // Stage 2.5: Smart context trimming
+    // Stage 2.5: Check model vision support
+    // ============================================
+    const { hasVisionSupport } = await import('@/ai/models');
+    const visionSupported = hasVisionSupport(model);
+
+    if (attachments && attachments.length > 0) {
+      logger.debug('Processing attachments', {
+        model,
+        visionSupported,
+        attachmentCount: attachments.length,
+      });
+    }
+
+    // ============================================
+    // Stage 2.6: Smart context trimming
     // ============================================
     const trimResult = trimContext(messages, model);
 
@@ -192,6 +207,7 @@ export async function POST(req: Request) {
       title: messageData.title,
       supabaseClient,
       userPreferences,
+      attachments,
     });
 
     // ============================================

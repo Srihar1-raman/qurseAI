@@ -7,9 +7,10 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useTextareaAutoResize } from './use-textarea-auto-resize';
 import { useRateLimitCheck } from './use-rate-limit-check';
 import type { UIMessagePart } from 'ai';
+import type { Attachment } from '@/lib/types';
 
 interface UseConversationInputProps {
-  sendMessage: (message: { role: 'user'; parts: UIMessagePart<any, any>[] }) => void;
+  sendMessage: (message: { role: 'user'; parts: UIMessagePart<any, any>[]; attachments?: Attachment[] }) => void;
   isLoading: boolean;
   isRateLimited: boolean;
   onSendAttempt: () => void;
@@ -22,7 +23,7 @@ interface UseConversationInputReturn {
   input: string;
   setInput: (value: string) => void;
   textareaRef: React.RefObject<HTMLTextAreaElement | null>;
-  handleSubmit: (e: React.FormEvent) => void;
+  handleSubmit: (e: React.FormEvent, attachments?: Attachment[]) => void;
   handleKeyPress: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void;
 }
 
@@ -68,8 +69,8 @@ export function useConversationInput({
   }, []);
 
   const sendMessageWithRateLimitCheck = useCallback(
-    async (messageText: string) => {
-      if (!messageText.trim() || isLoading || isChecking) {
+    async (messageText: string, attachments?: Attachment[]) => {
+      if ((!messageText.trim() && (!attachments || attachments.length === 0)) || isLoading || isChecking) {
         return false;
       }
 
@@ -92,6 +93,7 @@ export function useConversationInput({
       sendMessage({
         role: 'user',
         parts: [{ type: 'text', text: messageText }] as UIMessagePart<any, any>[],
+        attachments,
       });
 
       return true;
@@ -100,9 +102,9 @@ export function useConversationInput({
   );
 
   const handleSubmit = useCallback(
-    (e: React.FormEvent) => {
+    (e: React.FormEvent, attachments?: Attachment[]) => {
       e.preventDefault();
-      sendMessageWithRateLimitCheck(input.trim());
+      sendMessageWithRateLimitCheck(input.trim(), attachments);
     },
     [input, sendMessageWithRateLimitCheck]
   );

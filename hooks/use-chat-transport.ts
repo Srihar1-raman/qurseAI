@@ -25,7 +25,7 @@ interface UseChatTransportProps {
 
 interface UseChatTransportReturn {
   messages: ReturnType<typeof useChat>['messages'];
-  sendMessage: (message: { role: 'user'; parts: UIMessagePart<any, any>[] }) => void;
+  sendMessage: (message: { role: 'user'; parts: UIMessagePart<any, any>[]; attachments?: any[] }) => void;
   status: ReturnType<typeof useChat>['status'];
   error: ReturnType<typeof useChat>['error'];
   stop: () => void;
@@ -108,11 +108,15 @@ export function useChatTransport({
         return response;
       },
       prepareSendMessagesRequest({ messages }) {
-        console.log('[DEBUG] prepareSendMessagesRequest - sending messages:', messages.map((m: any) => ({
+        const msgWithAttachments = messages as any[];
+        console.log('[DEBUG] prepareSendMessagesRequest - sending messages:', msgWithAttachments.map((m) => ({
           id: m.id,
           role: m.role,
           partTypes: m.parts?.map((p: any) => p.type),
+          attachments: m.attachments,
         })));
+
+        const lastMessage = msgWithAttachments[msgWithAttachments.length - 1];
 
         return {
           body: {
@@ -121,6 +125,7 @@ export function useChatTransport({
             model: selectedModelRef.current,
             chatMode: chatModeRef.current,
             userLocation: userLocationRef.current,
+            attachments: lastMessage?.role === 'user' ? (lastMessage as any).attachments : undefined,
           },
         };
       },

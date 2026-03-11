@@ -42,6 +42,19 @@ const messagePartSchema = z.object({
 });
 
 /**
+ * Attachment schema - represents user-uploaded files
+ */
+const attachmentSchema = z.object({
+  id: z.string(),
+  filename: z.string(),
+  originalName: z.string(),
+  contentType: z.string(),
+  size: z.number(),
+  url: z.string(),
+  uploadedAt: z.string(),
+});
+
+/**
  * Message schema - supports both UIMessage and ModelMessage formats
  */
 const messageSchema = z.object({
@@ -51,13 +64,15 @@ const messageSchema = z.object({
   parts: z.array(messagePartSchema).optional(),
   // ModelMessage format: content string
   content: z.string().optional(),
+  // Attachments for user messages
+  attachments: z.array(attachmentSchema).optional(),
 }).refine(
   (data) => {
-    // Must have either parts or content
-    return (data.parts && data.parts.length > 0) || (data.content && data.content.length > 0);
+    // Must have either parts or content or attachments
+    return (data.parts && data.parts.length > 0) || (data.content && data.content.length > 0) || (data.attachments && data.attachments.length > 0);
   },
   {
-    message: 'Message must have either parts array or content string',
+    message: 'Message must have either parts array, content string, or attachments',
   }
 ).refine(
   (data) => {
@@ -135,6 +150,8 @@ export const chatRequestSchema = z.object({
   chatMode: chatModeSchema.default('chat'),
 
   userLocation: z.string().optional().describe('User location string for context-aware responses'),
+
+  attachments: z.array(attachmentSchema).optional().describe('User-uploaded attachments'),
 });
 
 /**

@@ -27,6 +27,7 @@ type GuestMessagePayload = {
   message: UIMessage;
   role: 'user' | 'assistant' | 'system' | 'tool';
   sessionHash: string;
+  attachments?: any[];
 };
 
 /**
@@ -54,6 +55,7 @@ export async function getGuestMessagesServerSide(
     id: string;
     role: 'user' | 'assistant';
     parts: MessageParts;
+    attachments?: any[];
     model?: string;
     input_tokens?: number;
     output_tokens?: number;
@@ -70,7 +72,7 @@ export async function getGuestMessagesServerSide(
 
   let query = supabase
     .from('guest_messages')
-    .select('id, role, content, parts, created_at, model, input_tokens, output_tokens, total_tokens, completion_time, reasoning_time')
+    .select('id, role, content, parts, attachments, created_at, model, input_tokens, output_tokens, total_tokens, completion_time, reasoning_time')
     .eq('guest_conversation_id', conversationId)
     .order('created_at', { ascending: false });
   
@@ -118,6 +120,7 @@ export async function getGuestMessagesServerSide(
       id: msg.id,
       role: msg.role as 'user' | 'assistant',
       parts: parts,
+      attachments: msg.attachments ?? undefined,
       model: msg.model ?? undefined,
       input_tokens: msg.input_tokens ?? undefined,
       output_tokens: msg.output_tokens ?? undefined,
@@ -158,7 +161,7 @@ export async function getGuestMessageCount(conversationId: string): Promise<numb
  * Save guest message (server-side)
  */
 export async function saveGuestMessage(payload: GuestMessagePayload): Promise<void> {
-  const { conversationId, message, role, sessionHash } = payload;
+  const { conversationId, message, role, sessionHash, attachments } = payload;
   if (!conversationId) return;
 
   const supabase = serviceSupabase;
@@ -166,8 +169,8 @@ export async function saveGuestMessage(payload: GuestMessagePayload): Promise<vo
   const contentText = extractMessageText(message).trim();
   const parts = message.parts;
 
-  if (!parts || parts.length === 0) {
-    logger.warn('Skipping guest message save due to empty parts', { conversationId, role });
+  if ((!parts || parts.length === 0) && (!attachments || attachments.length === 0)) {
+    logger.warn('Skipping guest message save due to empty parts and attachments', { conversationId, role });
     return;
   }
 
@@ -189,6 +192,7 @@ export async function saveGuestMessage(payload: GuestMessagePayload): Promise<vo
     total_tokens: totalTokens,
     completion_time: completionTime,
     reasoning_time: completionTime,
+    attachments: attachments || [],
   });
 
   if (error) {
