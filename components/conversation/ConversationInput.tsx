@@ -127,7 +127,7 @@ export function ConversationInput({
           multiple
           onChange={handleFileSelect}
           className="hidden"
-          accept={Object.values(ATTACHMENT_LIMITS).reduce((acc, val) => acc, '')}
+          accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.md,.xlsx,.xls,.csv,.json,.xml,.html"
           style={{ display: 'none' }}
         />
 
