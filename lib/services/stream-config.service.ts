@@ -129,14 +129,9 @@ export interface StreamConfig {
     // Process attachments based on model capabilities
     const messagesWithAttachments = uiMessages.map((msg: any) => {
       if (msg.role !== 'user' || !attachments || attachments.length === 0) return msg;
-
       const existingAttachments = msg.attachments || [];
       const allAttachments = [...existingAttachments, ...attachments];
-
-      return {
-        ...msg,
-        attachments: allAttachments,
-      };
+      return { ...msg, attachments: allAttachments };
     });
 
     return {
@@ -144,7 +139,6 @@ export interface StreamConfig {
         const { convertToModelMessages } = await import('ai');
         const { hasVisionSupport } = await import('@/ai/models');
 
-        // Filter out tool messages and tool-call parts from uiMessages before converting to ModelMessages
         const filteredUiMessages = messagesWithAttachments
           .filter((msg: any) => msg.role !== 'tool')
           .map((msg: any) => {
@@ -167,11 +161,8 @@ export interface StreamConfig {
               }
             }
 
-            return {
-              ...msg,
-              parts: parts,
-            };
-        });
+            return { ...msg, parts };
+          });
 
        console.log('[DEBUG] Server - original uiMessages count:', uiMessages.length);
        console.log('[DEBUG] Server - original uiMessages:', uiMessages.map((m: any) => ({
