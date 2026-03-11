@@ -21,36 +21,23 @@ export function AttachmentPreview({ attachments, onRemove, uploading = false }: 
     <div className="attachment-preview-container">
       <div className="attachment-preview-list">
         {attachments.map((attachment) => (
-          <div key={attachment.id} className="attachment-preview-item">
+          <div
+            key={attachment.id}
+            className="flex items-center gap-2 px-3 py-1.5 bg-[var(--color-bg-secondary)] border border-[var(--color-border)] rounded-lg text-xs"
+          >
             {isImage(attachment.contentType) ? (
-              <div className="attachment-image-preview">
-                <img src={attachment.url} alt={attachment.originalName} />
-              </div>
+              <img src={attachment.url} alt={attachment.originalName} className="w-6 h-6 object-cover rounded" />
             ) : (
-              <div className="attachment-file-icon">
-                <Icon name={getFileIconName(attachment.contentType)} size={20} />
-              </div>
+              <Icon name="attach" size={14} />
             )}
-            <div className="attachment-info">
-              <span className="attachment-name" title={attachment.originalName}>
-                {attachment.originalName}
-              </span>
-              <span className="attachment-size">{formatFileSize(attachment.size)}</span>
-            </div>
-            {uploading ? (
-              <div className="attachment-uploading">
-                <span className="loading-spinner-small" />
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="attachment-remove-btn"
-                onClick={() => onRemove(attachment.id)}
-                aria-label="Remove attachment"
-              >
-                <Icon name="cross" size={14} />
-              </button>
-            )}
+            <span className="max-w-[100px] truncate">{attachment.originalName}</span>
+            <button
+              type="button"
+              onClick={() => onRemove(attachment.id)}
+              className="ml-1 hover:text-red-500"
+            >
+              <Icon name="cross" size={12} />
+            </button>
           </div>
         ))}
       </div>

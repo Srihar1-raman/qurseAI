@@ -1093,9 +1093,8 @@ input[type="file"].hidden {
 }
 
 .attachment-preview-container {
-  padding: 8px 12px;
-  border-top: 1px solid var(--color-border);
-  background: var(--color-bg-secondary);
+  border: none;
+  background: transparent;
 }
 
 .attachment-preview-list {
@@ -1108,9 +1107,9 @@ input[type="file"].hidden {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 6px 10px;
-  background: var(--color-bg);
-  border: 1px solid var(--color-border);
+  padding: 0;
+  background: transparent;
+  border: none;
   border-radius: 8px;
   max-width: 200px;
 }
@@ -1195,6 +1194,10 @@ input[type="file"].hidden {
   border: 2px solid var(--color-border);
   border-top-color: var(--color-primary);
   border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.animate-spin {
   animation: spin 0.8s linear infinite;
 }
 

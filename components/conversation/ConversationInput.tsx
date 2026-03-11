@@ -3,7 +3,7 @@
  * Handles message input, model selection, and web search mode
  */
 
-import React, { useRef, useState, useCallback } from 'react';
+import React, { useRef, useState, useCallback, useEffect } from 'react';
 import { useTheme } from '@/lib/theme-provider';
 import { Icon } from '@/components/icons';
 import ModelSelector from '@/components/homepage/ModelSelector';
@@ -58,10 +58,29 @@ export function ConversationInput({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [uploading, setUploading] = useState(false);
+  const showButtonsBackground = useRef(false);
 
   const hasImageAttachment = attachments.some(a => a.contentType.startsWith('image/'));
   const modelSupportsVision = selectedModel ? hasVisionSupport(selectedModel) : false;
   const hasImageModelConflict = hasImageAttachment && !modelSupportsVision;
+
+  useEffect(() => {
+    if (textareaRef.current) {
+      const textarea = textareaRef.current;
+      const updateButtonsBackground = () => {
+        if (!textarea) return;
+        const needsBackground = input.length > 60 || textarea.scrollHeight > textarea.clientHeight * 2;
+        showButtonsBackground.current = needsBackground;
+      };
+
+      textarea.addEventListener('input', updateButtonsBackground);
+      textarea.addEventListener('input', () => setTimeout(updateButtonsBackground, 0));
+
+      return () => {
+        textarea.removeEventListener('input', updateButtonsBackground);
+      };
+    }
+  }, [input, textareaRef]);
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -223,7 +242,10 @@ export function ConversationInput({
             />
           </div>
 
-          <div className="input-buttons-background" />
+          <div
+            className={`input-buttons-background${showButtonsBackground.current ? ' show' : ''}`}
+            style={{ pointerEvents: 'none' }}
+          />
 
           <div className="input-actions-left">
             {showSelectors && (
@@ -250,12 +272,20 @@ export function ConversationInput({
               className="attach-btn"
               title="Attach file"
               disabled={isLoading || disabled || uploading}
+              style={{
+                opacity: uploading ? 0.5 : 1,
+              }}
             >
-              <Icon
-                name="attach"
-                size={16}
-                aria-label="Attach"
-              />
+              {uploading ? (
+                <span className="w-4 h-4 border-2 border-t-[var(--color-primary)] rounded-full animate-spin" />
+              ) : (
+                <Icon
+                  name="attach"
+                  size={16}
+                  aria-label="Attach"
+                  className={canSend ? "icon-active" : ""}
+                />
+              )}
             </button>
 
             <ContextIndicator contextUsage={contextUsage || null} />
