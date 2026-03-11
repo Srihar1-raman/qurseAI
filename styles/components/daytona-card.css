@@ -165,6 +165,7 @@
 .daytona-code-input {
   flex: 1;
   width: 100%;
+  min-width: 0;
   padding: 12px;
   background: var(--color-bg);
   border: none;
@@ -175,6 +176,8 @@
   resize: none;
   outline: none;
   min-height: 200px;
+  overflow-x: auto;
+  white-space: pre;
 }
 
 .daytona-code-input::placeholder {
@@ -187,6 +190,7 @@
   padding: 12px;
   background: var(--color-bg);
   overflow-y: auto;
+  overflow-x: auto;
   min-height: 200px;
 }
 
@@ -220,7 +224,7 @@
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
   font-size: 12px;
   line-height: 1.5;
-  white-space: pre-wrap;
+  white-space: pre;
   word-break: break-word;
   color: var(--color-text);
 }

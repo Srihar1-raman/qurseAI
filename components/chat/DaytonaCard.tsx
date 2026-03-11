@@ -101,8 +101,6 @@ export function DaytonaCard({ result, status, code, language: initialLanguage = 
     }
   }, [code]);
 
-  const isSuccess = execResult?.exitCode === 0;
-
   if (status === 'loading') {
     return (
       <div className="daytona-card">
@@ -180,14 +178,9 @@ export function DaytonaCard({ result, status, code, language: initialLanguage = 
             {error ? (
               <div className="daytona-error-text">{error}</div>
             ) : execResult ? (
-              <>
-                <div className={`daytona-exit-badge ${isSuccess ? 'success' : 'error'}`}>
-                  Exit: {execResult.exitCode}
-                </div>
-                <pre className="daytona-output-text">
+              <pre className="daytona-output-text">
                   {(execResult.result || execResult.stdout) || 'No output'}
                 </pre>
-              </>
             ) : (
               <span className="daytona-placeholder">Click Run to execute</span>
             )}
