@@ -75,12 +75,28 @@ export async function POST(req: NextRequest) {
       case 'execute': {
         const lang = language || 'python';
         
+        const languageConfig: Record<string, { run: string; ext: string; compile?: string }> = {
+          python: { run: 'python3', ext: '.py' },
+          javascript: { run: 'node', ext: '.js' },
+          typescript: { run: 'npx ts-node', ext: '.ts' },
+          go: { run: 'go run', ext: '.go' },
+          ruby: { run: 'ruby', ext: '.rb' },
+          java: { run: 'java', ext: '.java' },
+          cpp: { run: 'g++ -o /tmp/main /tmp/main.cpp && /tmp/main', ext: '.cpp' },
+          c: { run: 'gcc -o /tmp/main /tmp/main.c && /tmp/main', ext: '.c' },
+          rust: { run: 'rustc /tmp/main.rs -o /tmp/main && /tmp/main', ext: '.rs' },
+          php: { run: 'php', ext: '.php' },
+          bash: { run: 'bash', ext: '.sh' },
+        };
+
+        const config = languageConfig[lang] || languageConfig.python;
+        
         logger.info('Creating fresh sandbox for execution', { language: lang });
         
         let sandbox;
         try {
           sandbox = await daytona.create({
-            language: mapLanguage(lang),
+            language: 'python',
             autoStopInterval: 15,
           });
         } catch (createError) {
@@ -91,11 +107,13 @@ export async function POST(req: NextRequest) {
           );
         }
 
-        logger.info('Executing code', { sandboxId: sandbox.id, language: lang });
+        logger.info('Executing code', { sandboxId: sandbox.id, language: lang, run: config.run });
 
         let response;
         try {
-          response = await sandbox.process.codeRun(code);
+          const fileName = `/tmp/code${config.ext}`;
+          await sandbox.fs.uploadFile(Buffer.from(code), fileName);
+          response = await sandbox.process.executeCommand(`${config.run} ${fileName}`);
         } catch (execError) {
           await sandbox.delete().catch(() => {});
           logger.error('Failed to execute code', { error: execError });
