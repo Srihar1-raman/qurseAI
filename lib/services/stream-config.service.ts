@@ -141,15 +141,13 @@ export interface StreamConfig {
 
     return {
       execute: async ({ writer: dataStream }: { writer: UIMessageStreamWriter<UIMessage> }) => {
-        // Import convertToModelMessages for use in streamText
         const { convertToModelMessages } = await import('ai');
-        const { hasVisionSupport, hasPdfSupport } = await import('@/ai/models');
+        const { hasVisionSupport } = await import('@/ai/models');
 
         // Filter out tool messages and tool-call parts from uiMessages before converting to ModelMessages
         const filteredUiMessages = messagesWithAttachments
           .filter((msg: any) => msg.role !== 'tool')
           .map((msg: any) => {
-            // Convert attachments to appropriate parts based on model capabilities
             const parts = msg.parts ? [...msg.parts] : [];
             const attachmentArray = msg.attachments || [];
 
@@ -159,12 +157,6 @@ export interface StreamConfig {
                   parts.push({
                     type: 'image',
                     image: new URL(attachment.url),
-                  } as any);
-                } else if (attachment.contentType === 'application/pdf' && hasPdfSupport(model)) {
-                  parts.push({
-                    type: 'file',
-                    data: attachment.url,
-                    mimeType: attachment.contentType,
                   } as any);
                 } else {
                   parts.push({
@@ -179,7 +171,7 @@ export interface StreamConfig {
               ...msg,
               parts: parts,
             };
-          });
+        });
 
        console.log('[DEBUG] Server - original uiMessages count:', uiMessages.length);
        console.log('[DEBUG] Server - original uiMessages:', uiMessages.map((m: any) => ({
@@ -188,14 +180,14 @@ export interface StreamConfig {
         partTypes: m.parts?.map((p: any) => p.type) || [],
         attachments: (m as any).attachments,
       })));
-       console.log('[DEBUG] Server - filtered uiMessages count:', filteredUiMessages.length);
-       console.log('[DEBUG] Server - filtered uiMessages:', filteredUiMessages.map((m: any) => ({
+      console.log('[DEBUG] Server - filtered uiMessages count:', filteredUiMessages.length);
+      console.log('[DEBUG] Server - filtered uiMessages:', filteredUiMessages.map((m: any) => ({
         id: m.id,
         role: m.role,
         partTypes: m.parts?.map((p: any) => p.type) || [],
         attachments: (m as any).attachments,
       })));
-       console.log('[DEBUG] Server - attachments config:', { hasAttachments: !!attachments && attachments.length > 0, attachmentsCount: attachments?.length || 0 });
+      console.log('[DEBUG] Server - attachments config:', { hasAttachments: !!attachments && attachments.length > 0, attachmentsCount: attachments?.length || 0 });
 
       // Await DB operations (user message must be saved before streaming)
       const dbResult = await dbOperationsPromise;
