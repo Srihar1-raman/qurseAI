@@ -169,6 +169,25 @@ export async function POST(req: Request) {
     const messageData = processMessages(messagesToSend);
 
     // ============================================
+    // Stage 7.1: Add current attachments to last user message
+    // ============================================
+    if (attachments && attachments.length > 0 && messageData.lastUserMessage) {
+      logger.debug('Adding attachments to last user message', {
+        attachmentCount: attachments.length,
+        attachments: attachments.map(a => ({
+          id: a.id,
+          filename: a.originalName,
+          contentType: a.contentType,
+        })),
+      });
+
+      // Add attachments array to the last user message
+      // This allows stream-config to process them for AI (transcription/images)
+      // @ts-ignore - attachments is dynamically added for attachment processing
+      messageData.lastUserMessage.attachments = attachments;
+    }
+
+    // ============================================
     // Stage 7.5: Fetch memory context (authenticated users only)
     // ============================================
     let memoryPrompt = '';

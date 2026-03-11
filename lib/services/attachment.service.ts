@@ -83,9 +83,15 @@ export async function uploadAttachment(
     return { success: false, error: error.message };
   }
 
-  const { data: urlData } = supabase.storage
+  const signedUrlData = await supabase.storage
     .from(BUCKET_NAME)
-    .getPublicUrl(storagePath);
+    .createSignedUrl(storagePath, 3600);
+
+  const signedUrl = (signedUrlData as any)?.data?.signedUrl;
+
+  if (!signedUrl) {
+    return { success: false, error: 'Failed to generate signed URL' };
+  }
 
   const attachment: Attachment = {
     id: fileId,
@@ -93,7 +99,7 @@ export async function uploadAttachment(
     originalName: file.name,
     contentType: validation.contentType || file.type,
     size: file.size,
-    url: urlData.publicUrl,
+    url: signedUrl,
     uploadedAt: new Date().toISOString(),
   };
 
@@ -128,9 +134,15 @@ export async function uploadAttachmentServer(
     return { success: false, error: error.message };
   }
 
-  const { data: urlData } = supabaseClient.storage
+  const signedUrlData = await supabaseClient.storage
     .from(BUCKET_NAME)
-    .getPublicUrl(storagePath);
+    .createSignedUrl(storagePath, 3600);
+
+  const signedUrl = (signedUrlData as any)?.data?.signedUrl;
+
+  if (!signedUrl) {
+    return { success: false, error: 'Failed to generate signed URL' };
+  }
 
   const attachment: Attachment = {
     id: fileId,
@@ -138,7 +150,7 @@ export async function uploadAttachmentServer(
     originalName: file.name,
     contentType: validation.contentType || file.type,
     size: file.size,
-    url: urlData.publicUrl,
+    url: signedUrl,
     uploadedAt: new Date().toISOString(),
   };
 

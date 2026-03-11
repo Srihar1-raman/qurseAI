@@ -16,6 +16,7 @@ import type { ContextUsage } from './types';
 import type { Attachment } from '@/lib/types';
 import { ATTACHMENT_LIMITS } from '@/lib/types';
 import { validateFile } from '@/lib/services/attachment.service';
+import { hasVisionSupport } from '@/ai/models';
 
 interface ConversationInputProps {
   input: string;
@@ -32,6 +33,7 @@ interface ConversationInputProps {
   onDisabledClick?: () => void;
   contextUsage?: ContextUsage | null;
   showSelectors?: boolean;
+  selectedModel?: string;
 }
 
 export function ConversationInput({
@@ -49,12 +51,17 @@ export function ConversationInput({
   onDisabledClick,
   contextUsage,
   showSelectors = true,
+  selectedModel,
 }: ConversationInputProps) {
   const { resolvedTheme, mounted } = useTheme();
   const { error: showToastError } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [uploading, setUploading] = useState(false);
+
+  const hasImageAttachment = attachments.some(a => a.contentType.startsWith('image/'));
+  const modelSupportsVision = selectedModel ? hasVisionSupport(selectedModel) : false;
+  const hasImageModelConflict = hasImageAttachment && !modelSupportsVision;
 
   const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -116,7 +123,7 @@ export function ConversationInput({
     setAttachments([]);
   }, [onSubmit, attachments]);
 
-  const canSend = input.trim() || attachments.length > 0;
+  const canSend = (input.trim() || attachments.length > 0) && !hasImageModelConflict;
 
   return (
     <div className="input-section">
@@ -136,6 +143,14 @@ export function ConversationInput({
           onRemove={handleRemoveAttachment}
           uploading={uploading}
         />
+
+        {hasImageModelConflict && (
+          <div className="attachment-error-message">
+            <span>
+              This model doesn't support images. Please select a vision-enabled model or remove the image.
+            </span>
+          </div>
+        )}
 
         <form onSubmit={handleFormSubmit} className="input-container conversation-input-container">
           <div
@@ -271,7 +286,7 @@ export function ConversationInput({
               <button
                 type="submit"
                 className={`send-btn ${canSend ? 'active' : ''}`}
-                title="Send message"
+                title={hasImageModelConflict ? "This model doesn't support images. Please select a vision-enabled model or remove the image." : "Send message"}
                 disabled={!canSend || isLoading}
               >
                 <div style={{ opacity: 1 }}>

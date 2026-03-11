@@ -17,8 +17,6 @@ export async function transcribeDocument(
   const contentType = attachment.contentType.toLowerCase();
 
   try {
-    const fileContent = await fetchFileContent(attachment.url);
-
     // TXT, MD, JSON, HTML, XML, etc.
     if (
       contentType === 'text/plain' ||
@@ -27,12 +25,13 @@ export async function transcribeDocument(
       contentType === 'text/html' ||
       contentType === 'application/xml'
     ) {
+      const fileContent = await fetchFileContent(attachment.url);
       return { success: true, text: fileContent };
     }
 
     // PDF
     if (contentType === 'application/pdf') {
-      return await transcribePDF(fileContent);
+      return await transcribePDF(attachment.url);
     }
 
     // DOCX
@@ -63,10 +62,17 @@ async function fetchFileContent(url: string): Promise<string> {
   return text;
 }
 
-async function transcribePDF(text: string): Promise<TranscriptionResult> {
+async function transcribePDF(url: string): Promise<TranscriptionResult> {
   try {
-    const pdfParse: any = await import('pdf-parse');
-    const data = await pdfParse.default(text);
+    const pdfParseModule = await import('pdf-parse');
+    const response = await fetch(url);
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // pdf-parse exports as default, but the import returns the module
+    // We need to call it as a function
+    const pdfParse = (pdfParseModule as any).default || pdfParseModule;
+    const data = await pdfParse(buffer);
 
     let content = '';
 

@@ -21,6 +21,7 @@ interface BaseMessage {
   content?: string;
   metadata?: any;
   createdAt?: string;
+  attachments?: any[];
 }
 
 // Helper to extract message content for deep equality comparison

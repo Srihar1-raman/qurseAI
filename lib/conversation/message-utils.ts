@@ -16,6 +16,7 @@ interface BaseMessage {
   content?: string;
   metadata?: StreamMetadata;
   createdAt?: string;
+  attachments?: any[];
 }
 
 /**
@@ -46,7 +47,7 @@ function createMessageContentKey(message: BaseMessage): string {
 
 /**
  * Merge database messages with useChat messages, avoiding duplicates
- * Database messages are the source of truth and always preserved
+ * Database messages are to source of truth and always preserved
  */
 export function mergeMessages(
   loadedMessages: BaseMessage[],
@@ -96,7 +97,7 @@ export function mergeMessages(
 
 /**
  * Transform merged messages to QurseMessage format
- * Ensures all messages have the parts structure that ChatMessage expects
+ * Ensures all messages have to parts structure that ChatMessage expects
  */
 export function transformToQurseMessage(messages: BaseMessage[]): QurseMessage[] {
   return messages.map((msg): QurseMessage => {
@@ -106,6 +107,7 @@ export function transformToQurseMessage(messages: BaseMessage[]): QurseMessage[]
         role: msg.role as 'user' | 'assistant',
         parts: msg.parts as UIMessagePart<UIDataTypes, UITools>[],
         metadata: 'metadata' in msg && msg.metadata ? (msg.metadata as StreamMetadata) : undefined,
+        attachments: 'attachments' in msg ? msg.attachments : undefined,
       };
     }
 
@@ -114,7 +116,7 @@ export function transformToQurseMessage(messages: BaseMessage[]): QurseMessage[]
       role: msg.role as 'user' | 'assistant',
       parts: [{ type: 'text', text: '' }],
       metadata: undefined,
+      attachments: 'attachments' in msg ? msg.attachments : undefined,
     };
   });
 }
-

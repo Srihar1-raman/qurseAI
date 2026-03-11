@@ -42,6 +42,7 @@ import {
   stockSearchTool,
 } from '@/lib/tools/finance';
 import { daytonaCodeTool } from '@/lib/tools/daytona-code';
+import { transcribeDocument } from '@/lib/services/transcription.service';
 
 const logger = createScopedLogger('services/stream-config');
 
@@ -127,8 +128,16 @@ export interface StreamConfig {
     } = config;
 
     // Process attachments based on model capabilities
-    const messagesWithAttachments = uiMessages.map((msg: any) => {
-      if (msg.role !== 'user' || !attachments || attachments.length === 0) return msg;
+    // Only add attachments to the last user message
+    const messagesWithAttachments = uiMessages.map((msg: any, index: number) => {
+      if (msg.role !== 'user') return msg;
+
+      const isLastMessage = index === uiMessages.length - 1;
+
+      if (!isLastMessage) return msg;
+
+      if (!attachments || attachments.length === 0) return msg;
+
       const existingAttachments = msg.attachments || [];
       const allAttachments = [...existingAttachments, ...attachments];
       return { ...msg, attachments: allAttachments };
@@ -139,30 +148,69 @@ export interface StreamConfig {
         const { convertToModelMessages } = await import('ai');
         const { hasVisionSupport } = await import('@/ai/models');
 
-        const filteredUiMessages = messagesWithAttachments
-          .filter((msg: any) => msg.role !== 'tool')
-          .map((msg: any) => {
-            const parts = msg.parts ? [...msg.parts] : [];
-            const attachmentArray = msg.attachments || [];
+        const filteredUiMessages = await Promise.all(
+          messagesWithAttachments
+            .filter((msg: any) => msg.role !== 'tool')
+            .map(async (msg: any) => {
+              const parts = msg.parts ? [...msg.parts] : [];
+              const attachmentArray = msg.attachments || [];
 
-            if (attachmentArray.length > 0 && hasVisionSupport(model)) {
-              for (const attachment of attachmentArray) {
-                if (attachment.contentType.startsWith('image/')) {
-                  parts.push({
-                    type: 'image',
-                    image: new URL(attachment.url),
-                  } as any);
-                } else {
-                  parts.push({
-                    type: 'text',
-                    text: `[File: ${attachment.originalName} - transcription coming soon]`,
-                  } as any);
+              if (attachmentArray.length > 0) {
+                logger.debug('Processing attachments for message', {
+                  messageId: msg.id,
+                  role: msg.role,
+                  attachmentCount: attachmentArray.length,
+                  attachments: attachmentArray.map((a: any) => ({
+                    id: a.id,
+                    filename: a.originalName,
+                    contentType: a.contentType,
+                  })),
+                });
+
+                for (const attachment of attachmentArray) {
+                  if (attachment.contentType.startsWith('image/') && hasVisionSupport(model)) {
+                    logger.debug('Adding image part for vision model', {
+                      attachmentId: attachment.id,
+                      filename: attachment.originalName,
+                      url: attachment.url,
+                    });
+                    parts.push({
+                      type: 'image',
+                      image: new URL(attachment.url),
+                    } as any);
+                  } else if (!attachment.contentType.startsWith('image/')) {
+                    logger.debug('Transcribing document', {
+                      attachmentId: attachment.id,
+                      filename: attachment.originalName,
+                      contentType: attachment.contentType,
+                    });
+                    const transcriptionResult = await transcribeDocument(attachment);
+                    if (transcriptionResult.success) {
+                      logger.debug('Document transcription successful', {
+                        attachmentId: attachment.id,
+                        textLength: transcriptionResult.text?.length || 0,
+                      });
+                      parts.push({
+                        type: 'text',
+                        text: `[File: ${attachment.originalName}]\n\n${transcriptionResult.text}`,
+                      } as any);
+                    } else {
+                      logger.error('Document transcription failed', {
+                        attachmentId: attachment.id,
+                        error: transcriptionResult.error,
+                      });
+                      parts.push({
+                        type: 'text',
+                        text: `[File: ${attachment.originalName} - Unable to transcribe: ${transcriptionResult.error}]`,
+                      } as any);
+                    }
+                  }
                 }
               }
-            }
 
-            return { ...msg, parts };
-          });
+              return { ...msg, parts };
+            })
+        );
 
        console.log('[DEBUG] Server - original uiMessages count:', uiMessages.length);
        console.log('[DEBUG] Server - original uiMessages:', uiMessages.map((m: any) => ({

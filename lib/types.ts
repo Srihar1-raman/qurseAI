@@ -178,6 +178,7 @@ export interface QurseMessage {
   parts: UIMessagePart<UIDataTypes, UITools>[];
   metadata?: StreamMetadata;
   reasoning_time?: number;
+  attachments?: Attachment[];
 }
 
 export interface Conversation {
@@ -239,6 +240,7 @@ export interface ChatMessageProps {
   user?: { id: string } | null;
   isStreaming?: boolean; // Indicates if content is actively streaming
   reasoningTime?: number;
+  attachments?: Attachment[];
 }
 
 export interface ModelSelectorProps {

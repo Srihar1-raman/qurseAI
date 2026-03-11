@@ -32,6 +32,7 @@ export interface ServerMessage {
   content?: string; // Legacy field, kept for backward compatibility
   reasoning?: string; // Legacy field, kept for backward compatibility
   parts?: UIMessagePart<UIDataTypes, UITools>[]; // New field, AI SDK native parts array
+  attachments?: any[]; // Attachments for user messages
 }
 
 /**
@@ -39,7 +40,7 @@ export interface ServerMessage {
  * Handles optional fields and ensures all required UIMessage fields are present
  */
 export function toUIMessageFromZod(messages: ChatRequest['messages']): UIMessage[] {
-  return messages.map((msg): UIMessage => {
+  return messages.map((msg) => {
     // Generate ID if missing (client messages might not have IDs)
     let messageId = msg.id;
     if (!messageId) {
@@ -53,7 +54,8 @@ export function toUIMessageFromZod(messages: ChatRequest['messages']): UIMessage
         id: messageId,
         role: (msg.role || 'user') as 'user' | 'assistant' | 'system',
         parts: msg.parts.map((p) => ({ type: p.type, text: p.text || '' })) as UIMessageParts,
-      };
+        attachments: msg.attachments,
+      } as UIMessage & { attachments?: typeof msg.attachments };
     }
 
     // Otherwise, create parts from content
@@ -66,7 +68,8 @@ export function toUIMessageFromZod(messages: ChatRequest['messages']): UIMessage
       id: messageId,
       role: (msg.role || 'user') as 'user' | 'assistant' | 'system',
       parts,
-    };
+      attachments: msg.attachments,
+    } as UIMessage & { attachments?: typeof msg.attachments };
   });
 }
 
@@ -75,14 +78,15 @@ export function toUIMessageFromZod(messages: ChatRequest['messages']): UIMessage
  * Server messages come from database with parts array (new) or content/reasoning (legacy)
  */
 export function toUIMessageFromServer(messages: ServerMessage[]): UIMessage[] {
-  return messages.map((msg): UIMessage => {
+  return messages.map((msg) => {
     // Prefer parts array (new format from database)
     if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
       return {
         id: msg.id,
         role: msg.role,
         parts: msg.parts as UIMessageParts,
-      };
+        attachments: msg.attachments,
+      } as UIMessage & { attachments?: typeof msg.attachments };
     }
 
     // Fallback: Convert legacy content/reasoning format to parts array
@@ -102,7 +106,8 @@ export function toUIMessageFromServer(messages: ServerMessage[]): UIMessage[] {
       id: msg.id,
       role: msg.role,
       parts,
-    };
+      attachments: msg.attachments,
+    } as UIMessage & { attachments?: typeof msg.attachments };
   });
 }
 

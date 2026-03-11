@@ -461,6 +461,7 @@ export function ConversationClient({
           onStop={handleStop}
           showStopButton={showStopButton}
           contextUsage={contextUsage}
+          selectedModel={selectedModel}
         />
       </main>
 

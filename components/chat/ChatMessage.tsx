@@ -26,6 +26,7 @@ import { GitHubSearchCard } from './GitHubCard';
 import { AcademicPdfSearchCard } from './AcademicPdfCard';
 import { DaytonaCard } from './DaytonaCard';
 import { isToolUIPart } from 'ai';
+import MessageAttachment from './MessageAttachment';
 import type { ChatMessageProps } from '@/lib/types';
 
 const FlightRadarCard = dynamic(() => import('./FlightRadarCard').then(mod => ({ default: mod.FlightRadarCard })), {
@@ -42,7 +43,7 @@ interface ToolExecution {
   state?: string;
 }
 
-function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false, reasoningTime, onSetInput }: ChatMessageProps) {
+function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStreaming = false, reasoningTime, onSetInput, attachments }: ChatMessageProps) {
   const { resolvedTheme, mounted } = useTheme();
 
   // DEBUG: Log all parts to see what we're getting
@@ -1354,7 +1355,12 @@ function ChatMessageComponent({ message, isUser, onRedo, onShare, user, isStream
         {/* Main message content */}
         <div className="message-content">
           {isUser ? (
-            <MarkdownRenderer content={content} isUserMessage={true} isStreaming={false} />
+            <>
+              <MarkdownRenderer content={content} isUserMessage={true} isStreaming={false} />
+              {attachments && attachments.length > 0 && (
+                <MessageAttachment attachments={attachments} />
+              )}
+            </>
           ) : (
             <>
               <MarkdownRenderer content={mainContent} isUserMessage={false} isStreaming={isStreaming} />
