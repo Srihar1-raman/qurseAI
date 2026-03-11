@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { Terminal, Play, Loader2, Check, Copy, ChevronDown, X } from 'lucide-react';
+import { Terminal, Play, Loader2, Copy, Check } from 'lucide-react';
 import '@/styles/components/daytona-card.css';
 
 interface ExecutionResult {
@@ -19,9 +19,9 @@ interface DaytonaCardProps {
 }
 
 const LANGUAGE_OPTIONS = [
-  { value: 'python', label: 'Python', icon: '🐍' },
-  { value: 'javascript', label: 'JavaScript', icon: '📜' },
-  { value: 'typescript', label: 'TypeScript', icon: '🔷' },
+  { value: 'python', label: 'Python' },
+  { value: 'javascript', label: 'JavaScript' },
+  { value: 'typescript', label: 'TypeScript' },
 ];
 
 const DEFAULT_CODE: Record<string, string> = {
@@ -52,7 +52,6 @@ export function DaytonaCard({ result, status, code, language: initialLanguage = 
   const [execResult, setExecResult] = useState<ExecutionResult | null>(status === 'complete' ? result : null);
   const [error, setError] = useState<string | null>(status === 'error' ? (result as any).error || 'An error occurred' : null);
   const [copied, setCopied] = useState(false);
-  const [showLangDropdown, setShowLangDropdown] = useState(false);
 
   const handleRun = useCallback(async () => {
     setIsRunning(true);
@@ -97,7 +96,6 @@ export function DaytonaCard({ result, status, code, language: initialLanguage = 
 
   const handleLanguageChange = useCallback((newLang: string) => {
     setLanguage(newLang);
-    setShowLangDropdown(false);
     if (!code) {
       setCodeState(DEFAULT_CODE[newLang] || '');
     }
@@ -108,19 +106,10 @@ export function DaytonaCard({ result, status, code, language: initialLanguage = 
   if (status === 'loading') {
     return (
       <div className="daytona-card">
-        <div className="daytona-header">
-          <div className="daytona-header-left">
-            <Terminal size={16} className="daytona-icon" />
-            <span className="daytona-title">Code Execution</span>
-          </div>
-          <div className="daytona-header-right">
-            <div className="daytona-spinner" />
-          </div>
-        </div>
-        <div className="daytona-terminal">
-          <div className="daytona-line">
-            <span className="daytona-prompt">$</span>
-            <span className="daytona-loading-text">Creating sandbox and running code...</span>
+        <div className="daytona-card-loading">
+          <div className="daytona-loading-content">
+            <Terminal size={16} className="daytona-card-icon" />
+            <span>Creating sandbox and running code...</span>
           </div>
         </div>
       </div>
@@ -128,68 +117,35 @@ export function DaytonaCard({ result, status, code, language: initialLanguage = 
   }
 
   return (
-    <div className="daytona-card daytona-editor">
-      <div className="daytona-header">
-        <div className="daytona-header-left">
-          <Terminal size={16} className="daytona-icon" />
-          <span className="daytona-title">Code Editor</span>
-
-          <div className="daytona-lang-selector">
-            <button
-              className="daytona-lang-btn"
-              onClick={() => setShowLangDropdown(!showLangDropdown)}
-              disabled={isRunning}
-            >
-              <span>{LANGUAGE_OPTIONS.find(l => l.value === language)?.icon}</span>
-              <span>{LANGUAGE_OPTIONS.find(l => l.value === language)?.label}</span>
-              <ChevronDown size={14} />
-            </button>
-
-            {showLangDropdown && (
-              <div className="daytona-lang-dropdown">
+    <div className="daytona-card">
+      <div className="daytona-card-body">
+        <div className="daytona-editor-pane">
+          <div className="daytona-pane-header">
+            <span>Code</span>
+            <div className="daytona-pane-actions">
+              <select
+                value={language}
+                onChange={(e) => handleLanguageChange(e.target.value)}
+                className="daytona-lang-select"
+                disabled={isRunning}
+              >
                 {LANGUAGE_OPTIONS.map((lang) => (
-                  <button
-                    key={lang.value}
-                    className={`daytona-lang-option ${language === lang.value ? 'active' : ''}`}
-                    onClick={() => handleLanguageChange(lang.value)}
-                  >
-                    <span>{lang.icon}</span>
-                    <span>{lang.label}</span>
-                  </button>
+                  <option key={lang.value} value={lang.value}>
+                    {lang.label}
+                  </option>
                 ))}
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="daytona-header-right">
-          <button
-            onClick={handleRun}
-            disabled={isRunning || !codeState.trim()}
-            className="daytona-run-btn"
-          >
-            {isRunning ? (
-              <Loader2 size={16} className="daytona-spin" />
-            ) : (
-              <Play size={16} />
-            )}
-            <span>Run</span>
-          </button>
-        </div>
-      </div>
-
-      <div className="daytona-editor-body">
-        <div className="daytona-code-section">
-          <div className="daytona-code-header">
-            <span className="daytona-language">{language}</span>
-            <div className="daytona-code-actions">
-              <button onClick={handleCopy} className="daytona-copy-btn" title="Copy code">
+              </select>
+              <button
+                onClick={handleCopy}
+                className="daytona-icon-btn"
+                title="Copy code"
+              >
                 {copied ? <Check size={14} /> : <Copy size={14} />}
               </button>
               <button
                 onClick={() => setCodeState(DEFAULT_CODE[language] || '')}
-                className="daytona-reset-btn"
-                title="Reset to default"
+                className="daytona-text-btn"
+                disabled={isRunning}
               >
                 Reset
               </button>
@@ -204,30 +160,39 @@ export function DaytonaCard({ result, status, code, language: initialLanguage = 
           />
         </div>
 
-        {(execResult || error) && (
-          <div className="daytona-output">
-            <div className="daytona-output-header">
-              <span>Output</span>
-              {execResult && (
-                <span className={`daytona-exit-code ${isSuccess ? 'success' : 'error'}`}>
-                  Exit code: {execResult.exitCode}
-                </span>
+        <div className="daytona-output-pane">
+          <div className="daytona-pane-header">
+            <span>Output</span>
+            <button
+              onClick={handleRun}
+              disabled={isRunning || !codeState.trim()}
+              className="daytona-run-btn"
+            >
+              {isRunning ? (
+                <Loader2 size={14} className="daytona-spin" />
+              ) : (
+                <Play size={14} />
               )}
-              {(execResult || error) && (
-                <button onClick={() => { setExecResult(null); setError(null); }} className="daytona-clear-btn">
-                  <X size={14} />
-                </button>
-              )}
-            </div>
-            <div className="daytona-output-content">
-              {error ? (
-                <div className="daytona-error-message">{error}</div>
-              ) : execResult ? (
-                <pre className="daytona-result">{(execResult.result || execResult.stdout) || 'No output'}</pre>
-              ) : null}
-            </div>
+              <span>Run</span>
+            </button>
           </div>
-        )}
+          <div className="daytona-output-content">
+            {error ? (
+              <div className="daytona-error-text">{error}</div>
+            ) : execResult ? (
+              <>
+                <div className={`daytona-exit-badge ${isSuccess ? 'success' : 'error'}`}>
+                  Exit: {execResult.exitCode}
+                </div>
+                <pre className="daytona-output-text">
+                  {(execResult.result || execResult.stdout) || 'No output'}
+                </pre>
+              </>
+            ) : (
+              <span className="daytona-placeholder">Click Run to execute</span>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,351 +1,151 @@
+/* ===================================
+    DAYTONA CODE EDITOR CARD STYLES
+    =================================== */
+
 .daytona-card {
+  background: var(--color-bg);
   border: 1px solid var(--color-border);
   border-radius: 8px;
   overflow: hidden;
-  background: var(--color-bg);
   margin-bottom: 12px;
+  width: 100%;
+  max-width: 100%;
 }
 
-.daytona-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background: var(--color-bg-secondary);
-  border-bottom: 1px solid var(--color-border);
-}
-
-.daytona-header-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.daytona-icon {
+.daytona-card-loading {
+  padding: 24px;
+  text-align: center;
   color: var(--color-text-secondary);
-}
-
-.daytona-title {
   font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text);
 }
 
-.daytona-header-right {
-  display: flex;
-  align-items: center;
-}
-
-.daytona-header-error {
-  background: rgba(239, 68, 68, 0.1);
-  border-bottom-color: rgba(239, 68, 68, 0.2);
-}
-
-.daytona-icon-error {
-  color: #ef4444;
-}
-
-.daytona-spinner {
-  width: 14px;
-  height: 14px;
-  border: 2px solid var(--color-border);
-  border-top-color: var(--color-primary);
-  border-radius: 50%;
-  animation: daytona-spin 0.8s linear infinite;
-}
-
-@keyframes daytona-spin {
-  to { transform: rotate(360deg); }
-}
-
-.daytona-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  font-weight: 500;
-  padding: 4px 10px;
-  border-radius: 4px;
-}
-
-.daytona-status-success {
-  background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
-}
-
-.daytona-status-error {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-}
-
-.daytona-terminal {
-  padding: 16px;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  background: #1e1e1e;
-  color: #d4d4d4;
-}
-
-.daytona-line {
-  display: flex;
-  gap: 8px;
-}
-
-.daytona-prompt {
-  color: #22c55e;
-  font-weight: 500;
-}
-
-.daytona-loading-text {
-  color: #a8a29e;
-}
-
-.daytona-error-message {
-  padding: 16px;
-  color: #ef4444;
-  font-size: 13px;
-  background: rgba(239, 68, 68, 0.05);
-}
-
-.daytona-code-block {
-  background: #1e1e1e;
-  border-top: 1px solid var(--color-border);
-}
-
-.daytona-code-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.daytona-language {
-  font-size: 11px;
-  font-weight: 600;
-  color: #22c55e;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.daytona-copy-btn {
+.daytona-loading-content {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 12px;
+  gap: 8px;
 }
 
-.daytona-copy-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+/* Body - Side by Side Layout */
+.daytona-card-body {
+  display: flex;
+  min-height: 300px;
 }
 
-.daytona-code-content {
-  padding: 16px;
-  margin: 0;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.5;
-  overflow-x: auto;
-  color: #e5e7eb;
+.daytona-editor-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--color-border);
+  min-width: 0;
 }
 
-.daytona-code-content code {
-  display: block;
+.daytona-output-pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 
-.daytona-output {
-  border-top: 1px solid var(--color-border);
-}
-
-.daytona-output-header {
+.daytona-pane-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 16px;
+  padding: 8px 12px;
   background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border);
   font-size: 11px;
   font-weight: 600;
-  color: var(--color-text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  color: var(--color-text-secondary);
 }
 
-.daytona-exit-code {
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
-}
-
-.daytona-output-content {
-  padding: 16px;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  background: #0d0d0d;
-  color: #a8a29e;
-  min-height: 60px;
-  max-height: 400px;
-  overflow-y: auto;
-}
-
-.daytona-output-line {
-  padding: 2px 0;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.daytona-output-empty {
-  color: rgba(168, 162, 158, 0.5);
-  font-style: italic;
-}
-
-@media (prefers-color-scheme: dark) {
-  .daytona-terminal {
-    background: #0d0d0d;
-    color: #a8a29e;
-  }
-
-  .daytona-code-block {
-    background: #0d0d0d;
-  }
-
-  .daytona-code-content {
-    color: #d4d4d4;
-  }
-
-  .daytona-output-content {
-    background: #0a0a0a;
-    color: #a8a29e;
-  }
-}
-
-.daytona-editor {
-  max-width: 900px;
-}
-
-.daytona-editor-body {
-  display: flex;
-  flex-direction: column;
-}
-
-.daytona-lang-selector {
-  position: relative;
-  margin-left: 16px;
-}
-
-.daytona-lang-btn {
+.daytona-pane-actions {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+}
+
+/* Language Select */
+.daytona-lang-select {
+  padding: 4px 8px;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
   color: var(--color-text);
-  font-size: 13px;
+  font-size: 11px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  outline: none;
 }
 
-.daytona-lang-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+.daytona-lang-select:hover {
+  border-color: var(--color-primary);
 }
 
-.daytona-lang-btn:disabled {
+.daytona-lang-select:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.daytona-lang-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  margin-top: 4px;
-  background: var(--color-bg);
+/* Buttons */
+.daytona-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  background: transparent;
   border: 1px solid var(--color-border);
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-  z-index: 100;
-  min-width: 160px;
-  overflow: hidden;
-}
-
-.daytona-lang-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 10px 14px;
-  background: none;
-  border: none;
-  color: var(--color-text);
-  font-size: 13px;
-  cursor: pointer;
-  transition: background 0.15s ease;
-  text-align: left;
-}
-
-.daytona-lang-option:hover {
-  background: var(--color-bg-secondary);
-}
-
-.daytona-lang-option.active {
-  background: rgba(34, 197, 94, 0.1);
-  color: #22c55e;
-}
-
-.daytona-sandbox-badge {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  background: rgba(34, 197, 94, 0.1);
   border-radius: 4px;
-  font-size: 12px;
-  color: #22c55e;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.daytona-sandbox-dot {
-  width: 6px;
-  height: 6px;
-  background: #22c55e;
-  border-radius: 50%;
-  animation: pulse 2s infinite;
+.daytona-icon-btn:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.5; }
+.daytona-text-btn {
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.daytona-text-btn:hover:not(:disabled) {
+  background: var(--color-bg-hover);
+  color: var(--color-text);
+}
+
+.daytona-text-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .daytona-run-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  background: #22c55e;
-  border: none;
-  border-radius: 6px;
+  justify-content: center;
+  gap: 5px;
+  padding: 4px 8px;
+  background: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 4px;
   color: white;
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .daytona-run-btn:hover:not(:disabled) {
-  background: #16a34a;
-  transform: translateY(-1px);
+  opacity: 0.9;
 }
 
 .daytona-run-btn:disabled {
@@ -354,157 +154,95 @@
 }
 
 .daytona-run-btn .daytona-spin {
-  animation: spin 0.8s linear infinite;
+  animation: daytona-spin 0.8s linear infinite;
 }
 
-.daytona-delete-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 8px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 6px;
-  color: #ef4444;
-  cursor: pointer;
-  transition: all 0.15s ease;
+@keyframes daytona-spin {
+  to { transform: rotate(360deg); }
 }
 
-.daytona-delete-btn:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.3);
-}
-
-.daytona-code-section {
-  display: flex;
-  flex-direction: column;
-}
-
+/* Code Input */
 .daytona-code-input {
+  flex: 1;
   width: 100%;
-  min-height: 200px;
-  max-height: 400px;
-  padding: 16px;
-  background: #1e1e1e;
+  padding: 12px;
+  background: var(--color-bg);
   border: none;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e5e7eb;
+  color: var(--color-text);
   font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  resize: vertical;
+  font-size: 12px;
+  line-height: 1.5;
+  resize: none;
   outline: none;
+  min-height: 200px;
 }
 
 .daytona-code-input::placeholder {
-  color: rgba(168, 162, 158, 0.5);
+  color: var(--color-text-muted);
 }
 
-.daytona-code-input:focus {
-  background: #1a1a1a;
+/* Output */
+.daytona-output-content {
+  flex: 1;
+  padding: 12px;
+  background: var(--color-bg);
+  overflow-y: auto;
+  min-height: 200px;
 }
 
-.daytona-code-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.daytona-reset-btn {
-  display: flex;
-  align-items: center;
-  padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
-  color: var(--color-text-secondary);
+.daytona-placeholder {
+  color: var(--color-text-muted);
   font-size: 12px;
-  cursor: pointer;
-  transition: all 0.15s ease;
+  font-style: italic;
 }
 
-.daytona-reset-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: var(--color-text);
+.daytona-exit-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 3px;
+  font-size: 11px;
+  font-weight: 500;
+  margin-bottom: 8px;
 }
 
-.daytona-result {
-  margin: 0;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
-  font-size: 13px;
-  line-height: 1.6;
-  white-space: pre-wrap;
-  word-break: break-word;
-  color: #e5e7eb;
-}
-
-.daytona-exit-code.success {
+.daytona-exit-badge.success {
+  background: rgba(34, 197, 94, 0.1);
   color: #22c55e;
 }
 
-.daytona-exit-code.error {
+.daytona-exit-badge.error {
+  background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
 }
 
-.daytona-clear-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 4px;
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.15s ease;
-}
-
-.daytona-clear-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+.daytona-output-text {
+  margin: 0;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Fira Code', Consolas, 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
   color: var(--color-text);
 }
 
-.daytona-editor-footer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: var(--color-bg-secondary);
-  border-top: 1px solid var(--color-border);
-}
-
-.daytona-start-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-  border: none;
-  border-radius: 8px;
-  color: white;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-}
-
-.daytona-start-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
-}
-
-.daytona-hint {
-  margin-top: 12px;
-  color: var(--color-text-secondary);
+.daytona-error-text {
+  color: #ef4444;
   font-size: 12px;
+  line-height: 1.5;
 }
 
-.daytona-spin {
-  animation: spin 0.8s linear infinite;
-}
+/* Responsive */
+@media (max-width: 768px) {
+  .daytona-card-body {
+    flex-direction: column;
+  }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  .daytona-editor-pane {
+    border-right: none;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .daytona-output-pane {
+    min-height: 200px;
+  }
 }

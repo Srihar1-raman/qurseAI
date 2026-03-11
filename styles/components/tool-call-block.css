@@ -1304,7 +1304,8 @@
 .tool-cards-container .forex-card,
 .tool-cards-container .flight-status-card,
 .tool-cards-container .flight-radar-mini,
-.tool-cards-container .github-card {
+.tool-cards-container .github-card,
+.tool-cards-container .daytona-card {
   width: 100%;
   max-width: 100%;
   margin-left: 0;
