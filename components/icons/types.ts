@@ -10,7 +10,7 @@ export type IconName =
   | 'aisdk' | 'about' | 'accounts' | 'Anthropic' | 'arrow-up' | 'arxiv-logo'
   | 'attach' | 'chat' | 'check' | 'clear_history' | 'collapse' | 'convo_branch'
   | 'code' | 'copy' | 'cross' | 'deep_search' | 'deepseek' | 'delete'
-  | 'download' | 'dropdown-arrow' | 'exa' | 'exaAI' | 'expand'
+  | 'download' | 'dropdown-arrow' | 'education' | 'exa' | 'exaAI' | 'expand'
   | 'gemini' | 'general' | 'github' | 'google' | 'grok' | 'groq'
   | 'history' | 'image' | 'info' | 'internet' | 'link' | 'mail'
   | 'model' | 'moonshot' | 'more' | 'nextjs' | 'OpenAI'

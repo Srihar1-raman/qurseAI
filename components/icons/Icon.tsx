@@ -24,6 +24,7 @@ import { DeepSeekIcon } from './DeepSeekIcon';
 import { DeleteIcon } from './DeleteIcon';
 import { DownloadIcon } from './DownloadIcon';
 import { DropdownArrowIcon } from './DropdownArrowIcon';
+import { EducationIcon } from './EducationIcon';
 import { ExaAIIcon } from './ExaAIIcon';
 import { ExaIcon } from './ExaIcon';
 import { ExpandIcon } from './ExpandIcon';
@@ -105,6 +106,7 @@ const iconMap: Record<string, React.ComponentType<any>> = {
   'dropdown-arrow': DropdownArrowIcon,
   'exa': ExaIcon,
   'exaAI': ExaAIIcon,
+  'education': EducationIcon,
   'expand': ExpandIcon,
   'gemini': GeminiIcon,
   'general': GeneralIcon,

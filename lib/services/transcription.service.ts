@@ -29,7 +29,7 @@ export async function transcribeDocument(
       return { success: true, text: fileContent };
     }
 
-    // PDF
+    // PDF - Use pdfjs-dist for reliable text extraction
     if (contentType === 'application/pdf') {
       return await transcribePDF(attachment.url);
     }
@@ -64,33 +64,48 @@ async function fetchFileContent(url: string): Promise<string> {
 
 async function transcribePDF(url: string): Promise<TranscriptionResult> {
   try {
-    const pdfParseModule = await import('pdf-parse');
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    const pdfData = arrayBuffer;
 
-    // pdf-parse v2 API: create parser with data option, then call getText()
-    const { PDFParse } = pdfParseModule as any;
+    const pdfjsLib = await import('pdfjs-dist');
+    const pdfjs = (pdfjsLib as any).default || pdfjsLib;
 
-    const parser = new PDFParse({ data: buffer });
-    const result = await parser.getText();
-    await parser.destroy();
+    const loadingTask = pdfjs.getDocument({ data: pdfData });
 
-    let content = '';
+    return new Promise((resolve, reject) => {
+      loadingTask.promise.then((pdf: any) => {
+        let fullText = '';
 
-    if (result.text) {
-      content = result.text;
-    } else if (result.pages && result.pages.length > 0) {
-      for (const page of result.pages) {
-        content += page.text + '\n\n';
-      }
-    }
+        const numPages = pdf.numPages;
 
-    return {
-      success: true,
-      text: content.trim(),
-    };
-  } catch (error) {
+        const processPage = (pageNum: number) => {
+          return pdf.getPage(pageNum).then((page: any) => {
+            return page.getTextContent();
+          }).then((textContent: any) => {
+            const pageText = textContent.items.map((item: any) => item.str).join(' ');
+            fullText += pageText + '\n\n';
+
+            if (pageNum === numPages) {
+              resolve({
+                success: true,
+                text: fullText.trim(),
+              });
+            }
+          });
+        };
+
+        for (let i = 1; i <= numPages; i++) {
+          processPage(i);
+        }
+      }).catch((error: any) => {
+        reject({
+          success: false,
+          error: `Failed to transcribe PDF: ${error}`,
+        });
+      });
+    });
+  } catch (error: any) {
     return {
       success: false,
       error: `Failed to transcribe PDF: ${error}`,
@@ -105,7 +120,6 @@ async function transcribeDOCX(url: string): Promise<TranscriptionResult> {
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // mammoth exports named functions, not default
     const mammoth = mammothModule as any;
     const result = await mammoth.extractRawText({ buffer });
 
@@ -128,7 +142,6 @@ async function transcribeExcel(url: string): Promise<TranscriptionResult> {
     const arrayBuffer = await response.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // xlsx exports named functions
     const xlsx = xlsxModule as any;
     const workbook = xlsx.read(buffer);
     const sheetName = workbook.SheetNames[0];
@@ -139,7 +152,6 @@ async function transcribeExcel(url: string): Promise<TranscriptionResult> {
 
     for (const row of rows as any[]) {
       const rowText = Object.values(row).filter((v: any) => v !== undefined && v !== null).map((v: any) => String(v)).join('\t');
-
       if (rowText.length > 0) {
         text += rowText + '\n';
       }
