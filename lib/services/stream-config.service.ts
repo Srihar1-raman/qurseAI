@@ -212,22 +212,6 @@ export interface StreamConfig {
             })
         );
 
-       console.log('[DEBUG] Server - original uiMessages count:', uiMessages.length);
-       console.log('[DEBUG] Server - original uiMessages:', uiMessages.map((m: any) => ({
-        id: m.id,
-        role: m.role,
-        partTypes: m.parts?.map((p: any) => p.type) || [],
-        attachments: (m as any).attachments,
-      })));
-      console.log('[DEBUG] Server - filtered uiMessages count:', filteredUiMessages.length);
-      console.log('[DEBUG] Server - filtered uiMessages:', filteredUiMessages.map((m: any) => ({
-        id: m.id,
-        role: m.role,
-        partTypes: m.parts?.map((p: any) => p.type) || [],
-        attachments: (m as any).attachments,
-      })));
-      console.log('[DEBUG] Server - attachments config:', { hasAttachments: !!attachments && attachments.length > 0, attachmentsCount: attachments?.length || 0 });
-
       // Await DB operations (user message must be saved before streaming)
       const dbResult = await dbOperationsPromise;
 

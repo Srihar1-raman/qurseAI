@@ -1,5 +1,8 @@
 import { tool } from 'ai';
 import { z } from 'zod';
+import { createScopedLogger } from '@/lib/utils/logger';
+
+const logger = createScopedLogger('tools/movie');
 
 const OMDB_API_KEY = process.env.OMDB_API_KEY;
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
@@ -294,7 +297,7 @@ export const movieInfoTool = tool({
             }
           }
         } catch (tmdbError) {
-          console.error('TMDB API error:', tmdbError);
+          logger.error('TMDB API error', { error: tmdbError });
         }
       }
 

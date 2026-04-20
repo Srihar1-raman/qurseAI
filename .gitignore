@@ -40,12 +40,20 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# docs and markdown files
-*.md
-!README.md
-!PRIVACY_POLICY.md
-!COOKIE_POLICY.md
-!TERMS_OF_SERVICE.md
+# test scripts
+test-*.mjs
+test-*.js
+
+# binary and large doc files
+*.docx
+*.bak
+
+# test output
+test-output/
+
+# large scraped documentation files
+aisdk_doc.md
+dodoDOC.md
 supabaseDOC.md
 
 # cursor

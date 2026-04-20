@@ -127,15 +127,12 @@ export async function updateSubscriptionServerSide(
       .single();
 
     if (error) {
-      // Log RAW error first (before handleDbError modifies it)
-      console.error('RAW DATABASE ERROR:', JSON.stringify(error, null, 2));
       logger.error('Error updating subscription', {
         userId,
         errorCode: error.code,
         errorMessage: error.message,
         errorDetails: error.details,
         errorHint: error.hint,
-        fullError: JSON.stringify(error),
       });
       const userMessage = handleDbError(error, 'db/subscriptions.server/updateSubscriptionServerSide');
       const dbError = new Error(userMessage);
