@@ -111,3 +111,4 @@ md/
 claude_code_zai_env.sh
 .env*.local
 
+package-lock.json
