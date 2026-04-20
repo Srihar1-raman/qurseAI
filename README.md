@@ -126,7 +126,7 @@ Components in `components/embeds/` handle rich content rendering:
 
 - **YouTubeEmbed** — Detects YouTube URLs in AI output and embeds players
 - **SpotifyEmbed** — Embeds Spotify tracks, albums, playlists
-- **PdfEmbed** — PDF viewer using `react-pdf` / `pdfjs-dist`
+- **PdfEmbed** — Renders PDFs via an embedded Google Docs Viewer iframe (no client-side PDF library needed)
 - **PlantUMLEmbed** — Renders PlantUML diagrams via `plantuml-encoder`
 - **VegaLiteEmbed** — Renders Vega-Lite JSON specs as charts
 - **excalidraw-init** — Lazy-loads Excalidraw for whiteboard diagrams

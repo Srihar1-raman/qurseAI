@@ -203,11 +203,7 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
           type="file"
           multiple
           onChange={handleFileSelect}
-          accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.md,.xlsx,.xls,.csv,.json,.xml,.html"
-          style={{ display: 'none' }}
-        />
-
-        {/* Attachment preview */}
+          accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.md,.xlsx,.csv,.json,.xml,.html"
         {attachments.length > 0 && (
           <div className="flex flex-wrap gap-2 absolute left-4 bottom-14 z-10">
             {attachments.map((attachment) => (
