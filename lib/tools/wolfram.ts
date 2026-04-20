@@ -67,10 +67,28 @@ export const wolframTool = tool({
       for (const pod of pods) {
         for (const subpod of pod.subpods) {
           if (subpod.plaintext?.trim() || subpod.img?.src) {
+            let imageData: string | undefined;
+
+            if (subpod.img?.src) {
+              try {
+                const imgResponse = await fetch(subpod.img.src);
+                if (imgResponse.ok) {
+                  const arrayBuffer = await imgResponse.arrayBuffer();
+                  const base64 = Buffer.from(arrayBuffer).toString('base64');
+                  const contentType = imgResponse.headers.get('content-type') || 'image/gif';
+                  imageData = `data:${contentType};base64,${base64}`;
+                }
+              } catch (imgError) {
+                // If image fetch fails, fall back to the original URL
+                console.error('Failed to fetch Wolfram image:', imgError);
+                imageData = subpod.img.src;
+              }
+            }
+
             podResults.push({
               title: pod.title,
               plaintext: subpod.plaintext?.trim(),
-              image: subpod.img?.src,
+              image: imageData,
             });
           }
         }
