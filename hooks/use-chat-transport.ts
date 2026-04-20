@@ -109,12 +109,6 @@ export function useChatTransport({
       },
       prepareSendMessagesRequest({ messages }) {
         const msgWithAttachments = messages as any[];
-        console.log('[DEBUG] prepareSendMessagesRequest - sending messages:', msgWithAttachments.map((m) => ({
-          id: m.id,
-          role: m.role,
-          partTypes: m.parts?.map((p: any) => p.type),
-          attachments: m.attachments,
-        })));
 
         const lastMessage = msgWithAttachments[msgWithAttachments.length - 1];
 

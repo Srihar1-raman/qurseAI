@@ -7,6 +7,10 @@
  * - Simple concurrency protection
  */
 
+import { createScopedLogger } from '@/lib/utils/logger';
+
+const logger = createScopedLogger('webhook-safety');
+
 // Simple in-memory cache for processed webhooks
 const processedWebhooks = new Map<string, number>();
 const processingLocks = new Map<string, Promise<unknown>>();
@@ -108,14 +112,14 @@ export const processWebhookSafely = async <T>(
 ): Promise<{ success: boolean; result?: T; error?: string }> => {
   // Check if already processed
   if (isWebhookProcessed(webhookId)) {
-    console.log('⚠️ Duplicate webhook ignored:', webhookId);
+    logger.warn('Duplicate webhook ignored', { webhookId });
     return { success: true, error: 'Duplicate webhook ignored' };
   }
 
   // Check if already processing (concurrency protection)
   const lockKey = userId; // Lock by user only to prevent all concurrent webhooks for same user
   if (processingLocks.has(lockKey)) {
-    console.log('⚠️ Concurrent webhook processing detected, waiting...', lockKey);
+    logger.warn('Concurrent webhook processing detected, waiting', { lockKey });
     try {
       await processingLocks.get(lockKey);
     } catch {
@@ -131,16 +135,16 @@ export const processWebhookSafely = async <T>(
   // Create processing lock
   const processingPromise = (async () => {
     try {
-      console.log('🔄 Processing webhook:', webhookId);
+      logger.debug('Processing webhook', { webhookId });
       const result = await processor();
 
       // Mark as processed only on success
       markWebhookProcessed(webhookId);
-      console.log('✅ Webhook processed successfully:', webhookId);
+      logger.debug('Webhook processed successfully', { webhookId });
 
       return { success: true, result };
     } catch (error) {
-      console.error('❌ Webhook processing failed:', webhookId, error);
+      logger.error('Webhook processing failed', { webhookId, error });
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error'
@@ -167,14 +171,14 @@ export const createSafeWebhookHandler = <T extends unknown[]>(
       // Basic validation
       const validation = validateWebhookPayload(payload);
       if (!validation.isValid) {
-        console.error(`❌ Invalid ${handlerName} webhook:`, validation.error);
+        logger.error(`Invalid ${handlerName} webhook`, { error: validation.error });
         return;
       }
 
       // Extract user ID safely
       const { userId, error } = extractUserIdSafely(payload);
       if (!userId) {
-        console.error(`❌ ${handlerName} webhook missing user ID:`, error);
+        logger.error(`${handlerName} webhook missing user ID`, { error });
         return;
       }
 
@@ -187,7 +191,7 @@ export const createSafeWebhookHandler = <T extends unknown[]>(
       });
 
     } catch (error) {
-      console.error(`💥 Unexpected error in ${handlerName} webhook:`, error);
+      logger.error(`Unexpected error in ${handlerName} webhook`, { error });
     }
   };
 };
