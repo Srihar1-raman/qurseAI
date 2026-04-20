@@ -56,8 +56,8 @@ aisdk_doc.md
 dodoDOC.md
 supabaseDOC.md
 
-# cursor
-.cursor/worktrees.json
+# cursor IDE
+.cursor/
 
 # test files and pages (not needed in production)
 app/test/

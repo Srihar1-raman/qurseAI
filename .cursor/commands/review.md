@@ -1,1 +1,0 @@
-check and review the implementation, for any fuck ups, slop logic, or something you forgot, or stupid code or logic
