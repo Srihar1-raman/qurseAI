@@ -203,7 +203,7 @@ export default function MainInput({ inputValue, setInputValue, showAttachButton 
           type="file"
           multiple
           onChange={handleFileSelect}
-          accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.md,.xlsx,.xls,.csv,.json,.xml,.html"
+          accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.md,.xlsx,.csv,.json,.xml,.html"
           style={{ display: 'none' }}
         />
 

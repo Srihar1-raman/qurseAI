@@ -49,11 +49,13 @@ export function toUIMessageFromZod(messages: ChatRequest['messages']): UIMessage
     }
 
     // If message has parts, use as UIMessage with parts
+    // Spread the whole part object to preserve tool-call/tool-result fields
+    // (toolCallId, toolName, args, result, etc.) that convertToModelMessages needs.
     if (msg.parts && Array.isArray(msg.parts) && msg.parts.length > 0) {
       return {
         id: messageId,
         role: (msg.role || 'user') as 'user' | 'assistant' | 'system',
-        parts: msg.parts.map((p) => ({ type: p.type, text: p.text || '' })) as UIMessageParts,
+        parts: msg.parts as unknown as UIMessageParts,
         attachments: msg.attachments,
       } as UIMessage & { attachments?: typeof msg.attachments };
     }

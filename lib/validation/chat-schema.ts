@@ -35,11 +35,14 @@ export function isValidConversationId(id: string): boolean {
 
 /**
  * Message part schema for UIMessage format
+ * Uses passthrough() to preserve all extra fields on tool-call / tool-result
+ * parts (toolCallId, toolName, args, result, etc.) so convertToModelMessages
+ * can produce valid ModelMessages from them.
  */
 const messagePartSchema = z.object({
   type: z.string(),
   text: z.string().optional(),
-});
+}).passthrough();
 
 /**
  * Attachment schema - represents user-uploaded files
