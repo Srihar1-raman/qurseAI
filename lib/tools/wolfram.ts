@@ -78,8 +78,9 @@ export const wolframTool = tool({
                   const contentType = imgResponse.headers.get('content-type') || 'image/gif';
                   imageData = `data:${contentType};base64,${base64}`;
                 }
-              } catch {
+              } catch (imgError) {
                 // If image fetch fails, fall back to the original URL
+                console.error('Failed to fetch Wolfram image:', imgError);
                 imageData = subpod.img.src;
               }
             }

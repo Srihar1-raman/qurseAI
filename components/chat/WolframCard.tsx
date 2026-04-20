@@ -13,12 +13,12 @@ interface WolframCardProps {
   pods: PodResult[];
 }
 
-function WolframPodImage({ src, alt, fallback }: { src: string; alt: string; fallback?: string }) {
+function WolframPodImage({ src, alt, fallbackText }: { src: string; alt: string; fallbackText?: string }) {
   const [failed, setFailed] = React.useState(false);
 
   if (failed) {
-    return fallback ? (
-      <div className="wolfram-card-plaintext">{fallback}</div>
+    return fallbackText ? (
+      <div className="wolfram-card-plaintext">{fallbackText}</div>
     ) : null;
   }
 
@@ -51,7 +51,7 @@ export function WolframCard({ query, pods }: WolframCardProps) {
                 <WolframPodImage
                   src={pod.image}
                   alt={pod.title}
-                  fallback={pod.plaintext}
+                  fallbackText={pod.plaintext}
                 />
               </div>
             ) : pod.plaintext ? (
