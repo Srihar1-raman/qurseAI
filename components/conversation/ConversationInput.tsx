@@ -154,6 +154,10 @@ export function ConversationInput({
           onChange={handleFileSelect}
           className="hidden"
           accept=".jpg,.jpeg,.png,.gif,.webp,.svg,.pdf,.doc,.docx,.txt,.md,.xlsx,.csv,.json,.xml,.html"
+          style={{ display: 'none' }}
+        />
+
+        <AttachmentPreview
           attachments={attachments}
           onRemove={handleRemoveAttachment}
           uploading={uploading}

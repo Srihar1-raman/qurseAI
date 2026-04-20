@@ -65,13 +65,13 @@ async function fetchFileContent(url: string): Promise<string> {
 
 async function transcribePDF(url: string): Promise<TranscriptionResult> {
   try {
-    const pdfParse = (await import('pdf-parse')).default;
+    const { PDFParse } = await import('pdf-parse');
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
 
-    const data = await pdfParse(buffer);
-    return { success: true, text: data.text.trim() };
+    const parser = new PDFParse({ data: new Uint8Array(arrayBuffer) });
+    const result = await parser.getText();
+    return { success: true, text: result.text.trim() };
   } catch (error) {
     return {
       success: false,
@@ -107,10 +107,10 @@ async function transcribeExcel(url: string): Promise<TranscriptionResult> {
     const ExcelJS = (await import('exceljs')).default;
     const response = await fetch(url);
     const arrayBuffer = await response.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
 
     const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.load(buffer);
+    // exceljs Buffer type conflicts with Node's Buffer<ArrayBufferLike> under the DOM lib — use any
+    await workbook.xlsx.load(arrayBuffer as any);
 
     const worksheet = workbook.worksheets[0];
     if (!worksheet) {
